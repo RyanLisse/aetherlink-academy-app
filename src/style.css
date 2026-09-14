@@ -4,5 +4,39 @@
 .progress-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.progress-chip{font-size:10px;padding:4px 8px;border-radius:999px;border:1px solid var(--border);color:var(--muted);background:var(--surface2)}.progress-chip.on{color:var(--cyan);border-color:#54e5ee66;background:#54e5ee14}.criteria-list{margin:10px 0 0;padding-left:18px;color:var(--muted);font-size:12px}.criteria-list li{margin:6px 0}
 @media(min-width:1550px){.app main{padding:36px 50px 0}.workspace{grid-template-columns:minmax(0,1fr) 285px;gap:25px}iframe{height:710px}}
 @media(max-width:1100px){.app{grid-template-columns:175px minmax(0,1fr)}.brand{font-size:18px}.sidebar{padding-inline:9px}.app main{padding:22px 20px 0}.workspace{grid-template-columns:minmax(0,1fr) 220px;gap:14px}.document-heading{padding:20px}.document-heading>span{display:none}.round{gap:12px}.round>span{font-size:10px}.right-rail .panel{padding:16px}.account .connection{display:none}.content-panel{padding:23px}.learning-loop{gap:7px}.learning-loop>div{padding:10px 8px}.join{gap:45px}}
-@media(max-width:800px){.app{display:block}.topbar{height:65px;padding:0 17px}.account>span:not(.avatar){display:none}.account{gap:5px}.sidebar{display:block;padding:10px;border-right:0;border-bottom:1px solid var(--border)}.sidebar nav{flex-direction:row;overflow:auto;gap:5px}.sidebar nav button{padding:9px;font-size:11px}.sidebar-bottom{display:none}.app main{padding:22px 16px 0}.workspace{display:flex;flex-direction:column}.primary,.right-rail{width:100%}.right-rail{display:grid;grid-template-columns:1fr 1fr}.right-rail .coach-cta,.right-rail .help-button{height:43px}.room-heading h1{font-size:23px}.room-heading{gap:10px;margin-bottom:20px}.round{display:block;text-align:right}.round strong{font-size:21px;justify-content:flex-end}.round>span{font-size:10px}.sdlc{margin-bottom:20px}.sdlc>div{font-size:10px}.phase-line{width:12px}iframe{height:590px}.document-heading h2{font-size:21px}.document-heading p{font-size:11px}.join{grid-template-columns:1fr;max-width:540px;margin:40px auto;gap:30px}.join-copy h1{font-size:43px}.join-copy h1 br{display:none}.join-principles{margin-top:23px}.welcome-header{padding:20px}.join-form{padding:25px}.content-panel{padding:22px}.content-panel>h2{font-size:24px}.learning-loop{grid-template-columns:1fr 1fr}.facilitator-controls{gap:8px}.facilitator-controls strong{width:100%}.setup summary span{display:block;margin-left:0}.route-select{align-items:flex-start;flex-direction:column}.form-row{flex-wrap:wrap}}
+@media(max-width:800px){.app{display:block}.topbar{height:65px;padding:0 17px}.account>span:not(.avatar){display:none}.account{gap:5px}.sidebar{display:block;padding:10px;border-right:0;border-bottom:1px solid var(--border)}.sidebar nav{flex-direction:row;overflow:auto;gap:5px}.sidebar nav button{padding:9px;font-size:11px}.sidebar-bottom{display:none}.app main{padding:22px 16px 0}.workspace{display:flex;flex-direction:column}.primary,.right-rail{width:100%}.right-rail{display:grid;grid-template-columns:1fr 1fr}.right-rail .coach-cta,.right-rail .help-button{height:43px}.room-heading h1{font-size:23px}.room-heading{gap:10px;margin-bottom:20px}.round{display:block;text-align:right}.round strong{font-size:21px;justify-content:flex-end}.round>span{font-size:10px}.sdlc{margin-bottom:20px}.sdlc>div{font-size:10px}.phase-line{width:12px}iframe{height:590px}.document-heading h2{font-size:21px}.document-heading p{font-size:11px}.join{grid-template-columns:1fr;max-width:540px;margin:40px auto;gap:30px}.join-copy h1{font-size:43px}.join-copy h1 br{display:none}.join-principles{margin-top:23px}.welcome-header{padding:20px}.join-form{padding:25px}.content-panel{padding:22px}.content-panel>h2{font-size:24px}.learning-loop{grid-template-columns:1fr 1fr}.facilitator-controls{gap:8px}.setup summary span{display:block;margin-left:0}.route-select{align-items:flex-start;flex-direction:column}.form-row{flex-wrap:wrap}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}.facilitator-overview{margin-top:24px}.facilitator-overview ul{padding-left:18px;color:var(--muted)}.google-login{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 15px;border-radius:7px;text-decoration:none;margin-top:12px}.facilitator-login{font-size:12px;margin-bottom:12px}.facilitator-login .text-button{padding:2px 6px}
+
+/* LX PR4: intentional two-row facilitator bar + join clarity / a11y */
+.facilitator-controls{display:flex;flex-direction:column;align-items:stretch;gap:10px;flex-wrap:nowrap}
+.facilitator-controls-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap;width:100%}
+.facilitator-controls-time strong{font-size:12px;margin-right:5px;color:var(--cyan);flex:0 0 auto}
+.facilitator-controls-context{padding-top:2px;border-top:1px solid var(--border)}
+.facilitator-controls-context label{min-width:0}
+@media(max-width:1180px){
+ .facilitator-controls{gap:8px;padding:12px}
+ .facilitator-controls-row{gap:8px}
+}
+@media(max-width:1024px){
+ .facilitator-controls-time,.facilitator-controls-context{flex-wrap:wrap}
+ .facilitator-controls strong{width:auto}
+}
+.join-role{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+.join-role button{padding:10px 12px;font-size:12px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);border-radius:7px}
+.join-role button.selected,.join-role button[aria-selected="true"]{background:linear-gradient(90deg,#1f6feb22,#7c4dff22);border-color:#7c9ffe88;color:var(--text);font-weight:600}
+.join-google-block{margin:0 0 14px;padding:14px;border:1px solid var(--border);border-radius:8px;background:var(--surface2)}
+.join-google-lede{font-size:13px;color:var(--text);margin:0 0 10px}
+.join-or{display:flex;align-items:center;gap:10px;margin:14px 0 0;color:var(--muted);font-size:11px}
+.join-or::before,.join-or::after{content:"";flex:1;height:1px;background:var(--border)}
+.join-or span{white-space:nowrap}
+.join-side-hint{font-size:12px;margin:12px 0 4px;line-height:1.5}
+.join-side-hint strong{color:var(--text)}
+.join-live:empty{display:none}
+.join-form .google-login{margin-top:0}
+.join-form .text-button{display:inline-block}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:800px){
+ .join-role{grid-template-columns:1fr;margin-bottom:14px}
+ .join-google-block{padding:12px}
+ .facilitator-controls-context{width:100%}
+}
