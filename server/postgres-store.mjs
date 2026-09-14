@@ -99,7 +99,7 @@ export class PostgresStore {
    if (!r) fail(404,'Kamercode niet gevonden.');
    if (r.members.length>=5) fail(409,'Squad is vol (maximaal 5).');
    if (r.members.some(m=>m.name.toLowerCase()===name.toLowerCase())) fail(409,'Deze naam is al in gebruik. Gebruik je bestaande sessie of een onderscheidende naam.');
-   const p={id:randomUUID(),name,help:false,quiz:null,route:'standard',lastMcp:null};
+   const p={id:randomUUID(),name,help:false,quiz:null,route:'standard',progressByDay:{},lastMcp:null};
    r.members.push(p);r.version++;
    await this.save(client,r);
    return {token:await this.session(client,r.id,p.id,'browser'),roomId:r.id};
@@ -135,7 +135,7 @@ export class PostgresStore {
   });
  }
  async updateParticipant(token,patch) {
-  if (Object.keys(patch).some(key=>!['help','quiz','route','lastMcp'].includes(key))) fail(400,'Ongeldig deelnemersveld.');
+  if (Object.keys(patch).some(key=>!['help','quiz','route','progressByDay','lastMcp'].includes(key))) fail(400,'Ongeldig deelnemersveld.');
   return this.withSession(token,'browser',({p})=>{
    if (!p) fail(400,'Alleen deelnemers.');
    Object.assign(p,patch);

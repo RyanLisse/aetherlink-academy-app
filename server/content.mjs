@@ -37,7 +37,8 @@ const day1Questions=[
 const day1Mission={
  ...mission,
  starterFiles,
- hints:['Vergelijk README.md met de scripts in package.json.','Voer de beschikbare test uit met node --test.','Een mislukte opdracht is óók bewijs; noteer de echte fout.']
+ hints:['Vergelijk README.md met de scripts in package.json.','Voer de beschikbare test uit met node --test.','Een mislukte opdracht is óók bewijs; noteer de echte fout.'],
+ stretch:'Ontwerp een controle die voorkomt dat de README weer achterloopt. Waarom vangt de bestaande test dit niet?'
 };
 const day2Placeholder='PLACEHOLDER — wacht op quizbank/vijfdagenplan';
 const day2Pack={
@@ -74,7 +75,9 @@ const day2Pack={
   stop:'Stop bij ontbrekende bestanden, geheimen of benodigde toegang buiten de starter. Meld wat ontbreekt; verzin geen uitvoer.',
   checks:['Koppel context, instructie, tool, skill en menselijk oordeel aan concrete observaties.','Vermeld het werkelijk uitgevoerde commando en de uitvoer.','Beschrijf waarom dit het doel raakt en wat nog niet is bewezen.'],
   starterFiles,
-  hints:['Maak eerst een capability-map van context, instructie, tool, skill en menselijk oordeel.','Vraag alleen de kleinste toegang die de lokale controle nodig heeft.','Leg je bevinding vast voor een verse lezer.']
+  hints:['Maak eerst een capability-map van context, instructie, tool, skill en menselijk oordeel.','Vraag alleen de kleinste toegang die de lokale controle nodig heeft.','Leg je bevinding vast voor een verse lezer.'],
+  stretch:'Ontwerp een minimale contextchecklist die een verse lezer kan hergebruiken zonder extra tools.',
+  starterNote:'Deze missie gebruikt dezelfde starterbestanden als dag 1 (tijdelijk, tot aparte fixtures beschikbaar zijn).'
  },
  reviewCriteria:['De capability-map is gekoppeld aan concrete bestanden of uitvoer.','De controle is door een tweede deelnemer te herhalen.','Onzekerheden en menselijke beslispunten blijven zichtbaar.',day2Placeholder]
 };

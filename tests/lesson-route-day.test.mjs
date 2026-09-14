@@ -35,7 +35,14 @@ test('day 1 lesson pack and route days stay available',async()=>{
  assert.equal(route.statusCode,200);
  assert.equal(route.body.day,1);
  assert.equal(route.body.days.length,5);
- assert.deepEqual(route.body.days,listRouteDays());
+ assert.equal(route.body.days.length,listRouteDays().length);
+ for(const [i,expected] of listRouteDays().entries()){
+  assert.equal(route.body.days[i].day,expected.day);
+  assert.equal(route.body.days[i].title,expected.title);
+  assert.equal(route.body.days[i].blurb,expected.blurb);
+  assert.equal(route.body.days[i].hasLesson,expected.hasLesson);
+  assert.equal(route.body.days[i].progress.hasQuiz,false);
+ }
  assert.equal(route.body.days[0].hasLesson,true);
  assert.equal(route.body.days[0].blurb,getDayPack(1).blurb);
  assert.equal(route.body.days[2].hasLesson,false);
