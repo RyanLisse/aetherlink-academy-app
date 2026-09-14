@@ -93,3 +93,17 @@ const dayPacks={
 };
 export function getDayPack(day){return dayPacks[day]??null;}
 export function listDaySummaries(){return Object.values(dayPacks).map(({day,title,tag,blurb})=>({day,title,tag,blurb}));}
+
+const routeFallbacks={
+ 3:{tag:'Coaching',blurb:'Een begrensde agenttaak, toegestane tools en menselijke evaluatie.'},
+ 4:{tag:'Hints',blurb:'Een reproduceerbare Claude Code-werkwijze met instructies en gerichte tools.'},
+ 5:{tag:'Zelfstandig',blurb:'Een gewijzigde taak aanpakken en je bewijs verantwoorden.'}
+};
+export function listRouteDays(){
+ return days.map((title,i)=>{
+  const day=i+1,pack=dayPacks[day];
+  if(pack)return {day,title:pack.title,tag:pack.tag,blurb:pack.blurb,hasLesson:true};
+  const fallback=routeFallbacks[day];
+  return {day,title,tag:fallback.tag,blurb:fallback.blurb,hasLesson:false};
+ });
+}

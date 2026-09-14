@@ -10,7 +10,7 @@ import {Proof} from './proof.mjs';
 import {createAcademyMcpServer} from './mcp-tools.mjs';
 import {createMcpHandler,validateHostHeader} from '@modelcontextprotocol/server';
 import {toNodeHandler} from '@modelcontextprotocol/node';
-import {lessons,mission,initialDocument,searchKnowledge,getDayPack} from './content.mjs';
+import {lessons,mission,initialDocument,searchKnowledge,getDayPack,listRouteDays} from './content.mjs';
 import {createGoogleSso,readLoginState,signLoginState} from './google-sso.mjs';
 const text=(v,max=4000)=>{if(typeof v!=='string'||!v.trim()||v.length>max)fail(400,`Vul tekst in (maximaal ${max} tekens).`);return v.trim();};
 const namedCookie=(req,name)=>{const value=req.headers.cookie?.split(';').map(c=>c.trim()).find(c=>c.startsWith(`${name}=`))?.slice(name.length+1);if(value===undefined)return;try{return decodeURIComponent(value);}catch{return;}};
@@ -65,6 +65,7 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  app.get('/game/knowledge',wrap(async(req,res)=>{await browser(req);res.json({lessons:searchKnowledge(String(req.query.q||'')),mission});}));
  const publicDayPack=pack=>({...pack,quiz:{questions:pack.quiz.questions}});
  app.get('/game/day-pack',wrap(async(req,res)=>{const {r}=await browser(req),pack=getDayPack(r.day);if(!pack)fail(400,`Geen contentpakket voor supportdag ${r.day}.`);res.json(publicDayPack(pack));}));
+ app.get('/game/day-route',wrap(async(req,res)=>{const {r}=await browser(req);res.json({day:r.day,days:listRouteDays()});}));
  app.get('/game/document',wrap(async(req,res)=>{const {r}=await browser(req);res.json(await proof.state(r));}));
  app.post('/game/help',wrap(async(req,res)=>res.json(await store.withSession(token(req),'browser',({p})=>{if(!p)fail(400,'De facilitator heeft geen solo-profiel.');p.help=!p.help;return {help:p.help};}))));
  app.post('/game/quiz',wrap(async(req,res)=>res.json(await store.withSession(token(req),'browser',({r,p})=>{if(!p)fail(400,'Alleen deelnemers.');const pack=getDayPack(r.day);if(!pack)fail(400,`Geen contentpakket voor supportdag ${r.day}.`);const answers=req.body?.answers,expected=pack.quiz.questions.length;if(!Array.isArray(answers)||answers.length!==expected)fail(400,`Beantwoord alle ${expected} vragen.`);if(answers.some((answer,index)=>!Number.isInteger(answer)||answer<0||answer>=pack.quiz.questions[index].options.length))fail(400,'Gebruik een geldige optie voor elke vraag.');const score=answers.filter((answer,index)=>answer===pack.quiz.answers[index]).length;p.quiz={score,at:new Date().toISOString()};p.route=score<=1?'guided':score===2?'standard':'stretch';return {score,route:p.route,note:'Voorlopige hulpkeuze op basis van 3 scenario’s; geen vaardigheidsbewijs of permanent label.'};}))));
