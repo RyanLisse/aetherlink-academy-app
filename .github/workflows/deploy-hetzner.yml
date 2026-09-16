@@ -1,0 +1,31 @@
+# Deploy tip of main to Hetzner Academy VPS (sibling Docker).
+# Rebuilds academy-app only — never wipes academy-postgres / academy-redis.
+name: Deploy Hetzner Academy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-hetzner-academy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Rebuild academy-app on Hetzner
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Deploy via SSH rebuild script
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.ACADEMY_HETZNER_HOST }}
+          username: ${{ secrets.ACADEMY_HETZNER_USER }}
+          key: ${{ secrets.ACADEMY_HETZNER_SSH_KEY }}
+          # Full tip SHA from the push / dispatch that triggered this run
+          script_stop: true
+          command_timeout: 18m
+          script: |
+            set -Eeuo pipefail
+            /root/aetherlink-academy/rebuild-from-git.sh "${{ github.sha }}"
