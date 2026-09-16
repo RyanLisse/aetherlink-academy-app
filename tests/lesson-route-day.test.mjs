@@ -68,16 +68,22 @@ test('facilitator day control switches lesson pack and highlights day 2 on route
  assert.equal(route.body.days[1].hasLesson,true);
 });
 
-test('day three exposes the n8n pack and keeps route cards consistent',async()=>{
+test('day three exposes the progressive n8n pack and keeps route cards consistent',async()=>{
  const {instance,host,participant}=fixture();
  const change=await invoke(instance.app,'/game/control',{body:{action:'day',value:3},cookies:{academy:host.token}});
  assert.equal(change.statusCode,200);
  const pack=await invoke(instance.app,'/game/day-pack',{cookies:{academy:participant.token}});
  assert.equal(pack.statusCode,200);
  assert.equal(pack.body.mission.id,'ATLAS-N8N-03');
+ assert.equal(pack.body.steps.length,3);
+ assert.deepEqual(pack.body.steps.map(s=>s.agentCount),[0,1,'multi']);
+ assert.equal(pack.body.quiz.answers,undefined);
+ assert.equal(pack.body.lesson.title,getDayPack(3).lesson.title);
+ assert.match(pack.body.blurb,/progressief|0 agents|multi/i);
  const route=await invoke(instance.app,'/game/day-route',{cookies:{academy:participant.token}});
  assert.equal(route.statusCode,200);
  assert.equal(route.body.day,3);
  assert.equal(route.body.days[2].hasLesson,true);
  assert.match(route.body.days[2].title,/Samen bouwen/);
+ assert.match(route.body.days[2].blurb,/progressief|0 agents|multi/i);
 });

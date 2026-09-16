@@ -1,5 +1,11 @@
 # Local n8n review fixture
 
+Learning path (day 3): progressive **0 → 1 → multi** agents on the same chain.
+1. Flow without AI agent (deterministic fixture-check).
+2. Flow with one bounded AI review step (capture trace).
+3. Flow with multiple specialists or parallel agents (document who does what + human gate).
+One importable workflow; the three steps are the learning sequence, not three separate JSON files.
+
 Import `n8n-repository-review.json` into an attendee-owned n8n instance. It has
 no credentials and no external nodes. Run it with the manual trigger and label
 the result `deterministic-run`; it is a shape and boundary exercise, not an AI

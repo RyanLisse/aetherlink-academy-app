@@ -30,6 +30,9 @@ test('day two is the complete feedback loop and later days name their boundaries
   assert.equal(getDayPack(4).mission.id, 'ATLAS-CLAUDE-04');
   assert.equal(getDayPack(5).mission.id, 'ATLAS-TEAM-05');
   assert.ok(getDayPack(3).openGates.includes('live n8n/model smoke test'));
+  assert.equal(getDayPack(3).steps.length, 3);
+  assert.deepEqual(getDayPack(3).steps.map(s => s.agentCount), [0, 1, 'multi']);
+  assert.match(getDayPack(3).lesson.title, /multi-agent|n8n/i);
 });
 
 test('route summaries expose all five implemented packs', () => {
