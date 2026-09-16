@@ -1,6 +1,6 @@
 import {createHash, randomBytes, randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
-import {hash, secret, fail, Store} from './store.mjs';
+import {hash, secret, fail, Store, MAX_SQUAD_SIZE} from './store.mjs';
 
 export class PostgresStore {
  constructor(pool, {schema='academy'}={}) {
@@ -97,8 +97,9 @@ export class PostgresStore {
    const result=await client.query('SELECT data FROM rooms WHERE code=$1 FOR UPDATE',[code.toUpperCase()]);
    const r=result.rows[0]?.data;
    if (!r) fail(404,'Kamercode niet gevonden.');
-   if (r.members.length>=5) fail(409,'Squad is vol (maximaal 5).');
-   if (r.members.some(m=>m.name.toLowerCase()===name.toLowerCase())) fail(409,'Deze naam is al in gebruik. Gebruik je bestaande sessie of een onderscheidende naam.');
+   const existing=r.members.find(m=>m.name.toLowerCase()===name.toLowerCase());
+   if (existing) return {token:await this.session(client,r.id,existing.id,'browser'),roomId:r.id,rejoined:true};
+   if (r.members.length>=MAX_SQUAD_SIZE) fail(409,`Squad is vol (maximaal ${MAX_SQUAD_SIZE}).`);
    const p={id:randomUUID(),name,help:false,quiz:null,route:'standard',progressByDay:{},lastMcp:null};
    r.members.push(p);r.version++;
    await this.save(client,r);

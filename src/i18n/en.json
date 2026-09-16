@@ -293,5 +293,7 @@
   "debrief.nextPractice": "Next practice: {next}",
   "debrief.handoffs": "Handoffs today",
   "debrief.noHandoffs": "No handoff recorded.",
-  "debrief.export": "Export debrief"
+  "debrief.export": "Export debrief",
+  "roster.softMax": "12",
+  "fac.shuffleRoles": "Shuffle roles"
 }

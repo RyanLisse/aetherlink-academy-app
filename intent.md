@@ -2,7 +2,7 @@
 
 ## What this is
 
-AetherLink Academy is a Dutch learning environment for squad-based workshops: a real ongoing Proof document, squads of 4–5 with one driver, facilitator controls, private quiz, source-bound knowledge, and evidence / review / handoff. Participants connect their own Claude Code via a limited MCP bridge. The app does **not** host model chat and does **not** ask for an Anthropic API key.
+AetherLink Academy is a Dutch learning environment for squad-based workshops: a real ongoing Proof document, flexible squads (default ~4–5, soft max ~12) with one driver and navigators, facilitator controls, private quiz, source-bound knowledge, and evidence / review / handoff. Participants connect their own Claude Code via a limited MCP bridge. The app does **not** host model chat and does **not** ask for an Anthropic API key.
 
 ## Why it exists
 
@@ -31,3 +31,9 @@ Done means live behavior plus evidence (screenshot/video or linked proof), not a
 
 - Linear workspace: https://linear.app/aetherlink — project **AetherLink Academy**
 - Team onboarding: https://linear.app/aetherlink/document/team-onboarding-aetherlink-academy-linear-7afe92a11071
+
+## Workshop roster (AET-12 thin slice)
+
+- Soft max squad size **12** (no hard fail at 5); practice still starts from **4** members.
+- Facilitator **Shuffle roles** randomizes Driver among current members (others remain Navigator).
+- Soft rejoin: same display name + room code restores the existing seat/role/progress (no email OTP).

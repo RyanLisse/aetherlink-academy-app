@@ -19,13 +19,13 @@ test('Postgres Academy state survives independent concurrent instances', {skip:!
   assert.match(migration,/^3:[a-f0-9]{64}$/);
   await two.init();
   const room=await one.create('Concurrency',{slug:'test-document',editor:'test-editor'});
-  const joined=await Promise.allSettled(Array.from({length:8},(_,i)=>(i%2?one:two).join(room.code,`Participant ${i}`)));
-  assert.equal(joined.filter(r=>r.status==='fulfilled').length,5);
+  const joined=await Promise.allSettled(Array.from({length:15},(_,i)=>(i%2?one:two).join(room.code,`Participant ${i}`)));
+  assert.equal(joined.filter(r=>r.status==='fulfilled').length,12);
   assert.equal(joined.filter(r=>r.status==='rejected'&&r.reason.status===409).length,3);
   const participant=joined.find(r=>r.status==='fulfilled').value;
   const before=await two.auth(room.token,'browser');
-  assert.equal(before.r.members.length,5);
-  assert.equal(before.r.version,6);
+  assert.equal(before.r.members.length,12);
+  assert.equal(before.r.version,13);
   await one.control(room.token,'phase','Test');
   await Promise.all([one.control(room.token,'next'),two.control(room.token,'next')]);
   const after=await two.auth(room.token,'browser');

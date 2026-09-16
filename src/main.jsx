@@ -1,6 +1,6 @@
 import React,{useEffect,useState,useRef} from 'react';
 import {createRoot} from 'react-dom/client';
-import {Users,BookOpen,Compass,Target,Sparkles,ClipboardCheck,Sun,Moon,ArrowRight,Clock,Play,Pause,RotateCw,HelpCircle,Check,LogOut,Copy,FileText,ExternalLink} from 'lucide-react';
+import {Users,BookOpen,Compass,Target,Sparkles,ClipboardCheck,Sun,Moon,ArrowRight,Clock,Play,Pause,RotateCw,Shuffle,HelpCircle,Check,LogOut,Copy,FileText,ExternalLink} from 'lucide-react';
 import {api,authApi,getToken,saveSession} from './api';
 import {Knowledge,Coach,Lesson,Solo,Review,Route,Debrief} from './panels';
 import {I18nProvider,LanguageToggle,useT,useI18n} from './i18n';
@@ -66,7 +66,7 @@ function App(){
         <section className="primary">{view==='squad'&&<Document room={room} theme={theme}/>}{view==='route'&&<Route room={room} onNavigate={setView}/>}{view==='lesson'&&<Lesson room={room} action={action} busy={busy}/>}{view==='solo'&&<Solo room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='coach'&&<Coach room={room} action={action}/>}{view==='review'&&<Review room={room} action={action} busy={busy}/>}{view==='debrief'&&facilitator&&<Debrief room={room}/>}</section>
         <aside className="right-rail">
           <section className="panel roster">
-            <div className="panel-heading"><h2>{t('roster.title')} <span>({room.members.length}/5)</span></h2><Users size={17}/></div>
+            <div className="panel-heading"><h2>{t('roster.title')} <span>({room.members.length}/{t('roster.softMax')})</span></h2><Users size={17}/></div>
             {room.members.length===0&&<p className="muted">{t('roster.empty')}</p>}
             {room.members.map(m=><div className="member" key={m.id}><span className="avatar">{m.name.slice(0,2).toUpperCase()}</span><div><strong>{m.name}{m.id===room.me.id?` ${t('common.you')}`:''}</strong><small className={m.role==='Driver'?'cyan':''}>{m.role}</small></div><span className={'presence '+(m.online?'present':'')} title={m.online?t('roster.online'):t('roster.offline')}/>{m.help&&<HelpCircle size={17} className="cyan" aria-label={t('roster.helpAsked')}/>}</div>)}
             <div className="room-code"><small>{t('roster.roomCode')}</small><div className="room-code-actions"><button className="room-code-display" type="button" onClick={()=>action(async()=>{await navigator.clipboard.writeText(room.code);showCopied('code');})} aria-label={t('roster.copyCode',{code:room.code})} title={t('roster.copyCodeTitle')}>{room.code}{copied==='code'?<Check size={14}/>:<Copy size={14}/>}</button><button className="room-code-link" type="button" onClick={()=>action(async()=>{await navigator.clipboard.writeText(`${location.origin}/?code=${room.code}`);showCopied('link');})} title={t('roster.copyLink')}>{copied==='link'?t('roster.linkCopied'):t('roster.copyLink')}</button>{room.me.role==='Facilitator'&&<button className="room-code-link" type="button" onClick={()=>window.open(`${location.origin}/?code=${room.code}`,'_blank','noopener')} title={t('roster.testAsParticipantTitle')}><ExternalLink size={14}/>{t('roster.testAsParticipant')}</button>}</div><span className="sr-only" role="status">{copied==='code'?t('roster.codeCopied'):copied==='link'?t('roster.inviteCopied'):''}</span></div>
@@ -151,7 +151,7 @@ function FacilitatorControls({room,control,busy,connected}){
     <div className="facilitator-controls-row facilitator-controls-time">
       <strong id="facilitator-label">{t('fac.label')}</strong>
       <button type="button" disabled={disabled} onClick={()=>control(room.running?'pause':'start')} aria-pressed={room.running}>{room.running?<Pause size={16}/>:<Play size={16}/>} {room.running?t('fac.pause'):t('fac.startTimer')}</button>
-      <button type="button" disabled={disabled} onClick={()=>control('next')}><RotateCw size={16}/>{t('fac.nextRound')}</button>
+      <button type="button" disabled={disabled} onClick={()=>control('next')}><RotateCw size={16}/>{t('fac.nextRound')}</button><button type="button" disabled={disabled||!room.members.length} onClick={()=>control('shuffle')}><Shuffle size={16}/>{t('fac.shuffleRoles')}</button>
       <label>{t('fac.timeMin')}<input type="number" min={0} max={120} value={time} onChange={e=>setTime(e.target.value)} onBlur={()=>commit(time,'time')} onKeyDown={enter} aria-describedby="facilitator-label"/></label>
       <button type="button" disabled={disabled} onClick={()=>control('time',Math.max(0,room.remaining+300))} aria-label={t('fac.plus5')}>+5 min</button>
       <button type="button" disabled={disabled} onClick={()=>control('time',Math.max(0,room.remaining-300))} aria-label={t('fac.minus5')}>-5 min</button>

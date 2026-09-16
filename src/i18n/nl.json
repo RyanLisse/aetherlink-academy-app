@@ -293,5 +293,7 @@
   "debrief.nextPractice": "Volgende oefening: {next}",
   "debrief.handoffs": "Handoffs vandaag",
   "debrief.noHandoffs": "Geen handoff vastgelegd.",
-  "debrief.export": "Exporteer debrief"
+  "debrief.export": "Exporteer debrief",
+  "roster.softMax": "12",
+  "fac.shuffleRoles": "Rollen schudden"
 }

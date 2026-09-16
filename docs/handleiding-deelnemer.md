@@ -22,7 +22,7 @@ Stap voor stap door AetherLink Academy als squadlid. Alle labels komen letterlij
    De applicatie opent "Squad-room".
    Een facilitator kan ook een uitnodigingslink sturen die de squadcode vooraf invult; vul dan alleen nog je naam in.
 5. Controleer de roster.
-   Je ziet "Jouw squad ({n}/5)", je eigen naam met "(jij)", je rol "Driver" of "Navigator" en de aanwezigheid "Recent actief" of "Geen recente activiteit".
+   Je ziet "Jouw squad ({n}/12)", je eigen naam met "(jij)", je rol "Driver" of "Navigator" en de aanwezigheid "Recent actief" of "Geen recente activiteit".
 6. Deel de code alleen met je squad.
    In het blok "Kamercode" staat de code met de knop "Kopieer kamercode".
 7. Wacht met de praktijk tot vier deelnemers zijn aangesloten.
@@ -30,7 +30,7 @@ Stap voor stap door AetherLink Academy als squadlid. Alle labels komen letterlij
 
 ## Rollen: driver en navigators
 
-1. Lees je rol in "Jouw squad ({n}/5)".
+1. Lees je rol in "Jouw squad ({n}/12)".
    De applicatie toont precies één "Driver" en één of meer "Navigator"-rollen.
 2. Werk samen in het document.
    Alle squadleden kunnen samenwerken in dit document.
@@ -174,3 +174,9 @@ server/app.mjs
 server/mcp-tools.mjs
 server/store.mjs
 README.md
+
+## Opnieuw aanmelden (soft rejoin)
+
+1. Open opnieuw het startscherm.
+2. Vul dezelfde weergavenaam en dezelfde kamercode in.
+3. De applicatie herstelt je bestaande seat, rol en voortgang — zonder e-mail of OTP.

@@ -320,7 +320,7 @@ async function main() {
         'participants-join', 'round-start', 'phase-change', 'driver-rotate', 'proof-shared-document',
         'suggestion-create-1', 'suggestion-reject', 'suggestion-create-2', 'suggestion-accept',
         'knowledge-search', 'quiz-answer', 'quiz-privacy', 'evidence-submit', 'evidence-review',
-        'handoff-record', 'persistence-reload', 'duplicate-name-rejected', 'persistence-fresh-context'
+        'handoff-record', 'persistence-reload', 'soft-rejoin', 'persistence-fresh-context'
       ]) recordSkipped(name, 'facilitator squad was not created');
     } else {
       const joinCheck = await runStep(
@@ -811,7 +811,7 @@ async function main() {
 
       if (!p1Page || p1Page.isClosed() || !squadCode) {
         recordSkipped('persistence-reload', 'P1 or room code unavailable');
-        recordSkipped('duplicate-name-rejected', 'P1 or room code unavailable');
+        recordSkipped('soft-rejoin', 'P1 or room code unavailable');
         recordSkipped('persistence-fresh-context', 'P1 or room code unavailable');
       } else {
         const phaseForPersistence = await facilitatorPage
@@ -845,24 +845,18 @@ async function main() {
         duplicatePage.setDefaultNavigationTimeout(timeout);
 
         await runStep(
-          'duplicate-name-rejected',
+          'soft-rejoin',
           duplicatePage,
           null,
           async () => {
             await duplicatePage.goto(academyUrl, { waitUntil: 'domcontentloaded' });
             await duplicatePage.getByLabel('Je naam', { exact: true }).fill('Round A');
             await duplicatePage.getByLabel('Kamercode', { exact: true }).fill(squadCode);
-            try {
-              await waitForJoinResponse(duplicatePage);
-            } catch (error) {
-              const message = safeMessage(error.message);
-              const expected = 'Deze naam is al in gebruik. Gebruik je bestaande sessie of een onderscheidende naam.';
-              if (message !== expected) {
-                throw new Error(`Expected duplicate-name rejection, received: ${message}`);
-              }
-              return { detail: message };
-            }
-            throw new Error('Duplicate name unexpectedly joined.');
+            await waitForJoinResponse(duplicatePage);
+            await waitForRoom(duplicatePage, 'Squad Orion');
+            const roster = duplicatePage.locator('.member').filter({ hasText: 'Round A' });
+            await expect(roster).toHaveCount(1, { timeout });
+            return { detail: 'soft rejoin restored existing seat for Round A' };
           }
         );
         await duplicateContext.close();
@@ -901,7 +895,7 @@ async function main() {
       'facilitator-create-squad', 'participants-join', 'round-start', 'phase-change', 'driver-rotate',
       'proof-shared-document', 'suggestion-create-1', 'suggestion-reject', 'suggestion-create-2',
       'suggestion-accept', 'knowledge-search', 'quiz-answer', 'quiz-privacy', 'evidence-submit',
-      'evidence-review', 'handoff-record', 'persistence-reload', 'duplicate-name-rejected',
+      'evidence-review', 'handoff-record', 'persistence-reload', 'soft-rejoin',
       'persistence-fresh-context'
     ]) {
       if (!recorded.has(name)) recordSkipped(name, `aborted after unexpected harness error: ${detail}`);

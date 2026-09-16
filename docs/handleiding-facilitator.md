@@ -27,13 +27,13 @@ Als "Inloggen met Google" op het aanmeldscherm staat, meld je aan met je Google 
 4. Klik op "Maak squad".
    Je komt in "Squad-room" terecht.
 5. Controleer de lege roster.
-   Je ziet "Jouw squad (0/5)" en "Wacht op je squad. Deel de kamercode om te beginnen.".
+   Je ziet "Jouw squad (0/12)" en "Wacht op je squad. Deel de kamercode om te beginnen.".
 6. Deel de code met je squad.
    In het blok "Kamercode" staat de code met de knop "Kopieer kamercode".
    Gebruik daarnaast "Kopieer uitnodigingslink" om een link te delen die de code alvast invult.
 7. Bewaak de groepsgrootte.
    Een squad heeft vier of vijf mensen.
-   Bij vijf leden verschijnt "Squad is vol (maximaal 5).".
+   Bij twaalf leden verschijnt "Squad is vol (maximaal 12).". Soft default blijft ~4–5; de praktijk start vanaf 4.
 8. Controleer de rolverdeling.
    De applicatie heeft op elk moment precies één "Driver".
 
@@ -64,7 +64,7 @@ Als "Inloggen met Google" op het aanmeldscherm staat, meld je aan met je Google 
    De opties zijn "Les", "Solo", "Squad" en "Review".
 7. Wacht met starten of doorgaan tot minimaal vier deelnemers zijn aangesloten.
    Anders toont de applicatie "Wacht op minimaal 4 deelnemers.".
-8. Roteer de Driver met "Volgende ronde".
+8. Roteer de Driver met "Volgende ronde", of schud Driver/Navigator met "Rollen schudden" / "Shuffle roles".
    Alleen deze actie roteert de driver.
 9. Controleer de timer bij afloop.
    De timer roteert de driver nooit automatisch.
@@ -126,9 +126,9 @@ Als "Inloggen met Google" op het aanmeldscherm staat, meld je aan met je Google 
 ## Problemen oplossen
 
 1. Controleer de naam als een deelnemer niet kan aanmelden.
-   Bij een dubbele naam staat er "Deze naam is al in gebruik. Gebruik je bestaande sessie of een onderscheidende naam.".
+   Bij dezelfde naam + kamercode herstelt soft rejoin de bestaande seat (geen blanco seat, geen foutmelding over dubbele naam).
 2. Controleer de groepsgrootte.
-   Bij vijf leden staat er "Squad is vol (maximaal 5).".
+   Bij twaalf leden staat er "Squad is vol (maximaal 12).".
 3. Controleer de code.
    Bij een ongeldige code staat er "Kamercode niet gevonden.".
 4. Controleer de Proof-status.

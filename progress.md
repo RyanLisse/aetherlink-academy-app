@@ -1,6 +1,6 @@
 # Progress — AetherLink Academy
 
-Last updated: 2026-09-16 (Europe/Amsterdam) — AET-11 domain guide
+Last updated: 2026-09-16 (Europe/Amsterdam) — AET-12 thin slice + AET-18 Vercel takedown guide
 
 ## Live
 
@@ -22,6 +22,8 @@ Last updated: 2026-09-16 (Europe/Amsterdam) — AET-11 domain guide
 | AET-8 | Epic C UI/UX polish | Backlog |
 | AET-9 | Epic E verification / docs / Notion sync | Backlog |
 | AET-10 | i18n English default + EN/NL toggle | In Progress |
+| AET-12 | Thin slice: flexible squad + shuffle + soft rejoin | In Progress |
+| AET-18 | Plan + takedown Vercel Academy (guide only) | In Progress |
 
 ## Blocked / parked
 
@@ -38,4 +40,6 @@ Last updated: 2026-09-16 (Europe/Amsterdam) — AET-11 domain guide
 ## Next / related
 
 - **AET-11** domain guide in-repo (`docs/domain-godaddy.md`) — **guide only**; live GoDaddy A record + TLS cutover is a follow-up (Ryan does registrar; ops/Herdr does VPS proxy). Do **not** mutate DNS from this PR.
+- **AET-18** Vercel Academy takedown guide (`docs/vercel-academy-takedown.md`) — **guide only**; do **not** delete the Vercel project until Ryan GO. Leave apex/www alone.
+- **AET-12** thin slice: lift hard cap 5→soft max 12, shuffle Driver/Navigator, soft rejoin by name+code. Phase advance already works (Plan→Maintain) — no code change.
 - Related: AET-6 OAuth redirects once `https://academy.aetherlink.ai` is live; Openship edge remains blocked until custom domain attached.
