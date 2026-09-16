@@ -7,6 +7,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
   group: deploy-hetzner-academy
   cancel-in-progress: false
@@ -18,12 +21,12 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Deploy via SSH rebuild script
-        uses: appleboy/ssh-action@v1.2.0
+        # Pin appleboy/ssh-action@v1.2.0 (zizmor: unpinned-uses)
+        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0
         with:
           host: ${{ secrets.ACADEMY_HETZNER_HOST }}
           username: ${{ secrets.ACADEMY_HETZNER_USER }}
           key: ${{ secrets.ACADEMY_HETZNER_SSH_KEY }}
-          # Full tip SHA from the push / dispatch that triggered this run
           script_stop: true
           command_timeout: 18m
           script: |
