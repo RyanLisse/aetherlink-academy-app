@@ -1,14 +1,15 @@
 import React,{useEffect,useState,useRef} from 'react';
 import {createRoot} from 'react-dom/client';
-import {Users,BookOpen,Compass,Target,Sparkles,ClipboardCheck,Sun,Moon,ArrowRight,Clock,Play,Pause,RotateCw,HelpCircle,Check,Link,LogOut,Copy,ChevronRight,FileText,ExternalLink} from 'lucide-react';
+import {Users,BookOpen,Compass,Target,Sparkles,ClipboardCheck,Sun,Moon,ArrowRight,Clock,Play,Pause,RotateCw,HelpCircle,Check,Link,LogOut,Copy,ChevronRight,FileText,ExternalLink,Presentation,X} from 'lucide-react';
 import {api,authApi,getToken,saveSession} from './api';
 import {Knowledge,Coach,Lesson,Solo,Review,Route,Debrief} from './panels';
+import {classroomEmbedUrl} from './classroom';
 import './style.css';
 const phases=['Plan','Design','Build','Test','Deploy','Maintain'];
 const nav=[['squad','Squad-room',Users],['route','Mijn route',Compass],['lesson','Les & quick check',BookOpen],['solo','Solo-missie',Target],['coach','Mijn leercoach',Sparkles],['review','Review & overdracht',ClipboardCheck]];
 const loginErrorCopy={domain:'Dit Google-account hoort niet bij een toegestaan werkdomein. Gebruik je AetherLink- of schoolaccount, of vraag de beheerder.',disabled:'Google-login is nu niet beschikbaar. Gebruik de startsleutel of vraag de beheerder.',token:'Google kon je account niet bevestigen. Probeer opnieuw in te loggen.',verify:'Google kon je account niet bevestigen. Probeer opnieuw in te loggen.',state:'Je Google-login is onderbroken. Start opnieuw met de Google-knop.',expired:'Je Google-login is verlopen. Start opnieuw met de Google-knop.',mismatch:'Je Google-login klopte niet meer. Start opnieuw met de Google-knop.','no-cookie':'Je Google-login is onderbroken (geen sessiecookie). Start opnieuw.','no-server-state':'Je Google-login is verlopen op de server. Start opnieuw.','bad-signature':'Je Google-login was ongeldig. Start opnieuw.'};
 const initialLoginError=()=>{const code=new URLSearchParams(location.search).get('login_error');if(!code)return '';return loginErrorCopy[code]||'Inloggen mislukt. Probeer het opnieuw of kies een andere manier.';};
-function App(){const [theme,setTheme]=useState(()=>localStorage.getItem('academy-theme')||'dark');const [session,setSession]=useState(!!getToken());const [room,setRoom]=useState(null);const [view,setView]=useState('squad');const [error,setError]=useState(initialLoginError);const [connected,setConnected]=useState(false);const [busy,setBusy]=useState(false);const [copied,setCopied]=useState(null);const copiedTimer=useRef(null);
+function App(){const [theme,setTheme]=useState(()=>localStorage.getItem('academy-theme')||'dark');const [session,setSession]=useState(!!getToken());const [room,setRoom]=useState(null);const [view,setView]=useState('squad');const [error,setError]=useState(initialLoginError);const [connected,setConnected]=useState(false);const [busy,setBusy]=useState(false);const [copied,setCopied]=useState(null);const [classroomOpen,setClassroomOpen]=useState(false);const copiedTimer=useRef(null);
  useEffect(()=>()=>clearTimeout(copiedTimer.current),[]);
  useEffect(()=>{document.documentElement.dataset.theme=theme;localStorage.setItem('academy-theme',theme);},[theme]);
  useEffect(()=>{if(!session)return;let active=true;const poll=async()=>{try{const r=await api('state');if(active){setRoom(r);setConnected(true);}}catch(e){if(active){setConnected(false);setError(e.message);}}};api('resume',{}).then(poll).catch(e=>setError(e.message));const t=setInterval(poll,2000);return()=>{active=false;clearInterval(t);};},[session]);
@@ -24,12 +25,44 @@ function App(){const [theme,setTheme]=useState(()=>localStorage.getItem('academy
  <main><div className="room-heading"><div><p className="muted">Supportdag {room.day} · {room.day<=2?'Begeleid':room.day===3?'Samen met coaching':room.day===4?'Met hints':'Zelfstandig'}</p><h1>{room.name}</h1></div><div className="round"><span>Ronde {room.round} · {room.running?'Praktijk':room.remaining===0?'Tijd is om':'Gepauzeerd'}</span><strong><Clock size={22}/><Timer room={room}/></strong></div></div>
  <div className="sdlc" aria-label="Software development lifecycle">{phases.map((p,i)=><React.Fragment key={p}><div className={p===room.phase?'active':''}><span>{p}</span></div>{i<5&&<span className="phase-line"/>}</React.Fragment>)}</div>
  {error&&<div className="error" role="alert">{error}<button onClick={()=>setError('')} aria-label="Melding sluiten">×</button></div>}
- {facilitator&&<FacilitatorControls room={room} control={control} busy={busy} connected={connected}/>}
+ {facilitator&&<FacilitatorControls room={room} control={control} busy={busy} connected={connected} onOpenClassroom={()=>setClassroomOpen(true)}/>}{facilitator&&classroomOpen&&<ClassroomOverlay room={room} onClose={()=>setClassroomOpen(false)}/>}
  <div className="workspace"><section className="primary">{view==='squad'&&<Document room={room} theme={theme}/ >}{view==='route'&&<Route room={room} onNavigate={setView}/ >}{view==='lesson'&&<Lesson room={room} action={action} busy={busy}/ >}{view==='solo'&&<Solo room={room} action={action} busy={busy} onNavigate={setView}/ >}{view==='coach'&&<Coach room={room} action={action}/ >}{view==='review'&&<Review room={room} action={action} busy={busy}/ >}{view==='debrief'&&facilitator&&<Debrief room={room}/>}</section>
  <aside className="right-rail"><section className="panel roster"><div className="panel-heading"><h2>Jouw squad <span>({room.members.length}/5)</span></h2><Users size={17}/></div>{room.members.length===0&&<p className="muted">Wacht op je squad. Deel de kamercode om te beginnen.</p>}{room.members.map(m=><div className="member" key={m.id}><span className="avatar">{m.name.slice(0,2).toUpperCase()}</span><div><strong>{m.name}{m.id===room.me.id?' (jij)':''}</strong><small className={m.role==='Driver'?'cyan':''}>{m.role}</small></div><span className={'presence '+(m.online?'present':'')} title={m.online?'Recent actief':'Geen recente activiteit'}/>{m.help&&<HelpCircle size={17} className="cyan" aria-label="Hulp gevraagd"/>}</div>)}<div className="room-code"><small>Kamercode</small><div className="room-code-actions"><button className="room-code-display" type="button" onClick={()=>action(async()=>{await navigator.clipboard.writeText(room.code);showCopied('code');})} aria-label={`Kamercode ${room.code}, kopieer`} title="Kopieer kamercode">{room.code}{copied==='code'?<Check size={14}/>:<Copy size={14}/>}</button><button className="room-code-link" type="button" onClick={()=>action(async()=>{await navigator.clipboard.writeText(`${location.origin}/?code=${room.code}`);showCopied('link');})} title="Kopieer uitnodigingslink">{copied==='link'?'Link gekopieerd':'Kopieer uitnodigingslink'}</button>{room.me.role==='Facilitator'&&<button className="room-code-link" type="button" onClick={()=>window.open(`${location.origin}/?code=${room.code}`,'_blank','noopener')} title="Opent de aanmeldpagina in een nieuw tabblad zodat je als deelnemer kunt meedoen"><ExternalLink size={14}/>Test als deelnemer</button>}</div><span className="sr-only" role="status">{copied==='code'?'Kamercode gekopieerd':copied==='link'?'Uitnodigingslink gekopieerd':''}</span></div>{room.members.length<4&&<small className="muted">De praktijk start vanaf 4 deelnemers.</small>}</section>
  <section className="panel contribution"><FileText size={20}/><h2>Jouw bijdrage</h2><p>{facilitator?'Bewaak het tempo en bespreek het bewijs. Jij start de timer en roteert de driver.':room.me.role==='Driver'?'Verwerk het gezamenlijke besluit in de intent. Spreek hardop uit wat je verandert.':'Onderzoek één aanname. Stel een gerichte vraag of voeg onderbouwd commentaar toe.'}</p><small className="muted">Werkvorm: {({lesson:'Les & quick check',solo:'Individuele praktijk',squad:'Squad-synthese',review:'Review & overdracht'})[room.mode]}</small></section>
  <button className="gradient coach-cta" onClick={()=>setView('coach')}><Sparkles size={18}/>Vraag je leercoach<ArrowRight size={17}/></button>{!facilitator&&<button className="help-button" onClick={()=>action(()=>api('help',{}))}><HelpCircle size={16}/>{room.me.help?'Hulp gevraagd · intrekken':'Vraag de facilitator om hulp'}</button>}
  </aside></div><footer>Een gedeelde intent. Kleine stappen. Bewijs dat je kunt uitleggen.</footer></main></div>;
+}
+function ClassroomOverlay({room,onClose}){
+ const frameRef=useRef(null);
+ useEffect(()=>{
+  const prevOverflow=document.body.style.overflow;
+  document.body.style.overflow='hidden';
+  try{if(!navigator.webdriver)document.documentElement.requestFullscreen?.();}catch{}
+  const exit=()=>{
+   try{if(document.fullscreenElement)document.exitFullscreen?.();}catch{}
+   onClose();
+  };
+  const onKey=e=>{if(e.key==='Escape'){e.preventDefault();exit();}};
+  window.addEventListener('keydown',onKey);
+  return()=>{
+   window.removeEventListener('keydown',onKey);
+   document.body.style.overflow=prevOverflow;
+   try{if(document.fullscreenElement)document.exitFullscreen?.();}catch{}
+  };
+ },[onClose]);
+ const exit=()=>{try{if(document.fullscreenElement)document.exitFullscreen?.();}catch{}onClose();};
+ return <div className="classroom-overlay" role="dialog" aria-modal="true" aria-label="Classroom" data-testid="classroom-overlay">
+  <div className="classroom-chrome">
+   <div className="classroom-chrome-left">
+    <Presentation size={18}/>
+    <strong>Classroom</strong>
+    <span className="classroom-day-hint">Day {room.day}</span>
+    <span className="muted classroom-room-hint">{room.name}</span>
+   </div>
+   <button type="button" className="classroom-exit" onClick={exit} aria-label="Exit Classroom"><X size={16}/>Exit</button>
+  </div>
+  <iframe ref={frameRef} className="classroom-frame" src={classroomEmbedUrl(room.day)} title="Classroom slides" allow="fullscreen" allowFullScreen/>
+ </div>;
 }
 function Brand(){return <div className="brand">AetherLink <span>Academy</span></div>;}
 function Join({ready,action,busy,error,joined}){
@@ -83,7 +116,7 @@ function Join({ready,action,busy,error,joined}){
   </section>
  </main>;
 }
-function FacilitatorControls({room,control,busy,connected}){
+function FacilitatorControls({room,control,busy,connected,onOpenClassroom}){
  const [time,setTime]=useState(String(Math.ceil(room.remaining/60)));
  const [duration,setDuration]=useState(String(Math.ceil((room.roundSeconds||1500)/60)));
  useEffect(()=>setTime(String(Math.ceil(room.remaining/60))),[room.remaining]);
@@ -105,6 +138,7 @@ function FacilitatorControls({room,control,busy,connected}){
    <label>Fase<select value={room.phase} onChange={e=>control('phase',e.target.value)}>{phases.map(p=><option key={p}>{p}</option>)}</select></label>
    <label>Dag<select value={room.day} onChange={e=>control('day',Number(e.target.value))}>{[1,2,3,4,5].map(n=><option key={n}>{n}</option>)}</select></label>
    <label>Werkvorm<select value={room.mode} onChange={e=>control('mode',e.target.value)}><option value="lesson">Les</option><option value="solo">Solo</option><option value="squad">Squad</option><option value="review">Review</option></select></label>
+   <button type="button" className="classroom-open" onClick={onOpenClassroom} aria-label="Open Classroom mode"><Presentation size={16}/>Classroom</button>
   </div>
  </div>;
 }
