@@ -53,3 +53,18 @@ WebSocket-verbindingen kunnen bij het einde van een functie opnieuw verbinden me
 - Twee echte Claude Code-accounts als expliciete gebruikersacceptatie; protocolclients vervangen dat bewijs niet.
 
 Nieuwe betaalde diensten zijn niet nodig voor de huidige implementatiestappen en zijn niet aangekocht.
+
+
+## Google facilitator SSO (ops)
+
+Vereist samen: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `ACADEMY_FACILITATOR_DOMAINS`, plus exacte `ACADEMY_PUBLIC_URL` origin (geen pad) die overeenkomt met de Google redirect-URI `${ACADEMY_PUBLIC_URL}/auth/google/callback`.
+
+Bij falende login logt de callback altijd:
+
+```text
+[academy] Google-login mislukt { code, reason, message }
+```
+
+Voor `login_error=verify` lees `reason` (bijv. `aud` = client-id mismatch). Voor `login_error=session` is de JWT ok maar faalde `facilitator_sessions` insert/cleanup — controleer Postgres (`expires_at` is epoch-milliseconds bigint, niet `timestamptz`; vergelijk met `$1` ms, niet `now()`). De facilitator-startsleutel (`ACADEMY_HOST_KEY`) blijft het noodpad tot SSO live bewezen is.
+
+Live Vercel Hobby kan `402 DEPLOYMENT_DISABLED` geven; code-fix en specs gaan wel door zonder production mutate.

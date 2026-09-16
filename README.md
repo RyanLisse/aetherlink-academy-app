@@ -21,7 +21,20 @@ Squads, sessies, Proof-documenten, marks, Yjs-geschiedenis en private snapshots 
 
 ## Facilitator-login met Google
 
-Stel `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` en `ACADEMY_FACILITATOR_DOMAINS` samen in om Google Workspace-login te activeren. De domeinlijst is kommagescheiden, bijvoorbeeld `example.nl,school.example`. Registreer `${ACADEMY_PUBLIC_URL}/auth/google/callback` als redirect-URI bij Google. Als een van de drie variabelen ontbreekt, start de loginconfiguratie niet; als alle drie ontbreken, blijft de bestaande interface ongewijzigd en werkt de facilitator-startsleutel als fallback.
+Stel `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` en `ACADEMY_FACILITATOR_DOMAINS` samen in om Google Workspace-login te activeren. De domeinlijst is kommagescheiden, bijvoorbeeld `example.nl,school.example`. Registreer `${ACADEMY_PUBLIC_URL}/auth/google/callback` als redirect-URI bij Google. Waarden worden getrimd; een trailing spatie in `GOOGLE_CLIENT_ID` mag de audience-check niet meer breken. Als een van de drie variabelen ontbreekt, start de loginconfiguratie niet; als alle drie ontbreken, blijft de bestaande interface ongewijzigd en werkt de facilitator-startsleutel als fallback.
+
+### Google-login foutcodes (`/?login_error=…`)
+
+| Code | Betekenis | Serverlog |
+|------|-----------|-----------|
+| `state` | Cookie/server-state mismatch of verlopen | `[academy] Google-login state check failed` met `reason` (`no-cookie`, `expired`, `mismatch`, `bad-signature`, `no-server-state`) |
+| `verify` | id_token-claims of JWKS-check mislukt | `[academy] Google-login mislukt` met `{code:'verify', reason}` — `reason` is o.a. `aud`, `iss`, `exp`, `iat`, `nonce`, `email_verified`, `signature`, `jwks`, `discovery`, `malformed` |
+| `token` | Token-endpoint / authorization code mislukt | zelfde warn-vorm met `reason` (`token`, `code`, `id_token`) |
+| `domain` | Hosted domain / e-maildomein niet op allowlist | `reason` `allowlist` of `hd` |
+| `session` | Google-identiteit ok, maar facilitator-sessie opslaan faalde (DB/store) | `code:'session'` — **niet** verwarren met JWT-verify; startsleutel blijft beschikbaar |
+| `disabled` | SSO-env incompleet | — |
+
+Productie-proof: als Vercel Hobby `402 DEPLOYMENT_DISABLED` teruggeeft, is live login niet te testen tot de deployment weer actief is; gebruik lokaal of een preview-deploy.
 
 ## Eigen Claude Code verbinden
 
