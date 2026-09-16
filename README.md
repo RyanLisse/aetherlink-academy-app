@@ -35,7 +35,7 @@ Na de HTTPS-deployment verbinden twee deelnemers ieder hun eigen Claude Code met
 
 ## Docker en Vercel
 
-`Dockerfile` en `Dockerfile.vercel` bouwen app plus Proof. De lokale Compose-configuratie vereist runtimecredentials en bewaart ontwikkelsleutels in een volume. Duurzame applicatietoestand staat extern. Docker is hier niet beschikbaar; de aparte CI/CD-taak verzorgt een echte build. De Vercel-startguard blijft actief tot de gedeelde runtime is geverifieerd. Zie [deploymentstatus](docs/DEPLOYMENT.md).
+`Dockerfile` en `Dockerfile.vercel` bouwen app plus Proof. De lokale Compose-configuratie vereist runtimecredentials en bewaart ontwikkelsleutels in een volume. Duurzame applicatietoestand staat extern. Docker is hier niet beschikbaar; de aparte CI/CD-taak verzorgt een echte build. De Vercel-startguard blijft actief tot de gedeelde runtime is geverifieerd. Zie [deploymentstatus](docs/DEPLOYMENT.md). Domain cutover runbook: [GoDaddy → academy.aetherlink.ai](docs/domain-godaddy.md).
 
 ## Controles en grenzen
 

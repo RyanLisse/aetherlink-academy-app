@@ -1,6 +1,6 @@
 # Progress — AetherLink Academy
 
-Last updated: 2026-09-16 (Europe/Amsterdam) — AET-10 i18n
+Last updated: 2026-09-16 (Europe/Amsterdam) — AET-11 domain guide
 
 ## Live
 
@@ -34,3 +34,8 @@ Last updated: 2026-09-16 (Europe/Amsterdam) — AET-10 i18n
 - Academy Linear SoT = https://linear.app/aetherlink (not `aetherlink-academy`)
 - On-box everything for PG/Redis on the Academy VPS
 - GitHub → rebuild sibling Docker (not Openship ship) until domain exists
+
+## Next / related
+
+- **AET-11** domain guide in-repo (`docs/domain-godaddy.md`) — **guide only**; live GoDaddy A record + TLS cutover is a follow-up (Ryan does registrar; ops/Herdr does VPS proxy). Do **not** mutate DNS from this PR.
+- Related: AET-6 OAuth redirects once `https://academy.aetherlink.ai` is live; Openship edge remains blocked until custom domain attached.
