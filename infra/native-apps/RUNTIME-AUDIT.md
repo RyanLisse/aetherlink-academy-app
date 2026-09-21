@@ -1,3 +1,10 @@
+## Live follow-up — 2026-09-21
+
+All five projects are now registered. Chat is deployed with HTTPS and tested
+authentication/session persistence, but has no AI provider connection. The other
+four remain registered without deployment. Earlier inventory below is the
+pre-registration audit, not the final project status.
+
 # Upstream app rollout requirements
 
 Source: BuilderIO/agent-native at `adec853eb337cbe0ead48464305d6f30cc07806e`.

@@ -96,3 +96,13 @@ limited to 1 CPU / 512 MB. No server purchase or resize is authorized.
 Five registered projects are not proof of capacity for five simultaneous apps.
 Keep builds sequential, keep Clips background work disabled, and measure actual
 runtime memory and disk after each accepted deployment before proceeding.
+
+Chat retry completed successfully. Runtime image `71da7da7378e` is healthy,
+limited to 1 CPU / 512 MiB and observed at 126–137 MiB idle. Auth signup and
+sign-in passed; the browser session survived an OpenShip restart (created
+19:19:56Z, restarted 19:22:29Z). No AI provider is connected, so this is not
+a chat-generation load test. Migration passed after raising only Chat role
+connection limit from 10 to 20; review pool budgets before activating more apps.
+After this deployment: 3955 MiB available RAM, 15 GB free disk (81% used).
+Other four apps stay registered without running containers pending staged
+acceptance. No purchase, resize, legacy removal, or production cutover occurred.

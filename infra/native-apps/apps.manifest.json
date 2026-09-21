@@ -38,7 +38,7 @@
       "upstreamPath": "templates/chat",
       "linearIssue": "AET-48",
       "rolloutOrder": 1,
-      "status": "registered-not-deployed",
+      "status": "deployed-provider-not-connected",
       "proposedProject": "academy-chat-poc",
       "proposedOrigin": "https://chat-poc.91-99-78-17.sslip.io",
       "database": "academy_chat_poc",
@@ -50,7 +50,8 @@
         "exact-artifact-identity",
         "resource-observation"
       ],
-      "openShipProjectId": "proj_BbKf0vUAigrCAUFC"
+      "openShipProjectId": "proj_BbKf0vUAigrCAUFC",
+      "deploymentId": "dep_ZYFxkzqIYNXASso6"
     },
     {
       "app": "content",
