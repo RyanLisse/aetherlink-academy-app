@@ -38,7 +38,7 @@
       "upstreamPath": "templates/chat",
       "linearIssue": "AET-48",
       "rolloutOrder": 1,
-      "status": "not-deployed",
+      "status": "registered-not-deployed",
       "proposedProject": "academy-chat-poc",
       "proposedOrigin": "https://chat-poc.91-99-78-17.sslip.io",
       "database": "academy_chat_poc",
@@ -49,14 +49,15 @@
         "restart-persistence",
         "exact-artifact-identity",
         "resource-observation"
-      ]
+      ],
+      "openShipProjectId": "proj_BbKf0vUAigrCAUFC"
     },
     {
       "app": "content",
       "upstreamPath": "templates/content",
       "linearIssue": "AET-50",
       "rolloutOrder": 2,
-      "status": "not-deployed",
+      "status": "registered-not-deployed",
       "proposedProject": "academy-content-poc",
       "proposedOrigin": "https://content-poc.91-99-78-17.sslip.io",
       "database": "academy_content_poc",
@@ -67,14 +68,15 @@
         "restart-persistence",
         "exact-artifact-identity",
         "resource-observation"
-      ]
+      ],
+      "openShipProjectId": "proj_XwYDrgCmM4umsjpR"
     },
     {
       "app": "assets",
       "upstreamPath": "templates/assets",
       "linearIssue": "AET-46",
       "rolloutOrder": 3,
-      "status": "not-deployed",
+      "status": "registered-not-deployed",
       "proposedProject": "academy-assets-poc",
       "proposedOrigin": "https://assets-poc.91-99-78-17.sslip.io",
       "database": "academy_assets_poc",
@@ -87,14 +89,15 @@
         "restart-persistence",
         "exact-artifact-identity",
         "resource-observation"
-      ]
+      ],
+      "openShipProjectId": "proj_7nbNH4EHDwJ2cdnQ"
     },
     {
       "app": "calendar",
       "upstreamPath": "templates/calendar",
       "linearIssue": "AET-47",
       "rolloutOrder": 4,
-      "status": "not-deployed",
+      "status": "registered-not-deployed",
       "proposedProject": "academy-calendar-poc",
       "proposedOrigin": "https://calendar-poc.91-99-78-17.sslip.io",
       "database": "academy_calendar_poc",
@@ -107,14 +110,15 @@
         "restart-persistence",
         "exact-artifact-identity",
         "resource-observation"
-      ]
+      ],
+      "openShipProjectId": "proj_tsETO63FhDWSX3BS"
     },
     {
       "app": "clips",
       "upstreamPath": "templates/clips",
       "linearIssue": "AET-49",
       "rolloutOrder": 5,
-      "status": "not-deployed",
+      "status": "registered-not-deployed",
       "proposedProject": "academy-clips-poc",
       "proposedOrigin": "https://clips-poc.91-99-78-17.sslip.io",
       "database": "academy_clips_poc",
@@ -129,7 +133,8 @@
         "restart-persistence",
         "exact-artifact-identity",
         "resource-observation"
-      ]
+      ],
+      "openShipProjectId": "proj_kfcnKkRuKEi7puw9"
     }
   ]
 }

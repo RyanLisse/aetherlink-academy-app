@@ -58,3 +58,27 @@ any existing candidate before reuse. No server was created, resized or deleted.
 Exact pricing is pending authenticated lookup. Hetzner changed pricing for new
 orders and rescales on 15 June 2026; existing unchanged servers are unaffected:
 https://docs.hetzner.cloud/whats-new
+
+## Authenticated follow-up (2026-09-21)
+
+1Password access restored using the existing Aetherlink-hetzner-api item.
+hcloud lists one server in this project: aetherlink-academy, CX33, nbg1,
+4 vCPU / 8 GB / 80 GB. No second server exists in this project.
+
+| Candidate | CPU / RAM / disk | nbg1 monthly net | Available in nbg1 |
+| --- | --- | --- | --- |
+| CX43 | 8 shared / 16 GB / 160 GB | EUR 15.99 | no (also unavailable fsn1/hel1) |
+| CPX32 | 4 shared / 8 GB / 160 GB | EUR 35.49 | yes |
+| CPX42 | 8 shared / 16 GB / 320 GB | EUR 69.49 | yes |
+| CCX23 | 4 dedicated / 16 GB / 160 GB | EUR 85.99 | yes |
+
+API price/availability snapshot, not a reservation. Prices exclude tax and any
+IP, backup or storage add-ons. Project-wide quota was not established by this
+inventory. Ryan chose not to order: reduce costs on the existing host first.
+
+Pruned unused Docker build cache older than 24 hours with 10 GB cache reserve.
+Recovered 4.932 GB; root filesystem now 54 GB used / 19 GB free (75%). No
+containers, images or volumes deleted. Five OpenShip projects registered with
+production limits 1 vCPU / 512 MB (Clips 768 MB); these are initial caps requiring
+runtime acceptance, not proof that media rendering fits. Build caps 2 vCPU / 2 GB;
+prefer external builds. OpenShip credentials restored for this session.
