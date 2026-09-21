@@ -1,0 +1,13 @@
+diff --git a/server/plugins/auth.ts b/server/plugins/auth.ts
+index 0000000..0000000 100644
+--- a/server/plugins/auth.ts
++++ b/server/plugins/auth.ts
+@@ -5,0 +6,8 @@ export default createAuthPlugin({
++  betterAuth: {
++    plugins: [{
++      id: "academy-disable-signup-auto-session",
++      init() {
++        return { options: { emailAndPassword: { enabled: true, autoSignIn: false } } };
++      },
++    }],
++  },

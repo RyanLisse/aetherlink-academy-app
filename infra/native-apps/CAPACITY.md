@@ -82,3 +82,17 @@ containers, images or volumes deleted. Five OpenShip projects registered with
 production limits 1 vCPU / 512 MB (Clips 768 MB); these are initial caps requiring
 runtime acceptance, not proof that media rendering fits. Build caps 2 vCPU / 2 GB;
 prefer external builds. OpenShip credentials restored for this session.
+
+
+### Bounded Chat build observation — 2026-09-21
+
+The classic Docker builder enforces the configured cgroup limit. Chat deployment
+`dep_PXk9WSET0mHPh7Kx` exhausted its 2 GB build limit during the final Nitro bundle
+(kernel OOM evidence); the runtime was never started. Before the single retry,
+4334 MiB RAM was available and disk had 16 GB free. Retry
+`dep_ZYFxkzqIYNXASso6` uses 2 CPU / 3072 MB build limits, with the runtime still
+limited to 1 CPU / 512 MB. No server purchase or resize is authorized.
+
+Five registered projects are not proof of capacity for five simultaneous apps.
+Keep builds sequential, keep Clips background work disabled, and measure actual
+runtime memory and disk after each accepted deployment before proceeding.

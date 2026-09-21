@@ -1,0 +1,9 @@
+{
+  "app": "chat",
+  "deploymentId": "dep_ZYFxkzqIYNXASso6",
+  "sourceRevision": "poc-chat-8714db488536042a",
+  "archiveSha256": "8c38dce8682ed9fb14c28ddddd5770c1d2bcc8c51461d00d624587002ff4f090",
+  "archiveBytes": 484468,
+  "coreVersion": "0.182.1",
+  "status": "building-runtime-not-accepted"
+}
