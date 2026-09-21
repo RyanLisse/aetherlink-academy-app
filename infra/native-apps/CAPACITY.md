@@ -1,3 +1,11 @@
+# Current rollout decision — 2026-09-21
+
+Keep Academy, Chat, Assets and Slides on the current server. Calendar, Clips and
+Content are deferred to AET-55 for a later larger-server migration. No server
+purchase or resize is authorized. Chat and Slides are deployed; Assets remains
+registered pending storage and runtime acceptance. The three deferred projects
+have no running app containers and need no live workload migration yet.
+
 # Native app suite capacity baseline
 
 Live read-only measurement: 2026-09-21 18:34 UTC.

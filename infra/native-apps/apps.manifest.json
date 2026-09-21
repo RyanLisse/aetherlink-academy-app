@@ -58,7 +58,7 @@
       "upstreamPath": "templates/content",
       "linearIssue": "AET-50",
       "rolloutOrder": 2,
-      "status": "registered-not-deployed",
+      "status": "deferred-registered-not-deployed",
       "proposedProject": "academy-content-poc",
       "proposedOrigin": "https://content-poc.91-99-78-17.sslip.io",
       "database": "academy_content_poc",
@@ -70,7 +70,8 @@
         "exact-artifact-identity",
         "resource-observation"
       ],
-      "openShipProjectId": "proj_XwYDrgCmM4umsjpR"
+      "openShipProjectId": "proj_XwYDrgCmM4umsjpR",
+      "blockedBy": "AET-55"
     },
     {
       "app": "assets",
@@ -98,7 +99,7 @@
       "upstreamPath": "templates/calendar",
       "linearIssue": "AET-47",
       "rolloutOrder": 4,
-      "status": "registered-not-deployed",
+      "status": "deferred-registered-not-deployed",
       "proposedProject": "academy-calendar-poc",
       "proposedOrigin": "https://calendar-poc.91-99-78-17.sslip.io",
       "database": "academy_calendar_poc",
@@ -112,14 +113,15 @@
         "exact-artifact-identity",
         "resource-observation"
       ],
-      "openShipProjectId": "proj_tsETO63FhDWSX3BS"
+      "openShipProjectId": "proj_tsETO63FhDWSX3BS",
+      "blockedBy": "AET-55"
     },
     {
       "app": "clips",
       "upstreamPath": "templates/clips",
       "linearIssue": "AET-49",
       "rolloutOrder": 5,
-      "status": "registered-not-deployed",
+      "status": "deferred-registered-not-deployed",
       "proposedProject": "academy-clips-poc",
       "proposedOrigin": "https://clips-poc.91-99-78-17.sslip.io",
       "database": "academy_clips_poc",
@@ -135,7 +137,19 @@
         "exact-artifact-identity",
         "resource-observation"
       ],
-      "openShipProjectId": "proj_kfcnKkRuKEi7puw9"
+      "openShipProjectId": "proj_kfcnKkRuKEi7puw9",
+      "blockedBy": "AET-55"
     }
-  ]
+  ],
+  "activeScope": [
+    "chat",
+    "assets",
+    "slides"
+  ],
+  "deferredScope": [
+    "calendar",
+    "clips",
+    "content"
+  ],
+  "deferredMigrationIssue": "AET-55"
 }
