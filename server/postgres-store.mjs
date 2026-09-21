@@ -24,7 +24,7 @@ export class PostgresStore {
  }
  async init() {
   const sql=await readFile(new URL('./schema/academy.sql',import.meta.url),'utf8');
-  const migration=`4:${createHash('sha256').update(sql).digest('hex')}`,previousMigrations=['3:321f2a26590284cfb07e23cad1940e0d56c3589ac012f9c7cfaf03d7315be2a3','2:3fa9bb87a5cfb8efe24eddc2f7fa94ff0657c0d711f5f9e19e41c6f91b12f3d2','1:cfd75de0661902abf5fd6d4b2fe2984d7e9228cc111392e96686ed29d228b3e1'];
+  const migration=`5:${createHash('sha256').update(sql).digest('hex')}`,previousMigrations=['4:0b073193ff907df7232bf74f47211525b268a81df5c3dd9210879a07e5081a11','3:321f2a26590284cfb07e23cad1940e0d56c3589ac012f9c7cfaf03d7315be2a3','2:3fa9bb87a5cfb8efe24eddc2f7fa94ff0657c0d711f5f9e19e41c6f91b12f3d2','1:cfd75de0661902abf5fd6d4b2fe2984d7e9228cc111392e96686ed29d228b3e1'];
   await this.transaction(async client=>{
    await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))',[`academy-schema:${this.schema}`]);
    const existing=await client.query('SELECT 1 FROM pg_catalog.pg_namespace WHERE nspname=$1',[this.schema]);

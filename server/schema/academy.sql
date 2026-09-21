@@ -53,3 +53,15 @@ CREATE TABLE IF NOT EXISTS decks (
  updated_at text NOT NULL
 );
 CREATE INDEX IF NOT EXISTS decks_room ON decks(room_id, updated_at);
+CREATE TABLE IF NOT EXISTS room_files (
+ id uuid PRIMARY KEY,
+ room_id uuid NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
+ object_key text UNIQUE NOT NULL,
+ filename text NOT NULL,
+ content_type text NOT NULL,
+ size_bytes integer NOT NULL,
+ checksum text NOT NULL,
+ uploaded_by jsonb NOT NULL,
+ created_at text NOT NULL
+);
+CREATE INDEX IF NOT EXISTS room_files_room ON room_files(room_id, created_at);
