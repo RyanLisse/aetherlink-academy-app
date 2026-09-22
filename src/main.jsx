@@ -6,6 +6,7 @@ import {Knowledge,Coach,Lesson,Solo,Review,Route,Debrief} from './panels';
 import {Decks} from './slides';
 import {I18nProvider,LanguageToggle,useT,useI18n} from './i18n';
 import {classroomEmbedUrl,CLASSROOM_SANDBOX} from './classroom';
+import {ArcadeApp, isArcadePath} from './arcade/ArcadeApp.jsx';
 import './style.css';
 
 const phases=['Plan','Design','Build','Test','Deploy','Maintain'];
@@ -51,6 +52,7 @@ function App(){
   async function leaveSession(){setBusy(true);setError('');try{await api('logout',{});sessionStorage.removeItem('academy-token');sessionStorage.removeItem('academy-mcp-'+room.me.id);sessionStorage.removeItem(`academy-agent-setup:${room.id}:${room.me.id}`);location.reload();}catch(err){setError(err.message);}finally{setBusy(false);}}
   const themeButton=<button className="icon-button" aria-label={theme==='dark'?t('theme.light'):t('theme.dark')} onClick={()=>setTheme(theme==='dark'?'light':'dark')}>{theme==='dark'?<Sun size={19}/>:<Moon size={19}/>}</button>;
   const localeToggle=<LanguageToggle/>;
+  if(isArcadePath(location.pathname))return <ArcadeApp themeButton={themeButton}/>;
   if(!session||!room)return <><header className="welcome-header"><Brand/><div className="welcome-actions">{localeToggle}{themeButton}</div></header><Join ready={session} action={action} busy={busy} error={error} joined={()=>setSession(true)}/></>;
   const facilitator=room.me.role==='Facilitator';
   const control=(actionName,value)=>action(async()=>{const r=await api('control',{action:actionName,value});setRoom(r);});
@@ -199,6 +201,7 @@ function Join({ready,action,busy,error,joined}){
         <a className="gradient google-login" href="/auth/google/start"><strong>G</strong> {t('join.googleButton')}</a>
         <p className="join-or" role="separator"><span>{t('join.orKey')}</span></p>
       </div>}
+      <p className="muted" data-arcade-entry><a href="/arcade">Agent Arcade — je eerste agent</a> (LIS-59)</p>
       <form onSubmit={e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.currentTarget));action(async()=>{if(facilitatorOverview){setOverview(await api('facilitator/overview',data));return;}const result=await api(create?'create':'join',data);saveSession(result);if(!create)history.replaceState(null,'',location.pathname);joined();});}}>
         {!facilitatorOverview&&<label htmlFor="join-name">{create?t('join.nameSquad'):t('join.nameYou')}<input id="join-name" ref={!create?nameRef:null} name="name" required maxLength={50} placeholder={create?t('join.placeholderSquad'):t('join.placeholderName')} autoComplete="nickname"/></label>}
         {(facilitatorOverview||create)&&!facilitator&&<label htmlFor="join-hostkey">{t('join.hostKey')}<input id="join-hostkey" name="hostKey" value={hostKey} onChange={e=>setHostKey(e.target.value)} required={!googleSso||facilitatorOverview} type="password" autoComplete="off" placeholder={t('join.hostKeyPlaceholder')}/></label>}

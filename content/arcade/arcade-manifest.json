@@ -1,0 +1,80 @@
+{
+  "id": "agent-arcade",
+  "title": "Agent Arcade \u2014 je eerste agent",
+  "version": "0.1.0",
+  "localePrimary": "nl",
+  "captions": [
+    "mensentaal",
+    "tech"
+  ],
+  "linearEpic": "LIS-59",
+  "routes": {
+    "hub": "/arcade",
+    "weather": "/arcade/weather",
+    "council": "/arcade/council",
+    "sdkBridge": "/arcade/sdk-bridge"
+  },
+  "lessons": [
+    {
+      "id": "l1-weather",
+      "title": "L1 \u2014 Weather agent",
+      "track": "eve",
+      "order": 1,
+      "durationMin": 45,
+      "linear": "LIS-61",
+      "sourceUrl": "https://eve.dev/templates/weather-agent-fixture",
+      "modulePath": "l1-weather.md",
+      "route": "/arcade/weather",
+      "checkpoints": [
+        "agent-goal-tools",
+        "run-fixture-tui",
+        "edit-instructions",
+        "tool-get-weather",
+        "skill-vs-tool",
+        "mini-quest-clothing"
+      ]
+    },
+    {
+      "id": "l2-council",
+      "title": "L2 \u2014 LLM Council",
+      "track": "eve",
+      "order": 2,
+      "durationMin": 45,
+      "linear": "LIS-62",
+      "sourceUrl": "https://eve.dev/templates/eve-llm-council-template",
+      "modulePath": "l2-council.md",
+      "route": "/arcade/council",
+      "checkpoints": [
+        "why-multi-model",
+        "fanout-judge-schema",
+        "run-one-prompt",
+        "mini-quest-judge"
+      ]
+    },
+    {
+      "id": "sdk-bridge",
+      "title": "SDK Bridge \u2014 Eve \u2192 Claude Agent SDK",
+      "track": "sdk",
+      "order": 3,
+      "durationMin": 40,
+      "linear": "LIS-63",
+      "sourceUrl": "https://github.com/anthropics/claude-agent-sdk-typescript",
+      "modulePath": "sdk-bridge.md",
+      "route": "/arcade/sdk-bridge",
+      "startersStatus": "PENDING_HERDR_LIS-65",
+      "checkpoints": [
+        "mapping-table",
+        "audience-split",
+        "same-mini-quests",
+        "starters-gate"
+      ]
+    }
+  ],
+  "facilitatorNotes": "facilitator-notes.md",
+  "herdrWiring": null,
+  "outOfScope": [
+    "Do not replace Day 1\u20135 packs",
+    "No secrets in repo or UI",
+    "No invented metrics"
+  ]
+}
