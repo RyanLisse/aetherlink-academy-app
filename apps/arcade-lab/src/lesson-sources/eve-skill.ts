@@ -1,0 +1,2 @@
+/** Verbatim source block from aetherlab monolith (id=src-eve-skill). */
+export default "---\ndescription: Use the weather tool for temperature and weather questions.\n---\n\nIf no city is supplied, ask for a city first.\nCall get_weather before answering a weather question for a supplied city.\nIdentify the result as simulated demonstration data.\nDo not infer a future forecast from the fixed result.\n" as string;

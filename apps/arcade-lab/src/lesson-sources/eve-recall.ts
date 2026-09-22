@@ -1,0 +1,2 @@
+/** Verbatim source block from aetherlab monolith (id=src-eve-recall). */
+export default "import { defineTool } from \"eve/tools\";\nimport { z } from \"zod\";\nimport { glossary } from \"../lib/glossary\";\nexport default defineTool({\n  description: \"Read the team's recorded metric definitions.\",\n  inputSchema: z.object({}),\n  async execute() {\n    return glossary.get();\n  },\n});\n" as string;
