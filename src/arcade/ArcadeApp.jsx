@@ -17,6 +17,14 @@ const LESSON_MARKDOWN = {
 
 export {isArcadePath, matchArcadeRoute, parseLessonMarkdown};
 
+function startersArePending(status) {
+  return Boolean(status && String(status).toUpperCase().includes('PENDING'));
+}
+
+function startersAreAvailable(status) {
+  return Boolean(status && String(status).toLowerCase() === 'available');
+}
+
 export function ArcadeApp({themeButton}) {
   const [pathname, setPathname] = useState(() => window.location.pathname);
   useEffect(() => {
@@ -70,7 +78,7 @@ function ArcadeHub({navigate}) {
   const lessons = [...(manifestJson.lessons || [])].sort((a, b) => a.order - b.order);
   return (
     <section className="arcade-panel arcade-hub">
-      <p className="cyan">LIS-59 · Agent Arcade</p>
+      <p className="cyan">{manifestJson.linearEpic || 'AET-58'} · Agent Arcade</p>
       <h1>{manifestJson.title}</h1>
       <p className="lede">Scrimba-achtige guided lesson: coach + playground + dual captions. Thin slice — deep-link playground, geen hosted embed.</p>
       <div className="arcade-lesson-grid">
@@ -78,8 +86,11 @@ function ArcadeHub({navigate}) {
           <article key={lesson.id} className="arcade-card">
             <p className="cyan">{lesson.track === 'eve' ? 'Track A · Eve' : 'Track B · SDK'} · ~{lesson.durationMin} min · {lesson.linear}</p>
             <h2>{lesson.title}</h2>
-            {lesson.startersStatus && (
+            {startersArePending(lesson.startersStatus) && (
               <p className="arcade-pending-pill">Starters: PENDING ({lesson.startersStatus})</p>
+            )}
+            {startersAreAvailable(lesson.startersStatus) && (
+              <p className="arcade-ready-pill">Starters: available ({(lesson.starters || []).map((s) => s.id).join(', ') || 'ready'})</p>
             )}
             <ul className="arcade-checkpoint-list">
               {(lesson.checkpoints || []).slice(0, 4).map((id) => (
@@ -102,12 +113,38 @@ function ArcadeHub({navigate}) {
   );
 }
 
+function StartersReadyPanel({lesson}) {
+  const starters = lesson.starters || [];
+  return (
+    <div className="arcade-ready" role="status" data-starters-status="available">
+      <strong>SDK starters ready</strong>
+      <p>Herdr <strong>AET-63</strong> kits available. Clone, <code>pnpm i</code>, run tests without an API key, then set <code>ANTHROPIC_API_KEY</code> in env only for the live SDK path.</p>
+      <ul className="arcade-starter-list">
+        {starters.map((s) => (
+          <li key={s.id}>
+            <code>{s.id}</code>
+            {' — '}
+            <a href={s.repoUrl || s.cloneUrl} target="_blank" rel="noreferrer">
+              open repo <ExternalLink size={14} />
+            </a>
+            {s.quest ? <span className="muted"> · quest {s.quest}</span> : null}
+            {s.cloneUrl ? (
+              <pre className="arcade-clone">git clone {s.cloneUrl}</pre>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function LessonPlayer({lesson, markdown, navigate}) {
   const parsed = useMemo(() => parseLessonMarkdown(markdown), [markdown]);
   const [caption, setCaption] = useState('mensentaal');
   const [stepIndex, setStepIndex] = useState(0);
   const step = parsed.steps[stepIndex] || null;
-  const pending = Boolean(lesson.startersStatus && String(lesson.startersStatus).toUpperCase().includes('PENDING'));
+  const pending = startersArePending(lesson.startersStatus);
+  const available = startersAreAvailable(lesson.startersStatus);
   const coachText = step ? (caption === 'tech' ? step.coach.tech : step.coach.mensentaal) : '';
 
   return (
@@ -122,9 +159,10 @@ function LessonPlayer({lesson, markdown, navigate}) {
       {pending && (
         <div className="arcade-pending" role="status">
           <strong>PENDING — SDK starters</strong>
-          <p>Starters nog niet klaar ({lesson.startersStatus}). Geen nep-repos. Hands-on SDK labs wachten op Herdr <strong>LIS-65</strong>. Mapping + watch/skip blijven geldig.</p>
+          <p>Starters nog niet klaar ({lesson.startersStatus}). Geen nep-repos. Hands-on SDK labs wachten op Herdr <strong>AET-63</strong>. Mapping + watch/skip blijven geldig.</p>
         </div>
       )}
+      {available && <StartersReadyPanel lesson={lesson} />}
       <div className="arcade-caption-toggle" role="group" aria-label="Caption mode">
         <button type="button" className={caption === 'mensentaal' ? 'active' : ''} onClick={() => setCaption('mensentaal')}>Mensentaal</button>
         <button type="button" className={caption === 'tech' ? 'active' : ''} onClick={() => setCaption('tech')}>Tech</button>

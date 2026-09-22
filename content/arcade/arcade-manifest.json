@@ -1,13 +1,13 @@
 {
   "id": "agent-arcade",
   "title": "Agent Arcade \u2014 je eerste agent",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "localePrimary": "nl",
   "captions": [
     "mensentaal",
     "tech"
   ],
-  "linearEpic": "LIS-59",
+  "linearEpic": "AET-58",
   "routes": {
     "hub": "/arcade",
     "weather": "/arcade/weather",
@@ -21,9 +21,9 @@
       "track": "eve",
       "order": 1,
       "durationMin": 45,
-      "linear": "LIS-61",
+      "linear": "AET-60",
       "sourceUrl": "https://eve.dev/templates/weather-agent-fixture",
-      "modulePath": "l1-weather.md",
+      "modulePath": "modules/l1-weather.md",
       "route": "/arcade/weather",
       "checkpoints": [
         "agent-goal-tools",
@@ -40,9 +40,9 @@
       "track": "eve",
       "order": 2,
       "durationMin": 45,
-      "linear": "LIS-62",
+      "linear": "AET-61",
       "sourceUrl": "https://eve.dev/templates/eve-llm-council-template",
-      "modulePath": "l2-council.md",
+      "modulePath": "modules/l2-council.md",
       "route": "/arcade/council",
       "checkpoints": [
         "why-multi-model",
@@ -57,11 +57,27 @@
       "track": "sdk",
       "order": 3,
       "durationMin": 40,
-      "linear": "LIS-63",
+      "linear": "AET-62",
       "sourceUrl": "https://github.com/anthropics/claude-agent-sdk-typescript",
-      "modulePath": "sdk-bridge.md",
+      "modulePath": "modules/sdk-bridge.md",
       "route": "/arcade/sdk-bridge",
-      "startersStatus": "PENDING_HERDR_LIS-65",
+      "startersStatus": "available",
+      "starters": [
+        {
+          "id": "weather-agent-sdk",
+          "title": "Weather agent SDK",
+          "cloneUrl": "https://github.com/RyanLisse/weather-agent-sdk.git",
+          "repoUrl": "https://github.com/RyanLisse/weather-agent-sdk",
+          "quest": "mini-quest-clothing"
+        },
+        {
+          "id": "council-agent-sdk",
+          "title": "Council agent SDK",
+          "cloneUrl": "https://github.com/RyanLisse/council-agent-sdk.git",
+          "repoUrl": "https://github.com/RyanLisse/council-agent-sdk",
+          "quest": "mini-quest-judge"
+        }
+      ],
       "checkpoints": [
         "mapping-table",
         "audience-split",
@@ -71,7 +87,7 @@
     }
   ],
   "facilitatorNotes": "facilitator-notes.md",
-  "herdrWiring": null,
+  "herdrWiring": "HERDR-WIRING.md",
   "outOfScope": [
     "Do not replace Day 1\u20135 packs",
     "No secrets in repo or UI",
