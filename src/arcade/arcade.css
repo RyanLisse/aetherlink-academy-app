@@ -1,0 +1,32 @@
+.arcade-shell{max-width:1120px;margin:0 auto;padding:24px 20px 48px;display:grid;gap:20px}
+.arcade-topbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.arcade-brand{display:flex;align-items:center;gap:8px;font-size:14px}
+.arcade-home-link{color:inherit;opacity:.8;text-decoration:none}
+.arcade-home-link:hover{opacity:1;text-decoration:underline}
+.arcade-sep{opacity:.4}
+.arcade-top-actions{display:flex;gap:8px;align-items:center}
+.arcade-panel{background:color-mix(in srgb, var(--panel, #132338) 92%, transparent);border:1px solid color-mix(in srgb, #7eb6ff 18%, transparent);border-radius:18px;padding:22px 24px;display:grid;gap:14px}
+.arcade-hub .lede{max-width:62ch;opacity:.9}
+.arcade-lesson-grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.arcade-card{border:1px solid color-mix(in srgb, #7eb6ff 16%, transparent);border-radius:14px;padding:16px;display:grid;gap:10px;background:color-mix(in srgb, #0b1726 70%, transparent)}
+.arcade-checkpoint-list{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:13px;opacity:.85}
+.arcade-checkpoint-list li{display:flex;gap:6px;align-items:center}
+.arcade-pending-pill,.arcade-pending{border:1px solid #e3b341;background:color-mix(in srgb,#e3b341 12%, transparent);border-radius:12px;padding:10px 12px}
+.arcade-hub-links{display:flex;gap:16px;flex-wrap:wrap;align-items:center}
+.arcade-caption-toggle{display:inline-flex;border:1px solid color-mix(in srgb,#7eb6ff 25%,transparent);border-radius:999px;overflow:hidden}
+.arcade-caption-toggle button{border:0;background:transparent;color:inherit;padding:8px 14px;cursor:pointer}
+.arcade-caption-toggle button.active{background:color-mix(in srgb,#5aa2ff 35%, transparent)}
+.arcade-stepper{display:flex;flex-wrap:wrap;gap:6px}
+.arcade-stepper button{width:34px;height:34px;border-radius:999px;border:1px solid color-mix(in srgb,#7eb6ff 25%,transparent);background:transparent;color:inherit;cursor:pointer}
+.arcade-stepper button.active{background:#5aa2ff;color:#06111e;border-color:#5aa2ff}
+.arcade-split{display:grid;gap:14px;grid-template-columns:1.1fr .9fr}
+@media (max-width:860px){.arcade-split{grid-template-columns:1fr}}
+.arcade-coach,.arcade-playground{border:1px solid color-mix(in srgb,#7eb6ff 14%,transparent);border-radius:14px;padding:14px 16px;display:grid;gap:10px;align-content:start}
+.arcade-checkpoint{border-top:1px dashed color-mix(in srgb,#7eb6ff 25%,transparent);padding-top:10px;display:grid;gap:6px}
+.arcade-checkpoint code{font-size:13px}
+.arcade-expected{font-size:14px;opacity:.95}
+.arcade-playground-body{white-space:pre-wrap;font-size:13px;background:color-mix(in srgb,#000 25%, transparent);padding:12px;border-radius:10px;overflow:auto;max-height:280px}
+.arcade-step-actions{display:flex;gap:10px;justify-content:flex-end}
+.arcade-notes{white-space:pre-wrap;font-size:13px;line-height:1.55;max-height:70vh;overflow:auto;background:color-mix(in srgb,#000 20%,transparent);padding:14px;border-radius:12px}
+.arcade-footnote{font-size:12px;opacity:.7}
+.arcade-lesson-nav{display:flex;justify-content:space-between;align-items:center;gap:8px}
