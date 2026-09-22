@@ -10,12 +10,12 @@ import {readLoginState} from '../server/google-sso.mjs';
 async function invoke(app,route,{body={},query={},cookies={}}={}){
  const layer=app.router.stack.find(candidate=>candidate.route?.path===route);assert.ok(layer,`Missing route ${route}`);const response={statusCode:200,headers:{},cookies:[],body:null};
  const req={body,query,headers:{cookie:Object.entries(cookies).map(([name,value])=>`${name}=${value}`).join('; ')}};
- const res={cookie(name,value,options={}){const attributes=[`${name}=${encodeURIComponent(value)}`,options.maxAge!==undefined&&`Max-Age=${Math.floor(options.maxAge/1000)}`,options.path&&`Path=${options.path}`,options.httpOnly&&'HttpOnly',options.secure&&'Secure',options.sameSite&&`SameSite=${options.sameSite[0].toUpperCase()+options.sameSite.slice(1)}`].filter(Boolean).join('; ');response.cookies.push(attributes);return this;},clearCookie(name,options={}){response.cookies.push(`${name}=; Path=${options.path||'/'}; Max-Age=0`);return this;},redirect(status,location){response.statusCode=status;response.headers.location=location;return this;},status(status){response.statusCode=status;return this;},json(value){response.body=value;return this;},end(){return this;}};
+ const res={cookie(name,value,options={}){const attributes=[`${name}=${encodeURIComponent(value)}`,options.maxAge!==undefined&&`Max-Age=${Math.floor(options.maxAge/1000)}`,options.path&&`Path=${options.path}`,options.httpOnly&&'HttpOnly',options.secure&&'Secure',options.sameSite&&`SameSite=${options.sameSite[0].toUpperCase()+options.sameSite.slice(1)}`].filter(Boolean).join('; ');response.cookies.push(attributes);return this;},clearCookie(name,options={}){response.cookies.push(`${name}=; Path=${options.path||'/'}; Max-Age=0`);return this;},redirect(status,location){response.statusCode=status;response.headers.location=location;return this;},status(status){response.statusCode=status;return this;},json(value){response.body=value;return this;},type(contentType){response.headers['content-type']=contentType;return this;},send(value){response.body=value;return this;},end(){return this;}};
  await layer.route.stack[0].handle(req,res,error=>{response.statusCode=error.status||500;response.body={error:error.status?error.message:'Onverwachte serverfout. Probeer opnieuw; je invoer blijft staan.'};});return response;
 }
 const cookie=(response,name)=>response.cookies.map(value=>value.split(';')[0]).find(value=>value.startsWith(`${name}=`))?.slice(name.length+1);
 
-test('Google login stays inert when its environment is absent',async()=>{const instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-sso-disabled-')),hostKey:'break-glass-key',publicBaseUrl:'http://127.0.0.1:4317',googleClientId:'',googleClientSecret:'',facilitatorDomains:''});assert.deepEqual((await invoke(instance.app,'/game/config')).body,{googleSso:false});});
+test('Google login stays inert when its environment is absent',async()=>{const instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-sso-disabled-')),hostKey:'break-glass-key',publicBaseUrl:'http://127.0.0.1:4317',googleClientId:'',googleClientSecret:'',facilitatorDomains:'',chatConfig:null});assert.deepEqual((await invoke(instance.app,'/game/config')).body,{googleSso:false,chatAvailable:false});});
 test('Google login start is covered by the rate limiter',()=>{const instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-sso-rate-limit-')),hostKey:'break-glass-key',publicBaseUrl:'http://127.0.0.1:4317'});assert.ok(instance.app.router.stack.some(layer=>!layer.route&&layer.match?.('/auth/google/start')&&layer.handle.toString().includes('Te veel verzoeken. Wacht even.')));});
 test('an empty host key makes createApp throw',()=>{assert.throws(()=>createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-sso-empty-key-')),hostKey:'',publicBaseUrl:'http://127.0.0.1:4317'}),/ACADEMY_HOST_KEY of \.data\/host-key is leeg\./);});
 
@@ -23,8 +23,8 @@ test('Google facilitator login authorizes routes without weakening the host-key 
  const {publicKey,privateKey}=generateKeyPairSync('rsa',{modulusLength:2048}),jwk={...publicKey.export({format:'jwk'}),kid:'route-key',alg:'RS256',use:'sig'};let nonce;
  const encode=value=>Buffer.from(JSON.stringify(value)).toString('base64url'),issue=()=>{const header=encode({alg:'RS256',kid:jwk.kid}),now=Math.floor(Date.now()/1000),payload=encode({iss:'https://accounts.google.com',aud:'route-client',sub:'route-subject',email:'route@allowed.example',email_verified:true,name:'Route Facilitator',hd:'allowed.example',nonce,iat:now,exp:now+600}),signature=sign('RSA-SHA256',Buffer.from(`${header}.${payload}`),privateKey).toString('base64url');return `${header}.${payload}.${signature}`;};
  const fetchImpl=async url=>{if(url==='https://accounts.google.com/.well-known/openid-configuration')return Response.json({issuer:'https://accounts.google.com',authorization_endpoint:'https://accounts.google.com/o/oauth2/v2/auth',token_endpoint:'https://oauth2.googleapis.com/token',jwks_uri:'https://www.googleapis.com/oauth2/v3/certs'});if(url==='https://www.googleapis.com/oauth2/v3/certs')return Response.json({keys:[jwk]});if(url==='https://oauth2.googleapis.com/token')return Response.json({id_token:issue()});throw Error(`Unexpected URL ${url}`);};
- const signingSecret='route-signing-secret',loginSecret=createHmac('sha256',signingSecret).update('academy-login-state').digest(),instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-sso-routes-')),hostKey:'break-glass-key',signingSecret,publicBaseUrl:'https://academy.example.test',googleClientId:'route-client',googleClientSecret:'route-secret',facilitatorDomains:'allowed.example',fetchImpl});instance.proof.create=async()=>({slug:'route-proof',editor:'editor'});
- assert.deepEqual((await invoke(instance.app,'/game/config')).body,{googleSso:true});
+ const signingSecret='route-signing-secret',loginSecret=createHmac('sha256',signingSecret).update('academy-login-state').digest(),instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-sso-routes-')),hostKey:'break-glass-key',signingSecret,publicBaseUrl:'https://academy.example.test',googleClientId:'route-client',googleClientSecret:'route-secret',facilitatorDomains:'allowed.example',fetchImpl,chatConfig:null});instance.proof.create=async()=>({slug:'route-proof',editor:'editor'});
+ assert.deepEqual((await invoke(instance.app,'/game/config')).body,{googleSso:true,chatAvailable:false});
  const start=await invoke(instance.app,'/auth/google/start');assert.equal(start.statusCode,302);const google=new URL(start.headers.location);assert.equal(google.origin,'https://accounts.google.com');for(const key of ['client_id','redirect_uri','state','nonce','code_challenge','code_challenge_method'])assert.ok(google.searchParams.get(key));assert.equal(google.searchParams.get('code_challenge_method'),'S256');assert.equal(google.searchParams.get('hd'),'allowed.example');assert.match(start.cookies.join('\n'),/HttpOnly/);assert.match(start.cookies.join('\n'),/SameSite=Lax/);assert.match(start.cookies.join('\n'),/Secure/);const loginCookie=cookie(start,'academy-login'),loginState=readLoginState(decodeURIComponent(loginCookie),loginSecret);nonce=loginState.nonce;assert.equal(loginState.state,google.searchParams.get('state'));
  const serverOnly=await invoke(instance.app,'/auth/google/callback',{query:{code:'authorization-code',state:loginState.state},cookies:{}});assert.equal(serverOnly.statusCode,302);assert.equal(serverOnly.headers.location,'/?facilitator=1');assert.ok(cookie(serverOnly,'academy-facilitator'));
  const serverReplay=await invoke(instance.app,'/auth/google/callback',{query:{code:'authorization-code',state:loginState.state},cookies:{}});assert.equal(serverReplay.statusCode,302);assert.equal(serverReplay.headers.location,'/?login_error=state');
@@ -50,4 +50,41 @@ test('facilitator session store failure redirects to login_error=session not ver
   assert.equal(failed.statusCode,302);assert.equal(failed.headers.location,'/?login_error=session');
   assert.ok(warnings.some(entry=>entry[0]==='[academy] Google-login mislukt'&&entry[1]?.code==='session'));
  }finally{console.warn=warn;instance.store.facilitatorLogin=original;}
+});
+
+test('GET /game/chat/embed is participant-only, signs the injected fetch call, and redirects to the validated startUrl',async()=>{
+ const chatConfig={origin:'https://chat.example.test',secret:'x'.repeat(40)};
+ let seenRequest;
+ const fetchImpl=async(url,options)=>{seenRequest={url,options};return {ok:true,json:async()=>({startUrl:'https://chat.example.test/_agent-native/embed/start?ticket=ticket-abc'})};};
+ const instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-chat-embed-')),hostKey:'break-glass-key',publicBaseUrl:'http://127.0.0.1:4317',chatConfig,fetchImpl});
+ instance.proof.create=async()=>({slug:'chat-embed-proof',editor:'editor'});
+ const created=await instance.store.create('Chat squad',await instance.proof.create());
+ const joined=await instance.store.join(created.code,'Participant One');
+
+ const facilitatorAttempt=await invoke(instance.app,'/game/chat/embed',{cookies:{academy:created.token}});
+ assert.equal(facilitatorAttempt.statusCode,403);
+ assert.equal(facilitatorAttempt.headers['content-type'],'text/html');
+ assert.doesNotMatch(String(facilitatorAttempt.body),/x{40}|shared-secret|AGENT_CHAT_SHARED_SECRET/i);
+
+ const participantResult=await invoke(instance.app,'/game/chat/embed',{cookies:{academy:joined.token}});
+ assert.equal(participantResult.statusCode,302);
+ assert.equal(participantResult.headers.location,'https://chat.example.test/_agent-native/embed/start?ticket=ticket-abc');
+ assert.equal(seenRequest.url,'https://chat.example.test/_academy/embed/ticket');
+ assert.match(seenRequest.options.headers['x-academy-signature'],/^v1=[0-9a-f]{64}$/);
+ const sentBody=JSON.parse(seenRequest.options.body);
+ assert.equal(sentBody.claims.roomId,created.roomId);
+ assert.doesNotMatch(seenRequest.options.body,/Participant One|joined\.token|created\.token/);
+});
+
+test('GET /game/chat/embed renders a safe error page without leaking upstream details on failure',async()=>{
+ const chatConfig={origin:'https://chat.example.test',secret:'y'.repeat(40)};
+ const fetchImpl=async()=>({ok:false,json:async()=>({error:'internal upstream detail that must not leak'})});
+ const instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-chat-embed-fail-')),hostKey:'break-glass-key',publicBaseUrl:'http://127.0.0.1:4317',chatConfig,fetchImpl});
+ instance.proof.create=async()=>({slug:'chat-embed-fail-proof',editor:'editor'});
+ const created=await instance.store.create('Chat squad',await instance.proof.create());
+ const joined=await instance.store.join(created.code,'Participant Two');
+ const result=await invoke(instance.app,'/game/chat/embed',{cookies:{academy:joined.token}});
+ assert.equal(result.statusCode,502);
+ assert.equal(result.headers['content-type'],'text/html');
+ assert.doesNotMatch(String(result.body),/internal upstream detail that must not leak/);
 });

@@ -1,6 +1,6 @@
 import {createHash, randomBytes, randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
-import {hash, secret, fail, Store, MAX_SQUAD_SIZE} from './store.mjs';
+import {hash, secret, fail, Store, MAX_SQUAD_SIZE, DUPLICATE_PARTICIPANT_MESSAGE, INVALID_PARTICIPANT_ACCESS_MESSAGE} from './store.mjs';
 
 export class PostgresStore {
  constructor(pool, {schema='academy'}={}) {
@@ -24,7 +24,7 @@ export class PostgresStore {
  }
  async init() {
   const sql=await readFile(new URL('./schema/academy.sql',import.meta.url),'utf8');
-  const migration=`4:${createHash('sha256').update(sql).digest('hex')}`,previousMigrations=['3:321f2a26590284cfb07e23cad1940e0d56c3589ac012f9c7cfaf03d7315be2a3','2:3fa9bb87a5cfb8efe24eddc2f7fa94ff0657c0d711f5f9e19e41c6f91b12f3d2','1:cfd75de0661902abf5fd6d4b2fe2984d7e9228cc111392e96686ed29d228b3e1'];
+  const migration=`5:${createHash('sha256').update(sql).digest('hex')}`,previousMigrations=['4:0b073193ff907df7232bf74f47211525b268a81df5c3dd9210879a07e5081a11','3:321f2a26590284cfb07e23cad1940e0d56c3589ac012f9c7cfaf03d7315be2a3','2:3fa9bb87a5cfb8efe24eddc2f7fa94ff0657c0d711f5f9e19e41c6f91b12f3d2','1:cfd75de0661902abf5fd6d4b2fe2984d7e9228cc111392e96686ed29d228b3e1'];
   await this.transaction(async client=>{
    await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))',[`academy-schema:${this.schema}`]);
    const existing=await client.query('SELECT 1 FROM pg_catalog.pg_namespace WHERE nspname=$1',[this.schema]);
@@ -98,12 +98,35 @@ export class PostgresStore {
    const r=result.rows[0]?.data;
    if (!r) fail(404,'Kamercode niet gevonden.');
    const existing=r.members.find(m=>m.name.toLowerCase()===name.toLowerCase());
-   if (existing) return {token:await this.session(client,r.id,existing.id,'browser'),roomId:r.id,rejoined:true};
+   if (existing) fail(409,DUPLICATE_PARTICIPANT_MESSAGE);
    if (r.members.length>=MAX_SQUAD_SIZE) fail(409,`Squad is vol (maximaal ${MAX_SQUAD_SIZE}).`);
+   const resumeToken=secret();
    const p={id:randomUUID(),name,help:false,quiz:null,route:'standard',progressByDay:{},lastMcp:null};
    r.members.push(p);r.version++;
    await this.save(client,r);
-   return {token:await this.session(client,r.id,p.id,'browser'),roomId:r.id};
+   await client.query('INSERT INTO participant_access(room_id,person_id,secret_hash) VALUES ($1,$2,$3)',[r.id,p.id,hash(resumeToken)]);
+   return {token:await this.session(client,r.id,p.id,'browser',p.name),roomId:r.id,resumeToken};
+  });
+ }
+ async resumeParticipant(resumeToken) {
+  return this.transaction(async client=>{
+   const access=await client.query('SELECT room_id,person_id FROM participant_access WHERE secret_hash=$1',[hash(resumeToken||'')]);
+   const row=access.rows[0];
+   if(!row) fail(401,INVALID_PARTICIPANT_ACCESS_MESSAGE);
+   const room=await client.query('SELECT data FROM rooms WHERE id=$1 FOR UPDATE',[row.room_id]);
+   const r=room.rows[0]?.data;
+   const p=r?.members.find(member=>member.id===row.person_id);
+   if(!r||!p) fail(401,INVALID_PARTICIPANT_ACCESS_MESSAGE);
+   return {token:await this.session(client,r.id,p.id,'browser',p.name),roomId:r.id,resumed:true};
+  });
+ }
+ async rotateParticipantAccess(token) {
+  return this.transaction(async client=>{
+   const {r,p}=await this.authenticated(client,token,'browser',true);
+   if(!p)fail(403,'Gebruik hiervoor een deelnemerssessie.');
+   const resumeToken=secret();
+   await client.query('INSERT INTO participant_access(room_id,person_id,secret_hash) VALUES ($1,$2,$3) ON CONFLICT (room_id,person_id) DO UPDATE SET secret_hash=EXCLUDED.secret_hash,created_at=now()',[r.id,p.id,hash(resumeToken)]);
+   return {resumeToken};
   });
  }
  async logout(token) {

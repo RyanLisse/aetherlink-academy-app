@@ -2,7 +2,9 @@
 set -euo pipefail
 
 # Copy one generated standalone scaffold into a clean upload/build context.
-# The source checkout and lockfile are read only; OUTPUT_DIR must be new.
+# The source checkout and lockfile are read only; OUTPUT_DIR must be new. The
+# checked-in patch then adds the signed Academy embed ticket boundary without
+# modifying the upstream scaffold checkout.
 
 app="${APP:-chat}"
 source_dir="${UPSTREAM_SOURCE_DIR:-/tmp/academy-chat-service}"

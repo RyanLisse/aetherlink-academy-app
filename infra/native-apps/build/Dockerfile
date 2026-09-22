@@ -23,14 +23,18 @@ RUN corepack install \
   && corepack pnpm install --frozen-lockfile
 
 COPY . .
-# The patch is the same narrowly scoped Better Auth signup workaround already
-# verified by the live Slides PoC. It is applied to the upload context, not the
-# upstream scaffold checkout.
+# The patch adds the Academy-owned embed ticket route and keeps Better Auth
+# email/password signup from auto-signing in. It is applied to the upload
+# context, not the upstream scaffold checkout.
 COPY chat-auth.patch /tmp/chat-auth.patch
-RUN if grep -q 'academy-disable-signup-auto-session' server/plugins/auth.ts 2>/dev/null; then \
-      echo 'Better Auth signup patch already present'; \
-    else \
+RUN if git apply --check --unidiff-zero /tmp/chat-auth.patch; then \
       git apply --unidiff-zero /tmp/chat-auth.patch; \
+    elif grep -q 'academy-disable-signup-auto-session' server/plugins/auth.ts 2>/dev/null \
+      && grep -q 'createEmbedSessionTicket' server/routes/_academy/embed/ticket.post.ts 2>/dev/null; then \
+      echo 'Academy Chat auth and embed patch already present'; \
+    else \
+      echo 'Academy Chat auth/embed patch is partial or incompatible' >&2; \
+      exit 1; \
     fi \
   && corepack pnpm build \
   && test -f .output/server/index.mjs \
