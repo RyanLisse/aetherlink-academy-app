@@ -51,13 +51,26 @@ test('parse weather lesson yields dual captions + checkpoints', () => {
   }
 });
 
-test('parse council + sdk bridge; sdk has pending starters', () => {
+test('parse council + sdk bridge; sdk starters available', () => {
   const c = parseLessonMarkdown(council);
   assert.ok(c.steps.length >= 3);
   const s = parseLessonMarkdown(sdk);
   assert.ok(s.steps.length >= 3);
   const sdkLesson = manifest.lessons.find((l) => l.id === 'sdk-bridge');
-  assert.match(String(sdkLesson.startersStatus), /PENDING/i);
+  assert.equal(String(sdkLesson.startersStatus).toLowerCase(), 'available');
+  assert.doesNotMatch(String(sdkLesson.startersStatus), /PENDING/i);
+  const ids = (sdkLesson.starters || []).map((x) => x.id).sort();
+  assert.deepEqual(ids, ['council-agent-sdk', 'weather-agent-sdk']);
+  for (const starter of sdkLesson.starters) {
+    assert.match(starter.cloneUrl, /^https:\/\/github\.com\/RyanLisse\//);
+  }
+});
+
+test('ArcadeApp renders available starters panel (not PENDING)', () => {
+  const arcadeApp = readFileSync(path.join(root, 'src/arcade/ArcadeApp.jsx'), 'utf8');
+  assert.match(arcadeApp, /startersAreAvailable|data-starters-status="available"/);
+  assert.match(arcadeApp, /StartersReadyPanel|SDK starters ready/);
+  assert.doesNotMatch(arcadeApp, /Hands-on SDK labs wachten op Herdr <strong>LIS-65<\/strong>/);
 });
 
 test('main.jsx wires ArcadeApp on /arcade paths', () => {

@@ -30,3 +30,34 @@
 .arcade-notes{white-space:pre-wrap;font-size:13px;line-height:1.55;max-height:70vh;overflow:auto;background:color-mix(in srgb,#000 20%,transparent);padding:14px;border-radius:12px}
 .arcade-footnote{font-size:12px;opacity:.7}
 .arcade-lesson-nav{display:flex;justify-content:space-between;align-items:center;gap:8px}
+
+.arcade-ready-pill {
+  display: inline-block;
+  margin: 0.4rem 0 0.6rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: color-mix(in oklab, #12b886 18%, transparent);
+  color: #0b7a56;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.arcade-ready {
+  margin: 0.75rem 0 1rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid color-mix(in oklab, #12b886 45%, transparent);
+  border-radius: 12px;
+  background: color-mix(in oklab, #12b886 10%, transparent);
+}
+.arcade-starter-list {
+  margin: 0.6rem 0 0;
+  padding-left: 1.1rem;
+}
+.arcade-starter-list li {
+  margin: 0.45rem 0;
+}
+.arcade-clone {
+  margin: 0.35rem 0 0;
+  padding: 0.45rem 0.6rem;
+  overflow-x: auto;
+  font-size: 0.8rem;
+}

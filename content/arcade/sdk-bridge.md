@@ -2,12 +2,11 @@
 
 **Route:** `/arcade/sdk-bridge`  
 **Track:** sdk  
-**Linear:** LIS-63  
+**Linear:** AET-62 (bridge) · starters **AET-63**  
 **Duration:** ~35–45 min  
 **Source:** https://github.com/anthropics/claude-agent-sdk-typescript  
 
-**Starters:** PENDING Herdr **LIS-65** (`weather-agent-sdk`, `council-agent-sdk`).  
-Tot starters er zijn: mapping + watch-mode + same mini-quests op Eve blijven geldig; SDK labs geblokkeerd voor hands-on.
+**Starters:** **available** — `weather-agent-sdk` + `council-agent-sdk` (Herdr AET-63).
 
 Toggle captions: **Mensentaal** | **Tech**
 
@@ -18,13 +17,13 @@ Toggle captions: **Mensentaal** | **Tech**
 | Rol | Pad |
 |-----|-----|
 | **Non-tech** | Watch/skip toegestaan. Blijf op Eve UI. Lees mapping als “woordenboek”. Geen SDK install verplicht. |
-| **Tech** | Eve sneller doorlopen → SDK labs **required** zodra LIS-65 starters beschikbaar zijn. |
+| **Tech** | Eve sneller doorlopen → SDK labs **required** (starters beschikbaar). |
 
 ### coach_mensentaal
-Dit is de brug. Zelfde ideeën, andere gereedschapskist. Non-tech: kijken mag. Tech: jij bouwt het later in de SDK-starters.
+Dit is de brug. Zelfde ideeën, andere gereedschapskist. Non-tech: kijken mag. Tech: jij bouwt het in de SDK-starters.
 
 ### coach_tech
-Concept parity first. Port weather + council mini-quests once starters land. Do not invent starter APIs in Academy copy — link Herdr kits only.
+Concept parity first. Port weather + council mini-quests on the Herdr kits. Do not invent starter APIs — use the clone URLs from the manifest.
 
 ---
 
@@ -54,7 +53,7 @@ Gebruik onderstaande mapping als lescontract. Details in de SDK-repo kunnen wijz
 Deelnemer koppelt minstens: instructions ↔ system/instructions, tool ↔ tool, skill ↔ procedure text.
 
 ### playground
-Geen code tot LIS-65. Toon tabel in UI; optioneel link SDK repo.
+Clone starters when ready for labs; mapping table stays the contract.
 
 ---
 
@@ -65,10 +64,10 @@ Zelfde opdrachten als L1/L2:
 1. Weather: kledingadvies via instructie.
 2. Council: rechter-regel aanscherpen.
 
-Op Eve doe je ze nu. Op SDK doe je ze **identiek** zodra de starters er zijn.
+Op Eve deed je ze al. Op SDK doe je ze **identiek** in de starters.
 
 ### coach_tech
-Parity quests — behavior change via instructions first; tools second. Starters MUST preserve quest hooks (instructions path + judge instruction path).
+Parity quests — behavior change via instructions first; tools second. Starters preserve quest hooks (`instructions.md` clothing path + judge instruction path).
 
 ### checkpoint
 `same-mini-quests`
@@ -77,46 +76,55 @@ Parity quests — behavior change via instructions first; tools second. Starters
 Deelnemer kan beide quests in één zin herhalen zonder Eve-specifieke bestandsnamen te hoeven noemen.
 
 ### playground
-Als starters PENDING: checkbox “quest intent begrepen” + Eve bewijs volstaat voor non-tech badge path.
+Weather: edit `instructions.md` → `pnpm quest:clothing` / `pnpm test`. Council: edit judge rule → `pnpm quest:judge` / `pnpm test`.
 
 ---
 
 ## Stap 3 — Audience gate (5 min)
 
 ### coach_mensentaal
-Non-tech: je mag stoppen of meekijken. Tech: je gaat door naar starters (of wacht tot Herdr LIS-65 groen is).
+Non-tech: je mag stoppen of meekijken. Tech: je gaat door naar starters.
 
 ### coach_tech
-Gate on `startersStatus === available`. Until then mark lesson *partial complete* for tech track.
+Gate on `startersStatus === available` — now true. Tech track continues into starter labs.
 
 ### checkpoint
 `audience-split`
 
 ### expected
-Facilitator noteert per deelnemer: watch | skip | wait-LIS-65 | ready-for-starters.
+Facilitator noteert per deelnemer: watch | skip | ready-for-starters | in-progress.
 
 ### playground
 UI toggle: Non-tech / Tech.
 
 ---
 
-## Stap 4 — Starters gate (LIS-65) (rest)
+## Stap 4 — Starters labs (AET-63) (rest)
 
 ### coach_mensentaal
-Zodra de starters er zijn: open weather-SDK, herhaal kleding-quest; open council-SDK, herhaal judge-quest. Badge “SDK bridge” pas daarna voor tech.
+Open weather-SDK, herhaal kleding-quest; open council-SDK, herhaal judge-quest. Badge “SDK bridge” voor tech daarna.
 
 ### coach_tech
-Expected starter IDs (Herdr): `weather-agent-sdk`, `council-agent-sdk`. Wire URLs into manifest when ready. Do not invent clone URLs here.
+Starter IDs: `weather-agent-sdk`, `council-agent-sdk`.
+
+```bash
+git clone https://github.com/RyanLisse/weather-agent-sdk.git
+cd weather-agent-sdk && pnpm i && pnpm test
+
+git clone https://github.com/RyanLisse/council-agent-sdk.git
+cd council-agent-sdk && pnpm i && pnpm test
+```
+
+Set `ANTHROPIC_API_KEY` in env only for live `query()` path. Fixture tests pass without a key.
 
 ### checkpoint
 `starters-gate`
 
 ### expected
-- PENDING: lesson status = content ready, labs blocked.  
-- READY: both mini-quests green on SDK starters.
+Both mini-quests green on SDK starters (tests + instruction edits).
 
 ### playground
-UNKNOWN tot LIS-65 — placeholder panel in Academy: “Starters komen via Herdr (LIS-65).”
+Clone URLs from manifest `starters[]`. No invented metrics.
 
 ---
 
@@ -124,7 +132,7 @@ UNKNOWN tot LIS-65 — placeholder panel in Academy: “Starters komen via Herdr
 
 - [ ] Mapping table begrepen
 - [ ] Mini-quest parity uitgelegd
-- [ ] Non-tech watch/skip of tech wait/ready gekozen
-- [ ] Starters: PENDING of completed (niet geclaimd zonder LIS-65)
+- [ ] Non-tech watch/skip of tech starters gekozen
+- [ ] Starters: available + quests completed (tech)
 
 **Geen secrets. Geen verzonnen starter-metrics.**
