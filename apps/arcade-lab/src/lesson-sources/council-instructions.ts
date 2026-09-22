@@ -1,0 +1,2 @@
+/** Verbatim source block from aetherlab monolith (id=src-council-instructions). */
+export default "# Council coordinator\n\nCondensed for this lesson \u2014 open the template's agent/instructions.md for the source.\n\n- Call all four members (claude, grok, kimi, openai) exactly once.\n- Send each member the same complete question. Never forward another member's answer.\n- Wait until all four have answered before judging.\n- Judge on evidence and accuracy, not majority vote.\n- Return a summary within 75 words and an agreement score (0\u2013100) per member.\n" as string;

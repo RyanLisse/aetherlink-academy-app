@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Aetherlab · Arcade Solo</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" />
+</head>
+<body>
+<header>
+  <h1>Aether<span>lab</span></h1>
+  <select id="lessonSel" aria-label="Lesson"></select>
+  <button id="btnNew">+ New lesson</button>
+  <button id="btnImport" class="ghost">Import</button>
+  <button id="btnExport" class="ghost">Export</button>
+  <button id="btnDelete" class="ghost">Delete</button>
+  <div class="spacer"></div>
+  <div class="status"><span class="dot" id="dot"></span><span id="statusText">Ready</span></div>
+</header>
+
+<main>
+  <section class="pane">
+    <div class="tabs" id="tabs" role="tablist"></div>
+    <div class="editor" id="editor">
+      <pre id="hl" aria-hidden="true"></pre>
+      <textarea id="ta" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Code editor"></textarea>
+    </div>
+    <div class="caption" id="caption" aria-live="polite"></div>
+  </section>
+  <section class="pane side">
+    <div class="bar"><span class="eyebrow" id="sideLabel">Preview</span><span class="url" id="sideUrl">index.html</span><button id="btnRun" class="ghost sm" title="Re-render preview">↻ Run</button></div>
+    <div class="illus" id="illus" hidden>Illustrative transcript, scripted from the tutorial — not a captured model run. Your live replies will vary.</div>
+    <iframe id="frame" title="Live preview" sandbox="allow-scripts"></iframe>
+    <div class="trace" id="trace" hidden></div>
+    <div class="checkpoint" id="checkpoint" hidden></div>
+  </section>
+</main>
+
+<footer id="footer">
+  <div class="transport" id="playerBar">
+    <button id="btnPlay" class="primary" style="min-width:84px">▶ Play</button>
+    <span class="time"><span id="tCur">0:00</span> / <span id="tDur">0:00</span></span>
+    <input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Seek">
+    <div class="speed" id="speed"><button data-s="1" class="on">1×</button><button data-s="1.5">1.5×</button><button data-s="2">2×</button></div>
+    <button id="btnVoice" class="ghost sm" title="Read captions aloud with your browser's voice" aria-pressed="false">🔇 Voice off</button>
+    <button id="btnReset" class="ghost sm" title="Discard your edits and return to the lesson">Reset</button>
+  </div>
+  <div class="chapters" id="chapters"></div>
+  <div class="transport" id="recBar" hidden>
+    <button id="btnRec" class="rec" style="min-width:110px">● Record</button>
+    <span class="time" id="tRec">0:00</span>
+    <label class="note"><input type="checkbox" id="chkMic" checked> microphone</label>
+    <div class="spacer"></div>
+    <button id="btnCancelRec" class="ghost">Cancel</button>
+  </div>
+  <div class="recline" id="recLine" hidden>
+    <input id="recText" placeholder="Narration line, trace line, or chapter name…" aria-label="Line to add">
+    <button class="sm" data-add="say">Say</button>
+    <button class="sm" data-add="you">Prompt ›</button>
+    <button class="sm" data-add="cmd">$ cmd</button>
+    <button class="sm" data-add="tool">Tool</button>
+    <button class="sm" data-add="res">Result</button>
+    <button class="sm" data-add="ans">Answer</button>
+    <button class="sm" data-add="chapter">Chapter</button>
+    <button class="sm" id="btnAddStop">+ Checkpoint</button>
+  </div>
+  <span class="note" id="hint"></span>
+</footer>
+
+<dialog id="dlgNew"><form method="dialog" class="body">
+  <h2>New lesson</h2>
+  <p>Set up the starting files, then hit <b>Record</b> in the bottom bar. Every keystroke, tab switch, narration line and trace line is captured as a timeline — not pixels.</p>
+  <label>Title<input id="newTitle" class="txt" placeholder="Give the weather agent a job" required></label>
+  <label>Output panel<select id="newKind"><option value="trace">Trace / terminal (agents, CLIs, tests)</option><option value="web">Browser preview (HTML · CSS · JS)</option></select></label>
+  <label>Files, one per line (copies the current files when left empty)<textarea id="newFiles" placeholder="agent/instructions.md&#10;agent/tools/get_weather.ts"></textarea></label>
+  <div class="row"><span class="spacer"></span><button value="cancel" class="ghost">Cancel</button><button value="ok" class="primary">Set up recorder</button></div>
+</form></dialog>
+
+<dialog id="dlgStop"><form method="dialog" class="body">
+  <h2>Checkpoint</h2>
+  <p>Playback pauses here. Ask the learner to predict, or give a quick knowledge check.</p>
+  <label>Title<input id="stopTitle" class="txt" placeholder="Predict before you ask"></label>
+  <label>Question<textarea id="stopQ" style="min-height:64px"></textarea></label>
+  <label>Options, one per line — prefix the correct one with * (leave empty for a free-text prediction)<textarea id="stopOpts" style="min-height:64px"></textarea></label>
+  <label>Explanation shown after answering<textarea id="stopExplain" style="min-height:64px"></textarea></label>
+  <div class="row"><span class="spacer"></span><button value="cancel" class="ghost">Cancel</button><button value="ok" class="primary">Add checkpoint</button></div>
+</form></dialog>
+
+<dialog id="dlgFile"><form method="dialog" class="body">
+  <h2>Add file</h2>
+  <label>Path<input id="fileName" placeholder="agent/skills/get-weather.md" required></label>
+  <div class="row"><span class="spacer"></span><button value="cancel" class="ghost">Cancel</button><button value="ok" class="primary">Add</button></div>
+</form></dialog>
+
+<dialog id="dlgIO"><div class="body">
+  <h2 id="ioTitle">Export lesson</h2>
+  <p id="ioHint"></p>
+  <textarea id="ioText"></textarea>
+  <div class="row"><span class="note" id="ioSize"></span><span class="spacer"></span><button id="ioClose" class="ghost">Close</button><button id="ioCopy">Copy</button><button id="ioLoad" class="primary">Load</button></div>
+</div></dialog>
+  <div id="lesson-banner" class="lesson-banner" hidden role="status"></div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>

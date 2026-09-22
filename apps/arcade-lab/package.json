@@ -1,0 +1,36 @@
+{
+  "name": "@academy/arcade-lab",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Aetherlab solo lesson runtime for Agent Arcade (Vite + typed Lesson ops).",
+  "exports": {
+    ".": "./src/index.ts",
+    "./fold": "./src/fold.ts",
+    "./schema": "./src/schema.ts",
+    "./lessons": "./src/lessons/index.ts"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "tsx tools/check.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "says": "tsx tools/extract-says.ts > public/voice/says.json",
+    "public/voice": "tsx tools/voice.ts public/voice/says.json public/voice",
+    "test": "pnpm run check"
+  },
+  "dependencies": {
+    "zod": "4.6.4"
+  },
+  "devDependencies": {
+    "@types/node": "^24.7.2",
+    "msedge-tts": "^2.0.7",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vite": "6.4.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
