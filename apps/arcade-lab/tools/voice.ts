@@ -1,10 +1,22 @@
 /**
  * voice.ts — pre-render Scrimlab captions with Microsoft Edge neural TTS (free, no key).
  *
+ * OPTIONAL dependency: msedge-tts is not a package/workspace dep (pnpm 11 ignores
+ * its install scripts unless approved). Install locally when you need voice assets:
+ *
+ *   pnpm add -D msedge-tts@^2.0.7 --filter @academy/arcade-lab
+ *   # or: pnpm --filter @academy/arcade-lab exec npm i -D msedge-tts@^2.0.7
+ *
+ * Then:
+ *   pnpm --filter @academy/arcade-lab run says
+ *   pnpm --filter @academy/arcade-lab run public/voice
+ *
  *   npx tsx voice.ts says.json out/            # one JSON per lesson: { id, voice, clips: { [sayIndex]: "data:audio/mpeg;base64,…" } }
  *
  * Input: [{ id, says: string[] }] — the `say` ops of each lesson, in order.
  * Scrimlab loads out/<lessonId>.json next to the page when Voice is on.
+ *
+ * Player / `pnpm check` / Vite build do NOT import this module.
  */
 import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
