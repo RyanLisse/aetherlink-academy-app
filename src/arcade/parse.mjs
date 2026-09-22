@@ -96,12 +96,43 @@ export function matchArcadeRoute(manifest, path) {
   if (pathname === '/arcade' || pathname === '/arcade/') {
     return { kind: 'hub' };
   }
+  if (pathname === '/arcade/solo') {
+    return { kind: 'solo' };
+  }
   const lesson = (manifest?.lessons || []).find((l) => normalizePath(l.route) === pathname);
   if (lesson) return { kind: 'lesson', lesson };
   if (pathname === '/arcade/facilitator' || pathname === '/arcade/notes') {
     return { kind: 'facilitator' };
   }
   return { kind: 'unknown', pathname };
+}
+
+/** Canonical solo lesson ids (LESSON-ID-CONTRACT). Exact strings only. */
+export const DEFAULT_SOLO_LESSON_ID = 'ws-1-eve-weather';
+
+/**
+ * Resolve ?lesson= for Academy solo shell.
+ * @param {string|null|undefined} raw
+ * @param {string[]|undefined} knownIds
+ * @returns {{ id: string, reason: 'exact'|'missing'|'unknown' }}
+ */
+export function resolveSoloLessonId(raw, knownIds) {
+  const id = (raw ?? '').trim();
+  const known = Array.isArray(knownIds) ? knownIds : [];
+  if (!id) return { id: DEFAULT_SOLO_LESSON_ID, reason: 'missing' };
+  if (known.includes(id)) return { id, reason: 'exact' };
+  // Unknown exact string → soft-fail to default (do not 404 the shell).
+  return { id: DEFAULT_SOLO_LESSON_ID, reason: 'unknown' };
+}
+
+/**
+ * Solo lesson cards for a hub track route.
+ * @param {object} manifest
+ * @param {string} trackRoute e.g. /arcade/weather
+ */
+export function soloLessonsForRoute(manifest, trackRoute) {
+  const route = normalizePath(trackRoute);
+  return (manifest?.soloLessons || []).filter((s) => normalizePath(s.hubRoute) === route);
 }
 
 export function normalizePath(path) {

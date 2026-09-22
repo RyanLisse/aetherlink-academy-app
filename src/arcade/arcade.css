@@ -61,3 +61,21 @@
   overflow-x: auto;
   font-size: 0.8rem;
 }
+
+/* AET-66 solo shell */
+.arcade-start-solo{display:grid;gap:8px;justify-items:start;padding:12px 14px;border-radius:14px;border:1px solid color-mix(in srgb,#5aa2ff 35%,transparent);background:color-mix(in srgb,#5aa2ff 10%,transparent)}
+.arcade-start-solo-btn{display:inline-flex;align-items:center;gap:8px;font-size:16px;padding:10px 18px}
+.arcade-solo-block{display:grid;gap:8px;margin-top:8px}
+.arcade-solo-grid{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.arcade-solo-card{display:grid;gap:6px;justify-items:start;text-align:left;border:1px solid color-mix(in srgb,#7eb6ff 20%,transparent);border-radius:12px;padding:12px;background:color-mix(in srgb,#0b1726 55%,transparent);color:inherit;cursor:pointer}
+.arcade-solo-card:hover{border-color:#5aa2ff}
+.arcade-solo-card-title{font-weight:600;font-size:14px}
+.arcade-solo-id{font-size:11px;opacity:.85}
+.arcade-solo-cta{display:inline-flex;align-items:center;gap:4px;font-size:13px;color:#7eb6ff}
+.arcade-facilitator-strip{border:1px dashed color-mix(in srgb,#e3b341 55%,transparent);background:color-mix(in srgb,#e3b341 10%,transparent);border-radius:12px;padding:10px 12px;display:grid;gap:6px}
+.arcade-facilitator-strip-body{margin:0;white-space:pre-wrap;font-size:12px;line-height:1.45;max-height:140px;overflow:auto;background:transparent;border:0;padding:0;font-family:inherit}
+.arcade-soft-banner{border:1px solid color-mix(in srgb,#5aa2ff 40%,transparent);background:color-mix(in srgb,#5aa2ff 12%,transparent);border-radius:10px;padding:10px 12px;font-size:14px}
+.arcade-caption-hint{font-size:13px;margin:0}
+.arcade-solo-frame-wrap{border:1px solid color-mix(in srgb,#7eb6ff 18%,transparent);border-radius:14px;overflow:hidden;min-height:720px;background:#0e1013}
+.arcade-solo-frame{width:100%;height:min(78vh,900px);min-height:680px;border:0;display:block;background:#0e1013}
+.arcade-shell:has(.arcade-solo){max-width:1280px}

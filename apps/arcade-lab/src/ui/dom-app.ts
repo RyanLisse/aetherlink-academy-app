@@ -429,6 +429,12 @@ $('ioLoad').onclick = () => {
 /* ── Boot (lesson-id contract) ─────────────────────────────────── */
 export function bootApp() {
   const params = new URLSearchParams(location.search);
+  // Cohort / Academy embed: hide authoring chrome (play + captions + checkpoints).
+  const embed = params.get("embed") === "1" || params.get("mode") === "cohort";
+  if (embed) {
+    document.body.classList.add("cohort-embed");
+    document.documentElement.dataset.arcadeEmbed = "cohort";
+  }
   const fromQuery = params.get("lesson");
   const fromWindow = typeof window !== "undefined" ? window.__AETHERLAB_LESSON_ID__ : undefined;
   const resolved = resolveLessonId(fromQuery || fromWindow || null);

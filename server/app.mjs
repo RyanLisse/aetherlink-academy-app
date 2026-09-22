@@ -141,6 +141,13 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  }));
  app.get('/game/starter/:file',wrap(async(req,res)=>{await browser(req);if(!['README.md','CLAUDE.md','package.json','status.mjs','status.test.mjs','n8n-repository-review.json','n8n-review-README.md','claude-code-review-README.md','day5-fictional-issue.md'].includes(req.params.file))fail(404,'Bestand niet gevonden.');res.type('text/plain').send(readFileSync(path.join(root,'starter',req.params.file),'utf8'));}));
  app.get('/game/health',wrap(async(_req,res)=>{let connected=false;try{connected=(await fetch(proofBase+'/health',{signal:AbortSignal.timeout(2000)})).ok;}catch{}res.json({ok:true,proof:connected,revision:process.env.VERCEL_GIT_COMMIT_SHA||process.env.SOURCE_REVISION||null});}));
+ const arcadeLabDist=path.join(root,'apps/arcade-lab/dist');
+ app.use('/arcade-lab',express.static(arcadeLabDist,{index:false,fallthrough:true}));
+ app.get(['/arcade-lab','/arcade-lab/'],(_req,res)=>{
+  const index=path.join(arcadeLabDist,'index.html');
+  if(!existsSync(index))return res.status(503).type('text').send('arcade-lab not built');
+  return res.sendFile(index);
+ });
  app.use(express.static(path.join(root,'dist')));app.get('/',(_req,res)=>res.sendFile(path.join(root,'dist/index.html')));app.use((req,res,next)=>{if(req.method==='GET'&&(req.path==='/arcade'||req.path.startsWith('/arcade/')))return res.sendFile(path.join(root,'dist/index.html'));return next();});
  app.use((e,req,res,_next)=>{if(!e.status)console.error('[academy] unhandled',{method:req.method,path:req.path,message:e?.message,stack:e?.stack});return res.status(e.status||500).json({error:e.status?e.message:'Onverwachte serverfout. Probeer opnieuw; je invoer blijft staan.'});});
  const server=http.createServer(app);server.on('upgrade',async(req,socket,head)=>{try{const {r}=await browser(req);const url=new URL(req.url,'http://localhost');if(req.headers.origin&&req.headers.origin!==`http://${req.headers.host}`&&req.headers.origin!==`https://${req.headers.host}`)fail(403,'Origin');if(url.pathname!=='/ws'||url.searchParams.get('slug')!==r.proof.slug)fail(403,'Kamer');proxy.ws(req,socket,head);}catch(e){console.warn('WS denied',new URL(req.url,'http://localhost').pathname,e.message);socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');socket.destroy();}});

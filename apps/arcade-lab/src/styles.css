@@ -144,3 +144,30 @@ kbd{font:11px "IBM Plex Mono",monospace;background:var(--panel2);border:1px soli
   box-shadow: 0 4px 18px rgba(0,0,0,.08);
 }
 .lesson-banner[hidden] { display: none !important; }
+
+/* Cohort embed under Academy /arcade/solo — hide authoring chrome */
+body.cohort-embed > header > h1,
+body.cohort-embed > header > #btnNew,
+body.cohort-embed > header > #btnImport,
+body.cohort-embed > header > #btnExport,
+body.cohort-embed > header > #btnDelete,
+body.cohort-embed #recBar,
+body.cohort-embed #recLine {
+  display: none !important;
+}
+body.cohort-embed > header {
+  padding-block: 8px;
+}
+.lesson-banner {
+  position: fixed;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  background: color-mix(in srgb, #5aa2ff 18%, var(--panel));
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  color: var(--ink);
+}
