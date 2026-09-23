@@ -366,5 +366,19 @@
   "arcade.unknown": "Unknown arcade route",
   "arcade.unknown.back": "Back to hub",
   "arcade.soft.default": "Showing the default lesson.",
-  "arcade.soft.unknown": "Unknown lesson — showing the default."
+  "arcade.soft.unknown": "Unknown lesson — showing the default.",
+  "nav.apps": "Apps",
+  "apps.eyebrow": "OpenShip portal",
+  "apps.title": "App launcher",
+  "apps.lede": "Launch agent-native apps from Academy with a short-lived ticket. No static admin keys in the browser.",
+  "apps.authInventory": "Auth inventory",
+  "apps.googleDep": "Google SSO depends on AET-6 (Ryan ops).",
+  "apps.launch": "Launch with ticket",
+  "apps.publish": "Publish immutable version",
+  "apps.launchReady": "Launch ticket ready",
+  "apps.backNav": "Back to Academy",
+  "apps.backToAcademy": "Back to Academy",
+  "apps.revoke": "Revoke access",
+  "apps.published": "Published version (immutable)",
+  "apps.chromeHint": "Chrome/overlay (AET-51) shows Back to Academy without restyling the lesson canvas."
 }

@@ -17,3 +17,4 @@ vendor/proof-sdk/.git/
 
 .DS_Store
 **/dist-server/
+.crabbox/
