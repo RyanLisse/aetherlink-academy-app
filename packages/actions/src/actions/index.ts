@@ -24,6 +24,11 @@ import {searchKnowledge} from './search-knowledge.ts';
 import {setReveal} from './set-reveal.ts';
 import {startTimer} from './start-timer.ts';
 import {submitEvidence} from './submit-evidence.ts';
+import {answerSelfCheck} from './answer-self-check.ts';
+import {exportDebrief} from './export-debrief.ts';
+import {handoff} from './handoff.ts';
+import {markPractised, unmarkPractised} from './mark-practised.ts';
+import {reviewEvidence} from './review-evidence.ts';
 import {suggestDocument} from './suggest-document.ts';
 import {togglePlanB} from './toggle-plan-b.ts';
 
@@ -45,6 +50,7 @@ export {
   AmbiguousViewContext,
   type ParticipantViewBinding,
 } from './participant-context.ts';
+export {EvidenceServices, type EvidenceServicesShape} from './evidence-services.ts';
 export {
   LessonNotReleased,
   LOCKED_LESSON_DENIAL,
@@ -93,4 +99,18 @@ const withLegacy = registerAction(
   suggestDocument,
 );
 
-export const registry = withLegacy;
+const withEvidence = registerAction(
+  registerAction(
+    registerAction(
+      registerAction(
+        registerAction(registerAction(withLegacy, reviewEvidence), handoff),
+        markPractised,
+      ),
+      unmarkPractised,
+    ),
+    answerSelfCheck,
+  ),
+  exportDebrief,
+);
+
+export const registry = withEvidence;

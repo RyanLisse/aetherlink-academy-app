@@ -4,6 +4,7 @@ import {Deck, type DeckMode} from '@academy/deck';
 import {LiveClassroom} from './live/LiveClassroom.tsx';
 import {SquadPanel} from './squad/SquadPanel.tsx';
 import {FacilitatorReleasePanel} from './release/FacilitatorReleasePanel.tsx';
+import {EvidencePanel, FacilitatorOverview} from './evidence/index.ts';
 import {sourceSlides} from './deck/slides.js';
 import {normalizeSlides} from './deck/normalize.js';
 import './deck/deck.css';
@@ -107,7 +108,12 @@ export function Shell({pathname, navigate, connection}: ShellProps) {
           ) : active.id === 'squad' ? (
             <SquadPanel />
           ) : active.id === 'coach' ? (
-            <FacilitatorReleasePanel />
+            <>
+              <FacilitatorReleasePanel />
+              <FacilitatorOverview />
+            </>
+          ) : active.id === 'review' || active.id === 'solo' || active.id === 'route' ? (
+            <EvidencePanel />
           ) : (
             <Placeholder route={active} />
           )}
