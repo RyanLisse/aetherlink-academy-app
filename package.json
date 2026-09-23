@@ -19,7 +19,8 @@
     "start": "node scripts/start.mjs",
     "start:legacy": "node scripts/start.mjs",
     "tsc6": "tsc6",
-    "mcp": "node server/mcp.mjs"
+    "mcp": "node server/mcp.mjs",
+    "lint:content:support-1": "node content/scripts/lint-support-1.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/client": "2.0.0",
