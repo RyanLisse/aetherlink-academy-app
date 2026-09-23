@@ -6,6 +6,7 @@ import {afterEach, describe, expect, test, vi} from 'vitest';
 import {defineAction} from '../src/action.ts';
 import {registry} from '../src/actions/index.ts';
 import {ClassroomState, ClassroomStateLive} from '../src/actions/state.ts';
+import {LivePresenter, type LivePresenterShape} from '../src/actions/live-state.ts';
 import {toChatTools} from '../src/adapters/chat.ts';
 import {ActionsHttpApi, ActionsHttpHandlers} from '../src/adapters/http.ts';
 import {toMcpTools} from '../src/adapters/mcp.ts';
@@ -38,12 +39,39 @@ const CallerResolverFixture = Layer.succeed(CallerResolver, {
  * matching how one real deployment shares one store across requests.
  */
 const makeDependencies = () => {
+
+const liveStub: LivePresenterShape = {
+  roomId: ROOM,
+  get: Effect.succeed({
+    lesson: null,
+    slideIndex: 0,
+    revealStep: -1,
+    timerStartedAt: null,
+    timerMinutes: null,
+    planB: false,
+    pauseUntil: null,
+    revision: null,
+  }),
+  nextSlide: Effect.succeed({slideIndex: 1, revealStep: -1}),
+  prevSlide: Effect.succeed({slideIndex: 0, revealStep: -1}),
+  gotoSlide: (index) => Effect.succeed({slideIndex: index, revealStep: -1}),
+  setReveal: (step) => Effect.succeed({revealStep: step}),
+  startTimer: (minutes) => Effect.succeed({timerStartedAt: new Date().toISOString(), timerMinutes: minutes}),
+  togglePlanB: Effect.succeed({planB: true}),
+  pauseUntil: (until) => Effect.succeed({pauseUntil: until}),
+  openLesson: (lesson, revision = null) => Effect.succeed({lesson, revision: revision ?? null}),
+  everyoneBackToFollow: Effect.succeed({pulled: 0}),
+  detach: () => Effect.succeed({following: false}),
+  followAgain: () => Effect.succeed({following: true}),
+};
+
   const confirmationStore = Effect.runSync(Effect.provide(ConfirmationStore, ConfirmationStoreLive));
   const classroomState = Effect.runSync(Effect.provide(ClassroomState, ClassroomStateLive(ROOM)));
   const dependencies = Layer.mergeAll(
     CallerResolverFixture,
     Layer.succeed(ConfirmationStore, confirmationStore),
     Layer.succeed(ClassroomState, classroomState),
+    Layer.succeed(LivePresenter, liveStub),
   );
   return {dependencies, confirmationStore};
 };
@@ -54,7 +82,7 @@ afterEach(async () => {
   vi.useRealTimers();
 });
 
-const httpRequestFor = (dependencies: Layer.Layer<CallerResolver | ConfirmationStore | ClassroomState>, reg = registry) => {
+const httpRequestFor = (dependencies: Layer.Layer<CallerResolver | ConfirmationStore | ClassroomState | LivePresenter>, reg = registry) => {
   const app = HttpApiBuilder.layer(ActionsHttpApi(reg)).pipe(
     Layer.provide(ActionsHttpHandlers(reg)),
     Layer.provide(dependencies),
@@ -78,9 +106,9 @@ const httpRequestFor = (dependencies: Layer.Layer<CallerResolver | ConfirmationS
     );
 };
 
-const mcpCallFor = (dependencies: Layer.Layer<CallerResolver | ConfirmationStore | ClassroomState>, reg = registry) => {
+const mcpCallFor = (dependencies: Layer.Layer<CallerResolver | ConfirmationStore | ClassroomState | LivePresenter>, reg = registry) => {
   const tools = toMcpTools(reg);
-  const runtime = <A>(effect: Effect.Effect<A, unknown, CallerResolver | ConfirmationStore | ClassroomState>) =>
+  const runtime = <A>(effect: Effect.Effect<A, unknown, CallerResolver | ConfirmationStore | ClassroomState | LivePresenter>) =>
     Effect.runPromise(Effect.result(effect.pipe(Effect.provide(dependencies))));
   return (name: string, token: string, payload: unknown, confirmationToken?: string) => {
     const tool = tools.find((t) => t.name === name)!;

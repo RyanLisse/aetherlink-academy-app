@@ -1,6 +1,7 @@
 import {useEffect, useState, type ReactNode} from 'react';
 import {LanguageToggle, useI18n} from './i18n.tsx';
 import {Deck, type DeckMode} from '@academy/deck';
+import {LiveClassroom} from './live/LiveClassroom.tsx';
 import {sourceSlides} from './deck/slides.js';
 import {normalizeSlides} from './deck/normalize.js';
 import './deck/deck.css';
@@ -185,6 +186,7 @@ export function AppRoutes({children}: {readonly children?: ReactNode}) {
   const [pathname, navigate] = usePathname();
   const connection = useConnection(fetchConnection, 5000, pathname !== '/deck');
   if (pathname === '/deck') return <DeckDemo />;
+  if (pathname.startsWith('/live/')) return <LiveRoute pathname={pathname} />;
   return (
     <>
       <Shell pathname={pathname} navigate={navigate} connection={connection} />
@@ -210,4 +212,26 @@ function DeckDemo() {
   const requested = new URLSearchParams(window.location.search).get('mode');
   const mode: DeckMode = requested === 'reader' || requested === 'presenter' || requested === 'follow' ? requested : 'projector';
   return <Deck slides={DECK_SLIDES} index={index} revealStep={revealStep} mode={mode} presence={<span>Presence slot</span>} onIndexChange={(next) => { setIndex(next); setRevealStep(-1); }} onRevealStepChange={setRevealStep}/>;
+}
+
+function LiveRoute({pathname}: {readonly pathname: string}) {
+  const parts = pathname.split('/').filter(Boolean);
+  // /live/:roomId/:view  view = presenter|follow|projector
+  const roomId = parts[1] ?? 'demo';
+  const view = parts[2] ?? 'follow';
+  const params = new URLSearchParams(window.location.search);
+  const role = view === 'presenter' ? 'facilitator' : 'participant';
+  const mode: DeckMode = view === 'presenter' ? 'presenter' : view === 'projector' ? 'projector' : 'follow';
+  const participantId = params.get('id') ?? (role === 'facilitator' ? 'facilitator-1' : `participant-${Math.random().toString(36).slice(2, 8)}`);
+  const name = params.get('name') ?? (role === 'facilitator' ? 'Facilitator' : participantId);
+  return (
+    <LiveClassroom
+      roomId={roomId}
+      role={role}
+      mode={mode}
+      slides={DECK_SLIDES}
+      participantId={participantId}
+      name={name}
+    />
+  );
 }

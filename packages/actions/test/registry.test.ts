@@ -44,7 +44,21 @@ describe('registry', () => {
     expect(findAction(registry, 'ping')).toBeUndefined();
   });
 
-  test('the production registry has exactly the three sample actions', () => {
-    expect(registry.map((a) => a.name).sort()).toEqual(['getParticipantCount', 'getScreenState', 'startTimer']);
+  test('the production registry includes the AET-21 samples and AET-26 live actions', () => {
+    expect(registry.map((a) => a.name).sort()).toEqual([
+      'detach',
+      'everyoneBackToFollow',
+      'followAgain',
+      'getParticipantCount',
+      'getScreenState',
+      'gotoSlide',
+      'nextSlide',
+      'openLesson',
+      'pauseUntil',
+      'prevSlide',
+      'setReveal',
+      'startTimer',
+      'togglePlanB',
+    ]);
   });
 });
