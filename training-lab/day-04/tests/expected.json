@@ -1,4 +1,12 @@
 {
-  "suspiciousIds": ["TX-FIC-402", "TX-FIC-404", "TX-FIC-406"],
-  "csvSha256": "c3006a8c7be7b06dc1ac68b1b57eded0a46bbb64a3de8e4696a7a953c9635cb8"
+  "seed": 20260921,
+  "suspiciousIds": [
+    "TX-FIC-430",
+    "TX-FIC-431",
+    "TX-FIC-432",
+    "TX-FIC-433",
+    "TX-FIC-434"
+  ],
+  "csvSha256": "0c058c715a6b370bcbfaf9f40f5afe77345b556c02c498326b4324174dc2dfce",
+  "notes": "Fictional Reconciliation only. Decoy TX-FIC-421 is high-amount but known-device \u2014 reference solution must not flag it (FP ceiling)."
 }
