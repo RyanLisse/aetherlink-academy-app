@@ -182,6 +182,8 @@ importers:
         specifier: 0.25.12
         version: 0.25.12
 
+  packages/branding: {}
+
   packages/deck:
     dependencies:
       '@academy/schema':
