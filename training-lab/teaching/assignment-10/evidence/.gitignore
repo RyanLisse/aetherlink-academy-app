@@ -1,0 +1,5 @@
+*.json
+*.txt
+*.html
+*.png
+!.gitkeep

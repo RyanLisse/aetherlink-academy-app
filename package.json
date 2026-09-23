@@ -22,7 +22,9 @@
     "mcp": "node server/mcp.mjs",
     "lint:content:support-1": "node content/scripts/lint-support-1.mjs",
     "lint:content:support-2": "node content/scripts/lint-support-2.mjs",
-    "lint:content:support-3": "node content/scripts/lint-support-3.mjs"
+    "lint:content:support-3": "node content/scripts/lint-support-3.mjs",
+    "lint:content:teaching-1": "node content/scripts/lint-teaching-1.mjs",
+    "lint:content:teaching-2": "node content/scripts/lint-teaching-2.mjs"
   },
   "dependencies": {
     "@modelcontextprotocol/client": "2.0.0",
