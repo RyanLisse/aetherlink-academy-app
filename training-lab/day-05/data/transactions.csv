@@ -1,3 +1,7 @@
-id,amount_eur,region,risk
-TX-FIC-501,120,NL-TRAIN,low
-TX-FIC-502,6400,BE-TRAIN,high
+id,amount_eur,region,merchant_category,device,risk
+TX-FIC-501,120.00,NL-TRAIN,grocery,known,low
+TX-FIC-502,6400.00,BE-TRAIN,electronics,new,high
+TX-FIC-503,45.00,NL-TRAIN,coffee,known,low
+TX-FIC-504,2100.00,DE-TRAIN,travel,new,high
+TX-FIC-505,18.75,NL-TRAIN,grocery,known,low
+TX-FIC-506,890.00,FR-TRAIN,jewelry,known,medium

@@ -2,22 +2,46 @@
   {
     "id": "CASE-FIC-501",
     "title": "Settlement reconciliation helper",
-    "brief": "Compare fictional ledger rows with PSP rows and explain mismatches before a human review.",
+    "shape": ["workflow", "analysis-tool", "agent"],
+    "brief": "Build a small helper that compares fictional ledger rows with fictional PSP settlement rows, surfaces mismatches with an arithmetic explanation, and always stops for human review before any payout draft is accepted.",
     "dataset": "settlement.csv",
+    "mockEndpoint": null,
     "fictional": true
   },
   {
     "id": "CASE-FIC-502",
     "title": "Runbook knowledge assistant",
-    "brief": "Answer questions from the supplied fictional runbook and cite the source section.",
+    "shape": ["knowledge-assistant", "agent"],
+    "brief": "Answer facilitator questions only from the supplied fictional training runbook, cite the exact section used, and refuse to invent policy when the runbook is silent — drafts only, human gate.",
     "dataset": "runbook.md",
+    "mockEndpoint": null,
     "fictional": true
   },
   {
     "id": "CASE-FIC-503",
     "title": "Transaction monitor",
-    "brief": "Find high-risk fictional transactions and send an explainable review recommendation.",
+    "shape": ["transaction-monitoring", "ai-service", "agent"],
+    "brief": "Consume the fictional day-05 transactions mock (or CSV), flag high-risk rows with an explainable Risk / Reason / Recommended action line, and emit a review recommendation draft — never a live PSP action.",
     "dataset": "transactions.csv",
+    "mockEndpoint": "mock-api",
+    "fictional": true
+  },
+  {
+    "id": "CASE-FIC-504",
+    "title": "Alert draft test assistant",
+    "shape": ["test-assistant", "workflow"],
+    "brief": "Given fictional alert-draft fixtures, propose a short test checklist that asserts structure and fiction markers (TX-FIC-*, drafts-only language) without claiming the alert was sent to any live channel.",
+    "dataset": "alert-fixtures.json",
+    "mockEndpoint": null,
+    "fictional": true
+  },
+  {
+    "id": "CASE-FIC-505",
+    "title": "Ops dashboard sketch",
+    "shape": ["dashboard", "analysis-tool"],
+    "brief": "Sketch a tiny ops view over fictional metrics.csv that highlights anomalies for human discussion; every chart label must stay in the Fictional Reconciliation world and never quote Worldline live KPIs.",
+    "dataset": "metrics.csv",
+    "mockEndpoint": null,
     "fictional": true
   }
 ]
