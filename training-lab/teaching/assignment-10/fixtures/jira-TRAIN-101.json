@@ -1,0 +1,9 @@
+{
+  "_note": "FICTIONAL plan-B mirror of training-jira mock issue TRAIN-101.",
+  "key": "TRAIN-101",
+  "summary": "Reconcile sample settlement",
+  "description": "Compare the fictional ledger and PSP export.",
+  "status": "Open",
+  "assignee": "Ari Example",
+  "labels": ["training", "read-only"]
+}

@@ -1,0 +1,10 @@
+{
+  "_note": "FICTIONAL classroom plan-B fixture aligned with training-lab mock TRAIN data shape. Not a real GitLab MR.",
+  "iid": 7,
+  "title": "Handle settlement rounding",
+  "description": "Review the boundary case in the fictional settlement calculator.",
+  "state": "opened",
+  "author": "Casey Example",
+  "sourceBranch": "training/rounding",
+  "labels": ["training", "read-only"]
+}
