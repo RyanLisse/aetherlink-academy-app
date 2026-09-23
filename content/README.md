@@ -1,7 +1,7 @@
 # Academy content (interim v2)
 
-Markdown lessons under `content/courses/<course>/<day>/`. Importers (AET-22) will
-consume this tree; until then, follow the frontmatter below. Do not invent
+Markdown lessons under `content/courses/<course>/<day>/`. Importers (AET-24) live in
+`apps/server/src/importers/` (`slides-js` first; Markdown round-trip included). Follow the frontmatter below. Do not invent
 Worldline KPIs or live case facts — use training-lab fixtures and product-reviewed copy.
 
 ## Lesson frontmatter
