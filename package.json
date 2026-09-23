@@ -21,6 +21,7 @@
     "tsc6": "tsc6",
     "mcp": "node server/mcp.mjs",
     "lint:content:support-1": "node content/scripts/lint-support-1.mjs",
+    "lint:content:support-2": "node content/scripts/lint-support-2.mjs",
     "lint:content:support-3": "node content/scripts/lint-support-3.mjs"
   },
   "dependencies": {

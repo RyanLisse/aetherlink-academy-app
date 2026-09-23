@@ -1,7 +1,23 @@
-# Day 2. Rebuild the weather agent
+# Day 2 · Rebuild the weather agent
 
-The same input and expected decision are wired into the Eve and Claude Agent SDK skeleton folders. The weather call stays local and deterministic so the model or shell does not change the acceptance result. The shared acceptance test executes the deterministic weather helper; it does not claim a model-backed Eve or Claude Agent SDK run.
+Same input and expected decision for Eve (guided) and Claude Agent SDK (solo).
+The weather call stays on the training-lab mock so the model does not change the
+acceptance result. Shared tests execute the deterministic helper — they do **not**
+claim a model-backed Eve or Claude run.
 
-Use `day-02/eve` for the guided directory layout. Use `day-02/claude-agent-sdk` for the solo starter. `mastra` and `adk-go` are optional reading paths.
+| Path | Use |
+| --- | --- |
+| `eve/` | Guided directory agent · Eve pin **0.64.1** · plan-B under `eve/demo-fallback/` |
+| `claude-agent-sdk/` | Solo starter · day-1 n8n as MCP stand-in · sub-agents |
+| `mastra/` · `adk-go/` | Optional README deepening only |
+| `tests/weather-agent.test.mjs` | Shared acceptance (Eve + SDK + n8n MCP stand-in) |
+| `data/weather-input.json` | **Weather Input** fixture (Amsterdam → bring umbrella) |
 
-Preflight requires the participant's own model credential. No credential belongs in this repository. If the chosen model is unavailable, run the deterministic acceptance test and record the missing model run as open.
+Step names: `../day-01/STEP-NAMES.md`.
+
+## Preflight
+
+Participants need their own model credential (Agent SDK credit or API key with
+budget). No credential belongs in this repository. If the chosen model is
+unavailable, run the deterministic acceptance test and record the missing model
+run as OPEN.
