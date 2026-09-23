@@ -46,9 +46,11 @@ describe('registry', () => {
 
   test('the production registry includes the AET-21 samples and AET-26 live actions', () => {
         expect(registry.map((a) => a.name).sort()).toEqual([
+      'answer_self_check',
       'cancelSchedule',
       'detach',
       'everyoneBackToFollow',
+      'export_debrief',
       'followAgain',
       'getParticipantCount',
       'getScreenState',
@@ -60,12 +62,15 @@ describe('registry', () => {
       'get_mission',
       'get_my_progress',
       'gotoSlide',
+      'handoff',
+      'mark_practised',
       'nextSlide',
       'openLesson',
       'open_hint',
       'pauseUntil',
       'prevSlide',
       'releaseLesson',
+      'review_evidence',
       'scheduleLesson',
       'search_knowledge',
       'setReveal',
@@ -73,6 +78,7 @@ describe('registry', () => {
       'submit_evidence',
       'suggest_document',
       'togglePlanB',
+      'unmark_practised',
     ]);
   });
 });
