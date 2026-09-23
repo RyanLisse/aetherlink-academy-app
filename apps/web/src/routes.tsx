@@ -2,6 +2,8 @@ import {useEffect, useState, type ReactNode} from 'react';
 import {LanguageToggle, useI18n} from './i18n.tsx';
 import {Deck, type DeckMode} from '@academy/deck';
 import {LiveClassroom} from './live/LiveClassroom.tsx';
+import {SquadPanel} from './squad/SquadPanel.tsx';
+import {FacilitatorReleasePanel} from './release/FacilitatorReleasePanel.tsx';
 import {sourceSlides} from './deck/slides.js';
 import {normalizeSlides} from './deck/normalize.js';
 import './deck/deck.css';
@@ -100,7 +102,15 @@ export function Shell({pathname, navigate, connection}: ShellProps) {
           <LanguageToggle />
         </header>
         <section className="panel">
-          {active.id === 'connection' ? <ConnectionPanel state={connection} /> : <Placeholder route={active} />}
+          {active.id === 'connection' ? (
+            <ConnectionPanel state={connection} />
+          ) : active.id === 'squad' ? (
+            <SquadPanel />
+          ) : active.id === 'coach' ? (
+            <FacilitatorReleasePanel />
+          ) : (
+            <Placeholder route={active} />
+          )}
         </section>
         <footer>{t('room.footer')}</footer>
       </main>
