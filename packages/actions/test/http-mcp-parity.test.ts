@@ -18,7 +18,6 @@ import {CallerResolutionFailed} from '../src/errors.ts';
 import {emptyRegistry, registerAction} from '../src/registry.ts';
 import {AcademyContentLive} from '../src/actions/academy-content.ts';
 import {ParticipantContextLive} from '../src/actions/participant-context.ts';
-import {ReleaseGateLive} from '../src/actions/release-gate.ts';
 
 const PARTICIPANT_TOKEN = 'token-participant';
 const FACILITATOR_TOKEN = 'token-facilitator';
