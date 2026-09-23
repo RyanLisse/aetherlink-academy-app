@@ -16,6 +16,9 @@ import {ConfirmationStore, ConfirmationStoreLive} from '../src/confirmation.ts';
 import {hashEncoded} from '../src/dispatcher.ts';
 import {CallerResolutionFailed} from '../src/errors.ts';
 import {emptyRegistry, registerAction} from '../src/registry.ts';
+import {AcademyContentLive} from '../src/actions/academy-content.ts';
+import {ParticipantContextLive} from '../src/actions/participant-context.ts';
+import {ReleaseGateLive} from '../src/actions/release-gate.ts';
 
 const PARTICIPANT_TOKEN = 'token-participant';
 const FACILITATOR_TOKEN = 'token-facilitator';
@@ -85,6 +88,8 @@ const liveStub: LivePresenterShape = {
     Layer.succeed(ClassroomState, classroomState),
     Layer.succeed(LivePresenter, liveStub),
     Layer.succeed(ReleasePolicy, releaseStub),
+    AcademyContentLive(),
+    ParticipantContextLive(),
   );
   return {dependencies, confirmationStore};
 };
@@ -95,7 +100,7 @@ afterEach(async () => {
   vi.useRealTimers();
 });
 
-const httpRequestFor = (dependencies: Layer.Layer<CallerResolver | ConfirmationStore | ClassroomState | LivePresenter | ReleasePolicy>, reg = registry) => {
+const httpRequestFor = (dependencies: Layer.Layer<any>, reg = registry) => {
   const app = HttpApiBuilder.layer(ActionsHttpApi(reg)).pipe(
     Layer.provide(ActionsHttpHandlers(reg)),
     Layer.provide(dependencies),
@@ -119,9 +124,9 @@ const httpRequestFor = (dependencies: Layer.Layer<CallerResolver | ConfirmationS
     );
 };
 
-const mcpCallFor = (dependencies: Layer.Layer<CallerResolver | ConfirmationStore | ClassroomState | LivePresenter | ReleasePolicy>, reg = registry) => {
+const mcpCallFor = (dependencies: Layer.Layer<any>, reg = registry) => {
   const tools = toMcpTools(reg);
-  const runtime = <A>(effect: Effect.Effect<A, unknown, CallerResolver | ConfirmationStore | ClassroomState | LivePresenter | ReleasePolicy>) =>
+  const runtime = <A>(effect: Effect.Effect<A, unknown, any>) =>
     Effect.runPromise(Effect.result(effect.pipe(Effect.provide(dependencies))));
   return (name: string, token: string, payload: unknown, confirmationToken?: string) => {
     const tool = tools.find((t) => t.name === name)!;
