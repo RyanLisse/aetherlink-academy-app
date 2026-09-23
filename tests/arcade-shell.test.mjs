@@ -119,14 +119,26 @@ test('parse council + sdk bridge; sdk starters available', () => {
 
 test('ArcadeApp renders solo shell + start solo CTA', () => {
   const arcadeApp = readFileSync(path.join(root, 'src/arcade/ArcadeApp.jsx'), 'utf8');
+  const en = readFileSync(path.join(root, 'src/i18n/en.json'), 'utf8');
+  const nl = readFileSync(path.join(root, 'src/i18n/nl.json'), 'utf8');
   assert.match(arcadeApp, /startersAreAvailable|data-starters-status="available"/);
   assert.match(arcadeApp, /StartersReadyPanel|SDK starters ready/);
-  assert.match(arcadeApp, /Start solo/);
   assert.match(arcadeApp, /SoloShell/);
   assert.match(arcadeApp, /arcade-lab/);
   assert.match(arcadeApp, /facilitatorSoloNote|facilitator-solo-note/);
-  assert.match(arcadeApp, /Mensentaal/);
+  assert.match(arcadeApp, /arcade-facilitator-disclosure|role=facilitator/);
+  assert.match(arcadeApp, /WALKTHROUGH_SRC|arcade-walkthrough-en\.mp4/);
+  assert.match(arcadeApp, /arcade\.cta\.startSolo/);
+  assert.match(en, /"arcade\.cta\.startSolo": "Start solo"/);
+  assert.match(nl, /"arcade\.cta\.watch": "Zo werkt het"/);
+  assert.match(nl, /Mensentaal/);
+  assert.doesNotMatch(arcadeApp, /Opens <code>\{START_SOLO_HREF\}/);
+  assert.doesNotMatch(arcadeApp, /AET-66 · solo/);
   assert.doesNotMatch(arcadeApp, /Hands-on SDK labs wachten op Herdr <strong>LIS-65<\/strong>/);
+});
+
+test('walkthrough mp4 ships in public academy-assets', () => {
+  assert.ok(existsSync(path.join(root, 'public/academy-assets/arcade-walkthrough-en.mp4')));
 });
 
 test('main.jsx wires ArcadeApp on /arcade paths', () => {

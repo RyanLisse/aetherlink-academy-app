@@ -79,3 +79,46 @@
 .arcade-solo-frame-wrap{border:1px solid color-mix(in srgb,#7eb6ff 18%,transparent);border-radius:14px;overflow:hidden;min-height:720px;background:#0e1013}
 .arcade-solo-frame{width:100%;height:min(78vh,900px);min-height:680px;border:0;display:block;background:#0e1013}
 .arcade-shell:has(.arcade-solo){max-width:1280px}
+
+/* AET-73 / AET-71 — calm hub + walkthrough */
+.arcade-start-solo{gap:10px}
+.arcade-watch-cta{
+  border:0;
+  background:transparent;
+  color:inherit;
+  opacity:.78;
+  text-decoration:underline;
+  text-underline-offset:3px;
+  cursor:pointer;
+  font:inherit;
+  padding:2px 0;
+}
+.arcade-watch-cta:hover{opacity:1}
+.arcade-card-outcome{margin:0;opacity:.9;font-size:14px;line-height:1.45}
+.arcade-expand-btn{justify-self:start;opacity:.8;font-size:13px}
+.arcade-solo-headline{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.arcade-solo-headline h1{margin:0}
+.arcade-play-affordance{display:inline-flex;align-items:center;gap:6px;text-decoration:none;padding:8px 14px;border-radius:999px}
+.arcade-caption-toolbar{font-size:12px}
+.arcade-caption-toolbar button{padding:6px 10px}
+.arcade-facilitator-disclosure{border:1px dashed color-mix(in srgb,#e3b341 40%,transparent);border-radius:12px;padding:8px 12px}
+.arcade-facilitator-disclosure > summary{cursor:pointer;font-weight:600;opacity:.85}
+.arcade-facilitator-disclosure[open] > summary{margin-bottom:8px}
+.arcade-facilitator-disclosure .arcade-facilitator-strip{border:0;background:transparent;padding:0}
+.arcade-watch-backdrop{
+  position:fixed;inset:0;z-index:80;
+  background:color-mix(in srgb,#000 55%, transparent);
+  display:grid;place-items:center;padding:20px;
+}
+.arcade-watch-modal{
+  width:min(880px,100%);
+  background:var(--panel,#132338);
+  border:1px solid color-mix(in srgb,#7eb6ff 25%,transparent);
+  border-radius:16px;padding:14px 16px 16px;display:grid;gap:10px;
+  box-shadow:0 20px 60px color-mix(in srgb,#000 45%,transparent);
+}
+.arcade-watch-header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.arcade-watch-video{width:100%;border-radius:10px;background:#000;max-height:min(70vh,520px)}
+.arcade-watch-fallback{margin:0;font-size:13px}
+.arcade-solo .arcade-solo-frame-wrap{min-height:560px}
+.arcade-solo .arcade-solo-frame{min-height:520px;height:min(70vh,820px)}

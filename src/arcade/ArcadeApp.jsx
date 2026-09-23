@@ -1,6 +1,6 @@
 import {useMemo, useState, useEffect} from 'react';
 import {ArrowLeft, ArrowRight, ExternalLink, CheckCircle2, BookOpen, FlaskConical, Play} from 'lucide-react';
-import {LanguageToggle} from '../i18n';
+import {LanguageToggle, useT} from '../i18n';
 import {
   parseLessonMarkdown,
   matchArcadeRoute,
@@ -26,6 +26,13 @@ const LESSON_MARKDOWN = {
 const SOLO_IDS = (manifestJson.soloLessons || []).map((s) => s.id);
 const SOLO_PLAYER_BASE = manifestJson.soloPlayerBase || '/arcade-lab/';
 const START_SOLO_HREF = `/arcade/solo?lesson=${DEFAULT_SOLO_LESSON_ID}`;
+const WALKTHROUGH_SRC = '/academy-assets/arcade-walkthrough-en.mp4';
+
+const CARD_COPY_KEY = {
+  'l1-weather': 'weather',
+  'l2-council': 'council',
+  'sdk-bridge': 'sdk',
+};
 
 export {isArcadePath, matchArcadeRoute, parseLessonMarkdown, resolveSoloLessonId, soloLessonsForRoute, DEFAULT_SOLO_LESSON_ID};
 
@@ -45,12 +52,27 @@ function readLessonQuery() {
   }
 }
 
+function readRoleQuery(search) {
+  try {
+    return new URLSearchParams(search || window.location.search).get('role');
+  } catch {
+    return null;
+  }
+}
+
 function soloPlayerSrc(lessonId) {
   const q = new URLSearchParams({lesson: lessonId, embed: '1', mode: 'cohort'});
   return `${SOLO_PLAYER_BASE}?${q.toString()}`;
 }
 
+function friendlySoloTitle(t, lessonId, metaTitle) {
+  const keyed = t(`arcade.solo.title.${lessonId}`);
+  if (keyed && keyed !== `arcade.solo.title.${lessonId}`) return keyed;
+  return metaTitle || 'Arcade solo';
+}
+
 export function ArcadeApp({themeButton}) {
+  const t = useT();
   const [pathname, setPathname] = useState(() => window.location.pathname);
   const [search, setSearch] = useState(() => window.location.search);
   useEffect(() => {
@@ -76,7 +98,7 @@ export function ArcadeApp({themeButton}) {
         <div className="arcade-brand">
           <a href="/" className="arcade-home-link" onClick={(e) => { e.preventDefault(); location.href = '/'; }}>AetherLink Academy</a>
           <span className="arcade-sep">/</span>
-          <strong>Agent Arcade</strong>
+          <strong>{t('arcade.hero.title')}</strong>
         </div>
         <div className="arcade-top-actions">
           <LanguageToggle />
@@ -95,19 +117,20 @@ export function ArcadeApp({themeButton}) {
       {route.kind === 'facilitator' && <FacilitatorNotes navigate={navigate} />}
       {route.kind === 'unknown' && (
         <section className="arcade-panel">
-          <h1>Arcade — onbekende route</h1>
-          <p className="muted">Geen les voor <code>{pathname}</code>.</p>
+          <h1>{t('arcade.unknown')}</h1>
+          <p className="muted"><code>{pathname}</code></p>
           <button type="button" className="gradient" onClick={() => navigate('/arcade')}>
-            Terug naar hub <ArrowLeft size={16} />
+            {t('arcade.unknown.back')} <ArrowLeft size={16} />
           </button>
         </section>
       )}
-      <p className="arcade-footnote muted">Day 1–5 packs blijven bereikbaar via de normale Academy-kamer · Linear {manifestJson.linearEpic}</p>
+      <p className="arcade-footnote muted">{t('arcade.footnote')}</p>
     </div>
   );
 }
 
 function SoloLessonCards({lessons, navigate, title}) {
+  const t = useT();
   if (!lessons.length) return null;
   return (
     <div className="arcade-solo-block">
@@ -120,11 +143,10 @@ function SoloLessonCards({lessons, navigate, title}) {
             className="arcade-solo-card"
             onClick={() => navigate(`/arcade/solo?lesson=${encodeURIComponent(s.id)}`)}
           >
-            <span className="arcade-solo-card-title">{s.title}</span>
-            <code className="arcade-solo-id">{s.id}</code>
+            <span className="arcade-solo-card-title">{friendlySoloTitle(t, s.id, s.title)}</span>
             {s.demoOnly ? <span className="arcade-pending-pill">demo only</span> : null}
             {s.optional ? <span className="muted">optional</span> : null}
-            <span className="arcade-solo-cta"><Play size={14} /> Start solo</span>
+            <span className="arcade-solo-cta"><Play size={14} /> {t('arcade.cta.startSolo')}</span>
           </button>
         ))}
       </div>
@@ -132,54 +154,103 @@ function SoloLessonCards({lessons, navigate, title}) {
   );
 }
 
+function WalkthroughModal({open, onClose}) {
+  const t = useT();
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+  if (!open) return null;
+  return (
+    <div className="arcade-watch-backdrop" role="presentation" onClick={onClose}>
+      <div
+        className="arcade-watch-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('arcade.watch.title')}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="arcade-watch-header">
+          <strong>{t('arcade.watch.title')}</strong>
+          <button type="button" className="text-button" onClick={onClose}>{t('arcade.watch.close')}</button>
+        </div>
+        <video
+          className="arcade-watch-video"
+          controls
+          playsInline
+          preload="metadata"
+          src={WALKTHROUGH_SRC}
+        >
+          <a href={WALKTHROUGH_SRC} target="_blank" rel="noreferrer">{t('arcade.watch.openTab')}</a>
+        </video>
+        <p className="muted arcade-watch-fallback">
+          <a href={WALKTHROUGH_SRC} target="_blank" rel="noreferrer">{t('arcade.watch.openTab')}</a>
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function ArcadeHub({navigate}) {
+  const t = useT();
+  const [watchOpen, setWatchOpen] = useState(false);
+  const [expanded, setExpanded] = useState(() => ({}));
   const lessons = [...(manifestJson.lessons || [])].sort((a, b) => a.order - b.order);
-  const cohortSolo = (manifestJson.soloLessons || []).filter((s) => s.cohort);
-  const demoSolo = (manifestJson.soloLessons || []).filter((s) => s.demoOnly);
   return (
     <section className="arcade-panel arcade-hub">
-      <p className="cyan">{manifestJson.linearEpic || 'AET-65'} · Agent Arcade</p>
-      <h1>{manifestJson.title}</h1>
-      <p className="lede">Scrimba-achtige guided lesson: coach + playground + dual captions. Solo lab = timeline player in Academy chrome (play + captions + checkpoints).</p>
+      <h1>{t('arcade.hero.title')}</h1>
+      <p className="lede">{t('arcade.hero.lede')}</p>
       <div className="arcade-start-solo">
         <button type="button" className="gradient arcade-start-solo-btn" onClick={() => navigate(START_SOLO_HREF)}>
-          <Play size={18} /> Start solo
+          <Play size={18} /> {t('arcade.cta.startSolo')}
         </button>
-        <p className="muted">Opens <code>{START_SOLO_HREF}</code> · default <code>{DEFAULT_SOLO_LESSON_ID}</code></p>
+        <button
+          type="button"
+          className="arcade-watch-cta"
+          onClick={() => setWatchOpen(true)}
+        >
+          {t('arcade.cta.watch')}
+        </button>
       </div>
+      <WalkthroughModal open={watchOpen} onClose={() => setWatchOpen(false)} />
       <div className="arcade-lesson-grid">
-        {lessons.map((lesson) => (
-          <article key={lesson.id} className="arcade-card">
-            <p className="cyan">{lesson.track === 'eve' ? 'Track A · Eve' : 'Track B · SDK'} · ~{lesson.durationMin} min · {lesson.linear}</p>
-            <h2>{lesson.title}</h2>
-            {startersArePending(lesson.startersStatus) && (
-              <p className="arcade-pending-pill">Starters: PENDING ({lesson.startersStatus})</p>
-            )}
-            {startersAreAvailable(lesson.startersStatus) && (
-              <p className="arcade-ready-pill">Starters: available ({(lesson.starters || []).map((s) => s.id).join(', ') || 'ready'})</p>
-            )}
-            <ul className="arcade-checkpoint-list">
-              {(lesson.checkpoints || []).slice(0, 4).map((id) => (
-                <li key={id}><CheckCircle2 size={14} /> {id}</li>
-              ))}
-            </ul>
-            <button type="button" className="gradient" onClick={() => navigate(lesson.route)}>
-              Open les <ArrowRight size={16} />
-            </button>
-            <SoloLessonCards
-              lessons={soloLessonsForRoute(manifestJson, lesson.route).filter((s) => s.cohort || s.optional)}
-              navigate={navigate}
-              title="Solo lessons"
-            />
-          </article>
-        ))}
+        {lessons.map((lesson) => {
+          const copyKey = CARD_COPY_KEY[lesson.id] || 'weather';
+          const open = Boolean(expanded[lesson.id]);
+          return (
+            <article key={lesson.id} className="arcade-card">
+              <h2>{t(`arcade.card.${copyKey}.title`)}</h2>
+              <p className="arcade-card-outcome">{t(`arcade.card.${copyKey}.outcome`)}</p>
+              <button
+                type="button"
+                className="text-button arcade-expand-btn"
+                aria-expanded={open}
+                onClick={() => setExpanded((prev) => ({...prev, [lesson.id]: !prev[lesson.id]}))}
+              >
+                {t('arcade.expand')}
+              </button>
+              {open && (
+                <ul className="arcade-checkpoint-list">
+                  {(lesson.checkpoints || []).slice(0, 6).map((id) => (
+                    <li key={id}><CheckCircle2 size={14} /> {id}</li>
+                  ))}
+                </ul>
+              )}
+              <button type="button" className="gradient" onClick={() => navigate(lesson.route)}>
+                {t('arcade.cta.openLesson')} <ArrowRight size={16} />
+              </button>
+            </article>
+          );
+        })}
       </div>
-      <SoloLessonCards lessons={cohortSolo} navigate={navigate} title="All cohort solo lessons" />
-      <SoloLessonCards lessons={demoSolo} navigate={navigate} title="Demo only (not cohort path)" />
       <div className="arcade-hub-links">
-        <a href="/" onClick={(e) => { e.preventDefault(); location.href = '/'; }}>← Day packs / kamer</a>
+        <a href="/" onClick={(e) => { e.preventDefault(); location.href = '/'; }}>← {t('arcade.hub.dayPacks')}</a>
         <button type="button" className="text-button" onClick={() => navigate('/arcade/facilitator')}>
-          <BookOpen size={16} /> Facilitator notes
+          <BookOpen size={16} /> {t('arcade.hub.facilitatorNotes')}
         </button>
       </div>
     </section>
@@ -187,6 +258,7 @@ function ArcadeHub({navigate}) {
 }
 
 function SoloShell({navigate, search}) {
+  const t = useT();
   const rawLesson = useMemo(() => {
     try {
       return new URLSearchParams(search || window.location.search).get('lesson');
@@ -194,12 +266,14 @@ function SoloShell({navigate, search}) {
       return readLessonQuery();
     }
   }, [search]);
+  const role = useMemo(() => readRoleQuery(search), [search]);
+  const facilitatorForced = role === 'facilitator';
   const resolved = useMemo(() => resolveSoloLessonId(rawLesson, SOLO_IDS), [rawLesson]);
   const [caption, setCaption] = useState('mensentaal');
   const meta = (manifestJson.soloLessons || []).find((s) => s.id === resolved.id);
+  const title = friendlySoloTitle(t, resolved.id, meta?.title);
 
   useEffect(() => {
-    // Prefer query; alt window hook if iframe cannot forward (document for facilitators).
     window.__AETHERLAB_LESSON_ID__ = resolved.id;
     return () => {
       try { delete window.__AETHERLAB_LESSON_ID__; } catch { /* ignore */ }
@@ -208,45 +282,55 @@ function SoloShell({navigate, search}) {
 
   const banner =
     resolved.reason === 'missing'
-      ? `Default lesson · ${resolved.id}`
+      ? t('arcade.soft.default')
       : resolved.reason === 'unknown'
-        ? `Unknown lesson · loaded ${resolved.id}`
+        ? t('arcade.soft.unknown')
         : null;
+
+  const facilitatorBody = (
+    <div className="arcade-facilitator-strip" role="note">
+      <strong>{t('arcade.facilitator')}</strong>
+      <pre className="arcade-facilitator-strip-body">{facilitatorSoloNote}</pre>
+    </div>
+  );
 
   return (
     <section className="arcade-panel arcade-solo" data-solo-lesson={resolved.id}>
       <div className="arcade-lesson-nav">
         <button type="button" className="text-button" onClick={() => navigate('/arcade')}>
-          <ArrowLeft size={16} /> Hub
+          <ArrowLeft size={16} /> {t('arcade.backHub')}
         </button>
-        <p className="cyan">AET-66 · solo · {resolved.id}</p>
+        <div className="arcade-caption-toggle arcade-caption-toolbar" role="group" aria-label="Caption mode">
+          <button type="button" className={caption === 'mensentaal' ? 'active' : ''} onClick={() => setCaption('mensentaal')}>{t('arcade.caption.plain')}</button>
+          <button type="button" className={caption === 'tech' ? 'active' : ''} onClick={() => setCaption('tech')}>{t('arcade.caption.tech')}</button>
+        </div>
       </div>
-      <h1>{meta?.title || 'Arcade solo'}</h1>
-      <div className="arcade-facilitator-strip" role="note">
-        <strong>Facilitator</strong>
-        <pre className="arcade-facilitator-strip-body">{facilitatorSoloNote}</pre>
+      <div className="arcade-solo-headline">
+        <h1>{title}</h1>
+        <a className="gradient arcade-play-affordance" href="#arcade-solo-player">
+          <Play size={16} /> {t('arcade.play')}
+        </a>
       </div>
       {banner && (
         <div className="arcade-soft-banner" role="status">
           {banner}
         </div>
       )}
-      <div className="arcade-caption-toggle" role="group" aria-label="Caption mode">
-        <button type="button" className={caption === 'mensentaal' ? 'active' : ''} onClick={() => setCaption('mensentaal')}>Mensentaal</button>
-        <button type="button" className={caption === 'tech' ? 'active' : ''} onClick={() => setCaption('tech')}>Tech</button>
-      </div>
-      <p className="muted arcade-caption-hint">
-        Shell caption mode: <strong>{caption === 'tech' ? 'Tech' : 'Mensentaal'}</strong>. Timeline captions follow lesson <code>say</code> ops in the player (cohort = play + checkpoints).
-      </p>
-      <div className="arcade-solo-frame-wrap">
+      <div id="arcade-solo-player" className="arcade-solo-frame-wrap">
         <iframe
           key={resolved.id}
           className="arcade-solo-frame"
-          title={`Solo lab · ${resolved.id}`}
+          title={title}
           src={soloPlayerSrc(resolved.id)}
           allow="autoplay"
         />
       </div>
+      {facilitatorForced ? facilitatorBody : (
+        <details className="arcade-facilitator-disclosure">
+          <summary>{t('arcade.facilitator')}</summary>
+          {facilitatorBody}
+        </details>
+      )}
     </section>
   );
 }
@@ -277,6 +361,7 @@ function StartersReadyPanel({lesson}) {
 }
 
 function LessonPlayer({lesson, markdown, navigate}) {
+  const t = useT();
   const parsed = useMemo(() => parseLessonMarkdown(markdown), [markdown]);
   const [caption, setCaption] = useState('mensentaal');
   const [stepIndex, setStepIndex] = useState(0);
@@ -290,12 +375,11 @@ function LessonPlayer({lesson, markdown, navigate}) {
     <section className="arcade-panel arcade-lesson">
       <div className="arcade-lesson-nav">
         <button type="button" className="text-button" onClick={() => navigate('/arcade')}>
-          <ArrowLeft size={16} /> Hub
+          <ArrowLeft size={16} /> {t('arcade.backHub')}
         </button>
-        <p className="cyan">{lesson.linear} · {lesson.track}</p>
       </div>
       <h1>{parsed.title || lesson.title}</h1>
-      <SoloLessonCards lessons={soloForLesson} navigate={navigate} title="Start solo for this track" />
+      <SoloLessonCards lessons={soloForLesson} navigate={navigate} title={t('arcade.cta.startSolo')} />
       {pending && (
         <div className="arcade-pending" role="status">
           <strong>PENDING — SDK starters</strong>
@@ -304,8 +388,8 @@ function LessonPlayer({lesson, markdown, navigate}) {
       )}
       {available && <StartersReadyPanel lesson={lesson} />}
       <div className="arcade-caption-toggle" role="group" aria-label="Caption mode">
-        <button type="button" className={caption === 'mensentaal' ? 'active' : ''} onClick={() => setCaption('mensentaal')}>Mensentaal</button>
-        <button type="button" className={caption === 'tech' ? 'active' : ''} onClick={() => setCaption('tech')}>Tech</button>
+        <button type="button" className={caption === 'mensentaal' ? 'active' : ''} onClick={() => setCaption('mensentaal')}>{t('arcade.caption.plain')}</button>
+        <button type="button" className={caption === 'tech' ? 'active' : ''} onClick={() => setCaption('tech')}>{t('arcade.caption.tech')}</button>
       </div>
       <div className="arcade-stepper">
         {parsed.steps.map((s, i) => (
@@ -322,7 +406,7 @@ function LessonPlayer({lesson, markdown, navigate}) {
       {step && (
         <div className="arcade-split">
           <article className="arcade-coach">
-            <p className="cyan">Coach · {caption === 'tech' ? 'Tech' : 'Mensentaal'}</p>
+            <p className="cyan">Coach · {caption === 'tech' ? t('arcade.caption.tech') : t('arcade.caption.plain')}</p>
             <h2>{step.heading}</h2>
             <p>{coachText || '—'}</p>
             {step.checkpoint && (
@@ -364,12 +448,13 @@ function LessonPlayer({lesson, markdown, navigate}) {
 }
 
 function FacilitatorNotes({navigate}) {
+  const t = useT();
   return (
     <section className="arcade-panel">
       <button type="button" className="text-button" onClick={() => navigate('/arcade')}>
-        <ArrowLeft size={16} /> Hub
+        <ArrowLeft size={16} /> {t('arcade.backHub')}
       </button>
-      <h1>Facilitator notes</h1>
+      <h1>{t('arcade.hub.facilitatorNotes')}</h1>
       <pre className="arcade-notes">{facilitatorNotes}</pre>
       <h2>Solo lab</h2>
       <pre className="arcade-notes">{facilitatorSoloNote}</pre>
