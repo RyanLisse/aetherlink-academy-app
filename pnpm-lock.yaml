@@ -109,6 +109,9 @@ importers:
       '@academy/actions':
         specifier: workspace:^
         version: link:../../packages/actions
+      '@academy/i18n':
+        specifier: workspace:*
+        version: link:../../packages/i18n
       '@academy/schema':
         specifier: workspace:*
         version: link:../../packages/schema
