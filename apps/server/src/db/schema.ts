@@ -21,6 +21,7 @@ export const courseVersions = curriculum.table(
     courseId: uuid('course_id').notNull().references((): AnyPgColumn => courses.id),
     version: integer('version').notNull(),
     status: text('status', {enum: ['draft', 'published']}).notNull().default('draft'),
+    contentHash: text('content_hash'),
     publishedAt: timestamp('published_at', {withTimezone: true}),
     createdAt: createdAt(),
   },
