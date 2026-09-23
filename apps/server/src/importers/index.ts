@@ -1,4 +1,10 @@
 export {contentHashSlides} from './contentHash.ts';
 export {importSlidesJs, SlidesJsImportError, type SlidesJsImportResult} from './slidesJs.ts';
+export {importCurriculumMd, CurriculumMdImportError, type CurriculumMdImportResult} from './curriculumMd.ts';
+export {importDayDecksJson, DayDecksJsonImportError, type DayDecksJsonImportResult, type DayDeckImport} from './dayDecksJson.ts';
+export {importContentMjs, ContentMjsImportError, type ContentMjsImportResult, type ContentMjsDayImport} from './contentMjs.ts';
 export {exportLessonMarkdown, importMarkdown, importExportEquals, type MarkdownLesson} from './markdown.ts';
 export {DraftLedger, type DraftRecord} from './draftLedger.ts';
+export {writeSlidesDraft, type DraftWriteResult} from './postgresDraft.ts';
+export {slidesToAggregate} from './slidesAggregate.ts';
+export {stableUuid} from './stableUuid.ts';

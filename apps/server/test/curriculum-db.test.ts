@@ -373,6 +373,49 @@ describe.skipIf(!enabled)('CurriculumRepo against a real isolated Postgres', () 
     expect(result._tag).toBe('Failure');
     if (result._tag === 'Failure') expect(result.failure).toBeInstanceOf(CourseNotFound);
   });
+
+  test('writeDraft is idempotent on content hash and never publishes', async () => {
+    const {slidesToAggregate} = await import('../src/importers/slidesAggregate.ts');
+    const {contentHashSlides} = await import('../src/importers/contentHash.ts');
+    const {decodeSlide} = await import('@academy/schema');
+    const c = course();
+    await sqlUnsafe(
+      `insert into academy_curriculum.courses (id, title, locale, source_git_url, source_commit) values ($1, $2, $3, $4, $5)`,
+      [c.id, JSON.stringify(c.title), c.locale, c.sourceGitUrl, c.sourceCommit],
+    );
+    const lessonId = 'imported-lesson';
+    const slides = [
+      decodeSlide({id: 's1', lessonId, ordinal: 1, title: 'One', type: 'context'}),
+      decodeSlide({id: 's2', lessonId, ordinal: 2, title: 'Two', type: 'concept', layout: 'cards', cards: [{title: 'A', body: 'B'}]}),
+    ];
+    const hash = contentHashSlides(slides);
+    const draft = slidesToAggregate(c.id, slides);
+    const first = await run(Effect.gen(function* () {
+      const repo = yield* CurriculumRepo;
+      return yield* repo.writeDraft(c.id, draft, hash);
+    }));
+    expect(first.unchanged).toBe(false);
+    expect(first.version).toBe(1);
+    const second = await run(Effect.gen(function* () {
+      const repo = yield* CurriculumRepo;
+      return yield* repo.writeDraft(c.id, draft, hash);
+    }));
+    expect(second.unchanged).toBe(true);
+    expect(second.version).toBe(1);
+    const revisions = await run(Effect.gen(function* () {
+      const repo = yield* CurriculumRepo;
+      return yield* repo.listRevisions(c.id);
+    }));
+    expect(revisions).toHaveLength(1);
+    expect(revisions[0]?.status).toBe('draft');
+    expect(revisions[0]?.contentHash).toBe(hash);
+    const current = await run(Effect.gen(function* () {
+      const repo = yield* CurriculumRepo;
+      return yield* repo.currentVersion(c.id);
+    }));
+    expect(current).toBeNull();
+  });
+
 });
 
 describe.skipIf(enabled)('curriculum db test is opt-in', () => {
