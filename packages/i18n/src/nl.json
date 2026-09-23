@@ -366,5 +366,19 @@
   "arcade.unknown": "Arcade — onbekende route",
   "arcade.unknown.back": "Terug naar hub",
   "arcade.soft.default": "Standaardles geladen.",
-  "arcade.soft.unknown": "Onbekende les — standaardles geladen."
+  "arcade.soft.unknown": "Onbekende les — standaardles geladen.",
+  "nav.apps": "Apps",
+  "apps.eyebrow": "OpenShip portal",
+  "apps.title": "App-launcher",
+  "apps.lede": "Start agent-native apps vanuit Academy met een kort geldig launch-ticket. Geen vaste beheerkeys in de browser.",
+  "apps.authInventory": "Auth-inventaris",
+  "apps.googleDep": "Google SSO hangt af van AET-6 (Ryan ops).",
+  "apps.launch": "Start met ticket",
+  "apps.publish": "Publiceer immutable versie",
+  "apps.launchReady": "Launch-ticket klaar",
+  "apps.backNav": "Terug naar Academy",
+  "apps.backToAcademy": "Terug naar Academy",
+  "apps.revoke": "Trek toegang in",
+  "apps.published": "Gepubliceerde versie (onwijzigbaar)",
+  "apps.chromeHint": "Chrome/overlay (AET-51) toont Terug naar Academy zonder lescanvas-CSS."
 }
