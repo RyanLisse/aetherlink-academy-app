@@ -46,6 +46,7 @@ describe('registry', () => {
 
   test('the production registry includes the AET-21 samples and AET-26 live actions', () => {
     expect(registry.map((a) => a.name).sort()).toEqual([
+      'cancelSchedule',
       'detach',
       'everyoneBackToFollow',
       'followAgain',
@@ -56,6 +57,8 @@ describe('registry', () => {
       'openLesson',
       'pauseUntil',
       'prevSlide',
+      'releaseLesson',
+      'scheduleLesson',
       'setReveal',
       'startTimer',
       'togglePlanB',

@@ -16,3 +16,4 @@ export * from './errors.ts';
 export {toFullJsonSchema} from './json-schema.ts';
 export {emptyRegistry, findAction, registerAction, type ActionRegistry} from './registry.ts';
 export {LivePresenter, requireLiveRoom, type LivePresenterShape} from './actions/live-state.ts';
+export {ReleasePolicy, requireSquadRoom, type ReleasePolicyShape} from './actions/release-policy.ts';

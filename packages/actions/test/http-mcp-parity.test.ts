@@ -7,6 +7,7 @@ import {defineAction} from '../src/action.ts';
 import {registry} from '../src/actions/index.ts';
 import {ClassroomState, ClassroomStateLive} from '../src/actions/state.ts';
 import {LivePresenter, type LivePresenterShape} from '../src/actions/live-state.ts';
+import {ReleasePolicy, type ReleasePolicyShape} from '../src/actions/release-policy.ts';
 import {toChatTools} from '../src/adapters/chat.ts';
 import {ActionsHttpApi, ActionsHttpHandlers} from '../src/adapters/http.ts';
 import {toMcpTools} from '../src/adapters/mcp.ts';
@@ -40,6 +41,17 @@ const CallerResolverFixture = Layer.succeed(CallerResolver, {
  */
 const makeDependencies = () => {
 
+
+const releaseStub: ReleasePolicyShape = {
+  isReleased: () => Effect.succeed(true),
+  releaseLesson: (squadId, lessonId, releasedBy) =>
+    Effect.succeed({squadId, lessonId, state: 'released', releasedBy, scheduleRevision: null}),
+  scheduleLesson: (squadId, lessonId, scheduledAt) =>
+    Effect.succeed({squadId, lessonId, state: 'scheduled', scheduledAt, scheduleRevision: 1}),
+  cancelSchedule: (squadId, lessonId) =>
+    Effect.succeed({squadId, lessonId, state: 'locked', scheduleRevision: 2}),
+};
+
 const liveStub: LivePresenterShape = {
   roomId: ROOM,
   get: Effect.succeed({
@@ -72,6 +84,7 @@ const liveStub: LivePresenterShape = {
     Layer.succeed(ConfirmationStore, confirmationStore),
     Layer.succeed(ClassroomState, classroomState),
     Layer.succeed(LivePresenter, liveStub),
+    Layer.succeed(ReleasePolicy, releaseStub),
   );
   return {dependencies, confirmationStore};
 };
@@ -82,7 +95,7 @@ afterEach(async () => {
   vi.useRealTimers();
 });
 
-const httpRequestFor = (dependencies: Layer.Layer<CallerResolver | ConfirmationStore | ClassroomState | LivePresenter>, reg = registry) => {
+const httpRequestFor = (dependencies: Layer.Layer<CallerResolver | ConfirmationStore | ClassroomState | LivePresenter | ReleasePolicy>, reg = registry) => {
   const app = HttpApiBuilder.layer(ActionsHttpApi(reg)).pipe(
     Layer.provide(ActionsHttpHandlers(reg)),
     Layer.provide(dependencies),
@@ -106,9 +119,9 @@ const httpRequestFor = (dependencies: Layer.Layer<CallerResolver | ConfirmationS
     );
 };
 
-const mcpCallFor = (dependencies: Layer.Layer<CallerResolver | ConfirmationStore | ClassroomState | LivePresenter>, reg = registry) => {
+const mcpCallFor = (dependencies: Layer.Layer<CallerResolver | ConfirmationStore | ClassroomState | LivePresenter | ReleasePolicy>, reg = registry) => {
   const tools = toMcpTools(reg);
-  const runtime = <A>(effect: Effect.Effect<A, unknown, CallerResolver | ConfirmationStore | ClassroomState | LivePresenter>) =>
+  const runtime = <A>(effect: Effect.Effect<A, unknown, CallerResolver | ConfirmationStore | ClassroomState | LivePresenter | ReleasePolicy>) =>
     Effect.runPromise(Effect.result(effect.pipe(Effect.provide(dependencies))));
   return (name: string, token: string, payload: unknown, confirmationToken?: string) => {
     const tool = tools.find((t) => t.name === name)!;
