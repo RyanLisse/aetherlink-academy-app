@@ -17,3 +17,20 @@ export {toFullJsonSchema} from './json-schema.ts';
 export {emptyRegistry, findAction, registerAction, type ActionRegistry} from './registry.ts';
 export {LivePresenter, requireLiveRoom, type LivePresenterShape} from './actions/live-state.ts';
 export {ReleasePolicy, requireSquadRoom, type ReleasePolicyShape} from './actions/release-policy.ts';
+export {
+  AcademyContent,
+  AcademyContentLive,
+  AcademyContentMemory,
+  type AcademyContentShape,
+  type LessonRecord,
+  type AssignmentRecord,
+  ParticipantContext,
+  ParticipantContextLive,
+  ParticipantContextMemory,
+  AmbiguousViewContext,
+  type ParticipantViewBinding,
+  LessonNotReleased,
+  LOCKED_LESSON_DENIAL,
+  lockedLessonDenialBody,
+  requireReleased,
+} from './actions/index.ts';

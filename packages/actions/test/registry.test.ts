@@ -45,22 +45,33 @@ describe('registry', () => {
   });
 
   test('the production registry includes the AET-21 samples and AET-26 live actions', () => {
-    expect(registry.map((a) => a.name).sort()).toEqual([
+        expect(registry.map((a) => a.name).sort()).toEqual([
       'cancelSchedule',
       'detach',
       'everyoneBackToFollow',
       'followAgain',
       'getParticipantCount',
       'getScreenState',
+      'get_assignment',
+      'get_connection_state',
+      'get_current_slide',
+      'get_document',
+      'get_lesson',
+      'get_mission',
+      'get_my_progress',
       'gotoSlide',
       'nextSlide',
       'openLesson',
+      'open_hint',
       'pauseUntil',
       'prevSlide',
       'releaseLesson',
       'scheduleLesson',
+      'search_knowledge',
       'setReveal',
       'startTimer',
+      'submit_evidence',
+      'suggest_document',
       'togglePlanB',
     ]);
   });

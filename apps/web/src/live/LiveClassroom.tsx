@@ -1,6 +1,7 @@
 import {useEffect, useMemo, useRef, useState} from 'react';
 import {Deck, type DeckMode, type DeckSlide} from '@academy/deck';
 import {AssignmentCard} from './AssignmentCard.tsx';
+import {WebMcpRegistration} from '../webmcp/index.ts';
 import {publishLocalPresenter, subscribeLocalPresenter} from './broadcast.ts';
 import {LiveClient, type LiveSnapshot} from './client.ts';
 import {PresenceBar} from './PresenceBar.tsx';
@@ -169,6 +170,9 @@ export function LiveClassroom(props: LiveClassroomProps) {
         onRevealStepChange={onRevealStepChange}
       />
       {props.mode === 'follow' && slide && <AssignmentCard slide={slide} timerRemaining={timerRemaining} />}
+      {props.role === 'participant' && props.mode === 'follow' && (
+        <WebMcpRegistration connectionState="configured" />
+      )}
       <button type="button" hidden data-testid="kill-ws" onClick={() => clientRef.current?.killWebSocket()} />
     </div>
   );
