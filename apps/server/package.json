@@ -16,7 +16,8 @@
     "test:curriculum-db": "ACADEMY_CURRICULUM_DB_TEST=1 vitest run test/curriculum-db.test.ts",
     "db:generate": "drizzle-kit generate --config ../../drizzle.config.ts",
     "dev": "node --watch --experimental-strip-types src/main.ts",
-    "start": "node dist/main.js"
+    "start": "node dist/main.js",
+    "import-content": "node --experimental-strip-types scripts/import-cli.ts"
   },
   "dependencies": {
     "@academy/schema": "workspace:*",
