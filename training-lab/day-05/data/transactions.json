@@ -1,0 +1,8 @@
+[
+  {"id":"TX-FIC-501","amount_eur":120,"region":"NL-TRAIN","merchant_category":"grocery","device":"known","risk":"low","seededHighRisk":false},
+  {"id":"TX-FIC-502","amount_eur":6400,"region":"BE-TRAIN","merchant_category":"electronics","device":"new","risk":"high","seededHighRisk":true},
+  {"id":"TX-FIC-503","amount_eur":45,"region":"NL-TRAIN","merchant_category":"coffee","device":"known","risk":"low","seededHighRisk":false},
+  {"id":"TX-FIC-504","amount_eur":2100,"region":"DE-TRAIN","merchant_category":"travel","device":"new","risk":"high","seededHighRisk":true},
+  {"id":"TX-FIC-505","amount_eur":18.75,"region":"NL-TRAIN","merchant_category":"grocery","device":"known","risk":"low","seededHighRisk":false},
+  {"id":"TX-FIC-506","amount_eur":890,"region":"FR-TRAIN","merchant_category":"jewelry","device":"known","risk":"medium","seededHighRisk":false}
+]

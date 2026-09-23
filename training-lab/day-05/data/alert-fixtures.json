@@ -1,0 +1,21 @@
+{
+  "source": "fictional-reconciliation",
+  "drafts": [
+    {
+      "id": "ALERT-FIC-501",
+      "transactionId": "TX-FIC-502",
+      "risk": "high",
+      "reason": "new device with high amount in BE-TRAIN",
+      "recommendedAction": "human review before any draft payout",
+      "channel": "draft-only"
+    },
+    {
+      "id": "ALERT-FIC-502",
+      "transactionId": "TX-FIC-504",
+      "risk": "high",
+      "reason": "new device travel category spike",
+      "recommendedAction": "navigator confirms context with driver",
+      "channel": "draft-only"
+    }
+  ]
+}

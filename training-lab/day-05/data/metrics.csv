@@ -1,0 +1,6 @@
+metric_id,label,value,unit,window,anomaly
+MET-FIC-501,fictional_settlement_latency_p95,1.2,seconds,1h,false
+MET-FIC-502,fictional_alert_draft_rate,14,count,1h,false
+MET-FIC-503,fictional_mismatch_rate,0.18,ratio,1h,true
+MET-FIC-504,fictional_human_gate_skips,3,count,1h,true
+MET-FIC-505,fictional_queue_depth,42,count,1h,false
