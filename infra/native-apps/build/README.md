@@ -16,8 +16,15 @@ reported as a clean release revision.
 Standalone generation resolves `@agent-native/*` to published versions and
 records them in `pnpm-lock.yaml`, which keeps the build context small and
 portable. The source checkout and lockfile are inputs only. `build-context.sh`
-copies a clean context and adds the Dockerfile, `.dockerignore`, and the small
-Better Auth signup patch used by the existing Slides PoC.
+copies a clean context and adds the Dockerfile, `.dockerignore`, and the Chat
+auth patch. The patch keeps email/password signup from auto-signing in and
+adds `POST /_academy/embed/ticket`, which accepts only a short-lived HMAC
+assertion from Academy and returns a same-origin Agent-Native embed start URL.
+The assertion contains a deterministic pseudonymous `@academy.invalid`
+owner, room and participant identifiers, and the fixed `/home?embedded=1`
+target. It never carries an Academy browser token, participant name, or real
+participant email. Chat stores a digest of each assertion nonce until expiry,
+so replaying the signed mint request cannot create another ticket.
 
 ```sh
 context_parent="$(mktemp -d /tmp/academy-chat-context.XXXXXX)"
@@ -70,3 +77,9 @@ before starting another project. An external GitHub Actions build/export path
 is not implemented here and should not be reported as completed. This keeps
 cost within the existing server and does not require a second server or public
 registry.
+
+Verify the patch against a clean generated Chat template before building:
+
+```sh
+infra/native-apps/build/tests/verify-chat-auth-patch.sh
+```
