@@ -51,3 +51,10 @@ assignment:
 ```
 
 `starterPath` is relative to `training-lab/` and must point at an existing folder.
+
+Day packs: `pnpm lint:content:support-1` · `pnpm lint:content:support-3`.
+
+## Days
+
+- `courses/worldline-wave-2/support-1/` — day 1 n8n (AET-36)
+- `courses/worldline-wave-2/support-3/` — day 3 transaction-alert (AET-38)

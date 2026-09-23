@@ -1,5 +1,17 @@
-# Day 3. Transaction alert service
+# Day 3 · Transaction alert service
 
-Build a small service that reads the fictional transaction endpoint data, applies a transparent threshold, and emits an alert with the reason. The input and expected output are committed in `data/`.
+Build a small AI+cloud+code service that reads the **fictional** transactions mock,
+scores a deviation (AI stub), applies a transparent threshold, and emits an
+**alert draft** for a human gate. No live PSP.
 
-The starter path is `day-03/starter`. The TypeScript and Go files show the same boundary logic. The JavaScript reference test reads the seeded transaction shape from `data/transactions.json` before passing it to the starter, so the expected output is tied to the committed fixture.
+| Path | Purpose |
+| --- | --- |
+| `mock-api/` | Seeded transactions HTTP API (`TX-FIC-302` deviation) |
+| `data/transactions.json` | Fixture source of truth |
+| `starter/` | TS + Go (+ Node reference) + Docker recipe |
+| `tests/` | Both starters vs mock for seeded deviation |
+
+```bash
+node training-lab/day-03/mock-api/server.mjs
+node --test training-lab/day-03/tests/*.test.mjs
+```
