@@ -1,12 +1,25 @@
-# Claude Agent SDK starter
+# Claude Agent SDK starter (solo)
 
-Connect the participant's own Claude Agent SDK login to the same weather tool contract. This repository provides the skeleton and deterministic tool contract. The acceptance test uses that tool directly so it can run without a model credential and does not claim a model-backed run.
+Rebuild the day-1 weather agent with the participant's own Claude Agent SDK
+credential. This folder is the in-repo skeleton; the shared acceptance test
+calls the deterministic helper and does **not** claim a model-backed run.
 
-## Public Arcade kits (AET-63)
+## Layout
 
-Thin cloneable starters promoted from this scaffold:
+| Path | Role |
+| --- | --- |
+| `agent.mjs` | Test harness + re-exports (`decideWeather`, `fetchWeatherDecision`, `callN8nDay1Weather`) |
+| `tools/get_weather.mjs` | **Get Weather** URL helper |
+| `tools/n8n_weather_mcp.mjs` | Agent SDK tool face for day-1 n8n-as-MCP |
+| `mcp/n8n-day1-weather.mjs` | MCP stand-in for day-1 `weather-agent.json` |
+| `skills/weather.md` | Decision skill |
+| `subagents/` | Data Analyst · Tester · Report Generator (compare slide) |
 
-- https://github.com/RyanLisse/weather-agent-sdk
-- https://github.com/RyanLisse/council-agent-sdk
+## Step names
 
-Prefer those repos for Agent Arcade `/arcade/sdk-bridge` labs. This folder remains the in-repo day-02 training-lab skeleton (not a replacement for Day packs).
+Must match `training-lab/day-01/STEP-NAMES.md`.
+
+## Preflight
+
+Participants need their own model credential (Agent SDK credit on a Claude plan,
+or an API key with budget). Never commit credentials.

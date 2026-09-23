@@ -1,0 +1,11 @@
+{
+  "name": "day-02-eve-weather-agent",
+  "private": true,
+  "description": "Guided Eve weather agent (AET-37). Pin only — do not add to Academy workspace installs.",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "dependencies": { "eve": "0.64.1" },
+  "scripts": {
+    "preflight:pin": "node -e \"const p=require('./package.json'); console.log('eve pin', p.dependencies.eve)\""
+  }
+}
