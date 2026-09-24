@@ -8,6 +8,7 @@ import {EvidencePanel, FacilitatorOverview} from './evidence/index.ts';
 import {sourceSlides} from './deck/slides.js';
 import {workshop5SourceSlides} from './deck/workshop5-slides.js';
 import {workshop3SourceSlides} from './deck/workshop3-slides.js';
+import {workshop4SourceSlides} from './deck/workshop4-slides.js';
 import {normalizeSlides} from './deck/normalize.js';
 import './deck/deck.css';
 
@@ -202,12 +203,13 @@ export function usePathname(): [string, (path: string) => void] {
 
 export function AppRoutes({children}: {readonly children?: ReactNode}) {
   const [pathname, navigate] = usePathname();
-  const deckLike = pathname === '/deck' || isClassroom1Path(pathname) || isWorkshop5Path(pathname) || isWorkshop3Path(pathname);
+  const deckLike = pathname === '/deck' || isClassroom1Path(pathname) || isWorkshop5Path(pathname) || isWorkshop3Path(pathname) || isWorkshop4Path(pathname);
   const connection = useConnection(fetchConnection, 5000, !deckLike);
   if (pathname === '/deck') return <DeckDemo slides={DECK_SLIDES} />;
   if (isClassroom1Path(pathname)) return <DeckDemo slides={CLASSROOM_1_SLIDES} />;
   if (isWorkshop5Path(pathname)) return <DeckDemo slides={WORKSHOP_5_SLIDES} />;
   if (isWorkshop3Path(pathname)) return <DeckDemo slides={WORKSHOP_3_SLIDES} />;
+  if (isWorkshop4Path(pathname)) return <DeckDemo slides={WORKSHOP_4_SLIDES} />;
   if (pathname.startsWith('/live/')) return <LiveRoute pathname={pathname} />;
   return (
     <>
@@ -232,6 +234,11 @@ export function isWorkshop3Path(pathname: string): boolean {
   return pathname === '/workshop/3' || pathname === '/lesson/workshop-3';
 }
 
+/** Facilitator Workshop 4 entry — n8n → Claude Agent SDK rebuild (AET-80). */
+export function isWorkshop4Path(pathname: string): boolean {
+  return pathname === '/workshop/4' || pathname === '/lesson/workshop-4';
+}
+
 const DECK_SLIDES = normalizeSlides(sourceSlides);
 /** Classroom 1 product route: Teaching Day 1 only (SoT slides 1–44).
  *  Headroom only (AET-86 backlog — do not build here): Arcade postMessage embed slot,
@@ -242,6 +249,8 @@ const CLASSROOM_1_SLIDES = DECK_SLIDES.filter((slide) => slide.lessonId === 'tea
 const WORKSHOP_5_SLIDES = normalizeSlides(workshop5SourceSlides);
 /** Workshop 3 product route: n8n L1→L3 ticket priority (AET-79). Separate module — not Classroom/W5 cut. */
 const WORKSHOP_3_SLIDES = normalizeSlides(workshop3SourceSlides);
+/** Workshop 4 product route: n8n → Claude Agent SDK SOLO 0→4 (AET-80). Separate module — not Classroom/W5/W3 cut. */
+const WORKSHOP_4_SLIDES = normalizeSlides(workshop4SourceSlides);
 function DeckDemo({slides}: {readonly slides: typeof DECK_SLIDES}) {
   useEffect(() => {
     const surfaces = [document.documentElement, document.body];
