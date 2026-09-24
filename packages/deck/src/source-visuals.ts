@@ -1,7 +1,7 @@
 import type {JsonValue, Slide} from '@academy/schema';
 
 type ArtKind = 'sliders' | 'thermo' | 'route' | 'timeline' | 'thought';
-type BotName = 'wave' | 'think' | 'point' | 'head' | 'stretchLeft' | 'sleepy' | 'happy' | 'peek' | 'stretchUp' | 'stretchRight';
+type BotName = 'multiarm' | 'wave' | 'think' | 'point' | 'head' | 'stretchLeft' | 'sleepy' | 'happy' | 'peek' | 'stretchUp' | 'stretchRight';
 type BotPlace = 'left' | 'beside' | 'under' | 'popout' | 'nest' | 'key' | 'slot' | 'stamps' | 'aside' | 'stack' | 'pointer' | 'timeline';
 type ToolName = 'map' | 'arm' | 'toolbox' | 'thought';
 type VisualArt = ArtKind | 'flow' | 'window' | 'gate' | 'prompt' | 'nested' | 'loop' | 'boxes' | 'stairs' | 'intake';
@@ -120,6 +120,11 @@ interface VisualData {
   readonly checklist: number | undefined;
   readonly addLine: string | undefined;
   readonly highlight: ReadonlyArray<HighlightSpec> | undefined;
+  readonly opener: string | undefined;
+  readonly image: string | undefined;
+  readonly imageLink: string | undefined;
+  readonly cardImages: ReadonlyArray<string> | undefined;
+  readonly compact: boolean | undefined;
 }
 
 interface BotData {
@@ -249,7 +254,7 @@ const parseVisual = (value: JsonValue | undefined): VisualData | undefined => {
   })) : undefined;
   return {
     art: literal(value.art, ['sliders', 'thermo', 'route', 'timeline', 'thought', 'flow', 'window', 'gate', 'prompt', 'nested', 'loop', 'boxes', 'stairs', 'intake']),
-    bot: literal(value.bot, ['wave', 'think', 'point', 'head', 'stretchLeft', 'sleepy', 'happy', 'peek', 'stretchUp', 'stretchRight']),
+    bot: literal(value.bot, ['multiarm', 'wave', 'think', 'point', 'head', 'stretchLeft', 'sleepy', 'happy', 'peek', 'stretchUp', 'stretchRight']),
     place: literal(value.place, ['left', 'beside', 'under', 'popout', 'nest', 'key', 'slot', 'stamps', 'aside', 'stack', 'pointer', 'timeline']),
     tool: literal(value.tool, ['map', 'arm', 'toolbox', 'thought']), target: stringValue(value.target),
     cardArt: typedCardArt, pillarIcons: booleanValue(value.pillarIcons), stagger: stringValue(value.stagger),
@@ -266,6 +271,11 @@ const parseVisual = (value: JsonValue | undefined): VisualData | undefined => {
     sourceTiles: numberValue(value.sourceTiles), planB: stringValue(value.planB), planBLabel: stringValue(value.planBLabel), menu: numberValue(value.menu), pipes: booleanValue(value.pipes), same: numberArray(value.same), recapKeys: booleanValue(value.recapKeys),
     levelUp: booleanValue(value.levelUp), supportDays: booleanValue(value.supportDays), doneSteps: numberValue(value.doneSteps), handover: stringValue(value.handover), sentences: booleanValue(value.sentences), checklist: numberValue(value.checklist), addLine: stringValue(value.addLine),
     highlight: Array.isArray(value.highlight) ? value.highlight.flatMap((item): HighlightSpec[] => { if (!isRecord(item)) return []; const inside = stringValue(item.in); const text = stringValue(item.text); const tone = stringValue(item.tone); return inside !== undefined && text !== undefined && tone !== undefined ? [{in: inside, text, tone}] : []; }) : undefined,
+    opener: stringValue(value.opener),
+    image: stringValue(value.image),
+    imageLink: stringValue(value.imageLink),
+    cardImages: stringArray(value.cardImages),
+    compact: booleanValue(value.compact),
   };
 };
 
@@ -419,6 +429,7 @@ function createSourceVisualMount(stage: HTMLElement, body: HTMLElement, main: HT
   const REACT: readonly string[] = ['?', '⇄', '…?', '⌛', '!!'];
   const BOTS: Record<BotName, BotData> = {
   wave:  { src: '/aetherbot/aetherbot-wave.webp',  hatch: [58.4, 12.6] },
+  multiarm: { src: '/aetherbot/aetherbot-multiarm.webp' },
   think: { src: '/aetherbot/aetherbot-think.webp', hatch: [51.3, 14.8] },
   point: { src: '/aetherbot/aetherbot-point.webp', hatch: [32.6, 14.6] },
   head:  { src: '/aetherbot/aetherbot-head.webp',  hatch: [49.6, 25.8] },
@@ -837,7 +848,7 @@ function renderExtras(stage: HTMLElement, main: HTMLElement, s: Slide, v: Visual
 function buildNest(main: HTMLElement, s: Slide): NestVisual | null {
   const wrap = main.querySelector<HTMLElement>('.steps-wrap'); const chain = wrap?.querySelector<HTMLElement>('.steps-chain'); if (!wrap || !chain) return null;
   const items = Array.from(chain.querySelectorAll<HTMLElement>('.step-item')); chain.classList.add('nest-hidden');
-  const R: readonly number[] = [230, 172, 116, 68], CX = 380, B = 470;
+  const five = (s.items || []).length > 4; const R: readonly number[] = five ? [238, 194, 150, 106, 64] : [230, 172, 116, 68], CX = 380, B = 470;
   const g = doc.createElementNS(SVGNS, 'svg'); g.setAttribute('viewBox', '0 0 760 480'); g.setAttribute('class', 'nest'); g.setAttribute('role', 'group');
   const labels: SVGTextElement[] = [];
   (s.items || []).forEach((it, i) => {
@@ -846,7 +857,7 @@ function buildNest(main: HTMLElement, s: Slide): NestVisual | null {
     const t = doc.createElementNS(SVGNS, 'text'); t.setAttribute('x', String(CX)); t.setAttribute('class', 'ring-label' + (i === R.length - 1 ? ' ring-label-core' : ''));
     const inner = i === R.length - 1; const words = inner ? it.label.split(' ') : [it.label];
     const lines = inner && words.length > 2 ? [words.slice(0, -1).join(' '), words.at(-1) ?? ''] : [it.label];
-    const y0 = inner ? cy - (lines.length - 1) * 11 + 6 : cy - r + 52;
+    const y0 = inner ? cy - (lines.length - 1) * 11 + 6 : cy - r + (five ? 36 : 52);
     lines.forEach((ln, k) => { const ts = doc.createElementNS(SVGNS, 'tspan'); ts.setAttribute('x', String(CX)); ts.setAttribute('y', String(y0 + k * 20)); ts.textContent = ln; t.append(ts); });
     grp.append(c, t); grp.addEventListener('click', () => items[i]?.querySelector('button')?.click());
     g.append(grp); labels.push(t);
@@ -859,6 +870,51 @@ function buildNest(main: HTMLElement, s: Slide): NestVisual | null {
   slideController.signal.addEventListener('abort', () => mo.disconnect());
   return api;
 }
+
+const assetUrl = (src: string): string => {
+  if (/^(?:[a-z]+:|\/)/i.test(src)) return src;
+  return '/' + src.replace(/^\.\//, '');
+};
+
+
+const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string | null, text?: string | null): HTMLElementTagNameMap[K] => {
+  const element = document.createElement(tag);
+  if (cls) element.className = cls;
+  if (text !== undefined && text !== null) element.textContent = text;
+  return element;
+};
+
+/** Opening slides 1-4 + Day-2 showcase: port of SoT app.js buildOpener. */
+function buildOpener(stage: HTMLElement, main: HTMLElement, s: Slide, v: VisualData): void {
+  const head = stage.querySelector('.heading');
+  if (v.opener === 'welcome' && head) {
+    const logo = el('div', 'opener-logo');
+    const img = document.createElement('img');
+    img.src = assetUrl('assets/aetherlink-mark.png');
+    img.alt = '';
+    logo.append(img, el('span', 'opener-word', 'AETHER'), el('span', 'opener-word accent', 'LINK'));
+    head.querySelector('.heading-top')?.after(logo);
+  }
+  if (v.opener === 'showcase' && v.image) {
+    const shot = el('figure', 'showcase');
+    const bar = el('div', 'showcase-bar');
+    bar.append(el('span', 'dots'), el('span', 'showcase-url', v.imageLink || ''));
+    const img = document.createElement('img');
+    img.src = assetUrl(v.image);
+    img.alt = '';
+    shot.append(bar, img);
+    main.classList.add('with-showcase');
+    main.prepend(shot);
+  }
+  if (v.opener === 'team') {
+    main.querySelectorAll('.card').forEach((c) => {
+      const name = c.querySelector('h2,h3,strong,.card-title')?.textContent || c.textContent || '';
+      const ini = name.split(' ').filter((w) => /^[A-Z]/.test(w)).map((w) => w[0]).slice(0, 2).join('');
+      c.prepend(el('span', 'team-avatar', ini));
+    });
+  }
+}
+
 function renderVisual(stage: HTMLElement, body: HTMLElement, main: HTMLElement, s: Slide, v: VisualData | undefined, advanceReveal?: (step?: number) => void): void {
   if (!v) return;
   if (v.art === 'timeline') main.prepend(ART.timeline());
@@ -876,6 +932,15 @@ function renderVisual(stage: HTMLElement, body: HTMLElement, main: HTMLElement, 
     col.append(node('p', 'pop-label', src.title), list); popRow.append(col); const tg = main.querySelector('.tagline'); if (tg) tg.before(popRow); else main.append(popRow);
   }
   highlight(stage, v);
+  if (v.compact) main.classList.add('compact-cards');
+  if (v.opener) buildOpener(stage, main, s, v);
+  // SoT hides empty .slide-main via :empty; React may leave whitespace/comment nodes.
+  if (v.opener === 'welcome' || v.opener === 'ask') {
+    // CardsRenderer leaves an empty .cards shell on title-only openers; SoT main is truly empty.
+    main.querySelectorAll('.cards').forEach((el) => { if (!el.childElementCount) el.remove(); });
+    const meaningful = [...main.childNodes].some((n) => n.nodeType === 1 || (n.nodeType === 3 && (n.textContent?.trim() ?? '') !== ''));
+    if (!meaningful) { main.replaceChildren(); main.style.display = 'none'; }
+  }
   const botName = v.bot; if (!botName) return; const bot = BOTS[botName];
   const fig = node('figure', 'bot bot-' + botName + ' place-' + v.place); fig.setAttribute('aria-hidden', 'true');
   const live = node('div', 'bot-live'); const img = document.createElement('img'); img.src = bot.src; img.alt = ''; img.decoding = 'async';
@@ -978,6 +1043,31 @@ function renderVisual(stage: HTMLElement, body: HTMLElement, main: HTMLElement, 
     options.onRevealStepChange?.(revealCursor);
   };
   renderVisual(stage, body, main, s, visual, advanceReveal);
+  if (visual?.cardImages || (visual?.compact && body.classList.contains('with-side'))) {
+    const instructions = body.querySelector<HTMLElement>('.exercise-instructions');
+    if (visual.compact && instructions) {
+      main.querySelectorAll<HTMLElement>(':scope > .timer').forEach((el) => instructions.append(el));
+    }
+    if (visual.cardImages) {
+      const gal = node('div', 'thumb-gallery');
+      const row = node('div', 'thumb-row');
+      visual.cardImages.forEach((src, i) => {
+        const f = node('figure', 'thumb');
+        const img = document.createElement('img');
+        img.src = assetUrl(src);
+        img.alt = '';
+        f.style.setProperty('--i', String(i));
+        const card = Array.isArray(s.cards) ? s.cards[i] : undefined;
+        const caption = card && typeof card === 'object' && card && 'title' in card && typeof (card as {title: unknown}).title === 'string' ? (card as {title: string}).title : '';
+        f.append(img, node('figcaption', null, caption));
+        row.append(f);
+      });
+      gal.append(row);
+      const host = instructions ?? main;
+      const t = instructions?.querySelector<HTMLElement>(':scope > .timer');
+      if (t) t.before(gal); else host.append(gal);
+    }
+  }
   staticReveal(options.revealStep ?? -1);
   renderTimer();
   const baseReveal = () => {
