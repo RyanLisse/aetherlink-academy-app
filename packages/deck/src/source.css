@@ -1126,6 +1126,13 @@
 .academy-deck.mode-presenter.keynote #stage,.academy-deck.mode-presenter #stage{justify-content:flex-start;padding-top:1.2rem}
 
 .academy-deck.mode-presenter .presenter-tools{display:block;margin-top:1.2rem;max-width:960px;width:100%;margin-left:auto;margin-right:auto}
+/* W5: the type label and slide count are pinned to the top of the stage; the kicker stays with the headline */
+.academy-deck.keynote[data-lesson=workshop-5] #stage{position:relative}
+/* opacity-only entrance: a transform on .heading would become the anchor for the pinned label */
+.academy-deck.keynote[data-lesson=workshop-5] .heading{animation-name:w5-heading-in}
+@keyframes w5-heading-in{from{opacity:0}}
+.academy-deck.keynote[data-lesson=workshop-5] .type-chip{position:absolute;top:clamp(.8rem,2.5vh,1.6rem);left:50%;transform:translateX(-50%)}
+.academy-deck.keynote[data-lesson=workshop-5] .slide-count{position:absolute;top:clamp(.8rem,2.5vh,1.6rem);right:0;margin:0;line-height:2}
 /* W5 definition face, dictionary style: label on top → headword (kicker) + part of speech → rule → sense 1 (h1) */
 .academy-deck.keynote[data-opener=definition] .heading{align-items:flex-start;text-align:left;max-width:min(58rem,92vw)}
 .academy-deck.keynote[data-opener=definition] .heading-top{justify-content:space-between;align-items:flex-start;width:100%}
