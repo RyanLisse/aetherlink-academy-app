@@ -111,8 +111,11 @@ define("AI-native SDLC",
   title: "Organizations have started using AI to write code at a speed unthinkable one year ago, yet the processes around the code haven't changed at the same pace.",
   kicker: "Explain · the gap",
   type: "concept",
-  visual: { keynote: true, opener: "statement" },
-  notes: "Explain. Let it land, then ask: where did your last feature wait longest — writing the code, or everything around it? Today closes that gap by walking every stage with one agent."
+  visual: { keynote: true, opener: "quote", popOut: 0 },
+  cards: [
+    { title: "Source", body: "Louis Claxton · The AI-Native SDLC playbook" }
+  ],
+  notes: "Quote from the introduction of The AI-Native SDLC playbook (Louis Claxton, Claude by Anthropic), under 'Code is no longer the bottleneck'. Let it land, then ask: where did your last feature wait longest — writing the code, or everything around it? Today closes that gap by walking every stage with one agent."
 },
 
 { // Vehicle

@@ -76,9 +76,10 @@ describe('AET-77 workshop 5 ultra-minimal AI-native SDLC deck', () => {
     }
   });
 
-  it('the gap statement replaces the artifact-chain face', () => {
+  it('the gap quote replaces the artifact-chain face, with its source', () => {
     const gap = workshop5SourceSlides.find((s) => kicker(s) === 'Explain · the gap')!;
-    expect(visualOf(gap).opener).toBe('statement');
+    expect(visualOf(gap).opener).toBe('quote');
+    expect(JSON.stringify(gap.cards)).toContain('Louis Claxton · The AI-Native SDLC playbook');
     expect(String(gap.title)).toMatch(/processes around the code haven't changed/);
     expect(workshop5SourceSlides.indexOf(gap)).toBe(8);
   });
