@@ -172,7 +172,61 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   notes: "Timer: 15 min. Checklist: (1) write docs/design.md (2) one real ADR under docs/decisions/ (3) docs/plan.md with ordered steps, exact paths, one proof command per step, rollback, gate before build (4) remain in plan mode until human accepts. Check: every step has a proof command + rollback. yes/no. Map: SOLO step 3."
 },
 
-{ // 12 — build concept (slim)
+{ // 12 — definition: skills
+  lessonId: "workshop-5",
+  title: "skills",
+  kicker: "Definition · Claude Code",
+  subtitle: "A skill packages a reusable method for a recurring task.",
+  type: "concept",
+  visual: { mdfile: 0, mdName: "SKILL.md" },
+  cards: [
+    { title: ".claude/skills/…/SKILL.md", body: "When · input · procedure · output · bounds · stop" }
+  ],
+  tagline: "Repeat the method, not the prompt.",
+  notes: "Reuse Classroom Day 2 language: a skill defines when it applies, required input, procedure, output format, boundaries, stop conditions. Point at .claude/skills/ — do not rebuild Classroom skill assignments here."
+},
+
+{ // 13 — definition: hooks
+  lessonId: "workshop-5",
+  title: "hooks",
+  kicker: "Definition · gates in the session",
+  subtitle: "Session hooks can block or require approval before a tool runs.",
+  type: "concept",
+  tagline: "Hooks are approval points — humans still own production.",
+  notes: "Tie to Deploy beat: hooks as approval in the agent session (e.g. PreToolUse), not a substitute for named production approval. Outline kicker: hooks as approval, humans at production."
+},
+
+{ // 14 — definition: MCP
+  lessonId: "workshop-5",
+  title: "MCP",
+  kicker: "Definition · approved connections",
+  subtitle: "One standard plug for approved information and capabilities.",
+  type: "concept",
+  tagline: "Connecting a server does not remove permissions or human responsibility.",
+  notes: "Reuse Classroom Day 2: MCP standardises how AI apps connect to approved resources, prompts, and tools. Files are local; MCP is for approved outside systems. /mcp to inspect. n8n→Claude lock stays — no Eve dual-track."
+},
+
+{ // 15 — definition: subagents
+  lessonId: "workshop-5",
+  title: "subagents",
+  kicker: "Definition · Agents SDK",
+  subtitle: "Delegated specialists with a bounded job — the parent keeps the gate.",
+  type: "concept",
+  tagline: "One clear job each; the human still accepts.",
+  notes: "Day 5 sits after n8n + Agents SDK. Subagents = bounded delegated runs (tools, scope, stop), not unsupervised swarm. Parent session / human owns the accept gate. Do not invent Eve dual-track."
+},
+
+{ // 16 — definition: workflows
+  lessonId: "workshop-5",
+  title: "workflows",
+  kicker: "Definition · reusable loop",
+  subtitle: "A repeatable, bounded, reviewable path other people can reuse.",
+  type: "concept",
+  tagline: "Useful · safe · verifiable · reusable.",
+  notes: "Programme spine: design, build, and review an AI-supported workflow others understand. In this lab the workflow is the artifact chain + SOLO day, not a second product track."
+},
+
+{ // 17 — build concept (slim)
   lessonId: "workshop-5",
   title: "Build with a feedback loop",
   kicker: "Build",
@@ -182,7 +236,7 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   notes: "Playbook: give the agent tests / build / screenshot feedback. Humans review intent + risk, not every keystroke. Bound for today: no shell, no write on the brief agent."
 },
 
-{ // 13 — SOLO 4
+{ // 18 — SOLO 4
   lessonId: "workshop-5",
   title: "Assignment — render the sample (SOLO 4)",
   kicker: "SOLO 4 · first artifact, no API keys",
@@ -196,7 +250,7 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   notes: "Timer: 25 min. Checklist: (1) test/render.test.ts red (2) src/render.ts + sample main until green (3) npm run brief:sample → out/latest.html (4) change one house-style rule test-first (5) keep 1440×900 screenshot for evidence. Check: npm run brief:sample produces out/latest.html. yes/no. Map: SOLO step 4."
 },
 
-{ // 14 — SOLO 5
+{ // 19 — SOLO 5
   lessonId: "workshop-5",
   title: "Assignment — agent loop + one read-only tool (SOLO 5)",
   kicker: "SOLO 5 · live run, then human",
@@ -210,7 +264,7 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   notes: "Timer: 20 min + live run. Checklist: (1) catch up from reference sources.ts / agent.ts (2) add one read-only tool (tool() + guarded()) (3) live npm run brief (4) every sentence traces to a run.log tool call. Check: no shell tool, no write tool; every sentence traceable. yes/no. Map: SOLO step 5."
 },
 
-{ // 15 — evidence concept (slim)
+{ // 20 — evidence concept (slim)
   lessonId: "workshop-5",
   title: "Evidence is not a vibes check",
   kicker: "Test",
@@ -221,7 +275,7 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   notes: "Playbook: continuous proof. Lab: typecheck · test · brief (or sample) with exit codes + one quoted line each; screenshot under docs/evidence/; name the reviewer (or self next day)."
 },
 
-{ // 16 — SOLO 6
+{ // 21 — SOLO 6
   lessonId: "workshop-5",
   title: "Assignment — docs/evidence.md (SOLO 6)",
   kicker: "SOLO 6 · proof a stranger can re-run",
@@ -235,7 +289,7 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   notes: "Timer: 15 min. Checklist: (1) run typecheck · test · brief (or sample); record exit codes (2) quote one line each (3) screenshot under docs/evidence/ (4) name the reviewer (or \"self next day\"). Check: three commands + screenshot path + reviewer name. yes/no. Map: SOLO step 6."
 },
 
-{ // 17 — gate concept (slim)
+{ // 22 — gate concept (slim)
   lessonId: "workshop-5",
   title: "Human gate, then schedule",
   kicker: "Deploy",
@@ -246,7 +300,7 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   notes: "PR vs intent.md → docs/gate.md PASS/FAIL/OPEN with quotes → cron / Actions for weekday brief; secrets only in vault."
 },
 
-{ // 18 — SOLO 7
+{ // 23 — SOLO 7
   lessonId: "workshop-5",
   title: "Assignment — gate + schedule (SOLO 7)",
   kicker: "SOLO 7 · open the PR",
@@ -260,7 +314,7 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   notes: "Timer: 15 min. Checklist: (1) fill docs/gate.md with PASS/FAIL/OPEN and quotes (2) refuse PASS on unread checks (3) credentials not in repo (4) schedule shape from gitlab-ci.example.yml or GH Actions (5) open the PR. Check: gate filled; no secrets in repo; PR open. yes/no. Map: SOLO step 7."
 },
 
-{ // 19 — close
+{ // 24 — close
   lessonId: "workshop-5",
   title: "Close the loop",
   kicker: "Maintain → new intent",
@@ -270,7 +324,7 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   notes: "Playbook Stage 6: production signal / footnote → next intent.md. Human triages fix-now / schedule / dismiss."
 },
 
-{ // 20 — recap
+{ // 25 — recap
   lessonId: "workshop-5",
   title: "Recap + Proof",
   kicker: "Done when",

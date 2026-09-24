@@ -7,21 +7,30 @@ import {sourceSlides} from '../src/deck/slides.ts';
 describe('AET-77 workshop 5 AI-native SDLC deck', () => {
   const slides = normalizeSlides(workshop5SourceSlides);
   const practice = workshop5SourceSlides.filter((s) => s.type === 'practice');
+  const titles = slides.map((s) => s.title);
 
-  it('ships workshop-5 slides from the ACCEPT outline + definition addendum', () => {
-    expect(workshop5SourceSlides).toHaveLength(20);
-    expect(slides).toHaveLength(20);
+  it('ships workshop-5 slides from the ACCEPT outline + definition addenda', () => {
+    expect(workshop5SourceSlides).toHaveLength(25);
+    expect(slides).toHaveLength(25);
     expect(slides.every((s) => s.lessonId === 'workshop-5')).toBe(true);
     expect(slides[0]?.title).toBe('Workshop 5 — AI-native SDLC');
-    expect(slides[19]?.title).toBe('Recap + Proof');
+    expect(slides[24]?.title).toBe('Recap + Proof');
   });
 
-  it('highlights AI-native SDLC, intent.md, spec.md, and plan.md as own slides', () => {
-    const titles = slides.map((s) => s.title);
-    expect(titles).toContain('AI-native SDLC');
-    expect(titles).toContain('intent.md');
-    expect(titles).toContain('spec.md');
-    expect(titles).toContain('plan.md');
+  it('highlights the nine required definition slides', () => {
+    for (const required of [
+      'AI-native SDLC',
+      'intent.md',
+      'spec.md',
+      'plan.md',
+      'skills',
+      'hooks',
+      'MCP',
+      'subagents',
+      'workflows',
+    ]) {
+      expect(titles, required).toContain(required);
+    }
   });
 
   it('maps SOLO assignments and keeps the artifact-chain diagram', () => {
