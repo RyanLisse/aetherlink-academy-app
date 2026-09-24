@@ -137,7 +137,7 @@ describe('AET-80 workshop 4 ultra-minimal n8n→Claude Agent SDK deck', () => {
     expect(classroom.filter((s) => s.lessonId === 'workshop-4')).toHaveLength(0);
     expect(workshop3SourceSlides.length).toBe(18);
     expect(workshop3SourceSlides.every((s) => s.lessonId === 'workshop-3')).toBe(true);
-    expect(workshop5SourceSlides.length).toBe(43);
+    expect(workshop5SourceSlides.length).toBe(44);
     expect(workshop5SourceSlides.every((s) => s.lessonId === 'workshop-5')).toBe(true);
   });
 });

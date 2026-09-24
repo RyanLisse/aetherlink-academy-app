@@ -50,6 +50,15 @@ define("AI-native SDLC",
   "A reimagined process: the old control objectives, new enforcement. Not a line but a loop, with AI embedded at each point.",
   "Definition, verbatim for the room: 'The AI-native SDLC is a reimagined process that combines the old control objectives with new enforcement. Instead of a linear flow, the process becomes a loop, and AI is embedded at each point.' Agents collapse Build, not judgment."),
 
+{ // The loop, after the definition
+  lessonId: LESSON,
+  title: "Hours, not weeks.",
+  kicker: "Look · the loop",
+  type: "concept",
+  visual: { keynote: true, opener: "showcase", image: "workshop-5/loop-arrows-dark.png", imageLink: "AI-native — the loop" },
+  notes: "Look. Walk the arrows clockwise: Plan → Design → Build → Test → Deploy → Maintain → Plan. Claude sits in the middle of every stage; humans stay above the loop, instigating, directing and governing. Diagram after Anthropic's AI-native SDLC playbook."
+},
+
 { // Why
   lessonId: LESSON,
   title: "Code is no longer the bottleneck.",
