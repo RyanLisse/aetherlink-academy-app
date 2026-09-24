@@ -68,15 +68,19 @@ describe('AET-77 workshop 5 ultra-minimal AI-native SDLC deck', () => {
     expect(visualOf(vehicle).popOut).toBe(0);
   });
 
-  it('A3: artifact chain names the lab filenames', () => {
-    const chain = workshop5SourceSlides.find((s) =>
-      String(s.title ?? '').includes('intent') && String(s.title ?? '').includes('gate'),
-    );
-    expect(chain).toBeTruthy();
-    const blob = `${chain!.title}\n${chain!.notes ?? ''}`;
+  it('A3: the loop face names the lab artifact chain in its notes', () => {
+    const loop = workshop5SourceSlides.find((s) => kicker(s) === 'Look · the loop')!;
+    const notes = String(loop.notes ?? '');
     for (const name of ['intent.md', 'docs/spec.md', 'docs/plan.md', 'docs/gate.md']) {
-      expect(blob).toContain(name);
+      expect(notes).toContain(name);
     }
+  });
+
+  it('the gap statement replaces the artifact-chain face', () => {
+    const gap = workshop5SourceSlides.find((s) => kicker(s) === 'Explain · the gap')!;
+    expect(visualOf(gap).opener).toBe('statement');
+    expect(String(gap.title)).toMatch(/processes around the code haven't changed/);
+    expect(workshop5SourceSlides.indexOf(gap)).toBe(8);
   });
 
   it('keeps every required definition, each once', () => {

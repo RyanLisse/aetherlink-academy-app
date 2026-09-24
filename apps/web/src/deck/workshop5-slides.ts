@@ -94,7 +94,7 @@ define("AI-native SDLC",
   kicker: "Look · the loop",
   type: "concept",
   visual: { keynote: true, opener: "showcase", image: "workshop-5/loop-arrows-dark.png", imageLink: "AI-native — the loop" },
-  notes: "Look. Walk the arrows clockwise: Plan → Design → Build → Test → Deploy → Maintain → Plan. Claude sits in the middle of every stage; humans stay above the loop, instigating, directing and governing. Diagram after Anthropic's AI-native SDLC playbook."
+  notes: "Look. Walk the arrows clockwise: Plan → Design → Build → Test → Deploy → Maintain → Plan. Each stage leaves a file the next one reads — in the lab: intent.md → docs/spec.md → docs/plan.md → diff+tests → PR → docs/gate.md → new intent.md. Claude sits in the middle of every stage; humans stay above the loop, instigating, directing and governing. Diagram after Anthropic's AI-native SDLC playbook."
 },
 
 { // Why
@@ -106,13 +106,13 @@ define("AI-native SDLC",
   notes: "Explain. Diagram after Anthropic's AI-native SDLC playbook: before agents every stage runs at human speed; after agents Build shrinks to a sliver and the cycle time is reclaimed. Agents collapse Build. Plan, Test, Deploy and Maintain stay human-speed; that is where the time goes now. Every stage ends with a committed file the next stage reads."
 },
 
-{ // Artifact chain
+{ // The gap
   lessonId: LESSON,
-  title: "intent → spec → plan → diff → PR → gate → intent.",
-  kicker: "Explain · the artifact chain",
+  title: "Organizations have started using AI to write code at a speed unthinkable one year ago, yet the processes around the code haven't changed at the same pace.",
+  kicker: "Explain · the gap",
   type: "concept",
-  visual: { keynote: true },
-  notes: "Explain · the artifact chain. Lab filenames exactly: intent.md → docs/spec.md → docs/plan.md → diff+tests → PR → docs/gate.md → new intent.md. Human attention sits at the accept gates."
+  visual: { keynote: true, opener: "statement" },
+  notes: "Explain. Let it land, then ask: where did your last feature wait longest — writing the code, or everything around it? Today closes that gap by walking every stage with one agent."
 },
 
 { // Vehicle
