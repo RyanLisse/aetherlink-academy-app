@@ -22,7 +22,9 @@ const QuizState = Schema.Struct({
 
 const RoomState = Schema.Struct({
   id: Schema.String,
+  /** Client-reported by the participant's browser tab; no server-side phase source is reachable from actions. */
   phase: Schema.NullOr(Schema.String),
+  /** Lesson ids reported by the participant's tabs, filtered to those ReleasePolicy confirms released for this room. */
   releasedLessonIds: Schema.Array(Schema.String),
 });
 
@@ -39,7 +41,6 @@ const bindingKey = (b: ParticipantViewBinding) =>
     b.quizStatus ?? '',
     b.quizItemIndex ?? '',
     b.roomPhase ?? '',
-    (b.releasedLessonIds ?? []).join(','),
   ].join('::');
 
 /**
@@ -75,10 +76,12 @@ export const getParticipantScreenState = defineAction({
       const keys = new Set(active.map(bindingKey));
       if (keys.size > 1) return yield* Effect.fail(new AmbiguousViewContext(active));
       const binding = active[0]!;
-      if (binding.lessonId) {
-        const policy = yield* ReleasePolicy;
-        yield* requireReleased(policy, caller.roomId, binding.lessonId);
-      }
+      const policy = yield* ReleasePolicy;
+      if (binding.lessonId) yield* requireReleased(policy, caller.roomId, binding.lessonId);
+      const reportedLessonIds = [...new Set(active.flatMap((b) => b.releasedLessonIds ?? []))];
+      const releasedLessonIds = yield* Effect.filter(reportedLessonIds, (id) =>
+        policy.isReleased(caller.roomId, id),
+      );
       return {
         lessonId: binding.lessonId,
         route: binding.route ?? null,
@@ -100,7 +103,7 @@ export const getParticipantScreenState = defineAction({
         room: {
           id: caller.roomId,
           phase: binding.roomPhase ?? null,
-          releasedLessonIds: [...(binding.releasedLessonIds ?? [])],
+          releasedLessonIds,
         },
         browserSessionId: binding.browserSessionId,
       };
