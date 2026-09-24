@@ -127,7 +127,7 @@ describe('AET-79 workshop 3 ultra-minimal n8n L1→L3 deck', () => {
     const classroom = normalizeSlides(sourceSlides);
     expect(classroom.filter((s) => s.lessonId === 'teaching-day-1')).toHaveLength(44);
     expect(classroom.filter((s) => s.lessonId === 'workshop-3')).toHaveLength(0);
-    expect(workshop5SourceSlides.length).toBe(33);
+    expect(workshop5SourceSlides.length).toBe(43);
     expect(workshop5SourceSlides.every((s) => s.lessonId === 'workshop-5')).toBe(true);
   });
 });
