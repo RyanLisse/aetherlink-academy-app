@@ -205,10 +205,11 @@ export function usePathname(): [string, (path: string) => void] {
 
 export function AppRoutes({children}: {readonly children?: ReactNode}) {
   const [pathname, navigate] = usePathname();
-  const deckLike = pathname === '/deck' || isClassroom1Path(pathname) || isWorkshop5Path(pathname) || isWorkshop3Path(pathname) || isWorkshop4Path(pathname) || isWorkshop6Path(pathname) || isWorkshop7Path(pathname);
+  const deckLike = pathname === '/deck' || isClassroom1Path(pathname) || isClassroom2Path(pathname) || isWorkshop5Path(pathname) || isWorkshop3Path(pathname) || isWorkshop4Path(pathname) || isWorkshop6Path(pathname) || isWorkshop7Path(pathname);
   const connection = useConnection(fetchConnection, 5000, !deckLike);
   if (pathname === '/deck') return <DeckDemo slides={DECK_SLIDES} />;
   if (isClassroom1Path(pathname)) return <DeckDemo slides={CLASSROOM_1_SLIDES} />;
+  if (isClassroom2Path(pathname)) return <DeckDemo slides={CLASSROOM_2_SLIDES} />;
   if (isWorkshop5Path(pathname)) return <DeckDemo slides={WORKSHOP_5_SLIDES} />;
   if (isWorkshop3Path(pathname)) return <DeckDemo slides={WORKSHOP_3_SLIDES} />;
   if (isWorkshop4Path(pathname)) return <DeckDemo slides={WORKSHOP_4_SLIDES} />;
@@ -226,6 +227,11 @@ export function AppRoutes({children}: {readonly children?: ReactNode}) {
 /** Facilitator Classroom 1 entry — Teaching Day 1 deck only (not support-day packs). */
 export function isClassroom1Path(pathname: string): boolean {
   return pathname === '/classroom/1' || pathname === '/lesson/classroom-1';
+}
+
+/** Facilitator Classroom 2 entry — Teaching Day 2 deck only (AET-76). */
+export function isClassroom2Path(pathname: string): boolean {
+  return pathname === '/classroom/2' || pathname === '/lesson/classroom-2';
 }
 
 /** Facilitator Workshop 5 entry — AI-native SDLC deck (AET-77). */
@@ -254,11 +260,13 @@ export function isWorkshop7Path(pathname: string): boolean {
 }
 
 const DECK_SLIDES = normalizeSlides(sourceSlides);
-/** Classroom 1 product route: Teaching Day 1 only (SoT slides 1–44).
+/** Classroom 1 product route: Teaching Day 1 only (SoT slides before the "TEACHING DAY 2" divider).
  *  Headroom only (AET-86 backlog — do not build here): Arcade postMessage embed slot,
  *  typed quiz schema, cohort continuity ≠ room code.
  */
 const CLASSROOM_1_SLIDES = DECK_SLIDES.filter((slide) => slide.lessonId === 'teaching-day-1');
+/** Classroom 2 product route: Teaching Day 2 only (from the "TEACHING DAY 2" divider on). Feeds Workshop 6–7. */
+const CLASSROOM_2_SLIDES = DECK_SLIDES.filter((slide) => slide.lessonId === 'teaching-day-2');
 /** Workshop 5 product route: AI-native SDLC day pack (AET-77). Separate module — not Classroom cut. */
 const WORKSHOP_5_SLIDES = normalizeSlides(workshop5SourceSlides);
 /** Workshop 3 product route: n8n L1→L3 ticket priority (AET-79). Separate module — not Classroom/W5 cut. */

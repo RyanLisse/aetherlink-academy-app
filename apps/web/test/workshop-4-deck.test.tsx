@@ -131,7 +131,7 @@ describe('AET-80 workshop 4 ultra-minimal n8n→Claude Agent SDK deck', () => {
   });
 
   it('does not break Classroom 1 SoT, Workshop 3, or Workshop 5 packs', () => {
-    expect(sourceSlides).toHaveLength(86);
+    expect(sourceSlides).toHaveLength(91);
     const classroom = normalizeSlides(sourceSlides);
     expect(classroom.filter((s) => s.lessonId === 'teaching-day-1')).toHaveLength(44);
     expect(classroom.filter((s) => s.lessonId === 'workshop-4')).toHaveLength(0);

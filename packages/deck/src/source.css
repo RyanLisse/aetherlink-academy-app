@@ -174,6 +174,9 @@
 .academy-deck .widget-controls{display:flex;gap:.5rem;flex-wrap:wrap}
 .academy-deck .widget-controls button{min-height:40px;padding:.5rem .9rem;border-radius:8px;border:1px solid var(--amber);background:var(--amber);color:var(--ink);font:inherit;font-weight:700;cursor:pointer}
 .academy-deck .widget-controls button.secondary{background:transparent;color:var(--text);border-color:var(--border)}
+.academy-deck .timer-field{display:inline-flex;align-items:center;gap:.4rem;color:var(--muted);font-weight:700}
+.academy-deck .timer-field input{width:4.6rem;min-height:40px;padding:.4rem .5rem;border-radius:8px;border:2px solid var(--amber);background:var(--surface);color:var(--text);font:inherit;font-weight:800;font-size:1.1rem;text-align:center;font-variant-numeric:tabular-nums}
+.academy-deck .timer-field input:disabled{opacity:.55}
 @media(max-width:760px){.academy-deck .timer{grid-template-columns:1fr;justify-items:center}}
 
 /* ==========================================================================
