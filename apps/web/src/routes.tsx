@@ -9,6 +9,7 @@ import {sourceSlides} from './deck/slides.js';
 import {workshop5SourceSlides} from './deck/workshop5-slides.js';
 import {workshop3SourceSlides} from './deck/workshop3-slides.js';
 import {workshop4SourceSlides} from './deck/workshop4-slides.js';
+import {workshop6SourceSlides} from './deck/workshop6-slides.js';
 import {normalizeSlides} from './deck/normalize.js';
 import './deck/deck.css';
 
@@ -203,13 +204,14 @@ export function usePathname(): [string, (path: string) => void] {
 
 export function AppRoutes({children}: {readonly children?: ReactNode}) {
   const [pathname, navigate] = usePathname();
-  const deckLike = pathname === '/deck' || isClassroom1Path(pathname) || isWorkshop5Path(pathname) || isWorkshop3Path(pathname) || isWorkshop4Path(pathname);
+  const deckLike = pathname === '/deck' || isClassroom1Path(pathname) || isWorkshop5Path(pathname) || isWorkshop3Path(pathname) || isWorkshop4Path(pathname) || isWorkshop6Path(pathname);
   const connection = useConnection(fetchConnection, 5000, !deckLike);
   if (pathname === '/deck') return <DeckDemo slides={DECK_SLIDES} />;
   if (isClassroom1Path(pathname)) return <DeckDemo slides={CLASSROOM_1_SLIDES} />;
   if (isWorkshop5Path(pathname)) return <DeckDemo slides={WORKSHOP_5_SLIDES} />;
   if (isWorkshop3Path(pathname)) return <DeckDemo slides={WORKSHOP_3_SLIDES} />;
   if (isWorkshop4Path(pathname)) return <DeckDemo slides={WORKSHOP_4_SLIDES} />;
+  if (isWorkshop6Path(pathname)) return <DeckDemo slides={WORKSHOP_6_SLIDES} />;
   if (pathname.startsWith('/live/')) return <LiveRoute pathname={pathname} />;
   return (
     <>
@@ -239,6 +241,11 @@ export function isWorkshop4Path(pathname: string): boolean {
   return pathname === '/workshop/4' || pathname === '/lesson/workshop-4';
 }
 
+/** Facilitator Workshop 6 entry — eigen opdracht thin slice start (AET-81). */
+export function isWorkshop6Path(pathname: string): boolean {
+  return pathname === '/workshop/6' || pathname === '/lesson/workshop-6';
+}
+
 const DECK_SLIDES = normalizeSlides(sourceSlides);
 /** Classroom 1 product route: Teaching Day 1 only (SoT slides 1–44).
  *  Headroom only (AET-86 backlog — do not build here): Arcade postMessage embed slot,
@@ -251,6 +258,8 @@ const WORKSHOP_5_SLIDES = normalizeSlides(workshop5SourceSlides);
 const WORKSHOP_3_SLIDES = normalizeSlides(workshop3SourceSlides);
 /** Workshop 4 product route: n8n → Claude Agent SDK SOLO 0→4 (AET-80). Separate module — not Classroom/W5/W3 cut. */
 const WORKSHOP_4_SLIDES = normalizeSlides(workshop4SourceSlides);
+/** Workshop 6 product route: eigen opdracht thin slice (AET-81). Separate module — not Classroom/W5/W3/W4 cut. */
+const WORKSHOP_6_SLIDES = normalizeSlides(workshop6SourceSlides);
 function DeckDemo({slides}: {readonly slides: typeof DECK_SLIDES}) {
   useEffect(() => {
     const surfaces = [document.documentElement, document.body];
