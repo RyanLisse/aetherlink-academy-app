@@ -61,6 +61,7 @@ describe('registry', () => {
       'get_lesson',
       'get_mission',
       'get_my_progress',
+      'get_screen_state',
       'gotoSlide',
       'handoff',
       'mark_practised',

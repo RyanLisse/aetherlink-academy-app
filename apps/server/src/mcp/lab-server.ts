@@ -38,6 +38,14 @@ export interface LabFixture {
     viewedRevision: number | null;
     latestPublishedRevision: number | null;
     assignmentId?: string | null;
+    route?: string | null;
+    proofOpen?: boolean;
+    proofSection?: string | null;
+    quizId?: string | null;
+    quizStatus?: string | null;
+    quizItemIndex?: number | null;
+    roomPhase?: string | null;
+    releasedLessonIds?: ReadonlyArray<string> | null;
   }) => Promise<void>;
   readonly setReleased: (lessonId: string, released: boolean) => Promise<void>;
   readonly revokeMcp: () => void;
@@ -112,6 +120,14 @@ export const startMcpLab = async (opts?: {port?: number}): Promise<LabFixture> =
       viewedRevision: 2,
       latestPublishedRevision: 3,
       assignmentId: 'asg-1',
+      route: '/workshop/lab',
+      proofOpen: false,
+      proofSection: null,
+      quizId: null,
+      quizStatus: null,
+      quizItemIndex: null,
+      roomPhase: 'solo',
+      releasedLessonIds: [lessonId],
       updatedAt: Date.now(),
     }),
   );
@@ -165,11 +181,30 @@ export const startMcpLab = async (opts?: {port?: number}): Promise<LabFixture> =
         res.writeHead(200, {'content-type': 'application/json'});
         res.end(
           JSON.stringify({
-            lessonId,
+            lessonId: b?.lessonId ?? lessonId,
+            route: b?.route ?? null,
             slideIndex: b?.slideIndex ?? 0,
             title: slide?.title ?? null,
             viewedRevision: b?.viewedRevision ?? null,
             latestPublishedRevision: b?.latestPublishedRevision ?? null,
+            assignmentId: b?.assignmentId ?? null,
+            proof: {
+              open: Boolean(b?.proofOpen),
+              section: b?.proofOpen ? (b?.proofSection ?? null) : null,
+            },
+            quiz: b?.quizId
+              ? {
+                  id: b.quizId,
+                  status: b.quizStatus ?? null,
+                  itemIndex: b.quizItemIndex ?? null,
+                }
+              : null,
+            room: {
+              id: roomId,
+              phase: b?.roomPhase ?? null,
+              releasedLessonIds: [...(b?.releasedLessonIds ?? [])],
+            },
+            browserSessionId: b?.browserSessionId ?? null,
           }),
         );
       })();
@@ -208,6 +243,14 @@ export const startMcpLab = async (opts?: {port?: number}): Promise<LabFixture> =
           viewedRevision: binding.viewedRevision,
           latestPublishedRevision: binding.latestPublishedRevision,
           assignmentId: binding.assignmentId ?? 'asg-1',
+          route: binding.route ?? '/workshop/lab',
+          proofOpen: binding.proofOpen ?? false,
+          proofSection: binding.proofSection ?? null,
+          quizId: binding.quizId ?? null,
+          quizStatus: binding.quizStatus ?? null,
+          quizItemIndex: binding.quizItemIndex ?? null,
+          roomPhase: binding.roomPhase ?? 'solo',
+          releasedLessonIds: binding.releasedLessonIds ?? [lessonId],
           updatedAt: Date.now(),
         }),
       );

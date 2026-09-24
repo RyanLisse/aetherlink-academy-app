@@ -14,6 +14,21 @@ export interface ParticipantViewBinding {
   readonly viewedRevision: number | null;
   readonly latestPublishedRevision: number | null;
   readonly assignmentId: string | null;
+  /** Participant SPA route (e.g. /workshop/5). Null when unknown. */
+  readonly route: string | null;
+  /** Proof panel open in this tab. */
+  readonly proofOpen: boolean;
+  /** Open Proof section id/label (e.g. evidence). Null when closed/unknown. */
+  readonly proofSection: string | null;
+  /** Quiz / checkpoint id on the current face. */
+  readonly quizId: string | null;
+  /** idle | in_progress | completed — or null when no quiz. */
+  readonly quizStatus: string | null;
+  readonly quizItemIndex: number | null;
+  /** Facilitator room phase when membership exists (e.g. solo). */
+  readonly roomPhase: string | null;
+  /** Lessons released for this room/squad when known. */
+  readonly releasedLessonIds: ReadonlyArray<string> | null;
   readonly updatedAt: number;
 }
 

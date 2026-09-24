@@ -48,6 +48,7 @@ describe('AET-44 streamable HTTP MCP', () => {
     for (const required of [
       'get_lesson',
       'get_current_slide',
+      'get_screen_state',
       'get_assignment',
       'submit_evidence',
       'open_hint',
@@ -95,6 +96,82 @@ describe('AET-44 streamable HTTP MCP', () => {
     const {json, isError} = await tool(client, 'get_lesson', {lessonId: lockedId});
     expect(isError).toBe(true);
     expect(json).toEqual(lockedLessonDenialBody());
+  });
+
+
+  test('get_screen_state matches browser lab view (D1 slide parity)', async () => {
+    lab = await startMcpLab();
+    const browser = (await (await fetch(`http://${lab.host}:${lab.port}/lab/browser-view`)).json()) as {
+      slideIndex: number;
+      viewedRevision: number | null;
+      latestPublishedRevision: number | null;
+      route: string | null;
+      room: {id: string; phase: string | null};
+    };
+    const client = await connect(lab.tokens.mcp);
+    const {json, isError} = await tool(client, 'get_screen_state');
+    expect(isError).toBe(false);
+    expect(json.slideIndex).toBe(browser.slideIndex);
+    expect(json.viewedRevision).toBe(browser.viewedRevision);
+    expect(json.latestPublishedRevision).toBe(browser.latestPublishedRevision);
+    expect(json.route).toBe(browser.route);
+    expect(json.room).toMatchObject({id: lab.roomId, phase: browser.room.phase});
+    expect(json.proof).toEqual({open: false, section: null});
+    expect(json.quiz).toBeNull();
+  });
+
+  test('get_screen_state reports Proof open/section then clears (D2)', async () => {
+    lab = await startMcpLab();
+    await lab.setView({
+      browserSessionId: 'tab-1',
+      slideIndex: 1,
+      viewedRevision: 2,
+      latestPublishedRevision: 3,
+      proofOpen: true,
+      proofSection: 'evidence',
+    });
+    const client = await connect(lab.tokens.mcp);
+    const open = await tool(client, 'get_screen_state');
+    expect(open.isError).toBe(false);
+    expect(open.json.proof).toEqual({open: true, section: 'evidence'});
+    const browserOpen = (await (await fetch(`http://${lab.host}:${lab.port}/lab/browser-view`)).json()) as {proof: unknown};
+    expect(browserOpen.proof).toEqual({open: true, section: 'evidence'});
+
+    await lab.setView({
+      browserSessionId: 'tab-1',
+      slideIndex: 1,
+      viewedRevision: 2,
+      latestPublishedRevision: 3,
+      proofOpen: false,
+      proofSection: null,
+    });
+    const closed = await tool(client, 'get_screen_state');
+    expect(closed.isError).toBe(false);
+    expect(closed.json.proof).toEqual({open: false, section: null});
+  });
+
+  test('get_screen_state reports quiz id/status/itemIndex (D3)', async () => {
+    lab = await startMcpLab();
+    await lab.setView({
+      browserSessionId: 'tab-1',
+      slideIndex: 1,
+      viewedRevision: 2,
+      latestPublishedRevision: 3,
+      quizId: 'quiz-day1-checkpoint',
+      quizStatus: 'in_progress',
+      quizItemIndex: 2,
+    });
+    const client = await connect(lab.tokens.mcp);
+    const {json, isError} = await tool(client, 'get_screen_state');
+    expect(isError).toBe(false);
+    expect(json.quiz).toEqual({
+      id: 'quiz-day1-checkpoint',
+      status: 'in_progress',
+      itemIndex: 2,
+    });
+    expect(json.slideIndex).toBe(1);
+    const browser = (await (await fetch(`http://${lab.host}:${lab.port}/lab/browser-view`)).json()) as {quiz: unknown};
+    expect(browser.quiz).toEqual(json.quiz);
   });
 
   test('token revoke → next MCP call fails', async () => {

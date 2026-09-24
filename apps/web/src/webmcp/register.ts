@@ -4,6 +4,7 @@ import type {ModelContextTool, NavigatorWithModelContext} from './types.ts';
 export const PARTICIPANT_TOOL_NAMES = [
   'get_lesson',
   'get_current_slide',
+  'get_screen_state',
   'get_assignment',
   'submit_evidence',
   'open_hint',

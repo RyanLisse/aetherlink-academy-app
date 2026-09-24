@@ -6,6 +6,7 @@ import {followAgain} from './follow-again.ts';
 import {getAssignment} from './get-assignment.ts';
 import {getConnectionState} from './get-connection-state.ts';
 import {getCurrentSlide} from './get-current-slide.ts';
+import {getParticipantScreenState} from './get-participant-screen-state.ts';
 import {getDocument} from './get-document.ts';
 import {getLesson} from './get-lesson.ts';
 import {getMission} from './get-mission.ts';
@@ -79,7 +80,10 @@ const withParticipant = registerAction(
     registerAction(
       registerAction(
         registerAction(
-          registerAction(registerAction(withRelease, getLesson), getCurrentSlide),
+          registerAction(
+            registerAction(registerAction(withRelease, getLesson), getCurrentSlide),
+            getParticipantScreenState,
+          ),
           getAssignment,
         ),
         submitEvidence,
