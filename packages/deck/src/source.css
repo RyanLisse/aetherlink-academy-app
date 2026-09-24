@@ -1131,7 +1131,11 @@
 /* opacity-only entrance: a transform on .heading would become the anchor for the pinned label */
 .academy-deck.keynote[data-lesson=workshop-5] .heading{animation-name:w5-heading-in}
 @keyframes w5-heading-in{from{opacity:0}}
-.academy-deck.keynote[data-lesson=workshop-5] .type-chip{position:absolute;top:clamp(.8rem,2.5vh,1.6rem);left:50%;transform:translateX(-50%)}
+/* label + kicker as one line at the top; on definition faces the kicker is the headword, so only the label goes up */
+.academy-deck.keynote[data-lesson=workshop-5]:not([data-opener=definition]) .heading-top{position:absolute;top:clamp(.8rem,2.5vh,1.6rem);left:0;right:0;justify-content:center;margin:0}
+.academy-deck.keynote[data-lesson=workshop-5]:not([data-opener=definition]) .eyebrow{flex-direction:row;margin:0}
+.academy-deck.keynote[data-lesson=workshop-5]:not([data-opener=definition]) .slide-count{top:50%;transform:translateY(-50%)}
+.academy-deck.keynote[data-lesson=workshop-5][data-opener=definition] .type-chip{position:absolute;top:clamp(.8rem,2.5vh,1.6rem);left:50%;transform:translateX(-50%)}
 .academy-deck.keynote[data-lesson=workshop-5] .slide-count{position:absolute;top:clamp(.8rem,2.5vh,1.6rem);right:0;margin:0;line-height:2}
 /* W5 definition face, dictionary style: label on top → headword (kicker) + part of speech → rule → sense 1 (h1) */
 .academy-deck.keynote[data-opener=definition] .heading{align-items:flex-start;text-align:left;max-width:min(58rem,92vw)}
