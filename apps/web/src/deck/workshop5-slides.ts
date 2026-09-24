@@ -1,13 +1,13 @@
-/** AET-77 Workshop day 5 — AI-native SDLC.
- *  Outline SoT: handoffs/2026-09-24-academy-deploy-sdlc/OUTLINE-AET-77.md (PRODUCT-ACCEPT).
- *  Separate from Classroom teaching-day-1/2 cut — do not append into sourceSlides length.
- *  Lab pack: aetherlink-daily-brief-lab-s1 SOLO.md (7 steps). Concept: Anthropic AI-Native SDLC playbook.
- *  Forbidden: Classroom 1–2 curriculum rewrite; Eve dual-track.
+/** AET-77 Workshop day 5 — AI-native SDLC (minimal face pass).
+ *  Outline SoT: handoffs/2026-09-24-academy-deploy-sdlc/OUTLINE-AET-77.md
+ *  Minimal SoT: HANDOFF-AET-77-MINIMAL.md + Ryan addendum (definition slides).
+ *  Projector: title + one idea + optional path chip. Timers/checklists → notes (+ timer field for PresenterTools).
+ *  Forbidden: Classroom 1–2 rewrite; Eve dual-track. n8n→Claude lock stays.
  */
 export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
 
 /* ---------------------------------------------------------------------- */
-/* Opening                                                                 */
+/* Opening (slides 1–4 unchanged)                                          */
 /* ---------------------------------------------------------------------- */
 
 { // 1
@@ -60,10 +60,6 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   notes: "Walk intent.md → spec.md → plan.md → diff+tests → PR review → production loop → new intent. Human attention concentrates at accept gates, not at typing every file. Point at the chain; don't lecture the whole blog."
 },
 
-/* ---------------------------------------------------------------------- */
-/* Plan — SOLO 1                                                           */
-/* ---------------------------------------------------------------------- */
-
 { // 4
   lessonId: "workshop-5",
   title: "Intent is a committed artifact",
@@ -78,289 +74,203 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   notes: "Originator's words, versioned, machine-actionable. Product owner accepts before Design. Lab file: intent.md (repo root)."
 },
 
-{ // 5 — SOLO 1
+/* ---------------------------------------------------------------------- */
+/* Definitions (Ryan addendum) + minimal assignments                       */
+/* ---------------------------------------------------------------------- */
+
+{ // 5 — definition: AI-native SDLC
+  lessonId: "workshop-5",
+  title: "AI-native SDLC",
+  kicker: "Definition",
+  subtitle: "Committed artifacts + human gates — agents collapse Build, not judgment.",
+  type: "concept",
+  tagline: "Plan → Design → Build → Test → Deploy → Maintain, with proof in git.",
+  notes: "Frame the day: AI-native SDLC = the playbook loop rebuilt around versioned artifacts and accept gates. Build sped up; Plan/Test/Deploy/Maintain stay human-speed. Point back at the chain on slide 3."
+},
+
+{ // 6 — definition: intent.md
+  lessonId: "workshop-5",
+  title: "intent.md",
+  kicker: "Definition · Plan",
+  subtitle: "Originator intent, versioned in git, accepted before Design.",
+  type: "concept",
+  visual: { mdfile: 0, mdName: "intent.md" },
+  cards: [
+    { title: "intent.md", body: "One outcome · checks · boundary · owners · OPEN" }
+  ],
+  tagline: "Wish ≠ rule. The boundary is the gate.",
+  notes: "Highlight file: repo-root intent.md. Outcome sentence, stranger-verifiable checks, hard boundary, owners, ≥1 OPEN. Product owner accepts before anyone starts Design."
+},
+
+{ // 7 — SOLO 1 assignment (minimal face)
   lessonId: "workshop-5",
   title: "Assignment — fill intent.md (SOLO 1)",
-  kicker: "15 min · gate before step 2",
+  kicker: "SOLO 1 · gate before step 2",
   subtitle: "Claude interviews one question at a time; human cuts.",
   type: "practice",
-  layout: "exercise",
   timer: 15,
-  visual: { tree: 0 },
+  visual: { mdfile: 0, mdName: "intent.md" },
   cards: [
-    { title: "Path chip", body: "intent.md" }
+    { title: "intent.md", body: "Write the outcome a stranger can verify." }
   ],
-  steps: [
-    "Write one outcome sentence.",
-    "List three stranger-verifiable success checks.",
-    "State the hard boundary (what the agent may never touch).",
-    "Name owners.",
-    "Leave ≥1 OPEN — do not invent certainty."
-  ],
-  expected: "A committed intent.md a stranger can read and challenge.",
-  check: "Gate: read the boundary aloud — wish ≠ rule → NEEDS REVISION, no step 2. yes/no",
-  notes: "One outcome sentence · three stranger-verifiable success checks · hard boundary (what the agent may never touch) · owners · ≥1 OPEN. Claude interviews one question at a time; human cuts. Gate: read the boundary aloud — wish ≠ rule → NEEDS REVISION, no step 2. Map: SOLO step 1."
+  notes: "Timer: 15 min. Checklist: (1) one outcome sentence (2) three stranger-verifiable success checks (3) hard boundary — what the agent may never touch (4) owners (5) ≥1 OPEN — do not invent certainty. Gate: read the boundary aloud — wish ≠ rule → NEEDS REVISION, no step 2. Map: SOLO step 1."
 },
 
-/* ---------------------------------------------------------------------- */
-/* Spec — SOLO 2                                                           */
-/* ---------------------------------------------------------------------- */
-
-{ // 6
+{ // 8 — definition: spec.md
   lessonId: "workshop-5",
-  title: "Spec + contract, test first",
-  kicker: "Design compressed · still a gate",
-  subtitle: "Keep a testable contract. Schema goes red before implementation green.",
+  title: "spec.md",
+  kicker: "Definition · Design",
+  subtitle: "A testable contract. Sources quoted; schema goes red before green.",
   type: "concept",
-  layout: "steps",
-  visual: { stepKeys: true },
-  items: [
-    { label: "Quote sources", caption: "Spec cites reference/", detail: "No invented fields" },
-    { label: "Schema test red", caption: "test/schema.test.ts", detail: "Fails before code" },
-    { label: "Implement green", caption: "src/brief.ts + sample", detail: "npm test passes" }
+  visual: { mdfile: 0, mdName: "docs/spec.md" },
+  cards: [
+    { title: "docs/spec.md", body: "Quote sources · red test · then green" }
   ],
-  tagline: "Spec quotes sources; red before green.",
-  notes: "Playbook collapses requirements+design into one session guided by skills; here we keep a testable contract. Spec quotes sources; schema test goes red before implementation green."
+  tagline: "No invented fields. Red before implementation.",
+  notes: "Highlight file: docs/spec.md (+ test/schema.test.ts). Spec quotes reference/ sources; schema test fails before brief.ts goes green. Still a human gate even when Design is compressed."
 },
 
-{ // 7 — SOLO 2
+{ // 9 — SOLO 2
   lessonId: "workshop-5",
   title: "Assignment — docs/spec.md + schema test (SOLO 2)",
-  kicker: "25 min · no renderer yet",
+  kicker: "SOLO 2 · no renderer yet",
   subtitle: "Quoted examples → red schema test → green brief + sample.",
   type: "practice",
-  layout: "exercise",
   timer: 25,
-  visual: { tree: 0 },
+  visual: { mdfile: 0, mdName: "docs/spec.md" },
   cards: [
-    { title: "Path chips", body: "docs/spec.md\ntest/schema.test.ts\nsrc/brief.ts\nsample/brief.sample.json" }
+    { title: "docs/spec.md", body: "test/schema.test.ts · src/brief.ts" }
   ],
-  steps: [
-    "For each field, quote one example from reference/ PDFs into docs/spec.md.",
-    "Write test/schema.test.ts so it fails (red).",
-    "Add src/brief.ts + sample/brief.sample.json until npm test is green.",
-    "Confirm the test commit appears before brief.ts in git log."
-  ],
-  expected: "Spec with quoted sources; schema test green; test commit before implementation.",
-  check: "Check: test commit before brief.ts in git log. yes/no",
-  notes: "One quoted example per field from reference/ PDFs → test/schema.test.ts red → src/brief.ts + sample/brief.sample.json until npm test green. Check: test commit before brief.ts in git log. Map: SOLO step 2."
+  notes: "Timer: 25 min. Checklist: (1) quote one example per field from reference/ PDFs into docs/spec.md (2) write test/schema.test.ts so it fails red (3) add src/brief.ts + sample/brief.sample.json until npm test green (4) confirm test commit before brief.ts in git log. Check: test commit before brief.ts in git log. yes/no. Map: SOLO step 2."
 },
 
-/* ---------------------------------------------------------------------- */
-/* Design / plan mode — SOLO 3                                             */
-/* ---------------------------------------------------------------------- */
-
-{ // 8
+{ // 10 — definition: plan.md
   lessonId: "workshop-5",
-  title: "Plan mode before any edit",
-  kicker: "Build starts with plan.md",
-  subtitle: "Claude Code plan mode = read-only until human accepts.",
+  title: "plan.md",
+  kicker: "Definition · Design / Build",
+  subtitle: "Ordered steps, exact paths, proof commands — accepted before any edit.",
   type: "concept",
-  visual: { art: "gate" },
+  visual: { mdfile: 0, mdName: "docs/plan.md" },
   cards: [
-    { title: "Plan names", body: "Files\nOrder\nProof commands\nRisks" },
-    { title: "After accept", body: "Approved plan is the audit trail\nthe PR later checks against" }
+    { title: "docs/plan.md", body: "Steps · paths · proof · rollback · gate" }
   ],
-  tagline: "No edits until the gate opens.",
-  notes: "Claude Code plan mode = read-only until human accepts. Plan names files, order, proof commands, risks. Approved plan is the audit trail the PR later checks against."
+  tagline: "Plan mode stays read-only until a human accepts.",
+  notes: "Highlight file: docs/plan.md (with docs/design.md + one ADR). Approved plan is the audit trail the PR later checks against. No edits until the gate opens."
 },
 
-{ // 9 — SOLO 3
+{ // 11 — SOLO 3
   lessonId: "workshop-5",
   title: "Assignment — design + ADR + plan with proof (SOLO 3)",
-  kicker: "15 min · stranger could implement from the plan",
+  kicker: "SOLO 3 · stranger could implement",
   subtitle: "Stay in plan mode until accept.",
   type: "practice",
-  layout: "exercise",
   timer: 15,
-  visual: { tree: 0 },
+  visual: { mdfile: 0, mdName: "docs/plan.md" },
   cards: [
-    { title: "Path chips", body: "docs/design.md\ndocs/decisions/\ndocs/plan.md" }
+    { title: "docs/plan.md", body: "docs/design.md · docs/decisions/" }
   ],
-  steps: [
-    "Write docs/design.md.",
-    "Add one real ADR under docs/decisions/.",
-    "Write docs/plan.md: ordered steps, exact paths, one proof command per step, rollback, gate before build.",
-    "Remain in plan mode until a human accepts."
-  ],
-  expected: "A stranger could implement from the plan without guessing.",
-  check: "Check: every step has a proof command + rollback. yes/no",
-  notes: "docs/design.md · one real ADR in docs/decisions/ · docs/plan.md with ordered steps, exact paths, one proof command per step, rollback, gate before build. Plan mode until accept. Map: SOLO step 3."
+  notes: "Timer: 15 min. Checklist: (1) write docs/design.md (2) one real ADR under docs/decisions/ (3) docs/plan.md with ordered steps, exact paths, one proof command per step, rollback, gate before build (4) remain in plan mode until human accepts. Check: every step has a proof command + rollback. yes/no. Map: SOLO step 3."
 },
 
-/* ---------------------------------------------------------------------- */
-/* Build — SOLO 4–5                                                        */
-/* ---------------------------------------------------------------------- */
-
-{ // 10
+{ // 12 — build concept (slim)
   lessonId: "workshop-5",
   title: "Build with a feedback loop",
-  kicker: "Session verifies before you review",
-  subtitle: "Give the agent a way to check its own work.",
+  kicker: "Build",
+  subtitle: "Agent checks its own work; human reviews intent + risk.",
   type: "concept",
-  layout: "pillars",
-  items: [
-    { label: "Agent checks", caption: "tests / build / screenshot", detail: "Session verifies before you review" },
-    { label: "Human reviews", caption: "intent + risk", detail: "Not every keystroke" },
-    { label: "Today's bound", caption: "no shell / no write", detail: "for the brief agent" }
-  ],
-  tagline: "Proof in the session; judgment with the human.",
-  notes: "Playbook: give the agent a way to check its own work (tests / build / screenshot). Humans review intent + risk, not every keystroke. Still: no shell/write for the brief agent today."
+  tagline: "Today: no shell / no write for the brief agent.",
+  notes: "Playbook: give the agent tests / build / screenshot feedback. Humans review intent + risk, not every keystroke. Bound for today: no shell, no write on the brief agent."
 },
 
-{ // 11 — SOLO 4
+{ // 13 — SOLO 4
   lessonId: "workshop-5",
   title: "Assignment — render the sample (SOLO 4)",
-  kicker: "25 min · first artifact, no API keys",
+  kicker: "SOLO 4 · first artifact, no API keys",
   subtitle: "Red render test → green sample HTML.",
   type: "practice",
-  layout: "exercise",
   timer: 25,
-  visual: { tree: 0 },
+  visual: { mdfile: 0, mdName: "out/latest.html" },
   cards: [
-    { title: "Path chips", body: "test/render.test.ts\nsrc/render.ts\nout/latest.html" }
+    { title: "out/latest.html", body: "test/render.test.ts · src/render.ts" }
   ],
-  steps: [
-    "Write test/render.test.ts so it fails (red).",
-    "Implement src/render.ts + sample main until green.",
-    "Run npm run brief:sample → out/latest.html.",
-    "Change one house-style rule test-first.",
-    "Keep a 1440×900 screenshot for evidence."
-  ],
-  expected: "out/latest.html from the sample path; screenshot saved for evidence.",
-  check: "Check: npm run brief:sample produces out/latest.html. yes/no",
-  notes: "test/render.test.ts red → src/render.ts + sample main. npm run brief:sample → out/latest.html. Change one house-style rule test-first. Keep 1440×900 screenshot for evidence. Map: SOLO step 4."
+  notes: "Timer: 25 min. Checklist: (1) test/render.test.ts red (2) src/render.ts + sample main until green (3) npm run brief:sample → out/latest.html (4) change one house-style rule test-first (5) keep 1440×900 screenshot for evidence. Check: npm run brief:sample produces out/latest.html. yes/no. Map: SOLO step 4."
 },
 
-{ // 12 — SOLO 5
+{ // 14 — SOLO 5
   lessonId: "workshop-5",
   title: "Assignment — agent loop + one read-only tool (SOLO 5)",
-  kicker: "20 min + live run · human after the run",
-  subtitle: "Catch-up from reference sources.ts / agent.ts. Model: no shell, no write.",
+  kicker: "SOLO 5 · live run, then human",
+  subtitle: "One read-only tool. No shell, no write.",
   type: "practice",
-  layout: "exercise",
   timer: 20,
   visual: { tree: 0 },
   cards: [
-    { title: "Path chips", body: "reference/sources.ts\nreference/agent.ts\nrun.log" }
+    { title: "run.log", body: "reference/sources.ts · agent.ts" }
   ],
-  steps: [
-    "Catch up from reference sources.ts / agent.ts.",
-    "Add one read-only tool (tool() + guarded()).",
-    "Live npm run brief.",
-    "Confirm every sentence traces to a run.log tool call."
-  ],
-  expected: "A live brief where every claim maps to a tool call in run.log.",
-  check: "Check: no shell tool, no write tool; every sentence traceable. yes/no",
-  notes: "Catch-up from reference sources.ts / agent.ts. Add one read-only tool (tool() + guarded()). Live npm run brief; every sentence traceable to run.log tool call. Model: no shell, no write. Map: SOLO step 5."
+  notes: "Timer: 20 min + live run. Checklist: (1) catch up from reference sources.ts / agent.ts (2) add one read-only tool (tool() + guarded()) (3) live npm run brief (4) every sentence traces to a run.log tool call. Check: no shell tool, no write tool; every sentence traceable. yes/no. Map: SOLO step 5."
 },
 
-/* ---------------------------------------------------------------------- */
-/* Test + Deploy — SOLO 6–7                                                */
-/* ---------------------------------------------------------------------- */
-
-{ // 13
+{ // 15 — evidence concept (slim)
   lessonId: "workshop-5",
   title: "Evidence is not a vibes check",
-  kicker: "Test · continuous proof",
-  subtitle: "Three real commands + screenshot + a reviewer who reran one command.",
+  kicker: "Test",
+  subtitle: "Commands, exit codes, screenshot, named reviewer.",
   type: "concept",
-  visual: { runner: [{ label: "exit 0", tone: "green" }, { label: "exit 0", tone: "green" }, { label: "exit 0", tone: "green" }] },
-  cards: [
-    { title: "Commands", body: "typecheck\ntest\nbrief (or sample)" },
-    { title: "Evidence means", body: "Exit codes\nOne quoted line each\nScreenshot under docs/evidence/\nNamed reviewer (or self next day)" },
-    { title: "Differences from PDFs", body: "Mark OPEN\nNever silent FAIL" }
-  ],
-  notes: "Playbook: continuous evals / session feedback. Lab: three real commands + screenshot + a reviewer who reran one command. Differences from PDFs = OPEN, not silent FAIL."
+  visual: { mdfile: 0, mdName: "docs/evidence.md" },
+  tagline: "Differences from PDFs = OPEN, never silent FAIL.",
+  notes: "Playbook: continuous proof. Lab: typecheck · test · brief (or sample) with exit codes + one quoted line each; screenshot under docs/evidence/; name the reviewer (or self next day)."
 },
 
-{ // 14 — SOLO 6
+{ // 16 — SOLO 6
   lessonId: "workshop-5",
   title: "Assignment — docs/evidence.md (SOLO 6)",
-  kicker: "15 min",
-  subtitle: "Record proof a stranger can re-run.",
+  kicker: "SOLO 6 · proof a stranger can re-run",
+  subtitle: "Record the three commands and the screenshot path.",
   type: "practice",
-  layout: "exercise",
   timer: 15,
   visual: { mdfile: 0, mdName: "docs/evidence.md" },
   cards: [
-    { title: "Path chips", body: "docs/evidence.md\ndocs/evidence/" }
+    { title: "docs/evidence.md", body: "docs/evidence/ · reviewer name" }
   ],
-  steps: [
-    "Run typecheck · test · brief (or sample); record exit codes.",
-    "Quote one line of output for each command.",
-    "Save a screenshot under docs/evidence/.",
-    "Name the reviewer (or write \"self next day\")."
-  ],
-  expected: "docs/evidence.md with commands, exit codes, quotes, screenshot path, reviewer.",
-  check: "Check: three commands + screenshot path + reviewer name. yes/no",
-  notes: "typecheck · test · brief (or sample) with exit codes + one quoted line each; screenshot under docs/evidence/; name the reviewer (or \"self next day\"). Map: SOLO step 6."
+  notes: "Timer: 15 min. Checklist: (1) run typecheck · test · brief (or sample); record exit codes (2) quote one line each (3) screenshot under docs/evidence/ (4) name the reviewer (or \"self next day\"). Check: three commands + screenshot path + reviewer name. yes/no. Map: SOLO step 6."
 },
 
-{ // 15
+{ // 17 — gate concept (slim)
   lessonId: "workshop-5",
   title: "Human gate, then schedule",
-  kicker: "Deploy · hooks as approval, humans at production",
+  kicker: "Deploy",
   subtitle: "Agent acts up to the gate; production needs named approval.",
   type: "concept",
-  layout: "steps",
-  visual: { stepKeys: true, art: "gate" },
-  items: [
-    { label: "PR vs intent.md", caption: "Does the change match intent?" },
-    { label: "docs/gate.md", caption: "PASS / FAIL / OPEN with quotes" },
-    { label: "Schedule", caption: "cron / Actions weekday brief", detail: "Secrets only in vault" }
-  ],
+  visual: { mdfile: 0, mdName: "docs/gate.md" },
   tagline: "No PASS on unread checks. Credentials never in repo.",
-  notes: "Playbook: agent acts up to the gate; production needs named approval. Lab: PR vs intent.md → docs/gate.md PASS/FAIL/OPEN with quotes → cron / Actions for weekday brief; secrets only in vault."
+  notes: "PR vs intent.md → docs/gate.md PASS/FAIL/OPEN with quotes → cron / Actions for weekday brief; secrets only in vault."
 },
 
-{ // 16 — SOLO 7
+{ // 18 — SOLO 7
   lessonId: "workshop-5",
   title: "Assignment — gate + schedule (SOLO 7)",
-  kicker: "15 min · open the PR",
+  kicker: "SOLO 7 · open the PR",
   subtitle: "Fill the gate. Schedule from the example CI shape.",
   type: "practice",
-  layout: "exercise",
   timer: 15,
   visual: { mdfile: 0, mdName: "docs/gate.md" },
   cards: [
-    { title: "Path chips", body: "docs/gate.md\ngitlab-ci.example.yml\n.github/workflows/" }
+    { title: "docs/gate.md", body: "gitlab-ci.example.yml · Actions" }
   ],
-  steps: [
-    "Fill docs/gate.md with PASS / FAIL / OPEN and quotes.",
-    "Refuse PASS on unread checks.",
-    "Confirm credentials are not in the repo.",
-    "Shape the schedule from gitlab-ci.example.yml or GH Actions.",
-    "Open the PR."
-  ],
-  expected: "Gate recorded; PR open; schedule shape committed or linked.",
-  check: "Check: gate filled; no secrets in repo; PR open. yes/no",
-  notes: "Fill docs/gate.md; no PASS on unread checks; credentials never in repo. Schedule shape from gitlab-ci.example.yml / GH Actions. Map: SOLO step 7."
+  notes: "Timer: 15 min. Checklist: (1) fill docs/gate.md with PASS/FAIL/OPEN and quotes (2) refuse PASS on unread checks (3) credentials not in repo (4) schedule shape from gitlab-ci.example.yml or GH Actions (5) open the PR. Check: gate filled; no secrets in repo; PR open. yes/no. Map: SOLO step 7."
 },
 
-/* ---------------------------------------------------------------------- */
-/* Close                                                                   */
-/* ---------------------------------------------------------------------- */
-
-{ // 17
+{ // 19 — close
   lessonId: "workshop-5",
   title: "Close the loop",
   kicker: "Maintain → new intent",
-  subtitle: "Production signal / footnote becomes the next intent.md.",
+  subtitle: "Production signal becomes the next intent.md.",
   type: "concept",
-  layout: "steps",
-  visual: { stepKeys: true, art: "loop", loopCaptions: true },
-  items: [
-    { label: "Run today", caption: "Merged brief in production" },
-    { label: "Signal / footnote", caption: "What broke or surprised" },
-    { label: "New intent.md", caption: "Tomorrow's Plan starts here" },
-    { label: "Human triage", caption: "fix-now / schedule / dismiss" }
-  ],
   tagline: "Tomorrow's run reads what you merged today.",
-  notes: "Playbook Stage 6: production signal / footnote becomes the next intent.md. Tomorrow's run reads what you merged today. Human still triages fix-now / schedule / dismiss."
+  notes: "Playbook Stage 6: production signal / footnote → next intent.md. Human triages fix-now / schedule / dismiss."
 },
 
-{ // 18
+{ // 20 — recap
   lessonId: "workshop-5",
   title: "Recap + Proof",
   kicker: "Done when",
@@ -378,7 +288,7 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     { label: "PR open", caption: "Stranger can review" }
   ],
   tagline: "Proof acceptance: intent + plan + verify-output + human gate recorded.",
-  notes: "Seven files a stranger can point at · one brief you did not write · a gate you decided. Proof acceptance: intent + plan + verify-output + human gate recorded. Point to lab README / SOLO \"When you are done.\" Soft: templates (intent/plan/gate/review checklist) land with Herdr pack — Linear Done needs live screenshot of /workshop/5, not outline alone."
+  notes: "Seven files a stranger can point at · one brief you did not write · a gate you decided. Point to lab README / SOLO \"When you are done.\""
 },
 
 ];

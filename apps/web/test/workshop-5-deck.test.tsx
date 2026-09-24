@@ -6,24 +6,49 @@ import {sourceSlides} from '../src/deck/slides.ts';
 
 describe('AET-77 workshop 5 AI-native SDLC deck', () => {
   const slides = normalizeSlides(workshop5SourceSlides);
+  const practice = workshop5SourceSlides.filter((s) => s.type === 'practice');
 
-  it('ships exactly 18 workshop-5 slides from the ACCEPT outline', () => {
-    expect(workshop5SourceSlides).toHaveLength(18);
-    expect(slides).toHaveLength(18);
+  it('ships workshop-5 slides from the ACCEPT outline + definition addendum', () => {
+    expect(workshop5SourceSlides).toHaveLength(20);
+    expect(slides).toHaveLength(20);
     expect(slides.every((s) => s.lessonId === 'workshop-5')).toBe(true);
     expect(slides[0]?.title).toBe('Workshop 5 — AI-native SDLC');
-    expect(slides[17]?.title).toBe('Recap + Proof');
+    expect(slides[19]?.title).toBe('Recap + Proof');
+  });
+
+  it('highlights AI-native SDLC, intent.md, spec.md, and plan.md as own slides', () => {
+    const titles = slides.map((s) => s.title);
+    expect(titles).toContain('AI-native SDLC');
+    expect(titles).toContain('intent.md');
+    expect(titles).toContain('spec.md');
+    expect(titles).toContain('plan.md');
   });
 
   it('maps SOLO assignments and keeps the artifact-chain diagram', () => {
     expect(slides[2]?.title).toBe('The artifact chain');
-    expect(slides[4]?.title).toContain('intent.md');
-    expect(slides[6]?.title).toContain('docs/spec.md');
-    expect(slides[8]?.title).toContain('design + ADR + plan');
-    expect(slides[10]?.title).toContain('render the sample');
-    expect(slides[11]?.title).toContain('agent loop');
-    expect(slides[13]?.title).toContain('docs/evidence.md');
-    expect(slides[15]?.title).toContain('gate + schedule');
+    const practiceTitles = practice.map((s) => String(s.title));
+    expect(practiceTitles.some((t) => t.includes('intent.md') && t.includes('SOLO 1'))).toBe(true);
+    expect(practiceTitles.some((t) => t.includes('docs/spec.md') && t.includes('SOLO 2'))).toBe(true);
+    expect(practiceTitles.some((t) => t.includes('design + ADR + plan') && t.includes('SOLO 3'))).toBe(true);
+    expect(practiceTitles.some((t) => t.includes('render the sample') && t.includes('SOLO 4'))).toBe(true);
+    expect(practiceTitles.some((t) => t.includes('agent loop') && t.includes('SOLO 5'))).toBe(true);
+    expect(practiceTitles.some((t) => t.includes('docs/evidence.md') && t.includes('SOLO 6'))).toBe(true);
+    expect(practiceTitles.some((t) => t.includes('gate + schedule') && t.includes('SOLO 7'))).toBe(true);
+  });
+
+  it('keeps timers/checklists off the projector face (presenter notes only)', () => {
+    expect(practice).toHaveLength(7);
+    for (const slide of practice) {
+      expect(slide.layout, String(slide.title)).not.toBe('exercise');
+      expect(slide.steps, String(slide.title)).toBeUndefined();
+      expect(slide.check, String(slide.title)).toBeUndefined();
+      expect(slide.expected, String(slide.title)).toBeUndefined();
+      expect(String(slide.kicker ?? ''), String(slide.title)).not.toMatch(/\d+\s*min/i);
+      const notes = String(slide.notes ?? '');
+      expect(notes, String(slide.title)).toMatch(/Timer:\s*\d+\s*min/i);
+      expect(typeof slide.timer, String(slide.title)).toBe('number');
+      expect(notes.toLowerCase()).toMatch(/checklist:|check:|gate:/);
+    }
   });
 
   it('exposes Workshop 5 facilitator paths', () => {
