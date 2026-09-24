@@ -26,12 +26,12 @@ participant curriculum route or a live presence integration.
 
 Reference: `jyse/aetherlink-classroom-slides`, branch
 `cons/cursus-aanpassingen`, commit
-`0c194f6fc38481290922b878ac5a7d31ca795c8d`.
+`dc7107bc0f80aba5c9ad6a2aa1d0a2538f95f87a` (86 slides; Day 1 = slides 1–44).
 
-The parity script compares all 78 slides at 1440×900, 1024×768 and 390×844,
+The parity script compares all 86 slides at 1440×900, 1024×768 and 390×844,
 checking target identity, asset loading, screenshot dimensions and pixel output.
 The default pixelmatch color threshold is 0.1; any remaining differing pixel or
-geometry mismatch fails. A passing subset is not the complete 234-case gate.
+geometry mismatch fails. A passing subset is not the complete 258-case gate.
 
 With the reference served on port 8787 and the app on port 5178:
 
@@ -43,9 +43,9 @@ pnpm --filter @academy/deck exec node scripts/parity.mjs
 Override `SOURCE_DECK_URL`, `DECK_URL`, `BEHAVIOR_OUTPUT`, and `PARITY_OUTPUT`
 for isolated runs. `PARITY_SLIDES=1,5-8` selects a diagnostic subset. Reports and
 paired failure images go to the requested output directory. Attach the final
-234-case report to the PR and retain its source/implementation provenance.
+258-case report to the PR and retain its source/implementation provenance.
 
 The Deck acceptance workflow runs behavior against the development fixture and
-all 234 screenshot cases against the production build. It uploads reports and
+all 258 screenshot cases against the production build. It uploads reports and
 failure images as a commit-specific artifact. Merge requires these checks plus
 workspace validation and independent review; a partial run is diagnostic only.

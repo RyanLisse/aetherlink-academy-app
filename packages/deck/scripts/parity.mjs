@@ -7,7 +7,7 @@ import {chromium} from '@playwright/test';
 import pixelmatch from 'pixelmatch';
 import {PNG} from 'pngjs';
 
-const TOTAL_SLIDES = 78;
+const TOTAL_SLIDES = 86;
 const sourceUrl = process.env.SOURCE_DECK_URL || 'http://localhost:8787/index.html';
 const sourceDirectory = process.env.SOURCE_DECK_DIR || '/tmp/academy-wave-next/classroom-slides';
 const portUrl = process.env.DECK_URL || 'http://localhost:5178/deck';
