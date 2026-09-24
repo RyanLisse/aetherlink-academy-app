@@ -8,13 +8,26 @@ describe('AET-77 workshop 5 AI-native SDLC deck', () => {
   const slides = normalizeSlides(workshop5SourceSlides);
   const practice = workshop5SourceSlides.filter((s) => s.type === 'practice');
   const titles = slides.map((s) => s.title);
+  const visualOf = (s: Record<string, unknown>): Record<string, unknown> =>
+    s.visual && typeof s.visual === 'object' && !Array.isArray(s.visual)
+      ? (s.visual as Record<string, unknown>)
+      : {};
 
   it('ships workshop-5 slides from the ACCEPT outline + definition addenda', () => {
-    expect(workshop5SourceSlides).toHaveLength(25);
-    expect(slides).toHaveLength(25);
+    expect(workshop5SourceSlides).toHaveLength(27);
+    expect(slides).toHaveLength(27);
     expect(slides.every((s) => s.lessonId === 'workshop-5')).toBe(true);
     expect(slides[0]?.title).toBe('Workshop 5 — AI-native SDLC');
-    expect(slides[24]?.title).toBe('Recap + Proof');
+    expect(slides[26]?.title).toBe('Recap + Proof');
+  });
+
+  it('leaves slides 1–4 titles intact', () => {
+    expect(titles.slice(0, 4)).toEqual([
+      'Workshop 5 — AI-native SDLC',
+      'Code is no longer the bottleneck',
+      'The artifact chain',
+      'Intent is a committed artifact',
+    ]);
   });
 
   it('highlights the nine required definition slides', () => {
@@ -24,10 +37,12 @@ describe('AET-77 workshop 5 AI-native SDLC deck', () => {
       'spec.md',
       'plan.md',
       'skills',
+      'CLAUDE.md',
       'hooks',
       'MCP',
       'subagents',
       'workflows',
+      'progress.md',
     ]) {
       expect(titles, required).toContain(required);
     }
@@ -35,14 +50,49 @@ describe('AET-77 workshop 5 AI-native SDLC deck', () => {
 
   it('maps SOLO assignments and keeps the artifact-chain diagram', () => {
     expect(slides[2]?.title).toBe('The artifact chain');
-    const practiceTitles = practice.map((s) => String(s.title));
-    expect(practiceTitles.some((t) => t.includes('intent.md') && t.includes('SOLO 1'))).toBe(true);
-    expect(practiceTitles.some((t) => t.includes('docs/spec.md') && t.includes('SOLO 2'))).toBe(true);
-    expect(practiceTitles.some((t) => t.includes('design + ADR + plan') && t.includes('SOLO 3'))).toBe(true);
-    expect(practiceTitles.some((t) => t.includes('render the sample') && t.includes('SOLO 4'))).toBe(true);
-    expect(practiceTitles.some((t) => t.includes('agent loop') && t.includes('SOLO 5'))).toBe(true);
-    expect(practiceTitles.some((t) => t.includes('docs/evidence.md') && t.includes('SOLO 6'))).toBe(true);
-    expect(practiceTitles.some((t) => t.includes('gate + schedule') && t.includes('SOLO 7'))).toBe(true);
+    expect(practice).toHaveLength(7);
+    for (const slide of practice) {
+      expect(String(slide.kicker ?? ''), String(slide.title)).toMatch(/^SOLO [1-7]$/);
+      expect(String(slide.notes ?? ''), String(slide.title)).toMatch(/Map:\s*SOLO step/i);
+    }
+  });
+
+  it('applies Apple keynote faces from slide 5 onward', () => {
+    const defs = workshop5SourceSlides.filter((s) =>
+      [
+        'AI-native SDLC',
+        'intent.md',
+        'spec.md',
+        'plan.md',
+        'skills',
+        'CLAUDE.md',
+        'hooks',
+        'MCP',
+        'subagents',
+        'workflows',
+        'progress.md',
+      ].includes(String(s.title)),
+    );
+    expect(defs).toHaveLength(11);
+    for (const slide of [...defs, ...practice]) {
+      expect(visualOf(slide).keynote, String(slide.title)).toBe(true);
+      expect(slide.subtitle, String(slide.title)).toBeUndefined();
+      const cards = Array.isArray(slide.cards) ? slide.cards : [];
+      expect(cards.length, String(slide.title)).toBeLessThanOrEqual(1);
+    }
+    // Opening slides stay non-keynote
+    for (const slide of workshop5SourceSlides.slice(0, 4)) {
+      expect(visualOf(slide).keynote, String(slide.title)).not.toBe(true);
+    }
+  });
+
+  it('keeps assignment faces to one large prompt + optional path chip', () => {
+    for (const slide of practice) {
+      expect(String(slide.title).length, String(slide.title)).toBeGreaterThan(10);
+      const cards = Array.isArray(slide.cards) ? slide.cards : [];
+      expect(cards).toHaveLength(1);
+      expect(visualOf(slide).popOut, String(slide.title)).toBe(0);
+    }
   });
 
   it('keeps timers/checklists off the projector face (presenter notes only)', () => {

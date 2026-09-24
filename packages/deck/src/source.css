@@ -1078,3 +1078,34 @@
 .academy-deck .slide-main.compact-cards .cards{gap:clamp(.4rem,1vh,.9rem)}
 
 
+
+
+/* AET-77 Apple keynote face (workshop-5); scoped — Classroom 1 untouched */
+.academy-deck.keynote #stage{justify-content:center;padding:clamp(2rem,8vh,5rem) 0}
+.academy-deck.keynote .heading{text-align:center;margin:0 auto clamp(1.5rem,4vh,3rem);max-width:18ch;animation:enter .5s both}
+.academy-deck.keynote .heading-top{justify-content:center;margin-bottom:.6rem}
+.academy-deck.keynote .eyebrow{justify-content:center;margin:0 0 1rem}
+.academy-deck.keynote .kicker-text{font-size:.7rem;letter-spacing:.18em;opacity:.7}
+.academy-deck.keynote .type-chip{opacity:.85}
+.academy-deck.keynote .slide-count{opacity:.45;font-size:.7rem}
+.academy-deck.keynote h1{font-size:clamp(2.6rem,6.2vw,5.2rem);line-height:1.02;letter-spacing:-.045em;font-weight:800;margin:0 auto;max-width:14ch;text-align:center}
+.academy-deck.keynote p.subtitle{display:none}
+.academy-deck.keynote .tagline{display:none}
+.academy-deck.keynote .slide-body,.academy-deck.keynote .keynote-body{justify-items:center;margin-top:clamp(1rem,3vh,2.2rem)}
+.academy-deck.keynote .slide-main,.academy-deck.keynote .keynote-main{width:100%;max-width:920px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:clamp(1rem,3vh,2rem)}
+.academy-deck.keynote .cards{grid-template-columns:minmax(0,1fr);width:min(720px,100%);justify-items:center}
+.academy-deck.keynote .card{text-align:center;max-width:720px;width:100%;padding:clamp(1.4rem,3vw,2.4rem) clamp(1.4rem,4vw,3rem);border-top-width:4px}
+.academy-deck.keynote .card-head{justify-content:center}
+.academy-deck.keynote .card p{font-size:clamp(1.35rem,2.4vw,2rem)!important;line-height:1.25;font-weight:650}
+.academy-deck.keynote .has-hero .card-hero{border:0;background:transparent;box-shadow:none;padding:clamp(1rem,2vw,1.6rem)}
+.academy-deck.keynote .has-hero .card-hero .card-head h2{font-size:clamp(.85rem,1.2vw,1rem);letter-spacing:.14em;color:var(--cyan)}
+.academy-deck.keynote .has-hero .card-hero p{font-size:clamp(1.7rem,3.2vw,2.8rem)!important;font-weight:750;letter-spacing:-.02em}
+.academy-deck.keynote .pop-row{justify-content:center;width:100%}
+.academy-deck.keynote .pop-col{align-items:center;text-align:center}
+.academy-deck.keynote .pop-label{text-align:center;letter-spacing:.12em;text-transform:uppercase;font-size:.75rem;color:var(--muted)}
+.academy-deck.keynote .pop-chips{justify-content:center}
+.academy-deck.keynote .pop-chip-in{font-size:clamp(1rem,1.6vw,1.25rem);font-weight:700;padding:.55rem 1.1rem}
+.academy-deck.keynote .steps-wrap,.academy-deck.keynote .pillars,.academy-deck.keynote .compare,.academy-deck.keynote .recap-list{width:100%;max-width:1000px;margin:0 auto}
+.academy-deck.keynote .md-file{margin:0 auto}
+.academy-deck.keynote .plugs-viz,.academy-deck.keynote .gate-art,.academy-deck.keynote .loop-art{margin:0 auto}
+.academy-deck.keynote .assignment-banner{opacity:.7}
