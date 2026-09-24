@@ -22,8 +22,8 @@ const sampleCurriculum = path.join(here, 'fixtures/sample-curriculum.md');
 const sampleDayDecks = path.join(here, 'fixtures/sample-day-decks.json');
 const contentMjsPath = path.resolve(here, '../../../server/content.mjs');
 
-const PINNED_COMMIT = 'dc7107bc0f80aba5c9ad6a2aa1d0a2538f95f87a';
-const PINNED_DIGEST = 'f5d9dc4dc482cd621922faa57aa6408399067e93d7e3349b5a2cabba0fde7261';
+const PINNED_COMMIT = 'abde6d1b94f4065cb4ed2927b057d6f7866b3ec0';
+const PINNED_DIGEST = '1f694e7a0dd35ab75c495ddf3eae93bb30be29dc46ea207b0895ba2b1f4d6c4d';
 const RAW_URL = `https://raw.githubusercontent.com/jyse/aetherlink-classroom-slides/${PINNED_COMMIT}/slides.js`;
 const CURRICULUM_URL = `https://raw.githubusercontent.com/jyse/aetherlink-classroom-slides/${PINNED_COMMIT}/CURRICULUM.md`;
 const DAY_DECKS_URL = 'https://raw.githubusercontent.com/RyanLisse/aetherlink-training-template/main/presentations/day-decks.json';
@@ -82,11 +82,11 @@ describe('slides.js importer', () => {
     }
   });
 
-  it('imports the pinned 86-slide classroom deck with matching count and titles', async () => {
+  it('imports the pinned 91-slide classroom deck with matching count and titles', async () => {
     const sourcePath = await ensurePinnedSlidesJs();
     const imported = importSlidesJs(sourcePath);
-    expect(imported.slides).toHaveLength(86);
-    expect(imported.titles).toHaveLength(86);
+    expect(imported.slides).toHaveLength(91);
+    expect(imported.titles).toHaveLength(91);
     expect(imported.titles[0]).toBe('Welcome to the course!');
     expect(new Set(imported.titles).size).toBeGreaterThan(70);
     const vm = await import('node:vm');

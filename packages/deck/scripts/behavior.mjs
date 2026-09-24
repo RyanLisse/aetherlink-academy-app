@@ -140,16 +140,16 @@ port.on('console', (message) => {
 const controlledPropCoverage = {sameTreeIndexChanges: false, sameTreeRevealStepChanges: false, sameTreeSlidesEmptyToPopulated: false, sameTreeModeChanges: false, sameTreeInstances: false};
 
 try {
-  await check(checks, 'source has all 86 progress segments', async () => {
+  await check(checks, 'source has all 91 progress segments', async () => {
     await waitProjector(source, `${sourceUrl}#1`);
     const count = await source.locator('#progress .seg').count();
-    if (count !== 86) throw new Error(`found ${count}`);
+    if (count !== 91) throw new Error(`found ${count}`);
     return {count};
   });
-  await check(checks, 'port has all 86 progress segments', async () => {
+  await check(checks, 'port has all 91 progress segments', async () => {
     await waitProjector(port, `${portUrl}?index=0`);
     const count = await port.locator('#progress .seg').count();
-    if (count !== 86) throw new Error(`found ${count}`);
+    if (count !== 91) throw new Error(`found ${count}`);
     return {count};
   });
 
@@ -194,7 +194,7 @@ try {
   });
 
   await check(checks, 'source B toggles Plan B overlay', async () => {
-    await waitProjector(source, `${sourceUrl}#78`);
+    await waitProjector(source, `${sourceUrl}#81`);
     const before = await source.locator('.planb.show').count();
     await source.keyboard.press('b');
     const after = await source.locator('.planb.show').count();
@@ -203,7 +203,7 @@ try {
     return {visibleBefore: before, visibleAfter: after, textLength: planBReferenceText.length};
   });
   await check(checks, 'port B toggles Plan B overlay', async () => {
-    await waitProjector(port, `${portUrl}?index=77`);
+    await waitProjector(port, `${portUrl}?index=80`);
     const before = await port.locator('.planb.show').count();
     await port.keyboard.press('b');
     const after = await port.locator('.planb.show').count();
@@ -212,16 +212,18 @@ try {
     return {visibleBefore: before, visibleAfter: after, textLength: portText.length};
   });
 
-  await check(checks, 'port exercise timer advances after Start', async () => {
+  await check(checks, 'port exercise timer advances after minutes + Start', async () => {
     await waitProjector(port, `${portUrl}?index=34`);
     const timer = port.locator('.timer');
-    const start = timer.getByRole('button', {name: /^Start/});
+    const start = timer.getByRole('button', {name: 'Start'});
+    const initial = await timer.locator('.timer-face').textContent();
+    await timer.getByRole('spinbutton', {name: 'Minutes for this assignment'}).fill('25');
     const before = await timer.locator('.timer-face').textContent();
     await start.click();
     await port.clock.runFor(1200);
     const after = await timer.locator('.timer-face').textContent();
-    if (before === after) throw new Error(`timer stayed at ${before}`);
-    return {before, after};
+    if (initial !== '00:00' || before !== '25:00' || after !== '24:59') throw new Error(`timer ${initial} -> ${before} -> ${after}`);
+    return {initial, before, after};
   });
 
   await check(checks, 'reader hides facilitator notes', async () => {

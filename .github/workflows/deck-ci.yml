@@ -37,7 +37,7 @@ jobs:
         run: |
           git init "$SOURCE_DECK_DIR"
           git -C "$SOURCE_DECK_DIR" remote add origin https://github.com/jyse/aetherlink-classroom-slides.git
-          git -C "$SOURCE_DECK_DIR" fetch --depth 1 origin dc7107bc0f80aba5c9ad6a2aa1d0a2538f95f87a
+          git -C "$SOURCE_DECK_DIR" fetch --depth 1 origin abde6d1b94f4065cb4ed2927b057d6f7866b3ec0
           git -C "$SOURCE_DECK_DIR" checkout --detach FETCH_HEAD
           # Match port overflow-x:clip on pairs/#stage so fullPage screenshots share geometry
           # (pending pair translateX must not widen SoT screenshots on tablet/mobile).
@@ -61,7 +61,7 @@ jobs:
         env:
           DECK_URL: http://127.0.0.1:5178/deck
         run: pnpm --filter @academy/deck exec node scripts/behavior.mjs
-      - name: All 234 production screenshot comparisons
+      - name: All 273 production screenshot comparisons
         env:
           DECK_URL: http://127.0.0.1:5179/deck
         run: pnpm --filter @academy/deck exec node scripts/parity.mjs

@@ -181,7 +181,7 @@ describe('AET-77 workshop 5 ultra-minimal AI-native SDLC deck', () => {
   });
 
   it('does not break Classroom 1 SoT cut of 86 / Day1=44', () => {
-    expect(sourceSlides).toHaveLength(86);
+    expect(sourceSlides).toHaveLength(91);
     const classroom = normalizeSlides(sourceSlides);
     expect(classroom.filter((s) => s.lessonId === 'teaching-day-1')).toHaveLength(44);
     expect(classroom.filter((s) => s.lessonId === 'workshop-5')).toHaveLength(0);

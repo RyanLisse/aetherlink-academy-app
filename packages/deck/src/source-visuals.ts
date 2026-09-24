@@ -374,29 +374,67 @@ function createSourceVisualMount(stage: HTMLElement, body: HTMLElement, main: HT
       }
     }
   };
-  let timerLeft = Number(s.timer ?? 0) * 60;
-  let timerRunning = false;
+  let timerTotal = 0;
+  let timerLeft = 0;
   let timerId: number | undefined;
-  const renderTimer = (): void => {
-    const timer = main.querySelector<HTMLElement>('.timer');
-    if (!timer) return;
-    const minutes = Number(s.timer ?? 0) || 0;
-    const face = timer.querySelector<HTMLElement>('.timer-face');
-    const fill = timer.querySelector<HTMLElement>('.timer-fill');
-    const controls = timer.querySelectorAll<HTMLButtonElement>('.widget-controls button');
-    const late = timerLeft <= 60;
-    timer.classList.toggle('timer-late', late);
-    if (face) face.textContent = timerLeft <= 0 ? 'TIME' : `${String(Math.floor(timerLeft / 60)).padStart(2, '0')}:${String(timerLeft % 60).padStart(2, '0')}`;
-    if (fill) fill.style.width = `${minutes > 0 ? 100 * (1 - timerLeft / (minutes * 60)) : 0}%`;
-    const start = controls[0]; if (start) { start.disabled = timerLeft === 0; start.textContent = timerRunning ? 'Pause' : timerLeft < minutes * 60 ? 'Resume' : `Start ${minutes} min`; }
+  const timerParts = () => {
+    const timer = body.querySelector<HTMLElement>('.timer');
+    return timer ? {timer, face: timer.querySelector<HTMLElement>('.timer-face'), fill: timer.querySelector<HTMLElement>('.timer-fill'), input: timer.querySelector<HTMLInputElement>('.timer-field input'), start: timer.querySelector<HTMLButtonElement>('.widget-controls > button')} : undefined;
   };
-  const stopTimer = (): void => { if (timerId !== undefined) { view?.clearInterval(timerId); timerId = undefined; } timerRunning = false; };
-  const startTimer = (): void => {
-    if (timerLeft <= 0 || timerId !== undefined) return;
-    timerRunning = true;
-    timerId = view?.setInterval(() => { timerLeft = Math.max(timerLeft - 1, 0); if (timerLeft === 0) stopTimer(); renderTimer(); }, 1000);
+  const renderTimer = (): void => {
+    const parts = timerParts();
+    if (!parts) return;
+    if (parts.face) parts.face.textContent = `${String(Math.floor(timerLeft / 60)).padStart(2, '0')}:${String(timerLeft % 60).padStart(2, '0')}`;
+    if (parts.fill) parts.fill.style.width = timerTotal ? `${100 * (1 - timerLeft / timerTotal)}%` : '0%';
+    parts.timer.classList.toggle('timer-late', timerTotal > 0 && timerLeft <= 60);
+  };
+  const stopTimer = (): void => { if (timerId !== undefined) { view?.clearInterval(timerId); timerId = undefined; } };
+  const setTimerMinutes = (): void => {
+    const minutes = Math.max(0, Math.min(180, Math.floor(Number(timerParts()?.input?.value) || 0)));
+    timerTotal = minutes * 60;
+    timerLeft = timerTotal;
     renderTimer();
   };
+  const toggleTimer = (): void => {
+    const parts = timerParts();
+    if (!parts?.input || !parts.start) return;
+    const {input, start} = parts;
+    if (timerId !== undefined) { stopTimer(); input.disabled = false; start.textContent = 'Resume'; return; }
+    if (timerLeft <= 0) { input.focus(); return; }
+    input.disabled = true;
+    start.textContent = 'Pause';
+    timerId = view?.setInterval(() => {
+      if (timerLeft > 0) { timerLeft -= 1; renderTimer(); return; }
+      stopTimer();
+      input.disabled = false;
+      start.textContent = 'Start';
+      if (parts.face) parts.face.textContent = 'TIME';
+    }, 1000);
+  };
+  const onTimerClick = (event: MouseEvent): void => {
+    const button = event.target instanceof Element ? event.target.closest<HTMLButtonElement>('.timer .widget-controls > button') : null;
+    const parts = timerParts();
+    if (!button || !parts?.start || !parts.input) return;
+    if (button === parts.start) { toggleTimer(); return; }
+    stopTimer();
+    parts.input.disabled = false;
+    setTimerMinutes();
+    parts.start.textContent = 'Start';
+  };
+  const onTimerInput = (event: Event): void => {
+    if (!(event.target instanceof HTMLInputElement) || !event.target.closest('.timer-field') || timerId !== undefined) return;
+    setTimerMinutes();
+    const start = timerParts()?.start;
+    if (start) start.textContent = 'Start';
+  };
+  const onTimerKeydown = (event: KeyboardEvent): void => {
+    if (event.key !== 'Enter' || !(event.target instanceof HTMLInputElement) || !event.target.closest('.timer-field')) return;
+    event.preventDefault();
+    toggleTimer();
+  };
+  body.addEventListener('click', onTimerClick, {signal: controller.signal});
+  body.addEventListener('input', onTimerInput, {signal: controller.signal});
+  body.addEventListener('keydown', onTimerKeydown, {signal: controller.signal});
   let suppressRevealCallback = false;
   const onMainClick = (event: MouseEvent): void => {
     const target = event.target;
@@ -420,10 +458,6 @@ function createSourceVisualMount(stage: HTMLElement, body: HTMLElement, main: HT
       const entries = Array.from(main.querySelectorAll('.recap-item'));
       const index = entries.findIndex((item) => item.classList.contains('hidden-item'));
       if (index >= 0 && !suppressRevealCallback) options.onRevealStepChange?.(index);
-    } else if (controlsButton.closest('.timer')) {
-      const buttons = Array.from(controlsButton.parentElement?.querySelectorAll('button') ?? []);
-      if (buttons.indexOf(controlsButton) === 0) { if (timerRunning) stopTimer(); else startTimer(); }
-      else { stopTimer(); timerLeft = (Number(s.timer ?? 0) || 0) * 60; renderTimer(); }
     }
   };
   main.addEventListener('click', onMainClick, {signal: controller.signal});
@@ -765,7 +799,7 @@ function renderExtras(stage: HTMLElement, main: HTMLElement, s: Slide, v: Visual
   if (v.gameMock) {                                              // 63: the game screen — only feedback is missing
     main.classList.add('side-grid'); const g = node('div', 'gmock'); const bar = node('div', 'md-bar'); bar.append(node('i'), node('i'), node('i'), node('span', 'md-name', 'Game · Explain It Back')); g.append(bar);
     const b = node('div', 'gm-body'); b.append(node('span', 'gm-term', 'Context window'), node('span', 'gm-field'), node('span', 'gm-btn', 'Submit'));
-    const fb = node('div', 'gm-feedback'); fb.append(node('strong', null, 'Feedback'), node('span', null, 'you build this — Assignment 9')); b.append(fb); g.append(b); grid.after(g);
+    const fb = node('div', 'gm-feedback'); fb.append(node('strong', null, 'Feedback'), node('span', null, 'you build this — Assignment 11')); b.append(fb); g.append(b); grid.after(g);
   }
   if (v.phrase) {                                                // 64: the exact phrase to say
     const bub = node('div', 'phrase'); bub.append(node('span', 'phrase-who', 'You'), node('span', 'phrase-text', '“' + v.phrase + '”')); grid.after(bub);
