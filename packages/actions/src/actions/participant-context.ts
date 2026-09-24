@@ -50,7 +50,7 @@ export class AmbiguousViewContext extends Error {
   readonly _tag = 'AmbiguousViewContext' as const;
   readonly sessions: ReadonlyArray<ParticipantViewBinding>;
   constructor(sessions: ReadonlyArray<ParticipantViewBinding>) {
-    super('Multiple browser tabs have different lesson/slide context. Select one tab and retry.');
+    super('Multiple browser tabs report different view context (lesson, slide, assignment, Proof, quiz or room phase). Select one tab and retry.');
     this.sessions = sessions;
   }
 }

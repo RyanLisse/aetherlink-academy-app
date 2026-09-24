@@ -174,6 +174,22 @@ describe('AET-44 streamable HTTP MCP', () => {
     expect(browser.quiz).toEqual(json.quiz);
   });
 
+  test('get_screen_state drops client-reported locked lessons from room.releasedLessonIds', async () => {
+    lab = await startMcpLab();
+    await lab.setReleased('lesson-locked-98', false);
+    await lab.setView({
+      browserSessionId: 'tab-1',
+      slideIndex: 1,
+      viewedRevision: 2,
+      latestPublishedRevision: 3,
+      releasedLessonIds: [lab.lessonId, 'lesson-locked-98'],
+    });
+    const client = await connect(lab.tokens.mcp);
+    const {json, isError} = await tool(client, 'get_screen_state');
+    expect(isError).toBe(false);
+    expect(json.room).toEqual({id: 'room-lab-1', phase: 'solo', releasedLessonIds: ['lesson-day1-01']});
+  });
+
   test('token revoke → next MCP call fails', async () => {
     lab = await startMcpLab();
     const client = await connect(lab.tokens.mcp);
