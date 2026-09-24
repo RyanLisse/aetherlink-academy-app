@@ -49,7 +49,7 @@ async function get(port, pathname) {
 
 test('apps/web SPA fallback returns index for classroom/deck/workshop/lesson/live', async () => {
   await withServer(async ({port}) => {
-    for (const route of ['/classroom/1', '/classroom/2', '/workshop/5', '/lesson/classroom-1', '/deck', '/live/demo']) {
+    for (const route of ['/classroom/1', '/classroom/2', '/workshop/5', '/workshop/3', '/lesson/classroom-1', '/lesson/workshop-3', '/deck', '/live/demo']) {
       const res = await get(port, route);
       assert.equal(res.status, 200, `${route} status`);
       assert.match(res.text, /data-surface="classroom-deck"/, `${route} body`);

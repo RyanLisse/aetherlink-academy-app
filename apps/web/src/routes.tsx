@@ -7,6 +7,7 @@ import {FacilitatorReleasePanel} from './release/FacilitatorReleasePanel.tsx';
 import {EvidencePanel, FacilitatorOverview} from './evidence/index.ts';
 import {sourceSlides} from './deck/slides.js';
 import {workshop5SourceSlides} from './deck/workshop5-slides.js';
+import {workshop3SourceSlides} from './deck/workshop3-slides.js';
 import {normalizeSlides} from './deck/normalize.js';
 import './deck/deck.css';
 
@@ -201,11 +202,12 @@ export function usePathname(): [string, (path: string) => void] {
 
 export function AppRoutes({children}: {readonly children?: ReactNode}) {
   const [pathname, navigate] = usePathname();
-  const deckLike = pathname === '/deck' || isClassroom1Path(pathname) || isWorkshop5Path(pathname);
+  const deckLike = pathname === '/deck' || isClassroom1Path(pathname) || isWorkshop5Path(pathname) || isWorkshop3Path(pathname);
   const connection = useConnection(fetchConnection, 5000, !deckLike);
   if (pathname === '/deck') return <DeckDemo slides={DECK_SLIDES} />;
   if (isClassroom1Path(pathname)) return <DeckDemo slides={CLASSROOM_1_SLIDES} />;
   if (isWorkshop5Path(pathname)) return <DeckDemo slides={WORKSHOP_5_SLIDES} />;
+  if (isWorkshop3Path(pathname)) return <DeckDemo slides={WORKSHOP_3_SLIDES} />;
   if (pathname.startsWith('/live/')) return <LiveRoute pathname={pathname} />;
   return (
     <>
@@ -225,6 +227,11 @@ export function isWorkshop5Path(pathname: string): boolean {
   return pathname === '/workshop/5' || pathname === '/lesson/workshop-5';
 }
 
+/** Facilitator Workshop 3 entry — n8n ticket priority L1→L3 (AET-79). */
+export function isWorkshop3Path(pathname: string): boolean {
+  return pathname === '/workshop/3' || pathname === '/lesson/workshop-3';
+}
+
 const DECK_SLIDES = normalizeSlides(sourceSlides);
 /** Classroom 1 product route: Teaching Day 1 only (SoT slides 1–44).
  *  Headroom only (AET-86 backlog — do not build here): Arcade postMessage embed slot,
@@ -233,6 +240,8 @@ const DECK_SLIDES = normalizeSlides(sourceSlides);
 const CLASSROOM_1_SLIDES = DECK_SLIDES.filter((slide) => slide.lessonId === 'teaching-day-1');
 /** Workshop 5 product route: AI-native SDLC day pack (AET-77). Separate module — not Classroom cut. */
 const WORKSHOP_5_SLIDES = normalizeSlides(workshop5SourceSlides);
+/** Workshop 3 product route: n8n L1→L3 ticket priority (AET-79). Separate module — not Classroom/W5 cut. */
+const WORKSHOP_3_SLIDES = normalizeSlides(workshop3SourceSlides);
 function DeckDemo({slides}: {readonly slides: typeof DECK_SLIDES}) {
   useEffect(() => {
     const surfaces = [document.documentElement, document.body];
