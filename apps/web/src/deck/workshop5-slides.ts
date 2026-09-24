@@ -189,15 +189,17 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   subtitle: "Folder + SKILL.md → type /name, get a method.",
   type: "concept",
   visual: {
-    tree: 0,
+    mdfile: 0,
+    mdName: ".claude/skills/…/SKILL.md",
     chipGrid: 1,
     chipIcons: ["🧠", "🧹", "✅", "🚢", "🗺", "📋"]
   },
   cards: [
-    { title: ".claude/skills/…/SKILL.md", body: "/eli5\n/deslop\n/verify-this\n/review-and-ship\n/archify\n/handoff" }
+    { title: "SKILL.md", body: "when · input · procedure · bounds · stop" },
+    { title: "slash chips", body: "/eli5\n/deslop\n/verify-this\n/review-and-ship\n/archify\n/handoff" }
   ],
   tagline: "Reusable method — not a background agent.",
-  notes: "Visual: skill folder tree + slash chips from github.com/RyanLisse/claude-code-skills-pack (cite once). Soft: pack is optional install for the room; lab still uses daily-brief SOLO. Skill ≠ continuous process."
+  notes: "Visual: SKILL.md hero + slash chips from github.com/RyanLisse/claude-code-skills-pack (cite once). Soft: pack is optional install for the room; lab still uses daily-brief SOLO. Skill ≠ continuous process."
 },
 
 { // 13 — hooks (gate on tool event)
