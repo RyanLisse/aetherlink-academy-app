@@ -17,11 +17,11 @@ const look = (solo: number, title: string, image: string, notes: string): Record
   notes,
 });
 
-/** Definition face: the definition sentence is the headline; the term is the kicker (+ optional path chip). */
+/** Definition face, dictionary style: the term is the headword (kicker), the definition is the headline (+ optional path chip). */
 const define = (term: string, sentence: string, notes: string, path?: string): Record<string, unknown> => ({
   lessonId: LESSON,
   title: sentence,
-  kicker: `Definition · ${term}`,
+  kicker: term,
   type: "concept",
   visual: path ? { keynote: true, opener: "definition", popOut: 0 } : { keynote: true, opener: "definition" },
   ...(path ? { cards: [{ title: "Path", body: path }] } : {}),
@@ -55,8 +55,8 @@ define("AI-native SDLC",
   title: "Code is no longer the bottleneck.",
   kicker: "Explain · why we change",
   type: "concept",
-  visual: { keynote: true },
-  notes: "Explain. Agents collapse Build. Plan, Test, Deploy and Maintain stay human-speed; that is where the time goes now. Every stage ends with a committed file the next stage reads."
+  visual: { keynote: true, opener: "showcase", image: "workshop-5/bottleneck-dark.png", imageLink: "Before agents · after agents" },
+  notes: "Explain. Diagram after Anthropic's AI-native SDLC playbook: before agents every stage runs at human speed; after agents Build shrinks to a sliver and the cycle time is reclaimed. Agents collapse Build. Plan, Test, Deploy and Maintain stay human-speed; that is where the time goes now. Every stage ends with a committed file the next stage reads."
 },
 
 { // Artifact chain

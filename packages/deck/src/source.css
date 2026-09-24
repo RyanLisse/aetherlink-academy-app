@@ -1126,6 +1126,12 @@
 .academy-deck.mode-presenter.keynote #stage,.academy-deck.mode-presenter #stage{justify-content:flex-start;padding-top:1.2rem}
 
 .academy-deck.mode-presenter .presenter-tools{display:block;margin-top:1.2rem;max-width:960px;width:100%;margin-left:auto;margin-right:auto}
-/* W5 definition face: the definition sentence is the headline, so it runs smaller than a one-liner */
-.academy-deck.keynote[data-opener=definition] h1{font-size:clamp(1.6rem,3.3vw,3.4rem);line-height:1.12;letter-spacing:-.02em;font-weight:800;max-width:min(54rem,94vw)}
-.academy-deck.keynote[data-opener=definition] .kicker-text{color:var(--cyan);opacity:1}
+/* W5 definition face, dictionary style: label on top → headword (kicker) + part of speech → rule → sense 1 (h1) */
+.academy-deck.keynote[data-opener=definition] .heading{align-items:flex-start;text-align:left;max-width:min(58rem,92vw)}
+.academy-deck.keynote[data-opener=definition] .heading-top{justify-content:space-between;align-items:flex-start;width:100%}
+.academy-deck.keynote[data-opener=definition] .eyebrow{flex-direction:column;align-items:flex-start;gap:clamp(1rem,3vh,1.8rem);margin:0 0 clamp(.8rem,2vh,1.2rem)}
+.academy-deck.keynote[data-opener=definition] .kicker-text{font:700 clamp(2.4rem,4.6vw,4.4rem)/1.05 Georgia,'Times New Roman',serif;letter-spacing:0;text-transform:none;color:var(--text);opacity:1}
+.academy-deck.keynote[data-opener=definition] .kicker-text::after{content:"noun";font:italic 400 .42em Georgia,serif;color:var(--muted);margin-left:.7em;vertical-align:.25em}
+.academy-deck.keynote[data-opener=definition] h1{font:400 clamp(1.35rem,2.5vw,2.3rem)/1.4 Georgia,'Times New Roman',serif;letter-spacing:0;text-align:left;max-width:none;margin:0;padding-top:clamp(.8rem,2vh,1.2rem);border-top:1px solid color-mix(in srgb,var(--muted) 35%,transparent);text-wrap:pretty}
+.academy-deck.keynote[data-opener=definition] h1::before{content:"1";font-weight:700;color:var(--cyan);margin-right:.6em}
+.academy-deck.keynote[data-opener=definition] .slide-main,.academy-deck.keynote[data-opener=definition] .pop-row{align-items:flex-start;justify-content:flex-start;max-width:min(58rem,92vw)}

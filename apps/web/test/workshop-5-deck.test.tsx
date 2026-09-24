@@ -14,8 +14,8 @@ describe('AET-77 workshop 5 ultra-minimal AI-native SDLC deck', () => {
     s.visual && typeof s.visual === 'object' && !Array.isArray(s.visual)
       ? (s.visual as Record<string, unknown>)
       : {};
-  const definitions = workshop5SourceSlides.filter((s) => kicker(s).startsWith('Definition · '));
-  const terms = definitions.map((s) => kicker(s).replace('Definition · ', ''));
+  const definitions = workshop5SourceSlides.filter((s) => visualOf(s).opener === 'definition');
+  const terms = definitions.map((s) => kicker(s));
 
   const REQUIRED_TERMS = [
     'AI-native SDLC',
@@ -49,7 +49,8 @@ describe('AET-77 workshop 5 ultra-minimal AI-native SDLC deck', () => {
 
   it('the AI-native SDLC definition follows the loop and says loop + AI at each point', () => {
     const def = workshop5SourceSlides[1]!;
-    expect(kicker(def)).toBe('Definition · AI-native SDLC');
+    expect(kicker(def)).toBe('AI-native SDLC');
+    expect(visualOf(def).opener).toBe('definition');
     expect(String(def.title)).toMatch(/loop/i);
     expect(String(def.title)).toMatch(/AI embedded at each point/i);
   });
@@ -78,10 +79,10 @@ describe('AET-77 workshop 5 ultra-minimal AI-native SDLC deck', () => {
     expect(new Set(terms).size).toBe(terms.length);
   });
 
-  it('definition faces show the definition itself, not just the term', () => {
+  it('definition faces are dictionary entries: headword kicker, the definition as the face', () => {
     for (const def of definitions) {
-      const term = kicker(def).replace('Definition · ', '');
-      expect(visualOf(def).opener, term).toBe('definition');
+      const term = kicker(def);
+      expect(term.length, term).toBeLessThanOrEqual(20);
       expect(String(def.title), term).not.toBe(term);
       expect(String(def.title).split(/\s+/).length, term).toBeGreaterThanOrEqual(7);
       expect(String(def.title).length, term).toBeLessThanOrEqual(130);
@@ -95,14 +96,14 @@ describe('AET-77 workshop 5 ultra-minimal AI-native SDLC deck', () => {
       const lookIdx = workshop5SourceSlides.findIndex((s) => kicker(s) === `Look · SOLO ${n}`);
       expect(demoIdx, `demo SOLO ${n}`).toBeGreaterThanOrEqual(0);
       expect(kicker(workshop5SourceSlides[demoIdx + 1]), `your turn SOLO ${n}`).toBe(`SOLO ${n} / 7 · Your turn`);
-      expect(kicker(workshop5SourceSlides[demoIdx - 1]), `definition SOLO ${n}`).toMatch(/^Definition · /);
+      expect(visualOf(workshop5SourceSlides[demoIdx - 1]!).opener, `definition SOLO ${n}`).toBe('definition');
       expect(lookIdx, `look SOLO ${n}`).toBe(demoIdx - 2);
     }
   });
 
   it('every Look face is a showcase diagram that exists in public/', () => {
     const looks = workshop5SourceSlides.filter((s) => visualOf(s).opener === 'showcase');
-    expect(looks.length).toBeGreaterThanOrEqual(9);
+    expect(looks.length).toBeGreaterThanOrEqual(10);
     for (const face of looks) {
       const image = String(visualOf(face).image ?? '');
       expect(image, String(face.title)).toMatch(/^workshop-5\/.+-dark\.png$/);
