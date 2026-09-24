@@ -200,8 +200,10 @@ export function usePathname(): [string, (path: string) => void] {
 
 export function AppRoutes({children}: {readonly children?: ReactNode}) {
   const [pathname, navigate] = usePathname();
-  const connection = useConnection(fetchConnection, 5000, pathname !== '/deck');
-  if (pathname === '/deck') return <DeckDemo />;
+  const deckLike = pathname === '/deck' || isClassroom1Path(pathname);
+  const connection = useConnection(fetchConnection, 5000, !deckLike);
+  if (pathname === '/deck') return <DeckDemo slides={DECK_SLIDES} />;
+  if (isClassroom1Path(pathname)) return <DeckDemo slides={CLASSROOM_1_SLIDES} />;
   if (pathname.startsWith('/live/')) return <LiveRoute pathname={pathname} />;
   return (
     <>
@@ -211,8 +213,18 @@ export function AppRoutes({children}: {readonly children?: ReactNode}) {
   );
 }
 
+/** Facilitator Classroom 1 entry — Teaching Day 1 deck only (not support-day packs). */
+export function isClassroom1Path(pathname: string): boolean {
+  return pathname === '/classroom/1' || pathname === '/lesson/classroom-1';
+}
+
 const DECK_SLIDES = normalizeSlides(sourceSlides);
-function DeckDemo() {
+/** Classroom 1 product route: Teaching Day 1 only (SoT slides 1–44).
+ *  Headroom only (AET-86 backlog — do not build here): Arcade postMessage embed slot,
+ *  typed quiz schema, cohort continuity ≠ room code.
+ */
+const CLASSROOM_1_SLIDES = DECK_SLIDES.filter((slide) => slide.lessonId === 'teaching-day-1');
+function DeckDemo({slides}: {readonly slides: typeof DECK_SLIDES}) {
   useEffect(() => {
     const surfaces = [document.documentElement, document.body];
     const previous = surfaces.map(({style}) => ({value: style.getPropertyValue('background-color'), priority: style.getPropertyPriority('background-color')}));
@@ -223,11 +235,11 @@ function DeckDemo() {
       else style.removeProperty('background-color');
     });
   }, []);
-  const [index, setIndex] = useState(() => { const value = Number(new URLSearchParams(window.location.search).get('index')); return Number.isInteger(value) && value >= 0 && value < DECK_SLIDES.length ? value : 0; });
+  const [index, setIndex] = useState(() => { const value = Number(new URLSearchParams(window.location.search).get('index')); return Number.isInteger(value) && value >= 0 && value < slides.length ? value : 0; });
   const [revealStep, setRevealStep] = useState(-1);
   const requested = new URLSearchParams(window.location.search).get('mode');
   const mode: DeckMode = requested === 'reader' || requested === 'presenter' || requested === 'follow' ? requested : 'projector';
-  return <Deck slides={DECK_SLIDES} index={index} revealStep={revealStep} mode={mode} presence={<span>Presence slot</span>} onIndexChange={(next) => { setIndex(next); setRevealStep(-1); }} onRevealStepChange={setRevealStep}/>;
+  return <Deck slides={slides} index={index} revealStep={revealStep} mode={mode} presence={<span>Presence slot</span>} onIndexChange={(next) => { setIndex(next); setRevealStep(-1); }} onRevealStepChange={setRevealStep}/>;
 }
 
 function LiveRoute({pathname}: {readonly pathname: string}) {

@@ -140,16 +140,16 @@ port.on('console', (message) => {
 const controlledPropCoverage = {sameTreeIndexChanges: false, sameTreeRevealStepChanges: false, sameTreeSlidesEmptyToPopulated: false, sameTreeModeChanges: false, sameTreeInstances: false};
 
 try {
-  await check(checks, 'source has all 78 progress segments', async () => {
+  await check(checks, 'source has all 86 progress segments', async () => {
     await waitProjector(source, `${sourceUrl}#1`);
     const count = await source.locator('#progress .seg').count();
-    if (count !== 78) throw new Error(`found ${count}`);
+    if (count !== 86) throw new Error(`found ${count}`);
     return {count};
   });
-  await check(checks, 'port has all 78 progress segments', async () => {
+  await check(checks, 'port has all 86 progress segments', async () => {
     await waitProjector(port, `${portUrl}?index=0`);
     const count = await port.locator('#progress .seg').count();
-    if (count !== 78) throw new Error(`found ${count}`);
+    if (count !== 86) throw new Error(`found ${count}`);
     return {count};
   });
 

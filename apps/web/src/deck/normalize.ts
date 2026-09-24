@@ -12,7 +12,7 @@ export function normalizeSlides(input: ReadonlyArray<Record<string, unknown>>): 
     const slide = decodeSlide({
       ...raw,
       id: raw.id ?? `slide-${index + 1}`,
-      lessonId: raw.lessonId ?? (index < 40 ? 'teaching-day-1' : 'teaching-day-2'),
+      lessonId: raw.lessonId ?? (index < 44 ? 'teaching-day-1' : 'teaching-day-2'),
       ordinal: raw.ordinal ?? index + 1,
       type,
       ...(planB === undefined ? {} : {planB}),
