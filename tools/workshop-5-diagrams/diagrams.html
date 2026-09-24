@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<!-- Academy-dark diagrams for Workshop 5, rendered to 2048×1100 PNG (?d=linevsloop | bottleneck).
+     Palette matches public/workshop-5/line-vs-loop-dark.png: navy panel, light-bordered boxes, Claude orange. -->
+<style>
+  @font-face{font-family:Nunito;font-weight:400 900;src:url(assets/nunito-latin.woff2) format('woff2')}
+  :root{--bg:#06111e;--panel:#0c1a2b;--line:#1b3047;--box:#10223a;--edge:#d6deea;--text:#eef3fb;--muted:#9fb0c8;--claude:#df7a57}
+  *{box-sizing:border-box;margin:0}
+  html,body{width:2048px;height:1100px;overflow:hidden;background:var(--bg);color:var(--text);font-family:Nunito,system-ui,sans-serif}
+  .frame{position:absolute;inset:48px 64px;border:1px solid var(--line);border-radius:36px;background:var(--panel)}
+  .d{display:none;position:absolute;inset:0}
+  .box{background:var(--box);border:2px solid var(--edge);border-radius:14px;display:grid;place-items:center;font-weight:800;font-size:30px}
+  .cap{color:var(--muted);font-size:24px;font-weight:700}
+
+  /* line vs loop */
+  #linevsloop .col{position:absolute;top:0;bottom:0;width:50%;display:flex;flex-direction:column;align-items:center;padding-top:40px}
+  #linevsloop .left{left:0}#linevsloop .right{right:0}
+  #linevsloop .divider{position:absolute;left:50%;top:90px;bottom:120px;border-left:2px dashed var(--line)}
+  #linevsloop h2{font-size:44px;font-weight:800;margin-bottom:34px}
+  .stack{display:flex;flex-direction:column;align-items:center}
+  .stack .box{width:294px;height:70px}
+  .stack i{width:2px;height:28px;background:var(--edge)}
+  #linevsloop .cap{margin-top:60px}
+  .loop{position:relative;width:640px;height:640px;margin-top:-6px}
+  .loop .ring{position:absolute;inset:70px;border:16px solid var(--claude);border-radius:50%}
+  .loop .node{position:absolute;width:112px;height:112px;margin:-56px 0 0 -56px;border-radius:50%;background:var(--box);border:2px solid var(--edge);display:grid;place-items:center;font-weight:800;font-size:22px}
+  .loop .core{position:absolute;left:50%;top:50%;width:216px;height:216px;margin:-108px 0 0 -108px;border-radius:50%;background:var(--claude);display:grid;place-items:center;align-content:center;gap:4px;font:700 34px Georgia,serif;color:#fff}
+  .loop .core b{font:400 64px/0.9 system-ui;display:block;text-align:center}
+
+  /* bottleneck */
+  #bottleneck{padding:0 110px;display:none;flex-direction:column;justify-content:center}
+  #bottleneck[style*=block]{display:flex!important}
+  #bottleneck h3{font-size:36px;font-weight:600;color:var(--muted);margin-bottom:30px}
+  #bottleneck h3 b{color:var(--text);font-weight:900}
+  .row{display:flex;gap:16px;height:124px}
+  .row .box{flex:none;font-size:34px}
+  .row .build{background:var(--claude);border-color:var(--claude);color:#fff}
+  .row .reclaimed{flex:1;border:3px dashed #4a6280;border-radius:14px;display:grid;place-items:center;color:var(--muted);font-size:32px;font-weight:600}
+  .labels{position:relative;height:60px;margin-top:22px}
+  .labels span{position:absolute;color:var(--muted);font-size:30px;font-weight:600;transform:translateX(-50%)}
+  .gap{height:110px}
+
+  /* agenda */
+  #agenda{padding:90px 120px;display:none}
+  #agenda[style*=block]{display:grid!important;grid-template-columns:1fr 1fr;gap:70px;align-content:center}
+  #agenda h4{font-size:26px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);font-weight:800;margin-bottom:26px}
+  #agenda ol{list-style:none;padding:0;margin:0;display:grid;gap:14px}
+  #agenda li{display:grid;grid-template-columns:150px 1fr auto;align-items:center;gap:24px;padding:20px 26px;border:2px solid var(--line);border-radius:16px;background:var(--box);font-size:30px;font-weight:800}
+  #agenda li small{font-size:22px;color:var(--muted);font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+  #agenda li em{font-style:normal;font-size:24px;color:var(--claude);font-weight:800}
+  #agenda li.soft{background:transparent;border-style:dashed;color:var(--muted)}
+  /* shifts table */
+  #shifts{padding:56px 70px 40px;display:none}
+  #shifts[style*=block]{display:flex!important;flex-direction:column;justify-content:center}
+  #shifts table{width:100%;border-collapse:collapse;font-size:30px;line-height:1.3}
+  #shifts th{font-size:20px;letter-spacing:.16em;text-transform:uppercase;text-align:left;padding:16px 22px;background:#050c16;color:var(--text)}
+  #shifts th:first-child{border-radius:14px 0 0 0}#shifts th:last-child{border-radius:0 14px 0 0}
+  #shifts td{padding:16px 24px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--muted);font-weight:600}
+  #shifts td:first-child{color:var(--text);font-weight:900;width:190px}
+  #shifts td:last-child{background:#1a1d29;color:var(--text)}
+  #shifts code{font:26px ui-monospace,Menlo,monospace;background:#223a58;color:var(--text);padding:1px 8px;border-radius:6px}
+  #shifts .foot{margin-top:18px;font-size:22px;color:var(--muted);display:flex;justify-content:space-between}
+</style></head>
+<body><div class="frame">
+
+<section class="d" id="linevsloop">
+  <div class="col left"><h2>Traditional — the line</h2>
+    <div class="stack"><div class="box">Plan</div><i></i><div class="box">Design</div><i></i><div class="box">Build</div><i></i><div class="box">Test</div><i></i><div class="box">Deploy</div><i></i><div class="box">Maintain</div></div>
+    <p class="cap">One slow loop back is a new release cycle.</p></div>
+  <div class="divider"></div>
+  <div class="col right"><h2>AI-native — the loop</h2>
+    <div class="loop"><div class="ring"></div><div class="core"><b>✳</b>Claude</div></div>
+    <p class="cap" style="margin-top:-10px">Hours, not weeks — humans above the loop.</p></div>
+</section>
+
+<section class="d" id="bottleneck">
+  <h3><b>Before agents</b> — every stage runs at human speed</h3>
+  <div class="row"><div class="box" style="width:156px">Plan</div><div class="box" style="width:202px">Design</div><div class="box build" style="width:732px">Build</div><div class="box" style="width:200px">Test</div><div class="box" style="width:158px">Deploy</div><div class="box" style="width:172px">Maintain</div></div>
+  <div class="gap"></div>
+  <h3><b>After agents</b> — build runs at agent speed</h3>
+  <div class="row"><div class="box" style="width:150px">Plan</div><div class="box" style="width:194px">Design</div><div class="box build" style="width:30px;border-radius:12px"></div><div class="box" style="width:194px">Test</div><div class="box" style="width:154px">Deploy</div><div class="box" style="width:166px">Maintain</div><div class="reclaimed">cycle time reclaimed</div></div>
+  <div class="labels"><span style="left:180px">requirements</span><span style="left:517px">review</span><span style="left:707px">release</span></div>
+</section>
+
+<section class="d" id="loopArrows">
+  <svg viewBox="0 0 1000 830" width="960" height="797" style="position:absolute;left:50%;top:40px;transform:translateX(-50%)" aria-label="AI-native loop">
+    <defs><marker id="head" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="3.4" markerHeight="3.4" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#df7a57"/></marker></defs>
+    <g id="arcs" fill="none" stroke="#df7a57" stroke-width="13" stroke-linecap="round"></g>
+    <circle cx="500" cy="380" r="132" fill="#df7a57"/>
+    <text x="500" y="398" text-anchor="middle" font-family="Georgia,serif" dy="-2" font-size="48" fill="#fff">✳ Claude</text>
+    <g id="nodes"></g>
+  </svg>
+  <p class="cap" style="position:absolute;left:0;right:0;bottom:70px;text-align:center;font-size:30px"><b style="color:var(--text);font-weight:900">AI-native — the loop.</b> Hours, not weeks, with humans above the loop instigating, directing and governing.</p>
+</section>
+
+<section class="d" id="agenda">
+  <div><h4>Morning</h4><ol>
+    <li><small>Open</small>Why AI-native, the loop<em></em></li>
+    <li><small>SOLO 1</small>Plan · intent.md<em>15 min</em></li>
+    <li><small>SOLO 2</small>Design · spec + contract<em>25 min</em></li>
+    <li><small>SOLO 3</small>Build · the plan<em>15 min</em></li>
+    <li><small>SOLO 4</small>Build · first page<em>25 min</em></li>
+  </ol></div>
+  <div><h4>Afternoon</h4><ol>
+    <li class="soft"><small>Break</small>Lunch<em></em></li>
+    <li><small>SOLO 5</small>Build · the agent<em>20 min</em></li>
+    <li><small>SOLO 6</small>Test · evidence<em>15 min</em></li>
+    <li><small>SOLO 7</small>Deploy · the gate<em>15 min</em></li>
+    <li><small>Close</small>Maintain · the next intent<em></em></li>
+  </ol></div>
+</section>
+
+<section class="d" id="shifts">
+  <table>
+    <tr><th>Stage</th><th>Traditional SDLC</th><th>AI-native SDLC</th></tr>
+    <tr><td>Plan</td><td>Requirements gathered by committee, distilled through workshops and sign-offs, written up by hand</td><td>Claude synthesizes pain points straight from the sources and captures them within <code>intent.md</code>, human readable and machine actionable</td></tr>
+    <tr><td>Design</td><td>Spec written by analysts, parsed by designers</td><td>Requirements and design compressed into one working session with an agent, guided by standards encoded as skills, versioned in git</td></tr>
+    <tr><td>Build</td><td>Tests and code are handwritten; documentation is written after the main development happens</td><td>Tests and code are generated by AI; institutional knowledge is kept as versioned <code>CLAUDE.md</code> files and skills</td></tr>
+    <tr><td>Test</td><td>QA gates at stage boundaries</td><td>Continuous evals woven through implementation</td></tr>
+    <tr><td>Deploy</td><td>Humans review every line of code; governance happens in review cycles, often inconsistently</td><td>Layers of agentic review, human review reserved for regulated and critical code; governance enforced as the AI acts, with hooks as approval gates</td></tr>
+    <tr><td>Maintain</td><td>Humans watch production for bugs</td><td>Agents monitor live deployments; any breached control band is diagnosed and written back into the loop as a new <code>intent.md</code></td></tr>
+  </table>
+  <p class="foot"><span>Most organizations sit somewhere between the two columns.</span><span>Source: Anthropic, The AI-native SDLC playbook</span></p>
+</section>
+
+</div>
+<script>
+  // Six nodes clockwise from the top, on the ring's centre line.
+  const loop = document.querySelector(".loop"), names = ["Plan", "Design", "Build", "Test", "Deploy", "Maintain"];
+  names.forEach((n, k) => { const a = (k / 6) * 2 * Math.PI - Math.PI / 2, r = 242;
+    const d = Object.assign(document.createElement("div"), { className: "node", textContent: n });
+    d.style.left = `${320 + r * Math.cos(a)}px`; d.style.top = `${320 + r * Math.sin(a)}px`; loop.append(d); });
+
+  // loopArrows: six stages clockwise from the top, an arrow on the ring between each pair.
+  { const C = [500, 380], R = 290, gap = 0.36, rad = (k) => (k / 6) * 2 * Math.PI - Math.PI / 2,
+      at = (a) => [C[0] + R * Math.cos(a), C[1] + R * Math.sin(a)];
+    names.forEach((n, k) => {
+      const [x0, y0] = at(rad(k) + gap), [x1, y1] = at(rad(k + 1) - gap);
+      document.getElementById("arcs").insertAdjacentHTML("beforeend", `<path d="M${x0} ${y0} A${R} ${R} 0 0 1 ${x1} ${y1}" marker-end="url(#head)"/>`);
+      const [x, y] = at(rad(k));
+      document.getElementById("nodes").insertAdjacentHTML("beforeend", `<circle cx="${x}" cy="${y}" r="82" fill="#10223a" stroke="#d6deea" stroke-width="2.5"/><text x="${x}" y="${y + 12}" text-anchor="middle" font-family="Nunito,sans-serif" font-weight="800" font-size="34" fill="#eef3fb">${n}</text>`);
+    }); }
+  document.getElementById(new URLSearchParams(location.search).get("d")).setAttribute("style", "display:block");
+</script>
+</body></html>

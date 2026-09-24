@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><link rel="stylesheet" href="visuals.css">
+<style>
+  /* One visual, framed like academy public/workshop-5/line-vs-loop-dark.png (2048×1100). */
+  html,body{width:2048px;height:1100px;overflow:hidden;background:#06111e}
+  body{display:block}
+  .frame{position:absolute;inset:48px 64px;border:1px solid #1b3047;border-radius:36px;background:#0c1928;display:grid;place-items:center}
+  .frame .visual>*{zoom:2.1;max-width:560px}
+  .frame .visual>.cycle{zoom:2.2}
+  .file,.term,.page{box-shadow:none}
+</style></head>
+<body><div class="frame"><div class="visual" id="v"></div></div>
+<script src="visuals.js"></script>
+<script>document.getElementById("v").innerHTML = VISUALS[new URLSearchParams(location.search).get("v")]();</script>
+</body></html>
