@@ -1131,6 +1131,8 @@
 /* opacity-only entrance: a transform on .heading would become the anchor for the pinned label */
 .academy-deck.keynote[data-lesson=workshop-5] .heading{animation-name:w5-heading-in}
 @keyframes w5-heading-in{from{opacity:0}}
+/* W5 welcome: heading only, no logo lockup */
+.academy-deck[data-lesson=workshop-5] .opener-logo{display:none}
 /* label + kicker as one line at the top; on definition faces the kicker is the headword, so only the label goes up */
 .academy-deck.keynote[data-lesson=workshop-5]:not([data-opener=definition]) .heading-top{position:absolute;top:clamp(.8rem,2.5vh,1.6rem);left:0;right:0;justify-content:center;margin:0}
 .academy-deck.keynote[data-lesson=workshop-5]:not([data-opener=definition]) .eyebrow{flex-direction:row;margin:0}

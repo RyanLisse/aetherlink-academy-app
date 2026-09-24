@@ -31,14 +31,15 @@ describe('AET-77 workshop 5 ultra-minimal AI-native SDLC deck', () => {
     'progress.md',
   ] as const;
 
-  it('opens welcome → plan of the day → warm-up → shifts, and closes on the recap', () => {
+  it('opens welcome → plan → warm-up → line vs loop → definition → shifts, and closes on the recap', () => {
     expect(slides).toHaveLength(workshop5SourceSlides.length);
     expect(slides.every((s) => s.lessonId === 'workshop-5')).toBe(true);
     expect(visualOf(workshop5SourceSlides[0]!).opener).toBe('welcome');
     expect(String(visualOf(workshop5SourceSlides[1]!).image)).toBe('workshop-5/agenda-dark.png');
     expect(slides[2]?.title).toMatch(/your SDLC look like today/i);
-    expect(String(visualOf(workshop5SourceSlides[3]!).image)).toBe('workshop-5/shifts-dark.png');
-    expect(slides[4]?.title).toMatch(/line vs the loop/i);
+    expect(slides[3]?.title).toMatch(/line vs the loop/i);
+    expect(kicker(workshop5SourceSlides[4])).toBe('AI-native SDLC');
+    expect(String(visualOf(workshop5SourceSlides[5]!).image)).toBe('workshop-5/shifts-dark.png');
     expect(slides[slides.length - 1]?.title).toMatch(/Seven files|One brief|One gate/i);
   });
 

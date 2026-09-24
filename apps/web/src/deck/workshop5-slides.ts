@@ -56,16 +56,7 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   kicker: "Warm-up · your turn",
   type: "context",
   visual: { keynote: true },
-  notes: "Ask the room, 5 minutes. Prompts if it stays quiet: Where do requirements live today — tickets, docs, heads? Who writes the tests, and when? How long from idea to production? Where does review happen, and who can say no? Collect three answers on the board; we map them onto the table on the next slide."
-},
-
-{ // Traditional vs AI-native, per stage
-  lessonId: LESSON,
-  title: "The shifts across the six stages",
-  kicker: "Explain · traditional vs AI-native",
-  type: "concept",
-  visual: { keynote: true, opener: "showcase", image: "workshop-5/shifts-dark.png", imageLink: "Traditional SDLC · AI-native SDLC" },
-  notes: "Explain. The two ends of the spectrum, stage by stage; most organizations sit somewhere between the two columns. Map the room's answers from the warm-up onto the left column, then point at the right column: that is what we build today. Source: Anthropic, The AI-native SDLC playbook."
+  notes: "Ask the room, 5 minutes. Prompts if it stays quiet: Where do requirements live today — tickets, docs, heads? Who writes the tests, and when? How long from idea to production? Where does review happen, and who can say no? Collect three answers on the board; we map them onto the table of shifts right after the definition."
 },
 
 /* ========== Framing ========== */
@@ -87,6 +78,15 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
 define("AI-native SDLC",
   "A reimagined process: the old control objectives, new enforcement. Not a line but a loop, with AI embedded at each point.",
   "Definition, verbatim for the room: 'The AI-native SDLC is a reimagined process that combines the old control objectives with new enforcement. Instead of a linear flow, the process becomes a loop, and AI is embedded at each point.' Agents collapse Build, not judgment."),
+
+{ // Traditional vs AI-native, per stage
+  lessonId: LESSON,
+  title: "The shifts across the six stages",
+  kicker: "Explain · traditional vs AI-native",
+  type: "concept",
+  visual: { keynote: true, opener: "showcase", image: "workshop-5/shifts-dark.png", imageLink: "Traditional SDLC · AI-native SDLC" },
+  notes: "Explain. The two ends of the spectrum, stage by stage; most organizations sit somewhere between the two columns. Map the room's warm-up answers onto the left column, then point at the right column: that is what we build today. Source: Anthropic, The AI-native SDLC playbook."
+},
 
 { // The loop, after the definition
   lessonId: LESSON,
