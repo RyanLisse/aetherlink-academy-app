@@ -1,7 +1,7 @@
-/** AET-77 Workshop day 5 — AI-native SDLC (minimal face pass).
- *  Outline SoT: handoffs/2026-09-24-academy-deploy-sdlc/OUTLINE-AET-77.md
- *  Minimal SoT: HANDOFF-AET-77-MINIMAL.md + Ryan addendum (definition slides).
- *  Projector: title + one idea + optional path chip. Timers/checklists → notes (+ timer field for PresenterTools).
+/** AET-77 Workshop day 5 — AI-native SDLC (minimal + visual-first).
+ *  SoT: HANDOFF-AET-77-MINIMAL.md (addenda 1–3) · OUTLINE-AET-77.md
+ *  Visual cue pack: https://github.com/RyanLisse/claude-code-skills-pack
+ *  Projector: title + one idea + diagram/chip hero. Timers/checklists → notes.
  *  Forbidden: Classroom 1–2 rewrite; Eve dual-track. n8n→Claude lock stays.
  */
 export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
@@ -75,34 +75,44 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
 },
 
 /* ---------------------------------------------------------------------- */
-/* Definitions (Ryan addendum) + minimal assignments                       */
+/* Nine highlight slides — visual-first (addenda 1–3)                      */
 /* ---------------------------------------------------------------------- */
 
-{ // 5 — definition: AI-native SDLC
+{ // 5 — AI-native SDLC (diagram)
   lessonId: "workshop-5",
   title: "AI-native SDLC",
   kicker: "Definition",
-  subtitle: "Committed artifacts + human gates — agents collapse Build, not judgment.",
+  subtitle: "Artifacts + gates. Agents collapse Build — not judgment.",
   type: "concept",
-  tagline: "Plan → Design → Build → Test → Deploy → Maintain, with proof in git.",
-  notes: "Frame the day: AI-native SDLC = the playbook loop rebuilt around versioned artifacts and accept gates. Build sped up; Plan/Test/Deploy/Maintain stay human-speed. Point back at the chain on slide 3."
+  layout: "steps",
+  visual: { stepKeys: true, art: "loop", loopCaptions: true },
+  items: [
+    { label: "Plan", caption: "intent" },
+    { label: "Design", caption: "spec · plan" },
+    { label: "Build", caption: "diff · tests" },
+    { label: "Test", caption: "evidence" },
+    { label: "Deploy", caption: "gate" },
+    { label: "Maintain", caption: "new intent" }
+  ],
+  tagline: "Proof in git. Humans at the accept gates.",
+  notes: "Visual loop of the AI-native SDLC. Point: Build sped up; Plan/Test/Deploy/Maintain stay human-speed. Tie to artifact chain on slide 3."
 },
 
-{ // 6 — definition: intent.md
+{ // 6 — intent.md (file hero + section chips from skills-pack examples/intent.md)
   lessonId: "workshop-5",
   title: "intent.md",
   kicker: "Definition · Plan",
-  subtitle: "Originator intent, versioned in git, accepted before Design.",
+  subtitle: "Humans write it. Agents work toward it.",
   type: "concept",
-  visual: { mdfile: 0, mdName: "intent.md" },
+  visual: { mdfile: 0, mdName: "intent.md", chipGrid: 1, chipIcons: ["❗", "✅", "🛑", "👤", "🔗"] },
   cards: [
-    { title: "intent.md", body: "One outcome · checks · boundary · owners · OPEN" }
+    { title: "intent.md", body: "Problem\nOutcome\nConstraints / stop\nRoster\nArtifact chain" }
   ],
-  tagline: "Wish ≠ rule. The boundary is the gate.",
-  notes: "Highlight file: repo-root intent.md. Outcome sentence, stranger-verifiable checks, hard boundary, owners, ≥1 OPEN. Product owner accepts before anyone starts Design."
+  tagline: "If it is not written here, it is not the shared goal.",
+  notes: "File hero mirrors examples/intent.md from github.com/RyanLisse/claude-code-skills-pack (sections as chips, not full dump). Gate: wish ≠ rule."
 },
 
-{ // 7 — SOLO 1 assignment (minimal face)
+{ // 7 — SOLO 1
   lessonId: "workshop-5",
   title: "Assignment — fill intent.md (SOLO 1)",
   kicker: "SOLO 1 · gate before step 2",
@@ -116,18 +126,18 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   notes: "Timer: 15 min. Checklist: (1) one outcome sentence (2) three stranger-verifiable success checks (3) hard boundary — what the agent may never touch (4) owners (5) ≥1 OPEN — do not invent certainty. Gate: read the boundary aloud — wish ≠ rule → NEEDS REVISION, no step 2. Map: SOLO step 1."
 },
 
-{ // 8 — definition: spec.md
+{ // 8 — spec.md (file hero)
   lessonId: "workshop-5",
   title: "spec.md",
   kicker: "Definition · Design",
-  subtitle: "A testable contract. Sources quoted; schema goes red before green.",
+  subtitle: "Testable contract. Quote sources. Red before green.",
   type: "concept",
-  visual: { mdfile: 0, mdName: "docs/spec.md" },
+  visual: { mdfile: 0, mdName: "docs/spec.md", runner: [{ label: "schema red", tone: "red" }, { label: "schema green", tone: "green" }] },
   cards: [
-    { title: "docs/spec.md", body: "Quote sources · red test · then green" }
+    { title: "docs/spec.md", body: "Quoted fields\ntest/schema.test.ts\nsrc/brief.ts" }
   ],
-  tagline: "No invented fields. Red before implementation.",
-  notes: "Highlight file: docs/spec.md (+ test/schema.test.ts). Spec quotes reference/ sources; schema test fails before brief.ts goes green. Still a human gate even when Design is compressed."
+  tagline: "No invented fields.",
+  notes: "Hero file docs/spec.md. Visual: red→green schema. Still a human gate when Design is compressed."
 },
 
 { // 9 — SOLO 2
@@ -144,18 +154,18 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   notes: "Timer: 25 min. Checklist: (1) quote one example per field from reference/ PDFs into docs/spec.md (2) write test/schema.test.ts so it fails red (3) add src/brief.ts + sample/brief.sample.json until npm test green (4) confirm test commit before brief.ts in git log. Check: test commit before brief.ts in git log. yes/no. Map: SOLO step 2."
 },
 
-{ // 10 — definition: plan.md
+{ // 10 — plan.md (gate visual)
   lessonId: "workshop-5",
   title: "plan.md",
   kicker: "Definition · Design / Build",
-  subtitle: "Ordered steps, exact paths, proof commands — accepted before any edit.",
+  subtitle: "Ordered steps + proof. Read-only until accept.",
   type: "concept",
-  visual: { mdfile: 0, mdName: "docs/plan.md" },
+  visual: { art: "gate", mdfile: 0, mdName: "docs/plan.md" },
   cards: [
-    { title: "docs/plan.md", body: "Steps · paths · proof · rollback · gate" }
+    { title: "docs/plan.md", body: "Steps\nPaths\nProof commands\nRollback\nGate" }
   ],
-  tagline: "Plan mode stays read-only until a human accepts.",
-  notes: "Highlight file: docs/plan.md (with docs/design.md + one ADR). Approved plan is the audit trail the PR later checks against. No edits until the gate opens."
+  tagline: "Explore → Plan → approval gate → Change.",
+  notes: "Gate art: plan mode stays read-only until a human accepts. Approved plan is the audit trail the PR later checks against."
 },
 
 { // 11 — SOLO 3
@@ -172,68 +182,104 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   notes: "Timer: 15 min. Checklist: (1) write docs/design.md (2) one real ADR under docs/decisions/ (3) docs/plan.md with ordered steps, exact paths, one proof command per step, rollback, gate before build (4) remain in plan mode until human accepts. Check: every step has a proof command + rollback. yes/no. Map: SOLO step 3."
 },
 
-{ // 12 — definition: skills
+{ // 12 — skills (slash-command chips from skills-pack)
   lessonId: "workshop-5",
   title: "skills",
-  kicker: "Definition · Claude Code",
-  subtitle: "A skill packages a reusable method for a recurring task.",
+  kicker: "Definition · /slash methods",
+  subtitle: "Folder + SKILL.md → type /name, get a method.",
   type: "concept",
-  visual: { mdfile: 0, mdName: "SKILL.md" },
+  visual: {
+    tree: 0,
+    chipGrid: 1,
+    chipIcons: ["🧠", "🧹", "✅", "🚢", "🗺", "📋"]
+  },
   cards: [
-    { title: ".claude/skills/…/SKILL.md", body: "When · input · procedure · output · bounds · stop" }
+    { title: ".claude/skills/…/SKILL.md", body: "/eli5\n/deslop\n/verify-this\n/review-and-ship\n/archify\n/handoff" }
   ],
-  tagline: "Repeat the method, not the prompt.",
-  notes: "Reuse Classroom Day 2 language: a skill defines when it applies, required input, procedure, output format, boundaries, stop conditions. Point at .claude/skills/ — do not rebuild Classroom skill assignments here."
+  tagline: "Reusable method — not a background agent.",
+  notes: "Visual: skill folder tree + slash chips from github.com/RyanLisse/claude-code-skills-pack (cite once). Soft: pack is optional install for the room; lab still uses daily-brief SOLO. Skill ≠ continuous process."
 },
 
-{ // 13 — definition: hooks
+{ // 13 — hooks (gate on tool event)
   lessonId: "workshop-5",
   title: "hooks",
-  kicker: "Definition · gates in the session",
-  subtitle: "Session hooks can block or require approval before a tool runs.",
+  kicker: "Definition · tool events",
+  subtitle: "Deterministic automation around tool events.",
   type: "concept",
-  tagline: "Hooks are approval points — humans still own production.",
-  notes: "Tie to Deploy beat: hooks as approval in the agent session (e.g. PreToolUse), not a substitute for named production approval. Outline kicker: hooks as approval, humans at production."
+  visual: { art: "gate" },
+  cards: [
+    { title: "Before / after", body: "PreToolUse\nPostToolUse\nStop / notify" },
+    { title: "Idea", body: "Suggest /deslop\nSuggest /fix-ci\nNever ship secrets" }
+  ],
+  tagline: "Hooks are optional gates — humans still own production.",
+  notes: "From skills-pack notes/hooks-notes.md: pack does not ship mandatory hooks; ideas only (remind /deslop, suggest /fix-ci). No secrets in hook scripts. Tie to Deploy: hooks ≠ named production approval."
 },
 
-{ // 14 — definition: MCP
+{ // 14 — MCP (plugs visual)
   lessonId: "workshop-5",
   title: "MCP",
-  kicker: "Definition · approved connections",
-  subtitle: "One standard plug for approved information and capabilities.",
+  kicker: "Definition · approved plug",
+  subtitle: "One standard plug for approved tools and data.",
   type: "concept",
-  tagline: "Connecting a server does not remove permissions or human responsibility.",
-  notes: "Reuse Classroom Day 2: MCP standardises how AI apps connect to approved resources, prompts, and tools. Files are local; MCP is for approved outside systems. /mcp to inspect. n8n→Claude lock stays — no Eve dual-track."
+  visual: { plugs: 1 },
+  cards: [
+    { title: "Local", body: "Files + project commands\nbuilt-in tools" },
+    { title: "Outside via MCP", body: "resources\nprompts\ntools" }
+  ],
+  tagline: "Connected ≠ allowed. /mcp to inspect.",
+  notes: "Reuse Classroom MCP plug visual. Files local; MCP for approved outside. n8n→Claude lock stays — no Eve dual-track."
 },
 
-{ // 15 — definition: subagents
+{ // 15 — subagents (parent + side worker)
   lessonId: "workshop-5",
   title: "subagents",
   kicker: "Definition · Agents SDK",
-  subtitle: "Delegated specialists with a bounded job — the parent keeps the gate.",
+  subtitle: "One bounded job each. Parent keeps the gate.",
   type: "concept",
-  tagline: "One clear job each; the human still accepts.",
-  notes: "Day 5 sits after n8n + Agents SDK. Subagents = bounded delegated runs (tools, scope, stop), not unsupervised swarm. Parent session / human owns the accept gate. Do not invent Eve dual-track."
+  layout: "compare",
+  visual: { art: "flow", bot: "multiarm", place: "slot" },
+  columns: [
+    { title: "Parent", items: ["Owns intent", "Accepts plan", "Named gate"], foot: "Judgment stays here" },
+    { title: "Subagent", items: ["One clear job", "Bounded tools", "Reports back"], foot: "No unsupervised swarm" }
+  ],
+  tagline: "Delegate the work — not the accept.",
+  notes: "Day 5 after n8n + Agents SDK. Subagent = bounded specialist; parent/human owns accept. Soft Archify cue: maps help see the split — don't require live Archify."
 },
 
-{ // 16 — definition: workflows
+{ // 16 — workflows (chain / map)
   lessonId: "workshop-5",
   title: "workflows",
-  kicker: "Definition · reusable loop",
-  subtitle: "A repeatable, bounded, reviewable path other people can reuse.",
+  kicker: "Definition · reusable path",
+  subtitle: "A bounded path other people can reuse.",
   type: "concept",
+  layout: "steps",
+  visual: { stepKeys: true, art: "loop" },
+  items: [
+    { label: "intent", caption: "align" },
+    { label: "skill / agent", caption: "method" },
+    { label: "proof", caption: "checks" },
+    { label: "gate", caption: "human" },
+    { label: "ship", caption: "PR / schedule" }
+  ],
   tagline: "Useful · safe · verifiable · reusable.",
-  notes: "Programme spine: design, build, and review an AI-supported workflow others understand. In this lab the workflow is the artifact chain + SOLO day, not a second product track."
+  notes: "Workflow = the artifact chain + human gate, optionally sped by skills-pack slash methods. Soft Archify: system maps visualize the path — optional."
 },
 
-{ // 17 — build concept (slim)
+{ // 17 — build concept
   lessonId: "workshop-5",
   title: "Build with a feedback loop",
   kicker: "Build",
   subtitle: "Agent checks its own work; human reviews intent + risk.",
   type: "concept",
-  tagline: "Today: no shell / no write for the brief agent.",
-  notes: "Playbook: give the agent tests / build / screenshot feedback. Humans review intent + risk, not every keystroke. Bound for today: no shell, no write on the brief agent."
+  layout: "pillars",
+  visual: { pillarIcons: true, bot: "head", place: "under" },
+  items: [
+    { label: "Agent checks", caption: "tests / build / shot" },
+    { label: "Human reviews", caption: "intent + risk" },
+    { label: "Bound today", caption: "no shell / no write" }
+  ],
+  tagline: "Proof in the session; judgment with the human.",
+  notes: "Playbook: give the agent a way to check its own work. Bound for today: no shell, no write on the brief agent."
 },
 
 { // 18 — SOLO 4
@@ -264,15 +310,18 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   notes: "Timer: 20 min + live run. Checklist: (1) catch up from reference sources.ts / agent.ts (2) add one read-only tool (tool() + guarded()) (3) live npm run brief (4) every sentence traces to a run.log tool call. Check: no shell tool, no write tool; every sentence traceable. yes/no. Map: SOLO step 5."
 },
 
-{ // 20 — evidence concept (slim)
+{ // 20 — evidence
   lessonId: "workshop-5",
   title: "Evidence is not a vibes check",
   kicker: "Test",
-  subtitle: "Commands, exit codes, screenshot, named reviewer.",
+  subtitle: "Commands · exit codes · screenshot · named reviewer.",
   type: "concept",
-  visual: { mdfile: 0, mdName: "docs/evidence.md" },
-  tagline: "Differences from PDFs = OPEN, never silent FAIL.",
-  notes: "Playbook: continuous proof. Lab: typecheck · test · brief (or sample) with exit codes + one quoted line each; screenshot under docs/evidence/; name the reviewer (or self next day)."
+  visual: { mdfile: 0, mdName: "docs/evidence.md", runner: [{ label: "typecheck", tone: "green" }, { label: "test", tone: "green" }, { label: "brief", tone: "green" }] },
+  cards: [
+    { title: "docs/evidence.md", body: "exit codes\nquoted lines\nscreenshot path\nreviewer" }
+  ],
+  tagline: "Differences from PDFs = OPEN.",
+  notes: "Continuous proof. Lab: typecheck · test · brief (or sample) with exit codes + one quoted line each; screenshot under docs/evidence/; name the reviewer."
 },
 
 { // 21 — SOLO 6
@@ -289,15 +338,18 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   notes: "Timer: 15 min. Checklist: (1) run typecheck · test · brief (or sample); record exit codes (2) quote one line each (3) screenshot under docs/evidence/ (4) name the reviewer (or \"self next day\"). Check: three commands + screenshot path + reviewer name. yes/no. Map: SOLO step 6."
 },
 
-{ // 22 — gate concept (slim)
+{ // 22 — gate
   lessonId: "workshop-5",
   title: "Human gate, then schedule",
   kicker: "Deploy",
-  subtitle: "Agent acts up to the gate; production needs named approval.",
+  subtitle: "Agent up to the gate; production needs named approval.",
   type: "concept",
-  visual: { mdfile: 0, mdName: "docs/gate.md" },
-  tagline: "No PASS on unread checks. Credentials never in repo.",
-  notes: "PR vs intent.md → docs/gate.md PASS/FAIL/OPEN with quotes → cron / Actions for weekday brief; secrets only in vault."
+  visual: { art: "gate", mdfile: 0, mdName: "docs/gate.md" },
+  cards: [
+    { title: "docs/gate.md", body: "PASS · FAIL · OPEN\nquotes required" }
+  ],
+  tagline: "No PASS on unread checks. No secrets in repo.",
+  notes: "PR vs intent.md → docs/gate.md → cron / Actions; secrets only in vault. Hooks help in-session; humans approve production."
 },
 
 { // 23 — SOLO 7
@@ -320,8 +372,16 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   kicker: "Maintain → new intent",
   subtitle: "Production signal becomes the next intent.md.",
   type: "concept",
+  layout: "steps",
+  visual: { stepKeys: true, art: "loop", loopCaptions: true },
+  items: [
+    { label: "Run today", caption: "merged brief" },
+    { label: "Signal", caption: "footnote" },
+    { label: "New intent", caption: "tomorrow" },
+    { label: "Triage", caption: "fix / schedule / dismiss" }
+  ],
   tagline: "Tomorrow's run reads what you merged today.",
-  notes: "Playbook Stage 6: production signal / footnote → next intent.md. Human triages fix-now / schedule / dismiss."
+  notes: "Playbook Stage 6. Human triages fix-now / schedule / dismiss."
 },
 
 { // 25 — recap
@@ -341,8 +401,8 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     { label: "docs/gate.md", caption: "Human decision" },
     { label: "PR open", caption: "Stranger can review" }
   ],
-  tagline: "Proof acceptance: intent + plan + verify-output + human gate recorded.",
-  notes: "Seven files a stranger can point at · one brief you did not write · a gate you decided. Point to lab README / SOLO \"When you are done.\""
+  tagline: "Proof: intent + plan + verify-output + human gate.",
+  notes: "Point to lab README / SOLO When you are done. Soft credit: skills-pack for slash-method visuals — github.com/RyanLisse/claude-code-skills-pack"
 },
 
 ];
