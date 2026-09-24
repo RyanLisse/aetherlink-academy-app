@@ -39,7 +39,7 @@ jobs:
         run: |
           git init "$SOURCE_DECK_DIR"
           git -C "$SOURCE_DECK_DIR" remote add origin https://github.com/jyse/aetherlink-classroom-slides.git
-          git -C "$SOURCE_DECK_DIR" fetch --depth 1 origin 0c194f6fc38481290922b878ac5a7d31ca795c8d
+          git -C "$SOURCE_DECK_DIR" fetch --depth 1 origin dc7107bc0f80aba5c9ad6a2aa1d0a2538f95f87a
           git -C "$SOURCE_DECK_DIR" checkout --detach FETCH_HEAD
       - run: pnpm --filter @academy/web build
       - name: Start reference, development fixture, and production preview

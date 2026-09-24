@@ -68,7 +68,7 @@
 .academy-deck .tools button{font-size:.85rem}
 .academy-deck .presenter-btn{background:linear-gradient(105deg,var(--aether-purple),var(--aether-orange));color:#fff;border-color:transparent;font-weight:700;text-shadow:0 1px 1px rgba(0,0,0,.25)}
 
-.academy-deck #stage{width:min(1280px,92vw);margin:auto;flex:1;padding:clamp(1.2rem,4vh,3rem) 0;display:flex;flex-direction:column;justify-content:center;outline:none;border-radius:22px;transition:box-shadow .25s,border-color .25s}
+.academy-deck #stage{width:min(1280px,92vw);margin:auto;flex:1;padding:clamp(1.2rem,4vh,3rem) 0;display:flex;flex-direction:column;justify-content:center;outline:none;border-radius:22px;transition:box-shadow .25s,border-color .25s;overflow-x:clip}
 .academy-deck .heading{margin-bottom:1.5rem;animation:enter .45s both}
 .academy-deck .heading-top{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;flex-wrap:wrap}
 .academy-deck .eyebrow{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin:0 0 .8rem}
@@ -531,7 +531,7 @@
 .academy-deck .spot .card:not(.spot-on){opacity:.4;filter:grayscale(.6)}
 .academy-deck .spot .card.spot-on{border-top-color:var(--aether-orange);transform:scale(1.04);box-shadow:0 0 0 3px color-mix(in srgb,var(--aether-orange) 55%,transparent),0 14px 34px rgba(0,0,0,.4)}
 /* ---- slide 17: row pairs ---- */
-.academy-deck .pairs{display:grid;grid-template-columns:minmax(0,1fr) clamp(40px,6vw,90px) minmax(0,1fr);gap:.7rem 0;align-items:stretch;cursor:pointer}
+.academy-deck .pairs{display:grid;grid-template-columns:minmax(0,1fr) clamp(40px,6vw,90px) minmax(0,1fr);gap:.7rem 0;align-items:stretch;cursor:pointer;overflow-x:clip}
 .academy-deck .pair-head{margin:0 0 .3rem;font-size:clamp(1.2rem,1.8vw,1.6rem);font-weight:900;padding:.2rem 1.1rem;border-bottom:3px solid var(--cyan)}
 .academy-deck .pair-head:nth-child(3){border-bottom-color:var(--aether-orange)}
 .academy-deck .pair-l,.academy-deck .pair-r{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.8rem 1.1rem;font-weight:700;font-size:clamp(1rem,1.35vw,1.2rem);display:flex;align-items:center;transition:opacity .45s,transform .45s}
