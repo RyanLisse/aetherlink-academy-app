@@ -48,6 +48,7 @@ interface VisualData {
   readonly pillarIcons: boolean | undefined;
   readonly stagger: string | undefined;
   readonly hero: number | undefined;
+  readonly keynote: boolean | undefined;
   readonly popOut: number | undefined;
   readonly chipIcons: ReadonlyArray<string> | undefined;
   readonly chipGrid: number | undefined;
@@ -258,7 +259,7 @@ const parseVisual = (value: JsonValue | undefined): VisualData | undefined => {
     place: literal(value.place, ['left', 'beside', 'under', 'popout', 'nest', 'key', 'slot', 'stamps', 'aside', 'stack', 'pointer', 'timeline']),
     tool: literal(value.tool, ['map', 'arm', 'toolbox', 'thought']), target: stringValue(value.target),
     cardArt: typedCardArt, pillarIcons: booleanValue(value.pillarIcons), stagger: stringValue(value.stagger),
-    hero: numberValue(value.hero), popOut: numberValue(value.popOut), chipIcons: stringArray(value.chipIcons), chipGrid: numberValue(value.chipGrid),
+    hero: numberValue(value.hero), keynote: booleanValue(value.keynote), popOut: numberValue(value.popOut), chipIcons: stringArray(value.chipIcons), chipGrid: numberValue(value.chipGrid),
     keyLine: numberValue(value.keyLine), stamp: stringValue(value.stamp), reveal: literal(value.reveal, ['click']), faces: stringArray(value.faces), noReact: booleanValue(value.noReact),
     quiz: quizValue === undefined ? undefined : {answer: quizValue}, countdown: numberValue(value.countdown), spotlight: numberValue(value.spotlight), pointAt: numberValue(value.pointAt), pointH: numberValue(value.pointH), pairs: booleanValue(value.pairs), buttons: booleanValue(value.buttons),
     term: terms, gateLabel: stringValue(value.gateLabel), promptMarks: stringArray(value.promptMarks), stepKeys: booleanValue(value.stepKeys), humanStep: numberValue(value.humanStep),
@@ -917,6 +918,7 @@ function buildOpener(stage: HTMLElement, main: HTMLElement, s: Slide, v: VisualD
 
 function renderVisual(stage: HTMLElement, body: HTMLElement, main: HTMLElement, s: Slide, v: VisualData | undefined, advanceReveal?: (step?: number) => void): void {
   if (!v) return;
+  if (v.keynote) { stage.closest('.academy-deck')?.classList.add('keynote'); main.classList.add('keynote-main'); body.classList.add('keynote-body'); }
   if (v.art === 'timeline') main.prepend(ART.timeline());
   if (v.cardArt) { const cards = main.querySelectorAll<HTMLElement>('.card'); Object.entries(v.cardArt).forEach(([index, kind]) => { const card = cards[Number(index)]; if (card) card.append(ART[kind]()); }); }
   if (v.pillarIcons) main.querySelectorAll<HTMLElement>('.pillar').forEach((p, i) => p.prepend(svg('0 0 24 24', PILLAR_ICONS[i % 4] || '', 'pillar-icon')));
