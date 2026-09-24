@@ -1,59 +1,50 @@
 # Vercel Academy takedown plan
 
-Last updated: 2026-09-20 (Europe/Amsterdam)
+Last updated 2026-09-21 (Europe/Amsterdam).
 
-**Status:** Hetzner is live and is now SoT. The in-repo cutover has landed — `vercel.json` removed, docs/workflows repointed at Hetzner. The Vercel-side steps below are the operator's and are tracked as done/not-done there, not here.
+This is an operator checklist for the Academy Vercel project. It is intentionally separate from the domain work. No Vercel project is deleted by this change, and no takedown is accepted until Ryan gives an explicit GO after the Hetzner gates pass.
 
-**Goal:** Retire the **AetherLink Academy** app from Vercel Hobby once Hetzner is proven SoT.  
-**Non-goal:** Deleting the whole Vercel account or breaking `aetherlink.ai` / `www` marketing if those still use Vercel.
+## Current state
 
-## Why
-
-Vercel Hobby paused this project after Fluid Active CPU / related limits (`DEPLOYMENT_DISABLED`). Academy now runs on Hetzner sibling Docker with GitHub Actions rebuilds on `main`.
-
-## SoT after cutover
+PR21 retired Vercel as the Academy runtime and established Hetzner plus GitHub Actions as the runtime and deployment SoT. The production DNS and HTTPS gates for the custom hostname are still open. `academy.aetherlink.ai` currently returns NXDOMAIN, so any remaining Vercel Academy project or URL must remain recoverable until the Hetzner hostname, TLS, browser live-sync, OAuth, and MCP checks are evidenced. The local Caddy verification in [`docs/domain-godaddy.md`](domain-godaddy.md) does not satisfy these production gates.
 
 | Layer | SoT |
 | --- | --- |
-| Code | `https://github.com/RyanLisse/aetherlink-academy-app` `main` |
-| Runtime | Hetzner CX33 `aetherlink-academy` — `http://91.99.78.17:4317` (later `https://academy.aetherlink.ai`) |
-| Deploy | GitHub Actions → SSH → `rebuild-from-git.sh` |
-| DNS (domain) | GoDaddy (`ns73`/`ns74.domaincontrol.com`) |
+| Code | `main` in `RyanLisse/aetherlink-academy-app` |
+| Runtime | Hetzner CX33 `aetherlink-academy` |
+| Deploy | GitHub Actions and the host rebuild script |
+| DNS | GoDaddy. The Academy record is still pending |
 
-## Leave alone
+Leave the apex `aetherlink.ai`, `www`, MX, TXT, SPF, and DMARC records alone. Other Vercel projects are outside this action.
 
-- Apex `@` A → `76.76.21.21` (Vercel)
-- `www` CNAME → `cname.vercel-dns.com`
-- Any non-Academy Vercel projects under the same team
+## Preconditions for Ryan GO
 
-## Preconditions
+Record the source revision and evidence links before touching Vercel.
 
-1. Live health: `GET http://91.99.78.17:4317/game/health` → `{"ok":true,...}`
-2. Thin-slice (or current workshop tip) smoke-tested on Hetzner
-3. Ryan GO to archive/delete the Academy Vercel project
-4. Optional: `academy.aetherlink.ai` HTTPS live (see `docs/domain-godaddy.md`)
+- `dig +short academy.aetherlink.ai A` returns `91.99.78.17` externally.
+- `curl -fsS https://academy.aetherlink.ai/game/health` returns `ok: true` and `proof: true`.
+- The browser classroom proves WebSocket and SSE updates through HTTPS.
+- Facilitator Google OAuth callback succeeds on `https://academy.aetherlink.ai/auth/google/callback`.
+- Participant MCP connects to `https://academy.aetherlink.ai/mcp`.
+- The Hetzner GitHub Actions rebuild has a known source SHA and rollback operator.
 
-## Steps (Ryan / operator in Vercel UI)
+Until every item is recorded, the production action is **OPEN**. Do not infer acceptance from a successful local build or a `200` response from a different host.
 
-1. Open Vercel → team that owns Academy → find project(s) for `aetherlink-academy-app`.
-2. Settings → Domains: remove Academy-only hostnames if any still listed.
-3. Settings → Git: disconnect auto-deploy from GitHub **or** delete project after confirming no other app shares it.
-4. Archive or **Delete** the Academy project only.
-5. In GitHub repo settings: drop Vercel GitHub App checks as required if they still fail red on PRs (optional hygiene).
-6. Confirm next `main` push still runs **Hetzner** Actions successfully.
-7. Update `progress.md`: mark Vercel Academy taken down.
+## Takedown steps. Ryan or Vercel operator after GO
 
-## Verify after takedown
+1. Open the Vercel team that owns the Academy project and identify only the Academy project. Do not touch the marketing project or the apex and `www` domains.
+2. Remove Academy-only custom hostnames from the project if they are still attached.
+3. Disconnect the Git integration if the project is being retained for rollback. If the project is being deleted, verify the project name and team one more time.
+4. Archive or delete only the Academy project after Ryan’s explicit GO. This document does not authorize that action.
+5. Confirm the next `main` push still uses the Hetzner Actions rebuild path.
+6. Record the project action, timestamp, operator, and resulting old URL behavior in release evidence.
 
-- Hetzner health still green
-- No one is sharing a Vercel Academy URL as the workshop link
-- Marketing site `aetherlink.ai` / `www` still resolves if you still use them
+The apex `aetherlink.ai`, `www`, MX, TXT, SPF, and DMARC records remain outside this task.
+
+## Verification after takedown
+
+Check the Academy hostname health, browser live-sync, Google login, and MCP again. Check that the marketing hostname still serves its own application. An old Academy URL may redirect or return `410`; record which behavior was configured rather than assuming one.
 
 ## Rollback
 
-Re-import the GitHub repo into Vercel and deploy `main` only with explicit Ryan GO (emergency). Prefer fixing Hetzner instead.
-
-## Related
-
-- Domain cutover: `docs/domain-godaddy.md`
-- Hosting packet: `/workspace/handoffs/2026-09-16-aetherlink-academy-hetzner/`
+Re-import the repository into Vercel only with a new explicit Ryan GO. Prefer fixing the Hetzner route. Keep the GitHub repository and Hetzner deployment path intact.
