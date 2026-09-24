@@ -10,6 +10,8 @@ describe('WebMcpRegistration', () => {
     expect(html).toContain('verified');
     expect(html).toContain('data-testid="webmcp-registration"');
     expect(html).toContain('Geen chatvenster');
+    expect(html).toContain('data-testid="connect-claude-copy"');
+    expect(html).toContain('Connect your Claude');
   });
 
   test('participant tool names match AET-44 set', () => {
@@ -20,6 +22,7 @@ describe('WebMcpRegistration', () => {
         'get_current_slide',
         'get_lesson',
         'get_my_progress',
+        'get_screen_state',
         'open_hint',
         'submit_evidence',
       ].sort(),

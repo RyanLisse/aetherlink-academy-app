@@ -73,6 +73,9 @@ export function WebMcpRegistration(props: WebMcpRegistrationProps) {
         {supported && registered.length > 0 && <span> · {registered.length} tools</span>}
       </p>
       <p className="webmcp-note">Geen chatvenster, geen API-key, geen modelaanroep in deze view.</p>
+      <p className="webmcp-connect-claude" data-testid="connect-claude-copy">
+        Connect your Claude — coach already knows where you are.
+      </p>
     </div>
   );
 }

@@ -74,3 +74,7 @@ Tech SDK badge apart — pas na LIS-65 starters.
 **Don't:** secrets plakken.  
 **Don't:** Day packs vervangen.  
 **Don't:** metrics verzinnen (“97% agreement”) — alleen UI-waarden voorlezen.
+
+## BYO Claude (MCP)
+
+Connect your Claude — coach already knows where you are. Platform chat stays FAQ/nav only.

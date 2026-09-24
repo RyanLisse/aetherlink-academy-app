@@ -15,6 +15,7 @@ import {
 export const PARTICIPANT_MCP_TOOLS = [
   'get_lesson',
   'get_current_slide',
+  'get_screen_state',
   'get_assignment',
   'submit_evidence',
   'open_hint',
@@ -35,6 +36,7 @@ const Empty = z.object({}).passthrough();
 const inputSchemas: Record<string, z.ZodType> = {
   get_lesson: z.object({lessonId: z.string()}),
   get_current_slide: Empty,
+  get_screen_state: Empty,
   get_assignment: z.object({assignmentId: z.string().optional()}),
   submit_evidence: z.object({
     requestId: z.string().min(1).max(100),

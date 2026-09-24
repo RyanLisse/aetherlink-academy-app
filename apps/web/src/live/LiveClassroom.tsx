@@ -118,7 +118,14 @@ export function LiveClassroom(props: LiveClassroomProps) {
   };
 
   return (
-    <div className={`live-classroom role-${props.role} mode-${props.mode}`} data-testid="live-classroom" data-connection={connection}>
+    <div
+      className={`live-classroom role-${props.role} mode-${props.mode}`}
+      data-testid="live-classroom"
+      data-connection={connection}
+      data-slide-index={index}
+      data-lesson={presenter?.lesson ?? ""}
+      data-route={props.role === "participant" ? `/live/${props.roomId}` : undefined}
+    >
       {notice && (
         <div className="live-notice" role="status" data-testid="live-notice">
           {notice}
