@@ -30,6 +30,44 @@ const define = (term: string, sentence: string, notes: string, path?: string): R
 
 export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
 
+/* ========== Opening ========== */
+
+{ // Welcome
+  lessonId: LESSON,
+  title: "Welcome to Workshop 5",
+  kicker: "Workshop 5 · AI-native SDLC",
+  type: "context",
+  visual: { keynote: true, opener: "welcome" },
+  notes: "On screen while people walk in. One sentence of welcome; today we build one agent, a daily brief, and walk the whole AI-native SDLC with it."
+},
+
+{ // Plan of the day
+  lessonId: LESSON,
+  title: "The plan for today",
+  kicker: "Workshop 5 · the day",
+  type: "context",
+  visual: { keynote: true, opener: "showcase", image: "workshop-5/agenda-dark.png", imageLink: "Morning · afternoon" },
+  notes: "Morning: why AI-native and the loop, then SOLO 1–4 (Plan, Design, Build the plan, the first page). Break after SOLO 4 (as in the lab's SOLO.md). Afternoon: SOLO 5–7 (the agent, evidence, the gate), then Maintain: the next intent. Each SOLO runs look → definition → demo → your turn; the minutes are the hands-on part."
+},
+
+{ // Warm-up question
+  lessonId: LESSON,
+  title: "What does your SDLC look like today?",
+  kicker: "Warm-up · your turn",
+  type: "context",
+  visual: { keynote: true },
+  notes: "Ask the room, 5 minutes. Prompts if it stays quiet: Where do requirements live today — tickets, docs, heads? Who writes the tests, and when? How long from idea to production? Where does review happen, and who can say no? Collect three answers on the board; we map them onto the table on the next slide."
+},
+
+{ // Traditional vs AI-native, per stage
+  lessonId: LESSON,
+  title: "The shifts across the six stages",
+  kicker: "Explain · traditional vs AI-native",
+  type: "concept",
+  visual: { keynote: true, opener: "showcase", image: "workshop-5/shifts-dark.png", imageLink: "Traditional SDLC · AI-native SDLC" },
+  notes: "Explain. The two ends of the spectrum, stage by stage; most organizations sit somewhere between the two columns. Map the room's answers from the warm-up onto the left column, then point at the right column: that is what we build today. Source: Anthropic, The AI-native SDLC playbook."
+},
+
 /* ========== Framing ========== */
 
 { // Traditional line vs AI-native loop

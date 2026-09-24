@@ -31,15 +31,19 @@ describe('AET-77 workshop 5 ultra-minimal AI-native SDLC deck', () => {
     'progress.md',
   ] as const;
 
-  it('opens on the line-vs-loop diagram and closes on the recap', () => {
+  it('opens welcome → plan of the day → warm-up → shifts, and closes on the recap', () => {
     expect(slides).toHaveLength(workshop5SourceSlides.length);
     expect(slides.every((s) => s.lessonId === 'workshop-5')).toBe(true);
-    expect(slides[0]?.title).toMatch(/line vs the loop/i);
+    expect(visualOf(workshop5SourceSlides[0]!).opener).toBe('welcome');
+    expect(String(visualOf(workshop5SourceSlides[1]!).image)).toBe('workshop-5/agenda-dark.png');
+    expect(slides[2]?.title).toMatch(/your SDLC look like today/i);
+    expect(String(visualOf(workshop5SourceSlides[3]!).image)).toBe('workshop-5/shifts-dark.png');
+    expect(slides[4]?.title).toMatch(/line vs the loop/i);
     expect(slides[slides.length - 1]?.title).toMatch(/Seven files|One brief|One gate/i);
   });
 
-  it('slide 1 is the Academy-dark line vs loop diagram', () => {
-    const face = workshop5SourceSlides[0]!;
+  it('the line vs loop face is the Academy-dark diagram', () => {
+    const face = workshop5SourceSlides.find((s) => String(visualOf(s).image ?? '').includes('line-vs-loop'))!;
     const visual = visualOf(face);
     expect(visual.keynote).toBe(true);
     expect(visual.opener).toBe('showcase');
@@ -48,7 +52,7 @@ describe('AET-77 workshop 5 ultra-minimal AI-native SDLC deck', () => {
   });
 
   it('the AI-native SDLC definition follows the loop and says loop + AI at each point', () => {
-    const def = workshop5SourceSlides[1]!;
+    const def = workshop5SourceSlides.find((s) => kicker(s) === 'AI-native SDLC')!;
     expect(kicker(def)).toBe('AI-native SDLC');
     expect(visualOf(def).opener).toBe('definition');
     expect(String(def.title)).toMatch(/loop/i);

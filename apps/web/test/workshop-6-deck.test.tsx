@@ -140,7 +140,7 @@ describe('AET-81 workshop 6 ultra-minimal eigen-opdracht thin-slice deck', () =>
     expect(workshop3SourceSlides.every((s) => s.lessonId === 'workshop-3')).toBe(true);
     expect(workshop4SourceSlides.length).toBe(16);
     expect(workshop4SourceSlides.every((s) => s.lessonId === 'workshop-4')).toBe(true);
-    expect(workshop5SourceSlides.length).toBe(44);
+    expect(workshop5SourceSlides.length).toBe(48);
     expect(workshop5SourceSlides.every((s) => s.lessonId === 'workshop-5')).toBe(true);
   });
 });
