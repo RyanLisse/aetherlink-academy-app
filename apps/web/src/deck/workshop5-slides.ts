@@ -9,7 +9,21 @@ export const workshop5SourceSlides: ReadonlyArray<Record<string, unknown>> = [
 
 /* ========== Framing ========== */
 
-{ // 1 — A1 lab vehicle
+{ // 1 — Traditional line vs AI-native loop (PRODUCT-ACCEPT slide1 line-loop)
+  lessonId: "workshop-5",
+  title: "The line vs the loop",
+  kicker: "Workshop 5 · AI-native SDLC",
+  type: "concept",
+  visual: {
+    keynote: true,
+    opener: "showcase",
+    image: "workshop-5/line-vs-loop-dark.png",
+    imageLink: "Traditional — the line · AI-native — the loop"
+  },
+  notes: "Face = Traditional line vs AI-native loop diagram (Academy-dark remake). Captions stay in notes — no essay on the face. Left: Plan→…→Maintain as a vertical line (one slow loop-back = a new release). Right: same stages as a Claude-centered clockwise loop — hours, not weeks; humans above the loop instigate, direct, govern. Source layout: CDN 6a8858c2… / cached w5-slide1-source.png. Next face: clone the lab vehicle."
+},
+
+{ // 2 — A1 lab vehicle (moved from slide 1; keep loud early)
   lessonId: "workshop-5",
   title: "Clone the lab. Empty main on purpose.",
   kicker: "Workshop 5 · vehicle",

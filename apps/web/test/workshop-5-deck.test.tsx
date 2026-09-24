@@ -28,11 +28,12 @@ describe('AET-77 workshop 5 AI-native SDLC deck', () => {
   ] as const;
 
   it('ships workshop-5 slides with Apple + through-line + pedagogy rhythm', () => {
-    expect(workshop5SourceSlides).toHaveLength(33);
-    expect(slides).toHaveLength(33);
+    expect(workshop5SourceSlides).toHaveLength(34);
+    expect(slides).toHaveLength(34);
     expect(slides.every((s) => s.lessonId === 'workshop-5')).toBe(true);
-    expect(slides[0]?.title).toMatch(/Clone the lab|Empty main/i);
-    expect(slides[32]?.title).toBe('Recap + Proof');
+    expect(slides[0]?.title).toMatch(/line vs the loop|Traditional|AI-native/i);
+    expect(slides[1]?.title).toMatch(/Clone the lab|Empty main/i);
+    expect(slides[33]?.title).toBe('Recap + Proof');
   });
 
   it('highlights the eleven required definition slides', () => {
@@ -41,10 +42,20 @@ describe('AET-77 workshop 5 AI-native SDLC deck', () => {
     }
   });
 
-  it('A1: opening face carries the lab vehicle URL', () => {
-    const opening = workshop5SourceSlides[0]!;
+  it('slide 1 is Academy-dark line vs loop diagram', () => {
+    const face = workshop5SourceSlides[0]!;
+    const visual = visualOf(face);
+    expect(visual.keynote).toBe(true);
+    expect(visual.opener).toBe('showcase');
+    expect(String(visual.image ?? '')).toMatch(/workshop-5\/line-vs-loop-dark\.png/);
+    expect(String(face.notes ?? '')).toMatch(/Traditional|line|loop|Claude/i);
+  });
+
+  it('A1: lab vehicle stays loud on slide 2 (immediate next face)', () => {
+    const opening = workshop5SourceSlides[1]!;
     expect(JSON.stringify(opening)).toMatch(/aetherlink-daily-brief-lab-s1/);
     expect(String(opening.notes ?? '')).toMatch(/main is empty|Empty main|empty main/i);
+    expect(String(opening.title ?? '')).toMatch(/Clone the lab|Empty main/i);
   });
 
   it('A3: artifact-chain uses lab filenames', () => {
