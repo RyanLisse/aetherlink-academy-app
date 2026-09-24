@@ -27,12 +27,12 @@ describe('AET-77 workshop 5 AI-native SDLC deck', () => {
     'progress.md',
   ] as const;
 
-  it('ships workshop-5 slides from the ACCEPT outline + definition addenda', () => {
-    expect(workshop5SourceSlides).toHaveLength(27);
-    expect(slides).toHaveLength(27);
+  it('ships workshop-5 slides with Apple + through-line + pedagogy rhythm', () => {
+    expect(workshop5SourceSlides).toHaveLength(33);
+    expect(slides).toHaveLength(33);
     expect(slides.every((s) => s.lessonId === 'workshop-5')).toBe(true);
-    expect(slides[0]?.title).toMatch(/Clone the lab|aetherlink-daily-brief-lab-s1|Empty main/i);
-    expect(slides[26]?.title).toBe('Recap + Proof');
+    expect(slides[0]?.title).toMatch(/Clone the lab|Empty main/i);
+    expect(slides[32]?.title).toBe('Recap + Proof');
   });
 
   it('highlights the eleven required definition slides', () => {
@@ -43,14 +43,12 @@ describe('AET-77 workshop 5 AI-native SDLC deck', () => {
 
   it('A1: opening face carries the lab vehicle URL', () => {
     const opening = workshop5SourceSlides[0]!;
-    const blob = JSON.stringify(opening);
-    expect(blob).toMatch(/aetherlink-daily-brief-lab-s1/);
+    expect(JSON.stringify(opening)).toMatch(/aetherlink-daily-brief-lab-s1/);
     expect(String(opening.notes ?? '')).toMatch(/main is empty|Empty main|empty main/i);
   });
 
   it('A3: artifact-chain uses lab filenames', () => {
     const chain = workshop5SourceSlides.find((s) => s.title === 'The artifact chain');
-    expect(chain).toBeTruthy();
     const labels = (Array.isArray(chain?.items) ? chain!.items : []).map((item) =>
       String((item as {label?: string}).label ?? ''),
     );
@@ -65,8 +63,26 @@ describe('AET-77 workshop 5 AI-native SDLC deck', () => {
     ]);
   });
 
-  it('A2: every SOLO face is SOLO N/7 + one lab path chip + short prompt', () => {
+  it('pedagogy: seven uitleg→voordoen→zelf-doen cycles (no defs-wall then assignments-wall)', () => {
+    const demos = workshop5SourceSlides.filter((s) => String(s.kicker ?? '').startsWith('Voordoen'));
+    expect(demos).toHaveLength(7);
     expect(practice).toHaveLength(7);
+    // Each demo immediately precedes its SOLO practice
+    for (let n = 1; n <= 7; n++) {
+      const demoIdx = workshop5SourceSlides.findIndex((s) => String(s.kicker ?? '') === `Voordoen · SOLO ${n}`);
+      const soloIdx = workshop5SourceSlides.findIndex((s) => String(s.kicker ?? '').startsWith(`SOLO ${n} / 7`));
+      expect(demoIdx, `demo SOLO ${n}`).toBeGreaterThanOrEqual(0);
+      expect(soloIdx, `solo ${n}`).toBe(demoIdx + 1);
+    }
+    // First practice is not after a contiguous wall of all 11 defs
+    const firstPractice = workshop5SourceSlides.findIndex((s) => s.type === 'practice');
+    const defsBeforeFirst = workshop5SourceSlides
+      .slice(0, firstPractice)
+      .filter((s) => DEF_TITLES.includes(String(s.title) as (typeof DEF_TITLES)[number]));
+    expect(defsBeforeFirst.length).toBeLessThan(11);
+  });
+
+  it('A2: every SOLO face is SOLO N/7 + one lab path chip + short prompt', () => {
     const expectedPaths = [
       'intent.md',
       'docs/spec.md',
@@ -78,7 +94,7 @@ describe('AET-77 workshop 5 AI-native SDLC deck', () => {
     ];
     practice.forEach((slide, i) => {
       const n = i + 1;
-      expect(String(slide.kicker ?? ''), String(slide.title)).toBe(`SOLO ${n} / 7`);
+      expect(String(slide.kicker ?? ''), String(slide.title)).toMatch(new RegExp(`^SOLO ${n} / 7`));
       expect(String(slide.title).length, String(slide.title)).toBeGreaterThan(10);
       const cards = Array.isArray(slide.cards) ? slide.cards : [];
       expect(cards).toHaveLength(1);
@@ -96,7 +112,7 @@ describe('AET-77 workshop 5 AI-native SDLC deck', () => {
       expect(slide.subtitle, String(slide.title)).toBeUndefined();
       const cards = Array.isArray(slide.cards) ? slide.cards : [];
       expect(cards.length, String(slide.title)).toBeLessThanOrEqual(1);
-      expect(String(slide.kicker ?? ''), String(slide.title)).toMatch(/Definition|lab|SOLO|root|docs\/|gate|slash|agent|append/i);
+      expect(String(slide.kicker ?? ''), String(slide.title)).toMatch(/Definition|lab|SOLO|root|docs\/|gate|slash|agent|append|Uitleg/i);
     }
   });
 
@@ -111,6 +127,7 @@ describe('AET-77 workshop 5 AI-native SDLC deck', () => {
       expect(typeof slide.timer, String(slide.title)).toBe('number');
       expect(notes.toLowerCase()).toMatch(/checklist:|check:|gate:/);
       expect(notes, String(slide.title)).toMatch(/Open lab path:/i);
+      expect(notes, String(slide.title)).toMatch(/Zelf doen/i);
     }
   });
 
