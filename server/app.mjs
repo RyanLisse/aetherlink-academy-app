@@ -201,6 +201,17 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
   if(!existsSync(index))return res.status(503).type('text').send('arcade-lab not built');
   return res.sendFile(index);
  });
+ // apps/web SPA (Classroom / deck / workshop / lesson / live) — AET-75+ routes live in apps/web, not root dist/
+ const webDist=path.join(root,'apps/web/dist');
+ const webIndex=path.join(webDist,'index.html');
+ const isWebSpaPath=p=>p==='/deck'||p.startsWith('/classroom/')||p.startsWith('/workshop/')||p==='/lesson'||p.startsWith('/lesson/')||p.startsWith('/live/');
+ app.use(express.static(webDist,{index:false,fallthrough:true}));
+ app.use((req,res,next)=>{
+  if(req.method!=='GET'&&req.method!=='HEAD')return next();
+  if(!isWebSpaPath(req.path))return next();
+  if(!existsSync(webIndex))return res.status(503).type('text').send('apps/web not built');
+  return res.sendFile(webIndex);
+ });
  app.use(express.static(path.join(root,'dist')));app.get('/',(_req,res)=>res.sendFile(path.join(root,'dist/index.html')));app.use((req,res,next)=>{if(req.method==='GET'&&(req.path==='/arcade'||req.path.startsWith('/arcade/')))return res.sendFile(path.join(root,'dist/index.html'));return next();});
  app.use((e,req,res,_next)=>{if(!e.status)console.error('[academy] unhandled',{method:req.method,path:req.path,message:e?.message,stack:e?.stack});return res.status(e.status||500).json({error:e.status?e.message:'Onverwachte serverfout. Probeer opnieuw; je invoer blijft staan.'});});
  const server=http.createServer(app);server.on('upgrade',async(req,socket,head)=>{try{const {r}=await browser(req);const url=new URL(req.url,'http://localhost');if(req.headers.origin&&req.headers.origin!==`http://${req.headers.host}`&&req.headers.origin!==`https://${req.headers.host}`)fail(403,'Origin');if(url.pathname!=='/ws'||url.searchParams.get('slug')!==r.proof.slug)fail(403,'Kamer');proxy.ws(req,socket,head);}catch(e){console.warn('WS denied',new URL(req.url,'http://localhost').pathname,e.message);socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');socket.destroy();}});
