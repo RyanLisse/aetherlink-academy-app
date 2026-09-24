@@ -13,101 +13,123 @@ describe('AET-77 workshop 5 AI-native SDLC deck', () => {
       ? (s.visual as Record<string, unknown>)
       : {};
 
+  const DEF_TITLES = [
+    'AI-native SDLC',
+    'intent.md',
+    'spec.md',
+    'plan.md',
+    'skills',
+    'CLAUDE.md',
+    'hooks',
+    'MCP',
+    'subagents',
+    'workflows',
+    'progress.md',
+  ] as const;
+
   it('ships workshop-5 slides from the ACCEPT outline + definition addenda', () => {
     expect(workshop5SourceSlides).toHaveLength(27);
     expect(slides).toHaveLength(27);
     expect(slides.every((s) => s.lessonId === 'workshop-5')).toBe(true);
-    expect(slides[0]?.title).toBe('Workshop 5 — AI-native SDLC');
+    expect(slides[0]?.title).toMatch(/Clone the lab|aetherlink-daily-brief-lab-s1|Empty main/i);
     expect(slides[26]?.title).toBe('Recap + Proof');
   });
 
-  it('leaves slides 1–4 titles intact', () => {
-    expect(titles.slice(0, 4)).toEqual([
-      'Workshop 5 — AI-native SDLC',
-      'Code is no longer the bottleneck',
-      'The artifact chain',
-      'Intent is a committed artifact',
-    ]);
-  });
-
-  it('highlights the nine required definition slides', () => {
-    for (const required of [
-      'AI-native SDLC',
-      'intent.md',
-      'spec.md',
-      'plan.md',
-      'skills',
-      'CLAUDE.md',
-      'hooks',
-      'MCP',
-      'subagents',
-      'workflows',
-      'progress.md',
-    ]) {
+  it('highlights the eleven required definition slides', () => {
+    for (const required of DEF_TITLES) {
       expect(titles, required).toContain(required);
     }
   });
 
-  it('maps SOLO assignments and keeps the artifact-chain diagram', () => {
-    expect(slides[2]?.title).toBe('The artifact chain');
-    expect(practice).toHaveLength(7);
-    for (const slide of practice) {
-      expect(String(slide.kicker ?? ''), String(slide.title)).toMatch(/^SOLO [1-7]$/);
-      expect(String(slide.notes ?? ''), String(slide.title)).toMatch(/Map:\s*SOLO step/i);
-    }
+  it('A1: opening face carries the lab vehicle URL', () => {
+    const opening = workshop5SourceSlides[0]!;
+    const blob = JSON.stringify(opening);
+    expect(blob).toMatch(/aetherlink-daily-brief-lab-s1/);
+    expect(String(opening.notes ?? '')).toMatch(/main is empty|Empty main|empty main/i);
   });
 
-  it('applies Apple keynote faces from slide 5 onward', () => {
-    const defs = workshop5SourceSlides.filter((s) =>
-      [
-        'AI-native SDLC',
-        'intent.md',
-        'spec.md',
-        'plan.md',
-        'skills',
-        'CLAUDE.md',
-        'hooks',
-        'MCP',
-        'subagents',
-        'workflows',
-        'progress.md',
-      ].includes(String(s.title)),
+  it('A3: artifact-chain uses lab filenames', () => {
+    const chain = workshop5SourceSlides.find((s) => s.title === 'The artifact chain');
+    expect(chain).toBeTruthy();
+    const labels = (Array.isArray(chain?.items) ? chain!.items : []).map((item) =>
+      String((item as {label?: string}).label ?? ''),
     );
+    expect(labels).toEqual([
+      'intent.md',
+      'docs/spec.md',
+      'docs/plan.md',
+      'diff + tests',
+      'PR review',
+      'docs/gate.md',
+      'new intent.md',
+    ]);
+  });
+
+  it('A2: every SOLO face is SOLO N/7 + one lab path chip + short prompt', () => {
+    expect(practice).toHaveLength(7);
+    const expectedPaths = [
+      'intent.md',
+      'docs/spec.md',
+      'docs/plan.md',
+      'out/latest.html',
+      'src/agent.ts',
+      'docs/evidence.md',
+      'docs/gate.md',
+    ];
+    practice.forEach((slide, i) => {
+      const n = i + 1;
+      expect(String(slide.kicker ?? ''), String(slide.title)).toBe(`SOLO ${n} / 7`);
+      expect(String(slide.title).length, String(slide.title)).toBeGreaterThan(10);
+      const cards = Array.isArray(slide.cards) ? slide.cards : [];
+      expect(cards).toHaveLength(1);
+      expect(String((cards[0] as {body?: string}).body ?? '')).toBe(expectedPaths[i]);
+      expect(visualOf(slide).popOut, String(slide.title)).toBe(0);
+      expect(visualOf(slide).keynote, String(slide.title)).toBe(true);
+    });
+  });
+
+  it('A4: eleven defs stay Apple one-idea with lab-locus kickers', () => {
+    const defs = workshop5SourceSlides.filter((s) => DEF_TITLES.includes(String(s.title) as (typeof DEF_TITLES)[number]));
     expect(defs).toHaveLength(11);
-    for (const slide of [...defs, ...practice]) {
+    for (const slide of defs) {
       expect(visualOf(slide).keynote, String(slide.title)).toBe(true);
       expect(slide.subtitle, String(slide.title)).toBeUndefined();
       const cards = Array.isArray(slide.cards) ? slide.cards : [];
       expect(cards.length, String(slide.title)).toBeLessThanOrEqual(1);
-    }
-    // Opening slides stay non-keynote
-    for (const slide of workshop5SourceSlides.slice(0, 4)) {
-      expect(visualOf(slide).keynote, String(slide.title)).not.toBe(true);
+      expect(String(slide.kicker ?? ''), String(slide.title)).toMatch(/Definition|lab|SOLO|root|docs\/|gate|slash|agent|append/i);
     }
   });
 
-  it('keeps assignment faces to one large prompt + optional path chip', () => {
-    for (const slide of practice) {
-      expect(String(slide.title).length, String(slide.title)).toBeGreaterThan(10);
-      const cards = Array.isArray(slide.cards) ? slide.cards : [];
-      expect(cards).toHaveLength(1);
-      expect(visualOf(slide).popOut, String(slide.title)).toBe(0);
-    }
-  });
-
-  it('keeps timers/checklists off the projector face (presenter notes only)', () => {
-    expect(practice).toHaveLength(7);
+  it('A5: presenter notes keep timers/checklists and open lab path lines', () => {
     for (const slide of practice) {
       expect(slide.layout, String(slide.title)).not.toBe('exercise');
       expect(slide.steps, String(slide.title)).toBeUndefined();
       expect(slide.check, String(slide.title)).toBeUndefined();
       expect(slide.expected, String(slide.title)).toBeUndefined();
-      expect(String(slide.kicker ?? ''), String(slide.title)).not.toMatch(/\d+\s*min/i);
       const notes = String(slide.notes ?? '');
       expect(notes, String(slide.title)).toMatch(/Timer:\s*\d+\s*min/i);
       expect(typeof slide.timer, String(slide.title)).toBe('number');
       expect(notes.toLowerCase()).toMatch(/checklist:|check:|gate:/);
+      expect(notes, String(slide.title)).toMatch(/Open lab path:/i);
     }
+  });
+
+  it('A6: recap lists seven lab files and the lab repo name', () => {
+    const recap = workshop5SourceSlides[workshop5SourceSlides.length - 1]!;
+    expect(recap.title).toBe('Recap + Proof');
+    expect(String(recap.kicker ?? '')).toMatch(/aetherlink-daily-brief-lab-s1/);
+    const labels = (Array.isArray(recap.items) ? recap.items : []).map((item) =>
+      String((item as {label?: string}).label ?? ''),
+    );
+    expect(labels).toEqual([
+      'intent.md',
+      'docs/spec.md',
+      'docs/plan.md',
+      'out/latest.html',
+      'docs/evidence.md',
+      'docs/gate.md',
+      'PR open',
+    ]);
   });
 
   it('exposes Workshop 5 facilitator paths', () => {
