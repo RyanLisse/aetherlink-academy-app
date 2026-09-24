@@ -10,6 +10,7 @@ import {workshop5SourceSlides} from './deck/workshop5-slides.js';
 import {workshop3SourceSlides} from './deck/workshop3-slides.js';
 import {workshop4SourceSlides} from './deck/workshop4-slides.js';
 import {workshop6SourceSlides} from './deck/workshop6-slides.js';
+import {workshop7SourceSlides} from './deck/workshop7-slides.js';
 import {normalizeSlides} from './deck/normalize.js';
 import './deck/deck.css';
 
@@ -204,7 +205,7 @@ export function usePathname(): [string, (path: string) => void] {
 
 export function AppRoutes({children}: {readonly children?: ReactNode}) {
   const [pathname, navigate] = usePathname();
-  const deckLike = pathname === '/deck' || isClassroom1Path(pathname) || isWorkshop5Path(pathname) || isWorkshop3Path(pathname) || isWorkshop4Path(pathname) || isWorkshop6Path(pathname);
+  const deckLike = pathname === '/deck' || isClassroom1Path(pathname) || isWorkshop5Path(pathname) || isWorkshop3Path(pathname) || isWorkshop4Path(pathname) || isWorkshop6Path(pathname) || isWorkshop7Path(pathname);
   const connection = useConnection(fetchConnection, 5000, !deckLike);
   if (pathname === '/deck') return <DeckDemo slides={DECK_SLIDES} />;
   if (isClassroom1Path(pathname)) return <DeckDemo slides={CLASSROOM_1_SLIDES} />;
@@ -212,6 +213,7 @@ export function AppRoutes({children}: {readonly children?: ReactNode}) {
   if (isWorkshop3Path(pathname)) return <DeckDemo slides={WORKSHOP_3_SLIDES} />;
   if (isWorkshop4Path(pathname)) return <DeckDemo slides={WORKSHOP_4_SLIDES} />;
   if (isWorkshop6Path(pathname)) return <DeckDemo slides={WORKSHOP_6_SLIDES} />;
+  if (isWorkshop7Path(pathname)) return <DeckDemo slides={WORKSHOP_7_SLIDES} />;
   if (pathname.startsWith('/live/')) return <LiveRoute pathname={pathname} />;
   return (
     <>
@@ -246,6 +248,11 @@ export function isWorkshop6Path(pathname: string): boolean {
   return pathname === '/workshop/6' || pathname === '/lesson/workshop-6';
 }
 
+/** Facilitator Workshop 7 entry — eigen opdracht finish + present (AET-85). */
+export function isWorkshop7Path(pathname: string): boolean {
+  return pathname === '/workshop/7' || pathname === '/lesson/workshop-7';
+}
+
 const DECK_SLIDES = normalizeSlides(sourceSlides);
 /** Classroom 1 product route: Teaching Day 1 only (SoT slides 1–44).
  *  Headroom only (AET-86 backlog — do not build here): Arcade postMessage embed slot,
@@ -260,6 +267,8 @@ const WORKSHOP_3_SLIDES = normalizeSlides(workshop3SourceSlides);
 const WORKSHOP_4_SLIDES = normalizeSlides(workshop4SourceSlides);
 /** Workshop 6 product route: eigen opdracht thin slice (AET-81). Separate module — not Classroom/W5/W3/W4 cut. */
 const WORKSHOP_6_SLIDES = normalizeSlides(workshop6SourceSlides);
+/** Workshop 7 product route: eigen opdracht finish + present (AET-85). Separate module — not Classroom/W5/W3/W4/W6 cut. */
+const WORKSHOP_7_SLIDES = normalizeSlides(workshop7SourceSlides);
 function DeckDemo({slides}: {readonly slides: typeof DECK_SLIDES}) {
   useEffect(() => {
     const surfaces = [document.documentElement, document.body];
