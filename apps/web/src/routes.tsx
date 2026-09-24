@@ -6,6 +6,7 @@ import {SquadPanel} from './squad/SquadPanel.tsx';
 import {FacilitatorReleasePanel} from './release/FacilitatorReleasePanel.tsx';
 import {EvidencePanel, FacilitatorOverview} from './evidence/index.ts';
 import {sourceSlides} from './deck/slides.js';
+import {workshop5SourceSlides} from './deck/workshop5-slides.js';
 import {normalizeSlides} from './deck/normalize.js';
 import './deck/deck.css';
 
@@ -200,10 +201,11 @@ export function usePathname(): [string, (path: string) => void] {
 
 export function AppRoutes({children}: {readonly children?: ReactNode}) {
   const [pathname, navigate] = usePathname();
-  const deckLike = pathname === '/deck' || isClassroom1Path(pathname);
+  const deckLike = pathname === '/deck' || isClassroom1Path(pathname) || isWorkshop5Path(pathname);
   const connection = useConnection(fetchConnection, 5000, !deckLike);
   if (pathname === '/deck') return <DeckDemo slides={DECK_SLIDES} />;
   if (isClassroom1Path(pathname)) return <DeckDemo slides={CLASSROOM_1_SLIDES} />;
+  if (isWorkshop5Path(pathname)) return <DeckDemo slides={WORKSHOP_5_SLIDES} />;
   if (pathname.startsWith('/live/')) return <LiveRoute pathname={pathname} />;
   return (
     <>
@@ -218,12 +220,19 @@ export function isClassroom1Path(pathname: string): boolean {
   return pathname === '/classroom/1' || pathname === '/lesson/classroom-1';
 }
 
+/** Facilitator Workshop 5 entry — AI-native SDLC deck (AET-77). */
+export function isWorkshop5Path(pathname: string): boolean {
+  return pathname === '/workshop/5' || pathname === '/lesson/workshop-5';
+}
+
 const DECK_SLIDES = normalizeSlides(sourceSlides);
 /** Classroom 1 product route: Teaching Day 1 only (SoT slides 1–44).
  *  Headroom only (AET-86 backlog — do not build here): Arcade postMessage embed slot,
  *  typed quiz schema, cohort continuity ≠ room code.
  */
 const CLASSROOM_1_SLIDES = DECK_SLIDES.filter((slide) => slide.lessonId === 'teaching-day-1');
+/** Workshop 5 product route: AI-native SDLC day pack (AET-77). Separate module — not Classroom cut. */
+const WORKSHOP_5_SLIDES = normalizeSlides(workshop5SourceSlides);
 function DeckDemo({slides}: {readonly slides: typeof DECK_SLIDES}) {
   useEffect(() => {
     const surfaces = [document.documentElement, document.body];
