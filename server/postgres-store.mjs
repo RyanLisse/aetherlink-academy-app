@@ -275,10 +275,10 @@ export class PostgresStore {
   return member.rows[0].name;
  }
  async revokeCohortMember(cohortId,memberId) {
-  return this.transaction(async client=>{const cohort=await this.cohortRow(client,cohortId);await this.revokeMember(client,cohortId,memberId);return this.cohortSnapshot(client,cohort);});
+  return this.transaction(async client=>{const cohort=await this.cohortRow(client,cohortId,true);await this.revokeMember(client,cohortId,memberId);return this.cohortSnapshot(client,cohort);});
  }
  async reissueCohortCode(cohortId,memberId) {
-  return this.transaction(async client=>{await this.cohortRow(client,cohortId);const name=await this.revokeMember(client,cohortId,memberId);return {memberId,name,code:await this.issueCode(client,cohortId,memberId)};});
+  return this.transaction(async client=>{await this.cohortRow(client,cohortId,true);const name=await this.revokeMember(client,cohortId,memberId);return {memberId,name,code:await this.issueCode(client,cohortId,memberId)};});
  }
  async certificates(client,where,values) {
   const result=await client.query(`SELECT id,cohort_id,member_id,member_name,cohort_name,starts_at,ends_at,days,issued_at,issued_by,revoked_at FROM cohort_certificates WHERE ${where}`,values);
