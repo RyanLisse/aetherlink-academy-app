@@ -1,6 +1,7 @@
 import express from 'express';
 import {agentInstructions} from './agent-setup.mjs';
 import {dayProgress,debrief,exportDebrief} from './progress.mjs';
+import {findTask,taskStatus,taskTrail,reviewQueue,peerQueue,transition,reviewEvent,reviewerRole,authorizeTaskReview} from './proof-trail.mjs';
 import {applyBoardAction,boardMarkdown,boardView,parseBoard,roomDocument} from './debrief-board.mjs';
 import http from 'node:http';
 import httpProxy from 'http-proxy';
@@ -110,22 +111,30 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  async function commentQuote(r){const state=await proof.state(r);const quote=state.markdown.split('\n').find(line=>line.trim())?.replace(/^#+\s*/,'').trim();if(!quote)fail(409,'Het document heeft nog geen tekst voor commentaar.');return quote;}
  async function evidence(token,input){
   const {r,p,s}=await store.auth(token);if(!p)fail(403,'Alleen een deelnemer kan bewijs indienen.');
-  const key=text(input.requestId,100),fields={finding:text(input.finding),command:text(input.command,1000),observed:text(input.observed),limitation:text(input.limitation)};
+  const taskId=input.taskId==null||input.taskId===''?undefined:findTask(r.day,text(input.taskId,100)).id;
+  const key=text(input.requestId,100),fields={finding:text(input.finding),command:text(input.command,1000),observed:text(input.observed),limitation:text(input.limitation),...(taskId?{taskId}:{})};
   const fingerprint=hash(JSON.stringify(fields));
-  const reserved=await store.reserveRequest(token,'evidence',key,fingerprint,{value:{id:randomUUID(),requestId:key,personId:p.id,name:p.name,source:s.kind==='mcp'?'MCP-client':'Deelnemer',...fields,day:r.day,at:new Date().toISOString(),status:'pending'},actor:`${s.kind==='mcp'?'ai':'human'}:${p.name}:${p.id}`,quote:await commentQuote(r)},({p})=>{if(!p)fail(403,'Alleen deelnemers.');});
+  const canSubmit=({r,p},e)=>{if(e.taskId)transition(taskStatus(r,p.id,e.taskId,e.day),'submit');};
+  const reserved=await store.reserveRequest(token,'evidence',key,fingerprint,{value:{id:randomUUID(),requestId:key,personId:p.id,name:p.name,source:s.kind==='mcp'?'MCP-client':'Deelnemer',...fields,day:r.day,at:new Date().toISOString(),status:'pending'},actor:`${s.kind==='mcp'?'ai':'human'}:${p.name}:${p.id}`,quote:await commentQuote(r)},context=>{if(!context.p)fail(403,'Alleen deelnemers.');canSubmit(context,{taskId,day:context.r.day});});
   if(reserved.completed)return reserved.result;
   const {value:e,actor,quote}=reserved.intent;
-  await proof.comment(r,actor,`Bewijs ${e.id}\n${e.finding}\nControle: ${e.command}\nWaargenomen: ${e.observed}\nBeperking: ${e.limitation}\nStatus: ingediend, nog niet door een mens beoordeeld.`,quote,`${p.id}:${key}`);
-  return store.completeRequest(token,'evidence',key,fingerprint,({r,p})=>{r.evidence.push(e);if(p){p.progressByDay=p.progressByDay||{};const keyDay=String(e.day);const prev=p.progressByDay[keyDay]||{};p.progressByDay[keyDay]={...prev,evidenceCount:(prev.evidenceCount||0)+1,evidenceAt:e.at};}return e;});
+  await proof.comment(r,actor,`Bewijs ${e.id}\n${e.finding}\nControle: ${e.command}\nWaargenomen: ${e.observed}\nBeperking: ${e.limitation}\n${e.taskId?`Opdracht: ${e.taskId}\n`:''}Status: ingediend, nog niet door een mens beoordeeld.`,quote,`${p.id}:${key}`);
+  return store.completeRequest(token,'evidence',key,fingerprint,({r,p})=>{canSubmit({r,p},e);r.evidence.push(e);if(p){p.progressByDay=p.progressByDay||{};const keyDay=String(e.day);const prev=p.progressByDay[keyDay]||{};p.progressByDay[keyDay]={...prev,evidenceCount:(prev.evidenceCount||0)+1,evidenceAt:e.at};}return e;});
  }
  app.post('/game/evidence',wrap(async(req,res)=>{await browser(req);res.json(await evidence(token(req),req.body));}));
+ app.get('/game/tasks',wrap(async(req,res)=>{const {r,p}=await browser(req);if(!p)fail(403,'Alleen deelnemers hebben een eigen opdrachtenlijst.');res.json({day:r.day,tasks:taskTrail(r,p.id,r.day)});}));
+ app.get('/game/tasks/peer',wrap(async(req,res)=>{const {r,p}=await browser(req);if(!p)fail(403,'Alleen deelnemers beoordelen elkaars opdrachten.');res.json(peerQueue(r,p.id));}));
+ app.get('/game/tasks/queue',wrap(async(req,res)=>{const {r,s}=await browser(req);if(s.personId!=='facilitator')fail(403,'Alleen de facilitator ziet de beoordelingswachtrij.');res.json(reviewQueue(r));}));
  app.post('/game/review',wrap(async(req,res)=>{
-  const {r,s}=await browser(req);
+  const {r,s,p}=await browser(req);
   if(!['accepted','needs-work'].includes(req.body.status))fail(400,'Ongeldige beoordeling.');
   const fields={id:text(req.body.id,100),status:req.body.status,note:text(req.body.note)},key=text(req.body.requestId,100),fingerprint=hash(JSON.stringify(fields));
-  const saved=await store.reserveRequest(token(req),'review',key,fingerprint,{value:{...fields,by:s.personId,at:new Date().toISOString()},actor:`human:${s.personId}`,quote:await commentQuote(r)},context=>{reviewer(context);const e=context.r.evidence.find(e=>e.id===fields.id);if(!e)fail(404,'Bewijs niet gevonden.');if(e.personId===context.s.personId)fail(403,'Laat een andere deelnemer jouw bewijs beoordelen.');});if(saved.completed)return res.json(saved.result);
+  const sso=s.personId==='facilitator'?await store.facilitator(namedCookie(req,'academy-facilitator')):null;
+  const reviewedBy={role:reviewerRole(s),name:sso?.name||p?.name||s.displayName||'Facilitator',email:sso?.email||null};
+  const canReview=(context,e)=>{if(!e.taskId)return;authorizeTaskReview(context);transition(taskStatus(context.r,e.personId,e.taskId,e.day),reviewEvent(fields.status));};
+  const saved=await store.reserveRequest(token(req),'review',key,fingerprint,{value:{...fields,by:s.personId,reviewer:reviewedBy,at:new Date().toISOString()},actor:`human:${s.personId}`,quote:await commentQuote(r)},context=>{const e=context.r.evidence.find(e=>e.id===fields.id);if(!e?.taskId)reviewer(context);if(!e)fail(404,'Bewijs niet gevonden.');if(e.personId===context.s.personId)fail(403,'Laat een andere deelnemer jouw bewijs beoordelen.');canReview(context,e);});if(saved.completed)return res.json(saved.result);
   const {value:intent,actor,quote}=saved.intent;await proof.comment(r,actor,`Review bewijs ${intent.id}: ${intent.status}\n${intent.note}`,quote,`review:${s.personId}:${key}`);
-  res.json(await store.completeRequest(token(req),'review',key,fingerprint,context=>{const target=context.r.evidence.find(x=>x.id===intent.id);if(!target)fail(404,'Bewijs niet gevonden.');target.status=intent.status;target.review={by:intent.by,note:intent.note,at:intent.at};return target;}));
+  res.json(await store.completeRequest(token(req),'review',key,fingerprint,context=>{const target=context.r.evidence.find(x=>x.id===intent.id);if(!target)fail(404,'Bewijs niet gevonden.');canReview(context,target);target.status=intent.status;target.review={by:intent.by,reviewer:intent.reviewer,note:intent.note,at:intent.at};return target;}));
  }));
  app.post('/game/handoff',wrap(async(req,res)=>{
   const {r,s}=await browser(req);
@@ -148,7 +157,7 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  app.delete('/game/decks/:deckId',wrap(async(req,res)=>res.json(await slides.run('deleteDeck',deckActor(await browser(req)),{deckId:deckId(req)}))));
  app.get('/game/decks/:deckId/export.html',wrap(async(req,res)=>{const result=await slides.run('exportHtml',deckActor(await browser(req)),{deckId:deckId(req)});res.type('text/html').set('Content-Disposition',`attachment; filename="${result.filename}"`).set('Content-Security-Policy',"default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src https: data:; font-src https: data:").send(result.html);}));
  async function executeMcp(token,tool,input){const a=await store.auth(token,'mcp');const {r,p}=a;if(!p)fail(403,'Geen deelnemer.');let result;
-  switch(tool){case 'get_mission':{const pack=getDayPack(r.day);result={session:{roomId:r.id,participantId:p.id,participantName:p.name,squadName:r.name},mission:pack?.mission||mission,day:r.day,phase:r.phase,route:p.route,role:r.members[r.driver]?.id===p.id?'Driver':'Navigator',coach:'Leg begrippen uit, citeer les-IDs, pas hints aan de hulpkeuze aan. Lees eerst de gedeelde intent. Geen browserchat of model-API vanuit de game.'};break;}
+  switch(tool){case 'get_mission':{const pack=getDayPack(r.day);result={session:{roomId:r.id,participantId:p.id,participantName:p.name,squadName:r.name},mission:pack?.mission||mission,day:r.day,phase:r.phase,route:p.route,role:r.members[r.driver]?.id===p.id?'Driver':'Navigator',tasks:taskTrail(r,p.id,r.day),coach:'Leg begrippen uit, citeer les-IDs, pas hints aan de hulpkeuze aan. Lees eerst de gedeelde intent. Geen browserchat of model-API vanuit de game.'};break;}
   case 'get_document':result=await proof.state(r);break;
   case 'get_screen_state':result=await readScreenState(a,screens);break;
   case 'search_knowledge':result={lessons:searchKnowledge(String(input.query||''))};break;
