@@ -39,7 +39,7 @@ const demoPeers = (meId: string): ReadonlyArray<SquadMemberView> => {
   return peers.filter((peer) => peer.id !== meId);
 };
 
-/** Thin classroom mount for JoinForm / SquadRoster / RoleBadge (AET-27 soft). Soft rejoin: same code+name restores seat. */
+/** Thin classroom mount for JoinForm / SquadRoster / RoleBadge (AET-27 soft). */
 export function SquadPanel() {
   const [seat, setSeat] = useState<Seat | null>(() => (typeof sessionStorage === 'undefined' ? null : readSeat()));
 
@@ -86,8 +86,8 @@ export function SquadPanel() {
   if (!room) {
     return (
       <div className="squad-panel" data-mounted="join">
-        <p className="eyebrow">Soft rejoin</p>
-        <p className="lede">Enter the room code and the same display name to restore your seat.</p>
+        <p className="eyebrow">Join your squad</p>
+        <p className="lede">Enter the room code and your display name.</p>
         <JoinForm onJoin={onJoin} />
       </div>
     );
