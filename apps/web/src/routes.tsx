@@ -14,8 +14,9 @@ import {workshop7SourceSlides} from './deck/workshop7-slides.js';
 import {normalizeSlides} from './deck/normalize.js';
 import {matchReference, ReferenceView} from './reference/index.ts';
 import './deck/deck.css';
+import {AuthoringPage} from './authoring/AuthoringPage.tsx';
 
-export type RouteId = 'squad' | 'route' | 'lesson' | 'solo' | 'coach' | 'review' | 'connection';
+export type RouteId = 'squad' | 'route' | 'lesson' | 'solo' | 'coach' | 'review' | 'connection' | 'authoring';
 
 export interface RouteDef {
   readonly id: RouteId;
@@ -33,7 +34,10 @@ export const ROUTES: ReadonlyArray<RouteDef> = [
   {id: 'connection', path: '/connection-status', labelKey: 'connection.status'},
 ];
 
+const AUTHORING_ROUTE: RouteDef = {id: 'authoring', path: '/authoring', labelKey: 'authoring.title'};
+
 export function matchRoute(pathname: string): RouteDef {
+  if (pathname === AUTHORING_ROUTE.path) return AUTHORING_ROUTE;
   return ROUTES.find((route) => route.path === pathname) ?? ROUTES[0]!;
 }
 
@@ -208,10 +212,11 @@ export function AppRoutes({children}: {readonly children?: ReactNode}) {
   const [pathname, navigate] = usePathname();
   const [referencePath = '', referenceAnchor] = pathname.split('#');
   const reference = matchReference(referencePath);
-  const deckLike = reference !== null || pathname === '/deck' || isClassroom1Path(pathname) || isClassroom2Path(pathname) || isWorkshop5Path(pathname) || isWorkshop3Path(pathname) || isWorkshop4Path(pathname) || isWorkshop6Path(pathname) || isWorkshop7Path(pathname);
+  const deckLike = reference !== null || pathname === '/deck' || isClassroom1Path(pathname) || isClassroom2Path(pathname) || isWorkshop5Path(pathname) || isWorkshop3Path(pathname) || isWorkshop4Path(pathname) || isWorkshop6Path(pathname) || isWorkshop7Path(pathname) || pathname === '/authoring';
   const connection = useConnection(fetchConnection, 5000, !deckLike);
   if (reference) return <ReferenceView page={reference} navigate={navigate} anchor={referenceAnchor ?? (window.location.hash.slice(1) || null)} />;
   if (pathname === '/deck') return <DeckDemo slides={DECK_SLIDES} />;
+  if (pathname === '/authoring') return <AuthoringPage />;
   if (isClassroom1Path(pathname)) return <DeckDemo slides={CLASSROOM_1_SLIDES} />;
   if (isClassroom2Path(pathname)) return <DeckDemo slides={CLASSROOM_2_SLIDES} />;
   if (isWorkshop5Path(pathname)) return <DeckDemo slides={WORKSHOP_5_SLIDES} />;

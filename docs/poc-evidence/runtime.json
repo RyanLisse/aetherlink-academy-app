@@ -1,0 +1,19 @@
+{
+  "historyCount": 2,
+  "revisions": [
+    "fa33c640b064a750e1a40c72c151e81e9d18ad78d3335d87d0c31e0f685eb663",
+    "bd049a071b9669d5e980c8aad4853de3d517e22082d5207160c08d63f8ab07ba"
+  ],
+  "editedHtml": true,
+  "editedNotes": true,
+  "slides": 5,
+  "health": {
+    "ok": true,
+    "proof": true,
+    "revision": "poc-d41973575767b0a9"
+  },
+  "unauthorizedStatus": 401,
+  "bothRestartedThroughOpenShip": true,
+  "browserAfterRestart": true,
+  "productionImageUnchanged": true
+}

@@ -1,0 +1,28 @@
+name: academy-authoring-poc
+services:
+  postgres:
+    image: postgres:16
+    container_name: academy-poc-postgres
+    environment:
+      POSTGRES_USER: academy_poc
+      POSTGRES_PASSWORD: ${POC_POSTGRES_PASSWORD:?}
+      POSTGRES_DB: academy_poc
+    command: ["postgres", "-c", "ssl=on", "-c", "ssl_cert_file=/poc-tls/server.crt", "-c", "ssl_key_file=/poc-tls/server.key"]
+    ports: ["172.17.0.1:55540:5432"]
+    volumes: ["poc-postgres:/var/lib/postgresql/data", "./tls:/poc-tls:ro"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U academy_poc -d academy_poc"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  redis:
+    image: redis:7-alpine
+    container_name: academy-poc-redis
+    ports: ["172.17.0.1:55541:6379"]
+    volumes: ["poc-redis:/data", "./tls:/poc-tls:ro"]
+    command: ["redis-server", "--appendonly", "yes", "--port", "0", "--tls-port", "6379", "--tls-cert-file", "/poc-tls/server.crt", "--tls-key-file", "/poc-tls/server.key", "--tls-ca-cert-file", "/poc-tls/server.crt", "--tls-auth-clients", "no", "--requirepass", "${POC_REDIS_PASSWORD:?}"]
+    restart: unless-stopped
+volumes:
+  poc-postgres:
+  poc-redis:

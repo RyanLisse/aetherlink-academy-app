@@ -1,0 +1,49 @@
+# This file filters a temporary context because the upstream scaffold
+# .dockerignore excludes runtime source directories.
+
+node_modules
+**/node_modules/**
+.git
+.gitignore
+.dockerignore
+.agent-native
+.agents
+.claude
+.generated
+.mcp.json
+**/._*
+.env*
+**/.env*
+
+# Local state and credentials must never enter an image build context.
+data
+**/data
+**/.data
+**/.verification
+**/*host-key
+**/*proof-signing-key
+**/*.db
+**/*.db-*
+**/*.sqlite
+**/*.sqlite-*
+**/*.key
+**/*.pem
+
+# Recreated by the production build or irrelevant to the image.
+dist
+build
+.output
+.react-router
+.nitro
+.vite
+snapshots
+**/snapshots
+work
+outputs
+coverage
+test-results
+playwright-report
+**/*.log
+.DS_Store
+.idea
+.vscode

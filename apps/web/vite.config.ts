@@ -5,6 +5,7 @@ const apiTarget = process.env.ACADEMY_API_URL ?? 'http://127.0.0.1:4318';
 const proxy = {
   '^/health(\\?.*)?$': {target: apiTarget, changeOrigin: false},
   '^/connection(\\?.*)?$': {target: apiTarget, changeOrigin: false},
+  '^/authoring-api(/.*)?$': {target: apiTarget, changeOrigin: false},
   '^/live': {target: apiTarget, changeOrigin: false, ws: true},
 };
 
