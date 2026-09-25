@@ -12,7 +12,7 @@ import {Proof} from './proof.mjs';
 import {createAcademyMcpServer} from './mcp-tools.mjs';
 import {createMcpHandler,validateHostHeader} from '@modelcontextprotocol/server';
 import {toNodeHandler} from '@modelcontextprotocol/node';
-import {lessons,mission,initialDocument,searchKnowledge,getDayPack,listRouteDays} from './content.mjs';
+import {lessons,mission,initialDocument,searchKnowledge,getDayPack,listRouteDays,STARTER_FILES} from './content.mjs';
 import {createGoogleSso,readLoginState,signLoginState} from './google-sso.mjs';
 import {createSlidesService} from './slides/runtime.ts';
 import {createPortal} from './portal/index.mjs';
@@ -150,7 +150,7 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
   if(req.headers.origin&&req.headers.origin!==publicUrl.origin)return res.status(403).json({error:'Andere origin niet toegestaan.'});
   await mcpNodeHandler(req,res,req.body);
  }));
- app.get('/game/starter/:file',wrap(async(req,res)=>{await browser(req);if(!['README.md','CLAUDE.md','package.json','status.mjs','status.test.mjs','n8n-repository-review.json','n8n-review-README.md','claude-code-review-README.md','day5-fictional-issue.md'].includes(req.params.file))fail(404,'Bestand niet gevonden.');res.type('text/plain').send(readFileSync(path.join(root,'starter',req.params.file),'utf8'));}));
+ app.get('/game/starter/:file',wrap(async(req,res)=>{await browser(req);if(!STARTER_FILES.has(req.params.file))fail(404,'Bestand niet gevonden.');res.type('text/plain').send(readFileSync(path.join(root,'starter',req.params.file),'utf8'));}));
 
  const resolvePortalActor=async req=>{
   const facilitator=await store.facilitator(namedCookie(req,'academy-facilitator'));

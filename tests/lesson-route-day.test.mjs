@@ -34,7 +34,7 @@ test('day 1 lesson pack and route days stay available',async()=>{
  const route=await invoke(instance.app,'/game/day-route',{cookies:{academy:participant.token}});
  assert.equal(route.statusCode,200);
  assert.equal(route.body.day,1);
- assert.equal(route.body.days.length,5);
+ assert.deepEqual(route.body.days.map(d=>d.title),['Classroom 1 · AI en Claude Code','Classroom 2 · Herbruikbare workflows','Workshop 3 · Agents in n8n','Workshop 4 · Claude Agent SDK','Workshop 5 · AI-native SDLC','Workshop 6 · Eigen opdracht: thin slice','Workshop 7 · Eigen opdracht: afronden']);
  assert.equal(route.body.days.length,listRouteDays().length);
  for(const [i,expected] of listRouteDays().entries()){
   assert.equal(route.body.days[i].day,expected.day);
@@ -58,7 +58,7 @@ test('facilitator day control switches lesson pack and highlights day 2 on route
  assert.equal(pack.body.day,2);
  assert.equal(pack.body.lesson.title,getDayPack(2).lesson.title);
  assert.equal(pack.body.lesson.lede,getDayPack(2).lesson.lede);
- assert.deepEqual(pack.body.lesson.loop.map(step=>step.label),['Intent','Plan','Wijziging','Test','Review','Handoff']);
+ assert.deepEqual(pack.body.lesson.loop.map(step=>step.label),['CLAUDE.md','Skill','Bounded run','MCP','Workflow','Handoff']);
  assert.equal(pack.body.quiz.questions[0].question,getDayPack(2).quiz.questions[0].question);
  const route=await invoke(instance.app,'/game/day-route',{cookies:{academy:participant.token}});
  assert.equal(route.statusCode,200);
@@ -68,22 +68,20 @@ test('facilitator day control switches lesson pack and highlights day 2 on route
  assert.equal(route.body.days[1].hasLesson,true);
 });
 
-test('day three exposes the progressive n8n pack and keeps route cards consistent',async()=>{
+test('day three exposes the n8n L1–L3 ticket pack and keeps route cards consistent',async()=>{
  const {instance,host,participant}=fixture();
  const change=await invoke(instance.app,'/game/control',{body:{action:'day',value:3},cookies:{academy:host.token}});
  assert.equal(change.statusCode,200);
  const pack=await invoke(instance.app,'/game/day-pack',{cookies:{academy:participant.token}});
  assert.equal(pack.statusCode,200);
- assert.equal(pack.body.mission.id,'ATLAS-N8N-03');
- assert.equal(pack.body.steps.length,3);
- assert.deepEqual(pack.body.steps.map(s=>s.agentCount),[0,1,'multi']);
+ assert.equal(pack.body.mission.id,'TRIAGE-N8N-03');
+ assert.deepEqual(pack.body.steps.map(s=>[s.badge,s.level]),[['L1','required'],['L2','required'],['L3','stretch'],['P','required']]);
  assert.equal(pack.body.quiz.answers,undefined);
  assert.equal(pack.body.lesson.title,getDayPack(3).lesson.title);
- assert.match(pack.body.blurb,/progressief|0 agents|multi/i);
+ assert.match(pack.body.blurb,/L1 Switch → L2 AI Agent met memory → L3 Customer Reply \+ Risk/);
  const route=await invoke(instance.app,'/game/day-route',{cookies:{academy:participant.token}});
  assert.equal(route.statusCode,200);
  assert.equal(route.body.day,3);
  assert.equal(route.body.days[2].hasLesson,true);
- assert.match(route.body.days[2].title,/Samen bouwen/);
- assert.match(route.body.days[2].blurb,/progressief|0 agents|multi/i);
+ assert.equal(route.body.days[2].title,'Workshop 3 · Agents in n8n');
 });

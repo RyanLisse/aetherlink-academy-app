@@ -40,13 +40,13 @@ test('get_mission returns day 1 and the corrected day 2 mission',async()=>{
  }
  const first=await mcpCall('get_mission');
  assert.equal(first.statusCode,200);
- assert.equal(first.body.mission.id,'ATLAS-REVIEW-01');
+ assert.equal(first.body.mission.id,'CLASSROOM-01');
  assert.equal(first.body.day,1);
  const change=await invoke(instance.app,'/game/control',{body:{action:'day',value:2},cookies:{academy:host.token}});
  assert.equal(change.statusCode,200);
  const second=await mcpCall('get_mission');
  assert.equal(second.statusCode,200);
- assert.equal(second.body.mission.id,'ATLAS-FEEDBACK-02');
+ assert.equal(second.body.mission.id,'CLASSROOM-02');
  assert.equal(second.body.day,2);
  assert.equal(second.body.mission.title,getDayPack(2).mission.title);
 });
@@ -103,11 +103,11 @@ test('evidence stamps room.day and Route progress reflects quiz+evidence per day
 test('day pack exposes mission and reviewCriteria for Solo/Review UI',async()=>{
  const {instance,host,participant}=fixture();
  const d1=await invoke(instance.app,'/game/day-pack',{cookies:{academy:participant.token}});
- assert.equal(d1.body.mission.id,'ATLAS-REVIEW-01');
- assert.ok(Array.isArray(d1.body.reviewCriteria));
- assert.ok(d1.body.mission.starterFiles.includes('README.md'));
+ assert.equal(d1.body.mission.id,'CLASSROOM-01');
+ assert.equal(d1.body.reviewCriteria[0],'Repository-kaart met bewijs uit de bestanden; geen code gewijzigd en onbekenden als OPEN (opdracht 1, dia 35).');
+ assert.deepEqual(d1.body.mission.starterFiles,[]);
  await invoke(instance.app,'/game/control',{body:{action:'day',value:2},cookies:{academy:host.token}});
  const d2=await invoke(instance.app,'/game/day-pack',{cookies:{academy:participant.token}});
- assert.equal(d2.body.mission.id,'ATLAS-FEEDBACK-02');
+ assert.equal(d2.body.mission.id,'CLASSROOM-02');
  assert.ok(d2.body.reviewCriteria.every(c=>!c.includes('PLACEHOLDER')));
 });
