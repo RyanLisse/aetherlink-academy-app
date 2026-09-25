@@ -13,7 +13,8 @@ import {Proof} from './proof.mjs';
 import {createAcademyMcpServer} from './mcp-tools.mjs';
 import {createMcpHandler,validateHostHeader} from '@modelcontextprotocol/server';
 import {toNodeHandler} from '@modelcontextprotocol/node';
-import {lessons,mission,initialDocument,searchKnowledge,getDayPack,listRouteDays,starterFileNames} from './content.mjs';
+import {lessons,mission,initialDocument,searchKnowledge,getDayPack,listRouteDays,listDaySummaries,courseEntry,starterFileNames} from './content.mjs';
+import {courseTemplate} from '../content/days/course.mjs';
 import {openQuizAttempt,participantDayPack,submitQuizAttempt} from './quiz.mjs';
 import {createGoogleSso,readLoginState,signLoginState} from './google-sso.mjs';
 import {createSlidesService} from './slides/runtime.ts';
@@ -81,8 +82,9 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  // Labs are embeddable only from origins configured here, never from the pack or the client.
  const allowedLabOrigins=parseOriginAllowlist(labOrigins,publicUrl.origin),dayLabs=day=>resolveLabs(labsForDay(day),{baseUrl:publicUrl.origin,allowedOrigins:allowedLabOrigins});
  const publicDayPack=pack=>({...participantDayPack(pack),labs:dayLabs(pack.day)});
- app.get('/game/day-pack',wrap(async(req,res)=>{const {r}=await browser(req),pack=getDayPack(r.day);if(!pack)fail(400,`Geen contentpakket voor supportdag ${r.day}.`);res.json(publicDayPack(pack));}));
- app.get('/game/day-route',wrap(async(req,res)=>{const {r,p}=await browser(req);res.json({day:r.day,days:listRouteDays().map(d=>({...d,labsTotal:dayLabs(d.day).length,progress:dayProgress(r,p,d.day)}))});}));
+ app.get('/game/day-pack',wrap(async(req,res)=>{const {r}=await browser(req),pack=getDayPack(r.day);if(!pack)fail(400,`Geen contentpakket voor supportdag ${r.day}.`);const entry=courseEntry(r.course,r.day);res.json(entry?{...publicDayPack(pack),title:entry.title??pack.title,course:{name:r.course.name,position:entry.position,count:r.course.days.length,date:entry.date}}:publicDayPack(pack));}));
+ app.get('/game/course',wrap(async(req,res)=>{const {r,s}=await browser(req);if(s.personId!=='facilitator')fail(403,'Alleen de facilitator stelt de cursus samen.');res.json({course:r.course??null,template:courseTemplate(),packs:listDaySummaries()});}));
+ app.get('/game/day-route',wrap(async(req,res)=>{const {r,p}=await browser(req);res.json({day:r.day,...(r.course?{course:{name:r.course.name}}:{}),days:listRouteDays(r.course).map(d=>({...d,labsTotal:dayLabs(d.day).length,progress:dayProgress(r,p,d.day)}))});}));
  app.post('/game/lab-complete',wrap(async(req,res)=>{const completion=parseLabCompletion(req.body);if(!completion)fail(400,'Ongeldige labvoltooiing.');res.json(await store.withSession(token(req),'browser',({r,p})=>{if(!p)fail(403,'Alleen deelnemers ronden een lab af.');if(!dayLabs(r.day).some(lab=>lab.id===completion.labId))fail(404,`Lab ${completion.labId} hoort niet bij dag ${r.day}.`);const key=String(r.day);p.progressByDay??={};const day=p.progressByDay[key]||{},existing=day.labs?.[completion.labId];if(existing)return {recorded:false,day:r.day,labId:completion.labId,lab:existing};const lab={source:'lab-reported',result:completion.result,evidence:completion.evidence??null,at:new Date().toISOString()};p.progressByDay[key]={...day,labs:{...day.labs,[completion.labId]:lab}};return {recorded:true,day:r.day,labId:completion.labId,lab};}));}));
  app.post('/game/reflection',wrap(async(req,res)=>res.json(await store.withSession(token(req),'browser',({r,p})=>{if(!p)fail(403,'Alleen deelnemers schrijven een eigen reflectie.');const reflection={learned:text(req.body.learned),next:text(req.body.next),at:new Date().toISOString()};p.progressByDay??={};p.progressByDay[String(r.day)]={...p.progressByDay[String(r.day)],reflection};return reflection;}))));
  app.get('/game/debrief',wrap(async(req,res)=>{const {r,s}=await browser(req);if(s.personId!=='facilitator')fail(403,'Alleen de facilitator bekijkt de debrief.');res.json(debrief(r));}));
