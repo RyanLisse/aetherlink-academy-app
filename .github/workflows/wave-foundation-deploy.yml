@@ -23,7 +23,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - name: Validate inputs
         env:
@@ -32,17 +32,28 @@ jobs:
         run: |
           [[ "$CONFIRM" == "deploy-sibling" ]] || { echo "confirmation phrase missing"; exit 1; }
           [[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "sha must be a full 40-char hex sha"; exit 1; }
-      - name: Rebuild academy-wave on the host
+      - name: Bootstrap + rebuild academy-wave on the host
         uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0
         with:
           host: ${{ secrets.ACADEMY_HETZNER_HOST }}
           username: ${{ secrets.ACADEMY_HETZNER_USER }}
           key: ${{ secrets.ACADEMY_HETZNER_SSH_KEY }}
           script_stop: true
-          command_timeout: 28m
+          command_timeout: 40m
           envs: SHA
           script: |
             set -Eeuo pipefail
+            WAVE_HOME=/root/aetherlink-academy-wave
+            REPO=https://github.com/RyanLisse/aetherlink-academy-app.git
+            mkdir -p "$WAVE_HOME"
+            if [[ ! -d "$WAVE_HOME/src/.git" ]]; then
+              git clone --recurse-submodules "$REPO" "$WAVE_HOME/src"
+            fi
+            git -C "$WAVE_HOME/src" fetch --all --tags --prune
+            git -C "$WAVE_HOME/src" checkout --detach "$SHA"
+            git -C "$WAVE_HOME/src" submodule update --init --recursive
+            # Prefer bootstrap from the checked-out SHA (self-updates the host scripts).
+            bash "$WAVE_HOME/src/infra/deploy/bootstrap-wave-foundation.sh" "$SHA"
             /root/aetherlink-academy-wave/rebuild-wave-foundation.sh "$SHA"
         env:
           SHA: ${{ inputs.sha }}

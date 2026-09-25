@@ -176,3 +176,142 @@ footer {
     border-bottom: 1px solid rgb(255 255 255 / 8%);
   }
 }
+
+/* AET-27 / AET-28 soft mounts */
+.squad-panel .lede,
+.facilitator-release .lede {
+  color: var(--muted);
+  margin: 0 0 16px;
+}
+
+.squad-join {
+  display: grid;
+  gap: 12px;
+  max-width: 360px;
+}
+
+.squad-join label {
+  display: grid;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.squad-join input {
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgb(255 255 255 / 15%);
+  background: transparent;
+  color: var(--text);
+}
+
+.squad-join button,
+.squad-leave,
+.release-panel button {
+  border: 1px solid rgb(53 208 255 / 40%);
+  background: rgb(53 208 255 / 12%);
+  color: var(--accent);
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.squad-roster header h2 {
+  margin: 0 0 4px;
+}
+
+.squad-roster header p,
+.squad-roster footer {
+  color: var(--muted);
+  margin: 0;
+}
+
+.squad-roster ul {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+  display: grid;
+  gap: 8px;
+}
+
+.squad-roster li {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 4%);
+}
+
+.squad-roster li[data-online='false'] {
+  opacity: 0.55;
+}
+
+.squad-role {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgb(167 139 250 / 18%);
+  color: var(--accent-2);
+}
+
+.squad-role-driver {
+  background: rgb(53 208 255 / 18%);
+  color: var(--accent);
+}
+
+.squad-role-navigator {
+  background: rgb(74 222 128 / 16%);
+  color: var(--good);
+}
+
+.squad-role-facilitator {
+  background: rgb(255 107 129 / 16%);
+  color: var(--bad);
+}
+
+.squad-leave {
+  margin-top: 16px;
+}
+
+.release-panel h2 {
+  margin: 0 0 12px;
+}
+
+.release-panel ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.release-panel li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 4%);
+}
+
+.release-state {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.release-panel li[data-state='released'] .release-state {
+  color: var(--good);
+}
+
+.release-panel li[data-state='scheduled'] .release-state {
+  color: var(--accent);
+}
+
+.release-panel li[data-state='locked'] .release-state {
+  color: var(--bad);
+}

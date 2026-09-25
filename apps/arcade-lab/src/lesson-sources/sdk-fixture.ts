@@ -1,0 +1,2 @@
+/** Verbatim source block from aetherlab monolith (id=src-sdk-fixture). */
+export default "export type Weather = {\n  city: string;\n  temperatureF: 72;\n  condition: \"Sunny\";\n  summary: string;\n};\n\nexport function weatherFor(city: string): Weather {\n  if (!city.trim()) throw new Error(\"city is required\");\n  return {\n    city,\n    temperatureF: 72,\n    condition: \"Sunny\",\n    summary: `Sunny in ${city} with a light breeze.`\n  };\n}\n" as string;

@@ -1,0 +1,184 @@
+{
+  "id": "agent-arcade",
+  "title": "Agent Arcade — je eerste agent",
+  "version": "0.2.0",
+  "localePrimary": "nl",
+  "captions": [
+    "mensentaal",
+    "tech"
+  ],
+  "linearEpic": "AET-65",
+  "routes": {
+    "hub": "/arcade",
+    "weather": "/arcade/weather",
+    "council": "/arcade/council",
+    "sdkBridge": "/arcade/sdk-bridge",
+    "solo": "/arcade/solo"
+  },
+  "lessons": [
+    {
+      "id": "l1-weather",
+      "title": "L1 — Weather agent",
+      "track": "eve",
+      "order": 1,
+      "durationMin": 45,
+      "linear": "AET-60",
+      "sourceUrl": "https://eve.dev/templates/weather-agent-fixture",
+      "modulePath": "modules/l1-weather.md",
+      "route": "/arcade/weather",
+      "checkpoints": [
+        "agent-goal-tools",
+        "run-fixture-tui",
+        "edit-instructions",
+        "tool-get-weather",
+        "skill-vs-tool",
+        "mini-quest-clothing"
+      ]
+    },
+    {
+      "id": "l2-council",
+      "title": "L2 — LLM Council",
+      "track": "eve",
+      "order": 2,
+      "durationMin": 45,
+      "linear": "AET-61",
+      "sourceUrl": "https://eve.dev/templates/eve-llm-council-template",
+      "modulePath": "modules/l2-council.md",
+      "route": "/arcade/council",
+      "checkpoints": [
+        "why-multi-model",
+        "fanout-judge-schema",
+        "run-one-prompt",
+        "mini-quest-judge"
+      ]
+    },
+    {
+      "id": "sdk-bridge",
+      "title": "SDK Bridge — Eve → Claude Agent SDK",
+      "track": "sdk",
+      "order": 3,
+      "durationMin": 40,
+      "linear": "AET-62",
+      "sourceUrl": "https://github.com/anthropics/claude-agent-sdk-typescript",
+      "modulePath": "modules/sdk-bridge.md",
+      "route": "/arcade/sdk-bridge",
+      "startersStatus": "available",
+      "starters": [
+        {
+          "id": "weather-agent-sdk",
+          "title": "Weather agent SDK",
+          "cloneUrl": "https://github.com/RyanLisse/weather-agent-sdk.git",
+          "repoUrl": "https://github.com/RyanLisse/weather-agent-sdk",
+          "quest": "mini-quest-clothing"
+        },
+        {
+          "id": "council-agent-sdk",
+          "title": "Council agent SDK",
+          "cloneUrl": "https://github.com/RyanLisse/council-agent-sdk.git",
+          "repoUrl": "https://github.com/RyanLisse/council-agent-sdk",
+          "quest": "mini-quest-judge"
+        }
+      ],
+      "checkpoints": [
+        "mapping-table",
+        "audience-split",
+        "same-mini-quests",
+        "starters-gate"
+      ]
+    }
+  ],
+  "facilitatorNotes": "facilitator-notes.md",
+  "herdrWiring": "HERDR-WIRING.md",
+  "outOfScope": [
+    "Do not replace Day 1–5 packs",
+    "No secrets in repo or UI",
+    "No invented metrics"
+  ],
+  "soloDefaultLesson": "ws-1-eve-weather",
+  "soloPlayerBase": "/arcade-lab/",
+  "soloLessons": [
+    {
+      "id": "ws-1-eve-weather",
+      "title": "Eve weather fixture",
+      "workshop": 1,
+      "track": "eve",
+      "hubRoute": "/arcade/weather",
+      "cohort": true
+    },
+    {
+      "id": "ws-2-eve-state",
+      "title": "Eve state & recall",
+      "workshop": 2,
+      "track": "eve",
+      "hubRoute": "/arcade/weather",
+      "cohort": true
+    },
+    {
+      "id": "ws-3-eve-approval",
+      "title": "Eve approval gates",
+      "workshop": 3,
+      "track": "eve",
+      "hubRoute": "/arcade/weather",
+      "cohort": true
+    },
+    {
+      "id": "ws-2-eve-council",
+      "title": "Eve LLM council",
+      "workshop": 4,
+      "track": "eve",
+      "hubRoute": "/arcade/council",
+      "cohort": true
+    },
+    {
+      "id": "ws-4-sdk-council",
+      "title": "SDK council (optional)",
+      "workshop": 9,
+      "track": "sdk",
+      "hubRoute": "/arcade/council",
+      "cohort": false,
+      "optional": true
+    },
+    {
+      "id": "ws-5-sdk-quickstart",
+      "title": "SDK quickstart",
+      "workshop": 5,
+      "track": "sdk",
+      "hubRoute": "/arcade/sdk-bridge",
+      "cohort": true
+    },
+    {
+      "id": "ws-3-sdk-weather",
+      "title": "SDK weather agent",
+      "workshop": 6,
+      "track": "sdk",
+      "hubRoute": "/arcade/sdk-bridge",
+      "cohort": true
+    },
+    {
+      "id": "ws-7-sdk-hooks",
+      "title": "SDK hooks",
+      "workshop": 7,
+      "track": "sdk",
+      "hubRoute": "/arcade/sdk-bridge",
+      "cohort": true
+    },
+    {
+      "id": "ws-8-sdk-subagents",
+      "title": "SDK subagents",
+      "workshop": 8,
+      "track": "sdk",
+      "hubRoute": "/arcade/sdk-bridge",
+      "cohort": true
+    },
+    {
+      "id": "sample-counter",
+      "title": "Sample counter (demo)",
+      "workshop": 0,
+      "track": "demo",
+      "hubRoute": "/arcade",
+      "cohort": false,
+      "demoOnly": true
+    }
+  ],
+  "facilitatorSoloNote": "facilitator-solo-note.md"
+}

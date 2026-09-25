@@ -52,7 +52,7 @@ const removeOwned = (name: string, owner: string): void => {
 export const startCurriculumPostgres = async (): Promise<CurriculumPostgresHandle> => {
   const suffix = randomUUID().replaceAll('-', '').slice(0, 16);
   const handle: CurriculumPostgresHandle = {
-    name: `academy-curriculum-db-${suffix}`,
+    name: `academy-curriculum-db-${suffix}${process.env.ACADEMY_TEST_CONTAINER_SUFFIX ?? ''}`,
     owner: `curriculum-db-test-${randomUUID()}`,
     port: 0,
     url: '',

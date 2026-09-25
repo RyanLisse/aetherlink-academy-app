@@ -1,0 +1,2 @@
+/** Verbatim source block from aetherlab monolith (id=src-eve-run-sql-before). */
+export default "import { defineTool } from \"eve/tools\";\nimport { z } from \"zod\";\nimport { runReadOnlySql } from \"../lib/sample-db\";\nexport default defineTool({\n  description: \"Run a read-only SQL query against the analytics tables.\",\n  inputSchema: z.object({ sql: z.string().max(10_000) }),\n  async execute({ sql }) {\n    const { columns, rows } = await runReadOnlySql(sql);\n    return { columns, rows: rows.slice(0, 500), truncated: rows.length > 500 };\n  },\n});\n" as string;

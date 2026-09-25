@@ -140,35 +140,35 @@ port.on('console', (message) => {
 const controlledPropCoverage = {sameTreeIndexChanges: false, sameTreeRevealStepChanges: false, sameTreeSlidesEmptyToPopulated: false, sameTreeModeChanges: false, sameTreeInstances: false};
 
 try {
-  await check(checks, 'source has all 78 progress segments', async () => {
+  await check(checks, 'source has all 91 progress segments', async () => {
     await waitProjector(source, `${sourceUrl}#1`);
     const count = await source.locator('#progress .seg').count();
-    if (count !== 78) throw new Error(`found ${count}`);
+    if (count !== 91) throw new Error(`found ${count}`);
     return {count};
   });
-  await check(checks, 'port has all 78 progress segments', async () => {
+  await check(checks, 'port has all 91 progress segments', async () => {
     await waitProjector(port, `${portUrl}?index=0`);
     const count = await port.locator('#progress .seg').count();
-    if (count !== 78) throw new Error(`found ${count}`);
+    if (count !== 91) throw new Error(`found ${count}`);
     return {count};
   });
 
   await check(checks, 'source arrow reveals before advancing', async () => {
-    await waitProjector(source, `${sourceUrl}#12`);
+    await waitProjector(source, `${sourceUrl}#16`);
     const before = await source.locator('.card.closed').count();
     await source.keyboard.press('ArrowRight');
     await source.waitForTimeout(80);
     const after = await source.locator('.card.closed').count();
-    if (await countIndex(source, 'source') !== 11 || before === 0 || after >= before) throw new Error(`index=${await countIndex(source, 'source')} closed=${before}->${after}`);
+    if (await countIndex(source, 'source') !== 15 || before === 0 || after >= before) throw new Error(`index=${await countIndex(source, 'source')} closed=${before}->${after}`);
     return {closedBefore: before, closedAfter: after};
   });
   await check(checks, 'port arrow reveals before advancing', async () => {
-    await waitProjector(port, `${portUrl}?index=11`);
+    await waitProjector(port, `${portUrl}?index=15`);
     const before = await port.locator('.card.closed').count();
     await port.keyboard.press('ArrowRight');
     await port.waitForTimeout(80);
     const after = await port.locator('.card.closed').count();
-    if (await countIndex(port, 'port') !== 11 || before === 0 || after >= before) throw new Error(`index=${await countIndex(port, 'port')} closed=${before}->${after}`);
+    if (await countIndex(port, 'port') !== 15 || before === 0 || after >= before) throw new Error(`index=${await countIndex(port, 'port')} closed=${before}->${after}`);
     return {closedBefore: before, closedAfter: after};
   });
 
@@ -194,7 +194,7 @@ try {
   });
 
   await check(checks, 'source B toggles Plan B overlay', async () => {
-    await waitProjector(source, `${sourceUrl}#70`);
+    await waitProjector(source, `${sourceUrl}#81`);
     const before = await source.locator('.planb.show').count();
     await source.keyboard.press('b');
     const after = await source.locator('.planb.show').count();
@@ -203,7 +203,7 @@ try {
     return {visibleBefore: before, visibleAfter: after, textLength: planBReferenceText.length};
   });
   await check(checks, 'port B toggles Plan B overlay', async () => {
-    await waitProjector(port, `${portUrl}?index=69`);
+    await waitProjector(port, `${portUrl}?index=80`);
     const before = await port.locator('.planb.show').count();
     await port.keyboard.press('b');
     const after = await port.locator('.planb.show').count();
@@ -212,38 +212,40 @@ try {
     return {visibleBefore: before, visibleAfter: after, textLength: portText.length};
   });
 
-  await check(checks, 'port exercise timer advances after Start', async () => {
-    await waitProjector(port, `${portUrl}?index=30`);
+  await check(checks, 'port exercise timer advances after minutes + Start', async () => {
+    await waitProjector(port, `${portUrl}?index=34`);
     const timer = port.locator('.timer');
-    const start = timer.getByRole('button', {name: /^Start/});
+    const start = timer.getByRole('button', {name: 'Start'});
+    const initial = await timer.locator('.timer-face').textContent();
+    await timer.getByRole('spinbutton', {name: 'Minutes for this assignment'}).fill('25');
     const before = await timer.locator('.timer-face').textContent();
     await start.click();
     await port.clock.runFor(1200);
     const after = await timer.locator('.timer-face').textContent();
-    if (before === after) throw new Error(`timer stayed at ${before}`);
-    return {before, after};
+    if (initial !== '00:00' || before !== '25:00' || after !== '24:59') throw new Error(`timer ${initial} -> ${before} -> ${after}`);
+    return {initial, before, after};
   });
 
   await check(checks, 'reader hides facilitator notes', async () => {
-    await port.goto(`${portUrl}?index=10&mode=presenter`, {waitUntil: 'domcontentloaded'});
+    await port.goto(`${portUrl}?index=14&mode=presenter`, {waitUntil: 'domcontentloaded'});
     await port.locator('.deck-presenter-tools').waitFor();
     const notes = await port.locator('.deck-presenter-tools').textContent();
     const expectedNote = 'Keep this slide brief';
-    await port.goto(`${portUrl}?index=10&mode=reader`, {waitUntil: 'domcontentloaded'});
+    await port.goto(`${portUrl}?index=14&mode=reader`, {waitUntil: 'domcontentloaded'});
     await port.locator('.reader-lesson').waitFor();
     const body = await port.locator('body').textContent();
     if (!notes?.includes(expectedNote) || body?.includes(expectedNote) || (await port.locator('.deck-presenter-tools').count()) !== 0) throw new Error('reader note privacy assertion failed');
     return {presenterNotesFound: true, readerNotesFound: false, readerPresenterTools: 0};
   });
   await check(checks, 'follow mode hides facilitator notes', async () => {
-    await waitProjector(port, `${portUrl}?index=10&mode=follow`);
+    await waitProjector(port, `${portUrl}?index=14&mode=follow`);
     const body = await port.locator('body').textContent();
     if ((await port.locator('.deck-presenter-tools').count()) !== 0 || body?.includes('Facilitator notes') || body?.includes('Keep this slide brief')) throw new Error('follow exposed facilitator notes');
     return {presenterTools: 0};
   });
 
   await check(checks, 'route slide navigation cleans old visual state', async () => {
-    await waitProjector(port, `${portUrl}?index=11`);
+    await waitProjector(port, `${portUrl}?index=15`);
     if ((await port.locator('.reveal-grid').count()) === 0) throw new Error('fixture slide did not mount reveal grid');
     await port.locator('#progress .seg').nth(68).click();
     await port.waitForTimeout(80);
@@ -251,7 +253,7 @@ try {
     return {index: 68, revealGrid: 0, visiblePlanB: 0};
   });
   await check(checks, 'route rewind resets reveal state after leaving slide', async () => {
-    await waitProjector(port, `${portUrl}?index=11`);
+    await waitProjector(port, `${portUrl}?index=15`);
     const initialClosed = await port.locator('.card.closed').count();
     await port.keyboard.press('ArrowRight');
     const revealedClosed = await port.locator('.card.closed').count();
@@ -259,25 +261,25 @@ try {
     await port.keyboard.press('ArrowRight');
     await port.waitForTimeout(80);
     const rewindClosed = await port.locator('.card.closed').count();
-    if (initialClosed === 0 || revealedClosed >= initialClosed || rewindClosed !== initialClosed || await countIndex(port, 'port') !== 11) throw new Error(`closed=${initialClosed}->${revealedClosed}->${rewindClosed}, index=${await countIndex(port, 'port')}`);
-    return {initialClosed, revealedClosed, rewindClosed, index: 11};
+    if (initialClosed === 0 || revealedClosed >= initialClosed || rewindClosed !== initialClosed || await countIndex(port, 'port') !== 15) throw new Error(`closed=${initialClosed}->${revealedClosed}->${rewindClosed}, index=${await countIndex(port, 'port')}`);
+    return {initialClosed, revealedClosed, rewindClosed, index: 15};
   });
   await check(checks, 'route visual mount changes from slide without reveal to reveal slide', async () => {
     await waitProjector(port, `${portUrl}?index=0`);
     if ((await port.locator('.reveal-grid').count()) !== 0) throw new Error('empty fixture already had reveal grid');
-    await port.locator('#progress .seg').nth(11).click();
+    await port.locator('#progress .seg').nth(15).click();
     await port.waitForTimeout(80);
     const closed = await port.locator('.card.closed').count();
-    if (await countIndex(port, 'port') !== 11 || (await port.locator('.reveal-grid').count()) !== 1 || closed === 0) throw new Error(`index=${await countIndex(port, 'port')} revealGrid=${await port.locator('.reveal-grid').count()} closed=${closed}`);
-    return {index: 11, revealGrid: 1, closed};
+    if (await countIndex(port, 'port') !== 15 || (await port.locator('.reveal-grid').count()) !== 1 || closed === 0) throw new Error(`index=${await countIndex(port, 'port')} revealGrid=${await port.locator('.reveal-grid').count()} closed=${closed}`);
+    return {index: 15, revealGrid: 1, closed};
   });
   await check(checks, 'route mode remount replaces projector with reader and back', async () => {
-    await waitProjector(port, `${portUrl}?index=11&mode=presenter`);
+    await waitProjector(port, `${portUrl}?index=15&mode=presenter`);
     const presenterTitle = (await port.locator('#stage h1').textContent() ?? '').trim();
-    await port.goto(`${portUrl}?index=11&mode=reader`, {waitUntil: 'domcontentloaded'});
+    await port.goto(`${portUrl}?index=15&mode=reader`, {waitUntil: 'domcontentloaded'});
     await port.locator('.reader-lesson').waitFor();
     if ((await port.locator('#stage h1').count()) !== 0 || (await port.locator('.deck-presenter-tools').count()) !== 0) throw new Error('reader retained projector/presenter DOM');
-    await port.goto(`${portUrl}?index=11`, {waitUntil: 'domcontentloaded'});
+    await port.goto(`${portUrl}?index=15`, {waitUntil: 'domcontentloaded'});
     await port.locator('#stage h1').waitFor();
     const projectorTitle = (await port.locator('#stage h1').textContent() ?? '').trim();
     if (projectorTitle !== presenterTitle || (await port.locator('.reader-lesson').count()) !== 0) throw new Error(`title=${projectorTitle}, reader=${await port.locator('.reader-lesson').count()}`);
@@ -288,11 +290,11 @@ try {
     await installClock(peer);
     try {
       await Promise.all([waitProjector(port, `${portUrl}?index=0`), waitProjector(peer, `${portUrl}?index=0`)]);
-      await port.locator('#progress .seg').nth(11).click();
+      await port.locator('#progress .seg').nth(15).click();
       await port.waitForTimeout(80);
       const active = await countIndex(port, 'port');
       const peerActive = await countIndex(peer, 'port');
-      if (active !== 11 || peerActive !== 0) throw new Error(`active=${active}, peer=${peerActive}`);
+      if (active !== 15 || peerActive !== 0) throw new Error(`active=${active}, peer=${peerActive}`);
       return {active, peerActive};
     } finally {
       await peer.close();
@@ -319,11 +321,11 @@ try {
     fixtureDiagnostics.length = 0;
     const fixture = await mountControlledFixture(port);
     try {
-      await fixtureCommand(port, 'setIndex', 11);
-      if (await fixture.locator('.academy-deck').getAttribute('data-index') !== '11' || (await fixture.locator('#stage h1').textContent() ?? '').trim() !== 'AI failure modes' || (await fixture.locator('.reveal-grid').count()) !== 1) throw new Error('fixture index did not render slide 12 with fresh visual state');
+      await fixtureCommand(port, 'setIndex', 15);
+      if (await fixture.locator('.academy-deck').getAttribute('data-index') !== '15' || (await fixture.locator('#stage h1').textContent() ?? '').trim() !== 'AI failure modes' || (await fixture.locator('.reveal-grid').count()) !== 1) throw new Error('fixture index did not render slide 16 with fresh visual state');
       if (fixtureDiagnostics.length) throw new Error(`fixture diagnostics: ${JSON.stringify(fixtureDiagnostics)}`);
       controlledPropCoverage.sameTreeIndexChanges = true;
-      return {index: 11};
+      return {index: 15};
     } finally {
       await unmountControlledFixture(port);
       if (fixtureDiagnostics.length) throw new Error(`fixture diagnostics after unmount: ${JSON.stringify(fixtureDiagnostics)}`);
@@ -333,7 +335,7 @@ try {
     fixtureDiagnostics.length = 0;
     const fixture = await mountControlledFixture(port);
     try {
-      await fixtureCommand(port, 'setIndex', 11);
+      await fixtureCommand(port, 'setIndex', 15);
       const initialClosed = await fixture.locator('.card.closed').count();
       await fixtureCommand(port, 'setRevealStep', 0);
       const stepZeroIndices = await activeRevealIndices(fixture);
@@ -350,9 +352,9 @@ try {
       const rewoundClosed = await fixture.locator('.card.closed').count();
       if (fixtureDiagnostics.length) throw new Error(`fixture diagnostics: ${JSON.stringify(fixtureDiagnostics)}`);
       const exact = (actual, expected) => JSON.stringify(actual) === JSON.stringify(expected);
-      if (initialClosed !== 5 || !exact(stepZeroIndices, [0]) || !exact(stepTwoIndices, [0, 1, 2]) || clickedClosed !== 4 || !exact(clickIndices, [0]) || revealedClosed !== 2 || !exact(stepMinusOneIndices, []) || rewoundClosed !== initialClosed || await fixture.locator('.academy-deck').getAttribute('data-index') !== '11') throw new Error(`index=11 closed=${initialClosed}, step0=${JSON.stringify(stepZeroIndices)}, step2=${JSON.stringify(stepTwoIndices)}, clickClosed=${clickedClosed}, click=${JSON.stringify(clickIndices)}, step-1=${JSON.stringify(stepMinusOneIndices)}, rewound=${rewoundClosed}`);
+      if (initialClosed !== 5 || !exact(stepZeroIndices, [0]) || !exact(stepTwoIndices, [0, 1, 2]) || clickedClosed !== 4 || !exact(clickIndices, [0]) || revealedClosed !== 2 || !exact(stepMinusOneIndices, []) || rewoundClosed !== initialClosed || await fixture.locator('.academy-deck').getAttribute('data-index') !== '15') throw new Error(`index=15 closed=${initialClosed}, step0=${JSON.stringify(stepZeroIndices)}, step2=${JSON.stringify(stepTwoIndices)}, clickClosed=${clickedClosed}, click=${JSON.stringify(clickIndices)}, step-1=${JSON.stringify(stepMinusOneIndices)}, rewound=${rewoundClosed}`);
       controlledPropCoverage.sameTreeRevealStepChanges = true;
-      return {index: 11, initialClosed, stepZeroIndices, stepTwoIndices, clickedClosed, clickIndices, revealedClosed, stepMinusOneIndices, rewoundClosed};
+      return {index: 15, initialClosed, stepZeroIndices, stepTwoIndices, clickedClosed, clickIndices, revealedClosed, stepMinusOneIndices, rewoundClosed};
     } finally {
       await unmountControlledFixture(port);
       if (fixtureDiagnostics.length) throw new Error(`fixture diagnostics after unmount: ${JSON.stringify(fixtureDiagnostics)}`);
@@ -362,16 +364,16 @@ try {
     fixtureDiagnostics.length = 0;
     const fixture = await mountControlledFixture(port);
     try {
-      await fixtureCommand(port, 'setIndex', 11);
+      await fixtureCommand(port, 'setIndex', 15);
       await fixtureCommand(port, 'setMode', 'presenter');
-      if ((await fixture.locator('.academy-deck').getAttribute('data-index')) !== '11' || (await fixture.locator('.deck-presenter-tools').count()) !== 1) throw new Error('presenter mode did not retain index 11');
+      if ((await fixture.locator('.academy-deck').getAttribute('data-index')) !== '15' || (await fixture.locator('.deck-presenter-tools').count()) !== 1) throw new Error('presenter mode did not retain index 15');
       await fixtureCommand(port, 'setMode', 'reader');
-      if ((await fixture.locator('.academy-deck').getAttribute('data-index')) !== '11' || (await fixture.locator('.reader-lesson').count()) !== 1 || (await fixture.locator('#stage h1').count()) !== 0) throw new Error('reader mode retained projector heading or changed index');
+      if ((await fixture.locator('.academy-deck').getAttribute('data-index')) !== '15' || (await fixture.locator('.reader-lesson').count()) !== 1 || (await fixture.locator('#stage h1').count()) !== 0) throw new Error('reader mode retained projector heading or changed index');
       await fixtureCommand(port, 'setMode', 'projector');
-      if ((await fixture.locator('.academy-deck').getAttribute('data-index')) !== '11' || (await fixture.locator('#stage h1').count()) !== 1) throw new Error('projector mode did not restore heading');
+      if ((await fixture.locator('.academy-deck').getAttribute('data-index')) !== '15' || (await fixture.locator('#stage h1').count()) !== 1) throw new Error('projector mode did not restore heading');
       if (fixtureDiagnostics.length) throw new Error(`fixture diagnostics: ${JSON.stringify(fixtureDiagnostics)}`);
       controlledPropCoverage.sameTreeModeChanges = true;
-      return {index: 11, modes: ['presenter', 'reader', 'projector']};
+      return {index: 15, modes: ['presenter', 'reader', 'projector']};
     } finally {
       await unmountControlledFixture(port);
       if (fixtureDiagnostics.length) throw new Error(`fixture diagnostics after unmount: ${JSON.stringify(fixtureDiagnostics)}`);
@@ -394,14 +396,14 @@ try {
       if (!second) throw new Error('peer fixture did not mount');
       const peer = port.locator('[data-controlled-fixture-peer]');
       await peer.locator('.academy-deck').waitFor();
-      await fixtureCommand(port, 'setIndex', 11);
+      await fixtureCommand(port, 'setIndex', 15);
       await port.evaluate(() => window.__deckControlledFixturePeer.controls.setIndex(0));
       await port.waitForTimeout(60);
       const firstIndex = await first.locator('.academy-deck').getAttribute('data-index');
       const peerIndex = await peer.locator('.academy-deck').getAttribute('data-index');
       if (fixtureDiagnostics.length) throw new Error(`fixture diagnostics: ${JSON.stringify(fixtureDiagnostics)}`);
       await port.evaluate(() => { const fixture = window.__deckControlledFixturePeer; fixture.controls.unmount(); fixture.container.remove(); delete window.__deckControlledFixturePeer; });
-      if (firstIndex !== '11' || peerIndex !== '0') throw new Error(`first=${firstIndex}, peer=${peerIndex}`);
+      if (firstIndex !== '15' || peerIndex !== '0') throw new Error(`first=${firstIndex}, peer=${peerIndex}`);
       controlledPropCoverage.sameTreeInstances = true;
       return {firstIndex, peerIndex};
     } finally {
@@ -410,7 +412,7 @@ try {
     }
   });
   await check(checks, 'reduced motion disables source and port animations', async () => {
-    await Promise.all([waitProjector(source, `${sourceUrl}#12`), waitProjector(port, `${portUrl}?index=11`)]);
+    await Promise.all([waitProjector(source, `${sourceUrl}#16`), waitProjector(port, `${portUrl}?index=15`)]);
     const inspect = async (page) => page.evaluate(() => {
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const motion = [...document.querySelectorAll('*')].map((node) => {

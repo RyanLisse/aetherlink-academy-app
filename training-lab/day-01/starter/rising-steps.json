@@ -1,0 +1,400 @@
+{
+  "name": "Day 1 \u00b7 Rising steps (Set IF Code priority drafts)",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -520,
+        0
+      ],
+      "id": "d77f6d56-9ac9-4d05-a5a2-450e74be561c",
+      "name": "When clicking \u2018Execute workflow\u2019"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"ticket_id\": \"WL-1026\",\n  \"customer\": \"Maarten\",\n  \"message\": \"I was charged twice. I need this fixed today or I will file a complaint.\",\n  \"fictional\": true,\n  \"draft_only\": true\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -280,
+        0
+      ],
+      "id": "8fa38e14-9651-43c1-86c1-887ae6539f52",
+      "name": "Ticket Input"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ticket = $json;\nconst text = String(ticket.message || '').toLowerCase();\nlet priority = 'low';\nif (text.includes('today') || text.includes('complaint') || text.includes('charged twice')) {\n  priority = 'high';\n} else if (text.includes('please') || text.includes('help')) {\n  priority = 'medium';\n}\nreturn [{\n  json: {\n    ...ticket,\n    priority,\n    sentiment: priority === 'high' ? 'frustrated' : 'neutral',\n    recommended_action: priority === 'high' ? 'escalate' : priority === 'medium' ? 'investigate' : 'auto_reply',\n    draft_only: true,\n    human_approval_required: true\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        0
+      ],
+      "id": "6728e566-3e80-4563-8192-5b91fb18501e",
+      "name": "Code Priority"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "ba4f5d69-a192-4b87-9349-1a6131649a91",
+                    "leftValue": "={{ $json.priority }}",
+                    "rightValue": "low",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1ab587c3-14e0-4353-ad26-6d25464177e4",
+                    "leftValue": "={{ $json.priority }}",
+                    "rightValue": "medium",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "09237811-b021-4a46-93cd-c6947fdf3a58",
+                    "leftValue": "={{ $json.priority }}",
+                    "rightValue": "high",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        200,
+        0
+      ],
+      "id": "a7862a74-efda-4448-b408-c84b234eea6e",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d48c6e44-4825-468d-99d6-472247163c4e",
+              "name": "action",
+              "value": "auto_reply",
+              "type": "string"
+            },
+            {
+              "id": "7675c2da-9a2c-458b-9c02-975dfc464999",
+              "name": "priority",
+              "value": "low",
+              "type": "string"
+            },
+            {
+              "id": "2c14242f-b8f8-475e-b296-86a3342bdd20",
+              "name": "alert",
+              "value": "Draft alert: low priority \u2014 prepare auto-reply for human review.",
+              "type": "string"
+            },
+            {
+              "id": "4c03caf7-90f7-4cdd-90dd-48b47250804c",
+              "name": "ticket_id",
+              "value": "={{ $json.ticket_id }}",
+              "type": "string"
+            },
+            {
+              "id": "ec59458a-d6c9-4278-a12d-d8f4cc0394d0",
+              "name": "draft_only",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "f0d96042-df7b-4b98-b22a-d4b74bee37df",
+              "name": "human_approval_required",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        -160
+      ],
+      "id": "34137e83-f2c0-46a5-bca5-831e3a1318c1",
+      "name": "Low Priority Action"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bec63e5c-a221-4915-b956-cc0a984caa52",
+              "name": "action",
+              "value": "investigate",
+              "type": "string"
+            },
+            {
+              "id": "c616c768-b0e2-459d-917d-7a839120fd9d",
+              "name": "priority",
+              "value": "medium",
+              "type": "string"
+            },
+            {
+              "id": "5c86baac-c68e-417a-9728-a45c04392288",
+              "name": "alert",
+              "value": "Draft alert: medium priority \u2014 queue investigation for human review.",
+              "type": "string"
+            },
+            {
+              "id": "e596f017-8098-41f9-8f33-bec459072859",
+              "name": "ticket_id",
+              "value": "={{ $json.ticket_id }}",
+              "type": "string"
+            },
+            {
+              "id": "06684a62-f535-4d4a-a0aa-29151204dab6",
+              "name": "draft_only",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "ba82b071-07c5-46e0-a65a-07557021449f",
+              "name": "human_approval_required",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        0
+      ],
+      "id": "c2d6e84d-e4a6-44c8-aff4-131e708be780",
+      "name": "Medium Priority Action"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a23cd365-e621-4dd0-a04a-557fb58d0579",
+              "name": "action",
+              "value": "escalate",
+              "type": "string"
+            },
+            {
+              "id": "cb52f7a6-f8ab-4896-9c25-f6ea55f6ee53",
+              "name": "priority",
+              "value": "high",
+              "type": "string"
+            },
+            {
+              "id": "36a6b737-9bab-4c3d-abf8-b4ce5662bf04",
+              "name": "alert",
+              "value": "Draft alert: high priority \u2014 escalate draft for human review. No real send.",
+              "type": "string"
+            },
+            {
+              "id": "2383c62d-3dfa-4a23-ba61-e3dbcc382d62",
+              "name": "ticket_id",
+              "value": "={{ $json.ticket_id }}",
+              "type": "string"
+            },
+            {
+              "id": "4f5ba28a-cb1e-4c24-a281-8122e17e50c2",
+              "name": "draft_only",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "b11d059c-b676-4613-852a-d05aa9bf9888",
+              "name": "human_approval_required",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        160
+      ],
+      "id": "ca3b8a64-95b9-43db-b3cb-891cceafba00",
+      "name": "High Priority Action"
+    },
+    {
+      "parameters": {
+        "toolDescription": "External read-only training weather check (same Get Weather contract). Optional stretch. Does not send messages.",
+        "method": "GET",
+        "url": "http://127.0.0.1:48135/weather",
+        "sendQuery": true,
+        "parametersQuery": {
+          "values": [
+            {
+              "name": "city",
+              "valueProvider": "fieldValue",
+              "value": "Amsterdam"
+            },
+            {
+              "name": "date",
+              "valueProvider": "fieldValue",
+              "value": "2026-09-21"
+            }
+          ]
+        },
+        "placeholderDefinitions": {
+          "values": []
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        200,
+        280
+      ],
+      "id": "f7fdbf50-675d-47fe-8ceb-ee3add3154d9",
+      "name": "Get Weather"
+    }
+  ],
+  "connections": {
+    "When clicking \u2018Execute workflow\u2019": {
+      "main": [
+        [
+          {
+            "node": "Ticket Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ticket Input": {
+      "main": [
+        [
+          {
+            "node": "Code Priority",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Priority": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Low Priority Action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Medium Priority Action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "High Priority Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "aetherlink-academy-training-lab-day-01"
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "day-01"
+    },
+    {
+      "name": "rising-steps"
+    },
+    {
+      "name": "draft-only"
+    }
+  ]
+}

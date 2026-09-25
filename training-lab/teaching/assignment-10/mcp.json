@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "training-jira": { "type": "http", "url": "http://127.0.0.1:48136/mcp" },
+    "training-gitlab": { "type": "http", "url": "http://127.0.0.1:48137/mcp" },
+    "training-confluence": { "type": "http", "url": "http://127.0.0.1:48138/mcp" }
+  }
+}

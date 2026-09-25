@@ -1,0 +1,27 @@
+{
+  "_note": "FICTIONAL classroom plan-B fixture. Not a real Jira ticket. Use when MCP mocks are unreachable.",
+  "key": "EX-142",
+  "project": "Example Portal",
+  "type": "Story",
+  "summary": "Show a clear message when a CSV export is empty",
+  "status": "In Progress",
+  "priority": "Medium",
+  "description": "Exporting an empty date range downloads a header-only CSV, which reads as a failure to users. Show an in-app message instead of a file when there are no rows.",
+  "acceptanceCriteria": [
+    "No download on empty date range",
+    "Exact message text: 'No transactions in this period.'",
+    "Non-empty exports must behave unchanged"
+  ],
+  "labels": ["export", "ux"],
+  "assignee": null,
+  "reporter": "product-owner-example",
+  "created": "2026-09-02",
+  "updated": "2026-09-15",
+  "comments": [
+    {
+      "author": "dev-example",
+      "created": "2026-09-10",
+      "body": "Should the empty-range message also apply to the scheduled nightly export, or only manual ones?"
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+/** Verbatim source block from aetherlab monolith (id=src-eve-define-metric). */
+export default "import { defineTool } from \"eve/tools\";\nimport { z } from \"zod\";\nimport { glossary } from \"../lib/glossary\";\nexport default defineTool({\n  description: \"Record the team's definition of a metric so it persists across turns.\",\n  inputSchema: z.object({ term: z.string(), meaning: z.string() }),\n  async execute({ term, meaning }) {\n    glossary.update((g) => ({ terms: { ...g.terms, [term]: meaning } }));\n    return glossary.get();\n  },\n});\n" as string;

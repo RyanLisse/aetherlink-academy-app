@@ -320,7 +320,7 @@ async function main() {
         'participants-join', 'round-start', 'phase-change', 'driver-rotate', 'proof-shared-document',
         'suggestion-create-1', 'suggestion-reject', 'suggestion-create-2', 'suggestion-accept',
         'knowledge-search', 'quiz-answer', 'quiz-privacy', 'evidence-submit', 'evidence-review',
-        'handoff-record', 'persistence-reload', 'soft-rejoin', 'persistence-fresh-context'
+        'handoff-record', 'persistence-reload', 'duplicate-name-rejected', 'persistence-fresh-context'
       ]) recordSkipped(name, 'facilitator squad was not created');
     } else {
       const joinCheck = await runStep(
@@ -811,7 +811,7 @@ async function main() {
 
       if (!p1Page || p1Page.isClosed() || !squadCode) {
         recordSkipped('persistence-reload', 'P1 or room code unavailable');
-        recordSkipped('soft-rejoin', 'P1 or room code unavailable');
+        recordSkipped('duplicate-name-rejected', 'P1 or room code unavailable');
         recordSkipped('persistence-fresh-context', 'P1 or room code unavailable');
       } else {
         const phaseForPersistence = await facilitatorPage
@@ -845,18 +845,22 @@ async function main() {
         duplicatePage.setDefaultNavigationTimeout(timeout);
 
         await runStep(
-          'soft-rejoin',
+          'duplicate-name-rejected',
           duplicatePage,
           null,
           async () => {
             await duplicatePage.goto(academyUrl, { waitUntil: 'domcontentloaded' });
             await duplicatePage.getByLabel('Je naam', { exact: true }).fill('Round A');
             await duplicatePage.getByLabel('Kamercode', { exact: true }).fill(squadCode);
-            await waitForJoinResponse(duplicatePage);
-            await waitForRoom(duplicatePage, 'Squad Orion');
-            const roster = duplicatePage.locator('.member').filter({ hasText: 'Round A' });
-            await expect(roster).toHaveCount(1, { timeout });
-            return { detail: 'soft rejoin restored existing seat for Round A' };
+            const responsePromise = duplicatePage.waitForResponse(
+              response => new URL(response.url()).pathname === '/game/join' && response.request().method() === 'POST',
+              { timeout }
+            );
+            await duplicatePage.getByRole('button', { name: 'Deelnemen', exact: true }).click();
+            const response = await responsePromise;
+            if (response.status() !== 409) throw new Error(`duplicate display name returned ${response.status()}, expected 409`);
+            await expect(duplicatePage.getByText('Deze naam bestaat al in deze kamer.', { exact: false })).toBeVisible({ timeout });
+            return { detail: 'duplicate display name Round A rejected with 409; no session minted' };
           }
         );
         await duplicateContext.close();
@@ -895,7 +899,7 @@ async function main() {
       'facilitator-create-squad', 'participants-join', 'round-start', 'phase-change', 'driver-rotate',
       'proof-shared-document', 'suggestion-create-1', 'suggestion-reject', 'suggestion-create-2',
       'suggestion-accept', 'knowledge-search', 'quiz-answer', 'quiz-privacy', 'evidence-submit',
-      'evidence-review', 'handoff-record', 'persistence-reload', 'soft-rejoin',
+      'evidence-review', 'handoff-record', 'persistence-reload', 'duplicate-name-rejected',
       'persistence-fresh-context'
     ]) {
       if (!recorded.has(name)) recordSkipped(name, `aborted after unexpected harness error: ${detail}`);

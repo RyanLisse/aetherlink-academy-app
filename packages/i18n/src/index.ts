@@ -67,7 +67,9 @@ export function createTranslate(source: Catalogs): Translate {
 
 export const translate: Translate = createTranslate(catalogs);
 
-export function applyDocumentLang(locale: unknown, doc: Document | undefined = globalDocument()): Locale {
+type DocLike = {documentElement?: {lang: string}};
+
+export function applyDocumentLang(locale: unknown, doc: DocLike | undefined = globalDocument()): Locale {
   const lang = normalizeLocale(locale);
   if (doc?.documentElement) doc.documentElement.lang = lang;
   return lang;
@@ -77,6 +79,6 @@ function globalStorage(): StorageLike | undefined {
   return (globalThis as {localStorage?: StorageLike}).localStorage;
 }
 
-function globalDocument(): Document | undefined {
-  return (globalThis as {document?: Document}).document;
+function globalDocument(): DocLike | undefined {
+  return (globalThis as {document?: DocLike}).document;
 }

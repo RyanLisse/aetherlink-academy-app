@@ -1,7 +1,27 @@
-id,time,region,merchant_category,payment_method,device,expected_risk,amount_eur
-TX-FIC-401,2026-09-21T09:10:00Z,NL-TRAIN,groceries,card,known,low,42.5
-TX-FIC-402,2026-09-21T09:12:00Z,NL-TRAIN,electronics,card,new-device,suspicious,4200
-TX-FIC-403,2026-09-21T09:15:00Z,BE-TRAIN,travel,wallet,known,low,88
-TX-FIC-404,2026-09-21T23:58:00Z,PT-TRAIN,electronics,card,new-device,suspicious,7800
-TX-FIC-405,2026-09-21T11:20:00Z,NL-TRAIN,books,card,known,low,25
-TX-FIC-406,2026-09-21T03:03:00Z,BE-TRAIN,gaming,bank-transfer,new-device,suspicious,6100
+id,time,region,merchant_name,merchant_category,payment_method,device,history_24h_count,history_avg_eur,amount_eur,expected_risk
+TX-FIC-401,2026-09-21T08:12:00Z,BE-TRAIN,Fa Example Grocer,groceries,wallet,known,1,121.14,126.59,low
+TX-FIC-402,2026-09-21T09:01:00Z,DE-TRAIN,Di Example Fuel,travel,card,known,2,140.08,178.18,low
+TX-FIC-403,2026-09-21T11:04:00Z,NL-TRAIN,Fa Example Grocer,travel,wallet,known,2,108.58,148.22,low
+TX-FIC-404,2026-09-21T17:10:00Z,LU-TRAIN,Ari Example Mart,coffee,card,known,4,69.82,87.46,low
+TX-FIC-405,2026-09-21T10:04:00Z,DE-TRAIN,Cy Example Café,coffee,wallet,known,4,52.09,47.83,low
+TX-FIC-406,2026-09-21T09:42:00Z,LU-TRAIN,Di Example Fuel,groceries,card,known,4,19.49,15.6,low
+TX-FIC-407,2026-09-21T08:23:00Z,BE-TRAIN,Fa Example Grocer,books,wallet,known,2,177.57,148.83,low
+TX-FIC-408,2026-09-21T12:42:00Z,LU-TRAIN,Ed Example Travel,books,wallet,known,4,80.15,90.33,low
+TX-FIC-409,2026-09-21T15:16:00Z,LU-TRAIN,Fa Example Grocer,books,card,known,1,205.32,166.88,low
+TX-FIC-410,2026-09-21T10:35:00Z,BE-TRAIN,Ed Example Travel,groceries,wallet,known,1,169.36,152.07,low
+TX-FIC-411,2026-09-21T17:29:00Z,DE-TRAIN,Fa Example Grocer,travel,wallet,known,1,92.73,110.61,low
+TX-FIC-412,2026-09-21T15:38:00Z,DE-TRAIN,Ed Example Travel,coffee,card,known,2,111.99,142.31,low
+TX-FIC-413,2026-09-21T11:03:00Z,DE-TRAIN,Gi Example Transit,groceries,card,known,3,157.65,142.87,low
+TX-FIC-414,2026-09-21T09:04:00Z,NL-TRAIN,Bo Example Books,coffee,wallet,known,4,89.64,100.95,low
+TX-FIC-415,2026-09-21T17:39:00Z,LU-TRAIN,Gi Example Transit,books,wallet,known,1,37.09,49.5,low
+TX-FIC-416,2026-09-21T11:04:00Z,BE-TRAIN,Ed Example Travel,groceries,card,known,2,172.93,136.63,low
+TX-FIC-417,2026-09-21T08:45:00Z,NL-TRAIN,Fa Example Grocer,groceries,card,known,3,141.53,117.87,low
+TX-FIC-418,2026-09-21T12:22:00Z,BE-TRAIN,Cy Example Café,coffee,card,known,4,34.6,28.08,low
+TX-FIC-419,2026-09-21T13:52:00Z,LU-TRAIN,Gi Example Transit,coffee,card,known,3,8.02,10.22,low
+TX-FIC-420,2026-09-21T14:30:00Z,BE-TRAIN,Gi Example Transit,travel,wallet,known,3,119.45,106.19,low
+TX-FIC-421,2026-09-21T14:22:00Z,NL-TRAIN,Ari Example Mart,electronics,card,known,3,2100,4500,low
+TX-FIC-430,2026-09-21T09:12:00Z,NL-TRAIN,Bo Example Gadgets,electronics,card,new-device,1,40,4200,suspicious
+TX-FIC-431,2026-09-21T23:58:00Z,PT-TRAIN,Cy Example Tech,electronics,card,new-device,0,0,7800,suspicious
+TX-FIC-432,2026-09-21T03:03:00Z,BE-TRAIN,Di Example Games,gaming,bank-transfer,new-device,0,12,6100,suspicious
+TX-FIC-433,2026-09-21T02:17:00Z,DE-TRAIN,Ed Example Digital,electronics,wallet,new-device,8,55,9200,suspicious
+TX-FIC-434,2026-09-21T22:41:00Z,LU-TRAIN,Fa Example Arcade,gaming,card,new-device,1,30,5100,suspicious
