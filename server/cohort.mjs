@@ -1,6 +1,6 @@
 import {randomBytes} from 'node:crypto';
 import {fail,hash} from './store.mjs';
-import {certificateEligibility} from './certificate.mjs';
+import {certificateEligibility,memberDayChecks} from './certificate.mjs';
 
 export const DAY_MS=24*60*60*1000;
 export const ACCESS_DAYS=90;
@@ -119,10 +119,10 @@ export function memberCertificate({cohort,memberId,codes,rooms,certificates,now}
  const own=certificates.filter(certificate=>certificate.memberId===memberId);
  const live=own.find(certificate=>!certificate.revokedAt);
  const revoked=own.filter(certificate=>certificate.revokedAt).sort((a,b)=>b.revokedAt-a.revokedAt)[0];
+ const progressByDay=mergeSeatProgress(rooms,memberId);
  const eligibility=certificateEligibility({
   days:cohort.days,
-  progressByDay:mergeSeatProgress(rooms,memberId),
-  evidence:rooms.flatMap(room=>(room.evidence||[]).filter(item=>item.personId===memberId)),
+  checksByDay:Object.fromEntries(Array.from({length:cohort.days},(_,index)=>[index+1,memberDayChecks({rooms,memberId,progressByDay,day:index+1})])),
   accessRevoked:memberStatus(codes).status==='revoked',
   lastDayStarted:now>=cohort.startsAt+(cohort.days-1)*DAY_MS,
  });

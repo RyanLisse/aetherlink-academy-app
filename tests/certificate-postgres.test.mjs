@@ -2,9 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {randomUUID} from 'node:crypto';
 import {PostgresStore} from '../server/postgres-store.mjs';
+import {getDayPack} from '../server/content.mjs';
 
 const DAY=24*60*60*1000;
 const START=Date.parse('2026-10-05T00:00:00Z');
+const DAY1_TASKS=['c1-setup','c1-a1','c1-a2','c1-a3','c1-a4'];
 const WAVE={name:'Wave oktober (synthetisch)',startsAt:START,days:1,readOnlyExport:true};
 
 test('PostgresStore: automatic certificate issuance is idempotent under concurrency, revocation is final, retention cascades',{skip:process.env.ACADEMY_POSTGRES_TEST!=='1'},async()=>{
@@ -24,9 +26,13 @@ test('PostgresStore: automatic certificate issuance is idempotent under concurre
   const bobSession=(await store.activateCohortCode(bob.code,{ip:'203.0.113.8'})).token;
   const count=async()=>(await pool.query(`SELECT count(*)::int AS count FROM "${schema}".cohort_certificates`)).rows[0].count;
 
-  assert.deepEqual(await store.myCertificate(session),{cohortName:'Wave oktober (synthetisch)',days:1,eligible:false,daysCompleted:0,reasons:[{code:'quiz-missing',day:1},{code:'evidence-missing',day:1}],status:'not-eligible',id:null,issuedAt:null,revokedAt:null});
+  const first=await store.myCertificate(session);
+  assert.deepEqual([first.status,first.id,first.reasons.map(reason=>`${reason.code}:${reason.id}`)],['not-eligible',null,['quiz-open:d1-quiz',...DAY1_TASKS.map(id=>`task-open:${id}`)]]);
   assert.equal(await count(),0);
-  await store.withSession(session,'browser',({r,p})=>{p.progressByDay={'1':{quizScore:3}};r.evidence.push({id:'evidence-1',personId:p.id,name:p.name,day:1,status:'accepted',review:{by:bob.memberId}});});
+  await store.withSession(session,'browser',({r,p})=>{
+   p.progressByDay={'1':{quizScore:getDayPack(1).quiz.questions.length}};
+   for(const taskId of DAY1_TASKS)r.evidence.push({id:`evidence-${taskId}`,personId:p.id,name:p.name,day:1,taskId,status:'accepted',review:{by:bob.memberId,reviewer:{role:'peer'},note:'Klopt (synthetisch).'}});
+  });
 
   const results=await Promise.all([...Array(6)].map(()=>store.myCertificate(session)).concat(store.cohortOverview(),store.cohortOverview()));
   const {id}=results[0];

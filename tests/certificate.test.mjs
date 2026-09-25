@@ -6,37 +6,45 @@ import os from 'node:os';
 import path from 'node:path';
 import {createApp} from '../server/app.mjs';
 import {LocalStore} from '../server/local-store.mjs';
-import {certificateEligibility,taskPassed} from '../server/certificate.mjs';
+import {certificateEligibility,memberDayChecks} from '../server/certificate.mjs';
 import {getDayPack} from '../server/content.mjs';
 
 const DAY=24*60*60*1000;
 const START=Date.parse('2026-10-05T00:00:00Z');
 const ID=/^[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}$/;
 
-const quiz={quizScore:2};
-const accepted=day=>({day,status:'accepted'});
-const pending=day=>({day,status:'pending'});
-const base={days:2,progressByDay:{1:quiz,2:quiz},evidence:[accepted(1),accepted(2)],accessRevoked:false,lastDayStarted:true};
+const pass=(kind,id)=>({kind,id,passed:true});
+const open=(kind,id,title)=>({kind,id,passed:false,...(title?{title}:{})});
+const day1=[pass('quiz','d1-quiz'),pass('task','c1-a1')];
+const day2=[pass('quiz','d2-quiz'),pass('lab','lab-1'),pass('task','c2-a6')];
+const base={days:2,checksByDay:{1:day1,2:day2},accessRevoked:false,lastDayStarted:true};
 
-test('completion rule: every cohort day needs its quiz and accepted evidence',()=>{
+test('completion rule: a day counts when it has content and every pass signal is green',()=>{
  const table=[
   ['all days complete',{},{eligible:true,daysCompleted:2,reasons:[]}],
-  ['quiz of day 2 missing',{progressByDay:{1:quiz}},{eligible:false,daysCompleted:1,reasons:[{code:'quiz-missing',day:2}]}],
-  ['quiz score 0 still counts as done',{progressByDay:{1:{quizScore:0},2:quiz}},{eligible:true,daysCompleted:2,reasons:[]}],
-  ['no evidence on day 1',{evidence:[accepted(2)]},{eligible:false,daysCompleted:1,reasons:[{code:'evidence-missing',day:1}]}],
-  ['evidence on day 2 not yet accepted',{evidence:[accepted(1),pending(2),{day:2,status:'needs-work'}]},{eligible:false,daysCompleted:1,reasons:[{code:'evidence-not-accepted',day:2}]}],
-  ['acceptance by a peer reviewer counts like the facilitator\'s',{evidence:[{day:1,status:'accepted',review:{by:'peer-member-id'}},{day:2,status:'accepted',review:{by:'facilitator'}}]},{eligible:true,daysCompleted:2,reasons:[]}],
-  ['evidence day given as a string',{evidence:[accepted('1'),accepted('2')]},{eligible:true,daysCompleted:2,reasons:[]}],
+  ['quiz of day 2 not fully correct',{checksByDay:{1:day1,2:[open('quiz','d2-quiz'),pass('lab','lab-1'),pass('task','c2-a6')]}},{eligible:false,daysCompleted:1,reasons:[{code:'quiz-open',day:2,id:'d2-quiz'}]}],
+  ['a lab that was not server-graded blocks the day',{checksByDay:{1:day1,2:[pass('quiz','d2-quiz'),open('lab','lab-1'),pass('task','c2-a6')]}},{eligible:false,daysCompleted:1,reasons:[{code:'lab-open',day:2,id:'lab-1'}]}],
+  ['an unapproved task names its title',{checksByDay:{1:[pass('quiz','d1-quiz'),open('task','c1-a1','Opdracht 1 · Repository-verkenner')],2:day2}},{eligible:false,daysCompleted:1,reasons:[{code:'task-open',day:1,id:'c1-a1',title:'Opdracht 1 · Repository-verkenner'}]}],
+  ['a day without content fails closed',{days:3},{eligible:false,daysCompleted:2,reasons:[{code:'day-without-content',day:3}]}],
   ['cohort still before its last day',{lastDayStarted:false},{eligible:false,daysCompleted:2,reasons:[{code:'cohort-running'}]}],
   ['facilitator revoked access',{accessRevoked:true},{eligible:false,daysCompleted:2,reasons:[{code:'access-revoked'}]}],
-  ['day 8 has no day pack, so no quiz row, but evidence is still required',{days:8,progressByDay:{1:quiz,2:quiz,3:quiz,4:quiz,5:quiz,6:quiz,7:quiz},evidence:[1,2,3,4,5,6,7].map(accepted)},{eligible:false,daysCompleted:7,reasons:[{code:'evidence-missing',day:8}]}],
-  ['nothing recorded',{progressByDay:{},evidence:[]},{eligible:false,daysCompleted:0,reasons:[{code:'quiz-missing',day:1},{code:'evidence-missing',day:1},{code:'quiz-missing',day:2},{code:'evidence-missing',day:2}]}],
  ];
  for(const [label,override,expected] of table)assert.deepEqual(certificateEligibility({...base,...override}),expected,label);
 });
 
-test('taskPassed is the single pass predicate: accepted passes, pending and needs-work do not',()=>{
- assert.deepEqual([{status:'accepted'},{status:'pending'},{status:'needs-work'}].map(taskPassed),[true,false,false]);
+test('memberDayChecks reads AET-103 pass signals: quiz all-correct, graded labs, auto-graded and peer-approved tasks',()=>{
+ const member='member-1';
+ const progressByDay={3:{quizScore:getDayPack(3).quiz.questions.length,labs:{'lab-a':{source:'server-graded'},'lab-b':{source:'self-reported'}},autograde:{'w3-l1':{source:'auto-graded',passed:true}}}};
+ const peerReviewed={id:'e-1',personId:member,day:3,taskId:'w3-proof',status:'accepted',review:{by:'member-2',reviewer:{role:'peer'}}};
+ const pendingTask={id:'e-2',personId:member,day:3,taskId:'w3-l2',status:'pending'};
+ const otherRoom={id:'room-2',members:[],evidence:[peerReviewed]};
+ const checks=memberDayChecks({rooms:[{id:'room-1',members:[],evidence:[pendingTask]},otherRoom],memberId:member,progressByDay,day:3});
+ assert.deepEqual(checks.map(check=>[check.kind,check.id,check.passed]),[
+  ['quiz','d3-quiz',true],['lab','lab-a',true],['lab','lab-b',false],
+  ['task','w3-l1',true],['task','w3-l2',false],['task','w3-l3',false],['task','w3-proof',true],
+ ]);
+ const oneWrong=memberDayChecks({rooms:[],memberId:member,progressByDay:{3:{quizScore:getDayPack(3).quiz.questions.length-1}},day:3});
+ assert.deepEqual(oneWrong.filter(check=>check.kind==='quiz'),[{kind:'quiz',id:'d3-quiz',source:'server-graded',passed:false}]);
 });
 
 async function gateway(){
@@ -58,17 +66,23 @@ async function gateway(){
 
 const host=body=>({body:{hostKey:'test-host',...body}});
 
-async function completeDay(call,sessions,day,reviewer='facilitator'){
+// Passes a whole day the way a participant does: every quick check answer right, then evidence per
+// day task, each approved by someone other than the author (alternating facilitator and a peer).
+async function completeDay(call,sessions,day,reviewers=['facilitator','bob']){
  const {facilitator,alice}=sessions;
  assert.equal((await call('POST','/game/control',{cookie:facilitator,body:{action:'day',value:day}})).status,200);
  const {key}=getDayPack(day).quiz;
  const {attemptId}=(await call('POST','/game/quiz/start',{cookie:alice,body:{}})).body;
  assert.equal((await call('POST','/game/quiz',{cookie:alice,body:{attemptId,answers:key}})).body.score,Object.keys(key).length);
- const submitted=await call('POST','/game/evidence',{cookie:alice,body:{requestId:`ev-${day}`,finding:`Dag ${day} bevinding (synthetisch)`,command:'npm test',observed:'groen',limitation:'alleen lokaal'}});
- assert.equal(submitted.body.day,day);
- const reviewed=await call('POST','/game/review',{cookie:sessions[reviewer],body:{requestId:`rv-${day}`,id:submitted.body.id,status:'accepted',note:'Klopt.'}});
- assert.equal(reviewed.body.status,'accepted');
+ for(const [index,taskId] of TASKS[day].entries()){
+  const submitted=await call('POST','/game/evidence',{cookie:alice,body:{requestId:`ev-${taskId}`,taskId,finding:`${taskId} bevinding (synthetisch)`,command:'npm test',observed:'groen',limitation:'alleen lokaal'}});
+  assert.equal(submitted.body.taskId,taskId);
+  const reviewed=await call('POST','/game/review',{cookie:sessions[reviewers[index%reviewers.length]],body:{requestId:`rv-${taskId}`,id:submitted.body.id,status:'accepted',note:'Klopt.'}});
+  assert.equal(reviewed.body.status,'accepted');
+ }
 }
+const TASKS={1:['c1-setup','c1-a1','c1-a2','c1-a3','c1-a4'],2:['c2-a6','c2-a7','c2-a9','c2-a10','c2-a12','c2-a13']};
+const reasonKeys=reasons=>reasons.map(reason=>[reason.code,reason.day,reason.id].filter(Boolean).join(':'));
 
 async function wave(call){
  const created=await call('POST','/game/facilitator/cohort/create',host({name:'Wave oktober (synthetisch)',startDate:'2026-10-05',days:2,members:['Alice Jansen','Bob']}));
@@ -99,12 +113,12 @@ test('Mijn certificaat: ineligible members get reasons and no certificate; eligi
   await completeDay(call,sessions,1);
   const early=await mine(call,sessions.alice);
   assert.equal(early.status,200);
-  assert.deepEqual(early.body,{cohortName:'Wave oktober (synthetisch)',days:2,eligible:false,daysCompleted:1,reasons:[{code:'cohort-running'},{code:'quiz-missing',day:2},{code:'evidence-missing',day:2}],status:'not-eligible',id:null,issuedAt:null,revokedAt:null});
+  assert.deepEqual({...early.body,reasons:reasonKeys(early.body.reasons)},{cohortName:'Wave oktober (synthetisch)',days:2,eligible:false,daysCompleted:1,reasons:['cohort-running','quiz-open:2:d2-quiz',...TASKS[2].map(id=>`task-open:2:${id}`)],status:'not-eligible',id:null,issuedAt:null,revokedAt:null});
+  assert.equal(early.body.reasons[2].title,'Opdracht 6 · Projectinstructies');
   assert.equal(certificateCount(store),0);
 
   await nextDay(clock,login);
-  assert.equal((await call('POST','/game/control',{cookie:sessions.facilitator,body:{action:'shuffle'}})).status,200);
-  await completeDay(call,sessions,2,'bob');
+  await completeDay(call,sessions,2,['bob']);
   assert.equal(certificateCount(store),0,'nothing is issued until someone looks');
 
   const first=await mine(call,sessions.alice);
@@ -145,9 +159,9 @@ test('facilitator roster issues automatically, shows reasons, keeps revoke, and 
   await nextDay(clock,login);
   await completeDay(call,sessions,2);
   const roster=await rosterOf(call);
-  assert.deepEqual(roster.map(member=>[member.name,member.certificate.status,member.certificate.reasons]),[
+  assert.deepEqual(roster.map(member=>[member.name,member.certificate.status,reasonKeys(member.certificate.reasons)]),[
    ['Alice Jansen','issued',[]],
-   ['Bob','not-eligible',[{code:'quiz-missing',day:1},{code:'evidence-missing',day:1},{code:'quiz-missing',day:2},{code:'evidence-missing',day:2}]],
+   ['Bob','not-eligible',[1,2].flatMap(day=>[`quiz-open:${day}:d${day}-quiz`,...TASKS[day].map(id=>`task-open:${day}:${id}`)])],
   ]);
   const {id}=roster[0].certificate;
   assert.match(id,ID);

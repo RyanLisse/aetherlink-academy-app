@@ -1,32 +1,37 @@
 import {createHash} from 'node:crypto';
-import {getDayPack} from './content.mjs';
+import {dayChecks} from './progress.mjs';
+import {dayTasks,taskPassed} from './proof-trail.mjs';
 
 export const CERTIFICATE_INVALID_MESSAGE='Geen geldig certificaat gevonden voor deze code.';
 
-// The single definition of "this piece of work passed". An accepted review counts whoever gave it
-// (a peer, the driver or the facilitator), so nothing asynchronous waits on the facilitator.
-// AET-103 extension point: auto-graded passes (`source:'auto-graded'`) will be added here.
-export const taskPassed=item=>item.status==='accepted';
+// Certificate eligibility reads the same pass signals as the rest of the Academy (AET-103): a quiz
+// passes with every answer right, a lab only when the server graded it, and a day task when the
+// Proof trail approves it, by an accepted peer or facilitator review or by a passing auto-grade.
+// Nothing here waits on the facilitator.
+const safely=fn=>{try{return fn();}catch{return false;}};
 
-// One row per cohort day requirement. A day counts only when every applicable row passes;
-// `applies` keeps the quiz row off days whose content pack has no quiz.
-export const DAY_REQUIREMENTS=[
- {code:'quiz-missing',applies:day=>Boolean(getDayPack(day)?.quiz),passes:facts=>facts.quizDone},
- {code:'evidence-missing',applies:()=>true,passes:facts=>facts.evidence>0},
- {code:'evidence-not-accepted',applies:()=>true,passes:facts=>facts.evidence===0||facts.passed>0},
-];
+// Every check one member must pass for one cohort day, across all rooms of the cohort. A member can
+// sit in several cohort rooms, so a task passes when its trail is approved in any of them.
+export function memberDayChecks({rooms,memberId,progressByDay,day}){
+ const views=(rooms.length?rooms:[{evidence:[]}]).map(room=>({...room,members:[{id:memberId,progressByDay}]}));
+ const person={id:memberId,progressByDay};
+ const graded=dayChecks(views[0],person,day).filter(check=>check.kind!=='task');
+ const tasks=dayTasks(day).map(task=>({kind:'task',id:task.id,title:task.title,passed:views.some(view=>safely(()=>taskPassed(view,memberId,task.id,day)))}));
+ return [...graded,...tasks];
+}
 
-export function certificateEligibility({days,progressByDay,evidence,accessRevoked,lastDayStarted}){
+// A day counts when it has content and every check passes. A day without content fails closed.
+export function certificateEligibility({days,checksByDay,accessRevoked,lastDayStarted}){
  const reasons=[];
  if(!lastDayStarted)reasons.push({code:'cohort-running'});
  if(accessRevoked)reasons.push({code:'access-revoked'});
  let daysCompleted=0;
  for(let day=1;day<=days;day++){
-  const own=evidence.filter(item=>Number(item.day)===day);
-  const facts={quizDone:progressByDay[String(day)]?.quizScore!=null,evidence:own.length,passed:own.filter(taskPassed).length};
-  const failed=DAY_REQUIREMENTS.filter(rule=>rule.applies(day)&&!rule.passes(facts));
-  for(const rule of failed)reasons.push({code:rule.code,day});
-  if(!failed.length)daysCompleted++;
+  const checks=checksByDay[day]||[];
+  const open=checks.filter(check=>!check.passed);
+  if(!checks.length)reasons.push({code:'day-without-content',day});
+  for(const check of open)reasons.push({code:`${check.kind}-open`,day,id:check.id,...(check.title?{title:check.title}:{})});
+  if(checks.length&&!open.length)daysCompleted++;
  }
  return {eligible:reasons.length===0,daysCompleted,reasons};
 }
