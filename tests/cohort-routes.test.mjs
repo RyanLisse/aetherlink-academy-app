@@ -76,7 +76,7 @@ test('facilitator creates a Wave cohort, participant activates a personal code i
   assert.match(blocked.body.error,/alleen-lezen/);
   assert.equal((await call('POST','/GAME/Help/',{cookie:readSession,body:{}})).status,403);
   assert.equal((await call('POST','/GAME/mcp-token',{cookie:readSession,body:{}})).status,403);
-  for (const [route,body] of [['/game/lab-complete',{labId:'lab-1'}],['/game/quiz/start',{}],['/game/quiz',{answers:[0,0,0]}],['/game/route',{route:'guided'}],['/game/evidence',{requestId:'r1',finding:'a',command:'b',observed:'c',limitation:'d'}]]) {
+  for (const [route,body] of [['/game/lab-complete',{labId:'lab-1'}],['/game/quiz/start',{}],['/game/quiz',{answers:[0,0,0]}],['/game/route',{route:'guided'}],['/game/evidence',{requestId:'r1',finding:'a',command:'b',observed:'c',limitation:'d'}],['/game/review',{id:'evidence-1',status:'accepted',note:'ok',requestId:'r2'}],['/game/board',{action:'open'}]]) {
    const result=await call('POST',route,{cookie:readSession,body});
    assert.deepEqual([route,result.status,result.body.error],[route,403,'Je cohorttoegang is alleen-lezen. Je kunt je werk nog bekijken en exporteren.']);
   }

@@ -1,6 +1,8 @@
 import express from 'express';
 import {agentInstructions} from './agent-setup.mjs';
 import {dayProgress,debrief,exportDebrief} from './progress.mjs';
+import {findTask,taskStatus,taskTrail,reviewQueue,peerQueue,transition,reviewEvent,reviewerRole,authorizeTaskReview} from './proof-trail.mjs';
+import {applyBoardAction,boardMarkdown,boardView,parseBoard,roomDocument} from './debrief-board.mjs';
 import http from 'node:http';
 import httpProxy from 'http-proxy';
 import {createHash,createHmac,randomBytes,randomUUID,timingSafeEqual} from 'node:crypto';
@@ -49,14 +51,15 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  app.use(async(req,res,next)=>{
   if(!/^\/(d\/|api\/|documents\/|assets\/|ws\b)/.test(req.path)||webPublicAssets.has(req.path))return next();
   try{const session=await store.auth(cookie(req),'browser');const {r}=session;const slug=req.path.match(/^\/(?:d|documents|api\/documents|api\/agent)\/([^/]+)/)?.[1];
-   if(slug&&slug!==r.proof.slug)fail(403,'Dit document hoort bij een andere kamer.');
+   const doc=roomDocument(r,slug);if(!doc)fail(403,'Dit document hoort bij een andere kamer.');const docSlug=doc.proof.slug;
    if(session.s.readOnly&&!['GET','HEAD'].includes(req.method))fail(403,READ_ONLY_MESSAGE);
-   const allowed=(['GET','PUT'].includes(req.method)&&req.path===`/api/documents/${r.proof.slug}`)||req.path.startsWith('/assets/')||req.path===`/d/${r.proof.slug}`||req.path==='/api/capabilities'||new RegExp(`^/api/documents/${r.proof.slug}/(open-context|collab-session|collab-refresh|info|presence|marks|content|title)$`).test(req.path);
-   const agentAllowed=new RegExp(`^/api/agent/${r.proof.slug}/(state|events/pending|presence/disconnect|marks/(comment|reply|resolve|unresolve|accept|reject|suggest-insert|suggest-replace|suggest-delete))$`).test(req.path);
+   const allowed=(['GET','PUT'].includes(req.method)&&req.path===`/api/documents/${docSlug}`)||req.path.startsWith('/assets/')||req.path===`/d/${docSlug}`||req.path==='/api/capabilities'||new RegExp(`^/api/documents/${docSlug}/(open-context|collab-session|collab-refresh|info|presence|marks|content|title)$`).test(req.path);
+   const agentAllowed=new RegExp(`^/api/agent/${docSlug}/(state|events/pending|presence/disconnect|marks/(comment|reply|resolve|unresolve|accept|reject|suggest-insert|suggest-replace|suggest-delete))$`).test(req.path);
    if(!allowed&&!agentAllowed)fail(403,'Deze Proof-route is niet beschikbaar via de game.');
-   if(new RegExp(`^/api/agent/${r.proof.slug}/marks/(accept|reject)$`).test(req.path))suggestionReviewer(session);
-   if(req.path.startsWith('/d/'))req.url=req.path+'?token='+r.proof.editor;
-   req.headers.authorization=`Bearer ${r.proof.editor}`;req.headers['x-share-token']=r.proof.editor;proxy.web(req,res);
+   if(!doc.writable&&!['GET','HEAD'].includes(req.method)&&req.path!==`/api/documents/${docSlug}/collab-refresh`)fail(403,'Het debriefbord is gesloten; alleen lezen is mogelijk.');
+   if(new RegExp(`^/api/agent/${docSlug}/marks/(accept|reject)$`).test(req.path))suggestionReviewer(session);
+   if(req.path.startsWith('/d/'))req.url=req.path+'?token='+doc.token;
+   req.headers.authorization=`Bearer ${doc.token}`;req.headers['x-share-token']=doc.token;proxy.web(req,res);
   }catch(e){res.status(e.status||500).json({error:e.message});}
  });
  app.use(express.json({limit:'64kb'}));
@@ -105,7 +108,16 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  app.post('/game/lab-complete',wrap(async(req,res)=>{const completion=parseLabCompletion(req.body);if(!completion)fail(400,'Ongeldige labvoltooiing.');res.json(await store.withSession(token(req),'browser',({r,p})=>{if(!p)fail(403,'Alleen deelnemers ronden een lab af.');if(!dayLabs(r.day).some(lab=>lab.id===completion.labId))fail(404,`Lab ${completion.labId} hoort niet bij dag ${r.day}.`);const key=String(r.day);p.progressByDay??={};const day=p.progressByDay[key]||{},existing=day.labs?.[completion.labId];if(existing)return {recorded:false,day:r.day,labId:completion.labId,lab:existing};const lab={source:'lab-reported',result:completion.result,evidence:completion.evidence??null,at:new Date().toISOString()};p.progressByDay[key]={...day,labs:{...day.labs,[completion.labId]:lab}};return {recorded:true,day:r.day,labId:completion.labId,lab};}));}));
  app.post('/game/reflection',wrap(async(req,res)=>res.json(await store.withSession(token(req),'browser',({r,p})=>{if(!p)fail(403,'Alleen deelnemers schrijven een eigen reflectie.');const reflection={learned:text(req.body.learned),next:text(req.body.next),at:new Date().toISOString()};p.progressByDay??={};p.progressByDay[String(r.day)]={...p.progressByDay[String(r.day)],reflection};return reflection;}))));
  app.get('/game/debrief',wrap(async(req,res)=>{const {r,s}=await browser(req);if(s.personId!=='facilitator')fail(403,'Alleen de facilitator bekijkt de debrief.');res.json(debrief(r));}));
- app.get('/game/debrief/export',wrap(async(req,res)=>{const {r,s}=await browser(req);if(s.personId!=='facilitator')fail(403,'Alleen de facilitator exporteert de debrief.');res.type('text/markdown').set('Content-Disposition','attachment; filename="squad-overdracht.md"').send(exportDebrief(r));}));
+ app.get('/game/debrief/export',wrap(async(req,res)=>{const {r,s}=await browser(req);if(s.personId!=='facilitator')fail(403,'Alleen de facilitator exporteert de debrief.');const board=r.board?parseBoard((await proof.state({proof:r.board.proof})).markdown):null;res.type('text/markdown').set('Content-Disposition','attachment; filename="squad-overdracht.md"').send(exportDebrief(r,board));}));
+ // Fencing drops Proof's loaded doc, so wait until its debounced persist has stored every card that is already live.
+ async function settleBoard(p){for(let attempt=0;attempt<25;attempt++){const [live,stored]=await Promise.all([proof.state({proof:p}),proof.stored(p)]);if(JSON.stringify(parseBoard(live.markdown))===JSON.stringify(parseBoard(stored.markdown)))return;await new Promise(resolve=>setTimeout(resolve,200));}fail(503,'Proof slaat het bord nog op. Sluit het bord opnieuw.');}
+ app.post('/game/board',wrap(async(req,res)=>{
+  const {r,s}=await browser(req);if(s.personId!=='facilitator')fail(403,'Alleen de facilitator opent of sluit het debriefbord.');
+  const action=req.body?.action,created=action==='open'&&!r.board?await proof.createBoard(boardMarkdown(),`${r.name} — Debriefbord`):null;
+  const board=await store.withSession(token(req),'browser',({r,s})=>{if(s.personId!=='facilitator')fail(403,'Alleen de facilitator opent of sluit het debriefbord.');return applyBoardAction(r,action,{created,at:new Date().toISOString(),by:s.displayName||'Facilitator'});});
+  if(board.status==='closed'){await settleBoard(board.proof);await proof.fence(board.proof);}
+  res.json(boardView(board));
+ }));
  app.get('/game/document',wrap(async(req,res)=>{const {r}=await browser(req);res.json(await proof.state(r));}));
  const screens=createScreenStore(presence);
  app.post('/game/screen-state',wrap(async(req,res)=>{await screens.save(screenBinding(await browser(req),req.body));res.status(204).end();}));
@@ -120,22 +132,30 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  async function commentQuote(r){const state=await proof.state(r);const quote=state.markdown.split('\n').find(line=>line.trim())?.replace(/^#+\s*/,'').trim();if(!quote)fail(409,'Het document heeft nog geen tekst voor commentaar.');return quote;}
  async function evidence(token,input){
   const {r,p,s}=await store.auth(token);if(!p)fail(403,'Alleen een deelnemer kan bewijs indienen.');
-  const key=text(input.requestId,100),fields={finding:text(input.finding),command:text(input.command,1000),observed:text(input.observed),limitation:text(input.limitation)};
+  const taskId=input.taskId==null||input.taskId===''?undefined:findTask(r.day,text(input.taskId,100)).id;
+  const key=text(input.requestId,100),fields={finding:text(input.finding),command:text(input.command,1000),observed:text(input.observed),limitation:text(input.limitation),...(taskId?{taskId}:{})};
   const fingerprint=hash(JSON.stringify(fields));
-  const reserved=await store.reserveRequest(token,'evidence',key,fingerprint,{value:{id:randomUUID(),requestId:key,personId:p.id,name:p.name,source:s.kind==='mcp'?'MCP-client':'Deelnemer',...fields,day:r.day,at:new Date().toISOString(),status:'pending'},actor:`${s.kind==='mcp'?'ai':'human'}:${p.name}:${p.id}`,quote:await commentQuote(r)},({p})=>{if(!p)fail(403,'Alleen deelnemers.');});
+  const canSubmit=({r,p},e)=>{if(e.taskId)transition(taskStatus(r,p.id,e.taskId,e.day),'submit');};
+  const reserved=await store.reserveRequest(token,'evidence',key,fingerprint,{value:{id:randomUUID(),requestId:key,personId:p.id,name:p.name,source:s.kind==='mcp'?'MCP-client':'Deelnemer',...fields,day:r.day,at:new Date().toISOString(),status:'pending'},actor:`${s.kind==='mcp'?'ai':'human'}:${p.name}:${p.id}`,quote:await commentQuote(r)},context=>{if(!context.p)fail(403,'Alleen deelnemers.');canSubmit(context,{taskId,day:context.r.day});});
   if(reserved.completed)return reserved.result;
   const {value:e,actor,quote}=reserved.intent;
-  await proof.comment(r,actor,`Bewijs ${e.id}\n${e.finding}\nControle: ${e.command}\nWaargenomen: ${e.observed}\nBeperking: ${e.limitation}\nStatus: ingediend, nog niet door een mens beoordeeld.`,quote,`${p.id}:${key}`);
-  return store.completeRequest(token,'evidence',key,fingerprint,({r,p})=>{r.evidence.push(e);if(p){p.progressByDay=p.progressByDay||{};const keyDay=String(e.day);const prev=p.progressByDay[keyDay]||{};p.progressByDay[keyDay]={...prev,evidenceCount:(prev.evidenceCount||0)+1,evidenceAt:e.at};}return e;});
+  await proof.comment(r,actor,`Bewijs ${e.id}\n${e.finding}\nControle: ${e.command}\nWaargenomen: ${e.observed}\nBeperking: ${e.limitation}\n${e.taskId?`Opdracht: ${e.taskId}\n`:''}Status: ingediend, nog niet door een mens beoordeeld.`,quote,`${p.id}:${key}`);
+  return store.completeRequest(token,'evidence',key,fingerprint,({r,p})=>{canSubmit({r,p},e);r.evidence.push(e);if(p){p.progressByDay=p.progressByDay||{};const keyDay=String(e.day);const prev=p.progressByDay[keyDay]||{};p.progressByDay[keyDay]={...prev,evidenceCount:(prev.evidenceCount||0)+1,evidenceAt:e.at};}return e;});
  }
  app.post('/game/evidence',wrap(async(req,res)=>{await browser(req);res.json(await evidence(token(req),req.body));}));
+ app.get('/game/tasks',wrap(async(req,res)=>{const {r,p}=await browser(req);if(!p)fail(403,'Alleen deelnemers hebben een eigen opdrachtenlijst.');res.json({day:r.day,tasks:taskTrail(r,p.id,r.day)});}));
+ app.get('/game/tasks/peer',wrap(async(req,res)=>{const {r,p}=await browser(req);if(!p)fail(403,'Alleen deelnemers beoordelen elkaars opdrachten.');res.json(peerQueue(r,p.id));}));
+ app.get('/game/tasks/queue',wrap(async(req,res)=>{const {r,s}=await browser(req);if(s.personId!=='facilitator')fail(403,'Alleen de facilitator ziet de beoordelingswachtrij.');res.json(reviewQueue(r));}));
  app.post('/game/review',wrap(async(req,res)=>{
-  const {r,s}=await browser(req);
+  const {r,s,p}=await browser(req);
   if(!['accepted','needs-work'].includes(req.body.status))fail(400,'Ongeldige beoordeling.');
   const fields={id:text(req.body.id,100),status:req.body.status,note:text(req.body.note)},key=text(req.body.requestId,100),fingerprint=hash(JSON.stringify(fields));
-  const saved=await store.reserveRequest(token(req),'review',key,fingerprint,{value:{...fields,by:s.personId,at:new Date().toISOString()},actor:`human:${s.personId}`,quote:await commentQuote(r)},context=>{reviewer(context);const e=context.r.evidence.find(e=>e.id===fields.id);if(!e)fail(404,'Bewijs niet gevonden.');if(e.personId===context.s.personId)fail(403,'Laat een andere deelnemer jouw bewijs beoordelen.');});if(saved.completed)return res.json(saved.result);
+  const sso=s.personId==='facilitator'?await store.facilitator(namedCookie(req,'academy-facilitator')):null;
+  const reviewedBy={role:reviewerRole(s),name:sso?.name||p?.name||s.displayName||'Facilitator',email:sso?.email||null};
+  const canReview=(context,e)=>{if(!e.taskId)return;authorizeTaskReview(context);transition(taskStatus(context.r,e.personId,e.taskId,e.day),reviewEvent(fields.status));};
+  const saved=await store.reserveRequest(token(req),'review',key,fingerprint,{value:{...fields,by:s.personId,reviewer:reviewedBy,at:new Date().toISOString()},actor:`human:${s.personId}`,quote:await commentQuote(r)},context=>{const e=context.r.evidence.find(e=>e.id===fields.id);if(!e?.taskId)reviewer(context);if(!e)fail(404,'Bewijs niet gevonden.');if(e.personId===context.s.personId)fail(403,'Laat een andere deelnemer jouw bewijs beoordelen.');canReview(context,e);});if(saved.completed)return res.json(saved.result);
   const {value:intent,actor,quote}=saved.intent;await proof.comment(r,actor,`Review bewijs ${intent.id}: ${intent.status}\n${intent.note}`,quote,`review:${s.personId}:${key}`);
-  res.json(await store.completeRequest(token(req),'review',key,fingerprint,context=>{const target=context.r.evidence.find(x=>x.id===intent.id);if(!target)fail(404,'Bewijs niet gevonden.');target.status=intent.status;target.review={by:intent.by,note:intent.note,at:intent.at};return target;}));
+  res.json(await store.completeRequest(token(req),'review',key,fingerprint,context=>{const target=context.r.evidence.find(x=>x.id===intent.id);if(!target)fail(404,'Bewijs niet gevonden.');canReview(context,target);target.status=intent.status;target.review={by:intent.by,reviewer:intent.reviewer,note:intent.note,at:intent.at};return target;}));
  }));
  app.post('/game/handoff',wrap(async(req,res)=>{
   const {r,s}=await browser(req);
@@ -158,7 +178,7 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  app.delete('/game/decks/:deckId',wrap(async(req,res)=>res.json(await slides.run('deleteDeck',deckActor(await browser(req)),{deckId:deckId(req)}))));
  app.get('/game/decks/:deckId/export.html',wrap(async(req,res)=>{const result=await slides.run('exportHtml',deckActor(await browser(req)),{deckId:deckId(req)});res.type('text/html').set('Content-Disposition',`attachment; filename="${result.filename}"`).set('Content-Security-Policy',"default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src https: data:; font-src https: data:").send(result.html);}));
  async function executeMcp(token,tool,input){const a=await store.auth(token,'mcp');const {r,p}=a;if(!p)fail(403,'Geen deelnemer.');let result;
-  switch(tool){case 'get_mission':{const pack=getDayPack(r.day);result={session:{roomId:r.id,participantId:p.id,participantName:p.name,squadName:r.name},mission:pack?.mission||mission,day:r.day,phase:r.phase,route:p.route,role:r.members[r.driver]?.id===p.id?'Driver':'Navigator',coach:'Leg begrippen uit, citeer les-IDs, pas hints aan de hulpkeuze aan. Lees eerst de gedeelde intent. Geen browserchat of model-API vanuit de game.'};break;}
+  switch(tool){case 'get_mission':{const pack=getDayPack(r.day);result={session:{roomId:r.id,participantId:p.id,participantName:p.name,squadName:r.name},mission:pack?.mission||mission,day:r.day,phase:r.phase,route:p.route,role:r.members[r.driver]?.id===p.id?'Driver':'Navigator',tasks:taskTrail(r,p.id,r.day),coach:'Leg begrippen uit, citeer les-IDs, pas hints aan de hulpkeuze aan. Lees eerst de gedeelde intent. Geen browserchat of model-API vanuit de game.'};break;}
   case 'get_document':result=await proof.state(r);break;
   case 'get_screen_state':result=await readScreenState(a,screens);break;
   case 'search_knowledge':result={lessons:searchKnowledge(String(input.query||''))};break;
@@ -250,6 +270,6 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  });
  app.use(express.static(path.join(root,'dist')));app.get('/',(_req,res)=>res.sendFile(path.join(root,'dist/index.html')));app.use((req,res,next)=>{if(req.method==='GET'&&(req.path==='/arcade'||req.path.startsWith('/arcade/')))return res.sendFile(path.join(root,'dist/index.html'));return next();});
  app.use((e,req,res,_next)=>{if(!e.status)console.error('[academy] unhandled',{method:req.method,path:req.path,message:e?.message,stack:e?.stack});return res.status(e.status||500).json({error:e.status?e.message:'Onverwachte serverfout. Probeer opnieuw; je invoer blijft staan.'});});
- const server=http.createServer(app);server.on('upgrade',async(req,socket,head)=>{try{const {r,s}=await browser(req);if(s.readOnly)fail(403,READ_ONLY_MESSAGE);const url=new URL(req.url,'http://localhost');if(req.headers.origin&&req.headers.origin!==`http://${req.headers.host}`&&req.headers.origin!==`https://${req.headers.host}`)fail(403,'Origin');if(url.pathname!=='/ws'||url.searchParams.get('slug')!==r.proof.slug)fail(403,'Kamer');if(s.expiresAt){const sockets=liveSockets.get(s.personId)||new Set();liveSockets.set(s.personId,sockets.add(socket));const expiry=setTimeout(()=>socket.destroy(),Math.max(0,s.expiresAt-Date.now()));socket.once('close',()=>{clearTimeout(expiry);sockets.delete(socket);if(!sockets.size)liveSockets.delete(s.personId);});}proxy.ws(req,socket,head);}catch(e){console.warn('WS denied',new URL(req.url,'http://localhost').pathname,e.message);socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');socket.destroy();}});
+ const server=http.createServer(app);server.on('upgrade',async(req,socket,head)=>{try{const {r,s}=await browser(req);if(s.readOnly)fail(403,READ_ONLY_MESSAGE);const url=new URL(req.url,'http://localhost');if(req.headers.origin&&req.headers.origin!==`http://${req.headers.host}`&&req.headers.origin!==`https://${req.headers.host}`)fail(403,'Origin');if(url.pathname!=='/ws'||!url.searchParams.get('slug')||!roomDocument(r,url.searchParams.get('slug')))fail(403,'Kamer');if(s.expiresAt){const sockets=liveSockets.get(s.personId)||new Set();liveSockets.set(s.personId,sockets.add(socket));const expiry=setTimeout(()=>socket.destroy(),Math.max(0,s.expiresAt-Date.now()));socket.once('close',()=>{clearTimeout(expiry);sockets.delete(socket);if(!sockets.size)liveSockets.delete(s.personId);});}proxy.ws(req,socket,head);}catch(e){console.warn('WS denied',new URL(req.url,'http://localhost').pathname,e.message);socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');socket.destroy();}});
  return {app,server,store,proof,slides,portal};
 }

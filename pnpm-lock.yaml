@@ -20,6 +20,9 @@ importers:
 
   .:
     dependencies:
+      '@hocuspocus/provider':
+        specifier: 2.15.3
+        version: 2.15.3(y-protocols@1.0.7(yjs@13.6.32))(yjs@13.6.32)
       '@modelcontextprotocol/client':
         specifier: 2.0.0
         version: 2.0.0
@@ -59,6 +62,9 @@ importers:
       react-dom:
         specifier: 19.1.1
         version: 19.1.1(react@19.1.1)
+      yjs:
+        specifier: 13.6.32
+        version: 13.6.32
       zod:
         specifier: 4.6.4
         version: 4.6.4
@@ -882,6 +888,15 @@ packages:
     cpu: [x64]
     os: [win32]
 
+  '@hocuspocus/common@2.15.3':
+    resolution: {integrity: sha512-Rzh1HF0a2o/tf90A3w2XNdXd9Ym3aQzMDfD3lAUONCX9B9QOdqdyiORrj6M25QEaJrEIbXFy8LtAFcL0wRdWzA==}
+
+  '@hocuspocus/provider@2.15.3':
+    resolution: {integrity: sha512-oadN05m+KL4ylNKVo5YspNG4MXkT2Y+FUFzrgigpQeTjQibkPUwCNmUnkUxMgrGRgxb+O0lJCfirFIJMxedctA==}
+    peerDependencies:
+      y-protocols: ^1.0.6
+      yjs: ^13.6.8
+
   '@hono/node-server@1.19.17':
     resolution: {integrity: sha512-dSneS5qhiauZWGDCeK4o695Xd9nUNjviSZCMQrj10eetr8Uln1ucn6bbphOM6UynAMMtNIzZNSpL9vnASJwrPQ==}
     engines: {node: '>=18.14.1'}
@@ -906,6 +921,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.31':
     resolution: {integrity: sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw==}
+
+  '@lifeomic/attempt@3.1.0':
+    resolution: {integrity: sha512-QZqem4QuAnAyzfz+Gj5/+SLxqwCAw2qmt7732ZXodr6VDWGeYLG6w1i/vYLa55JQM9wRuBKLmXmiZ2P0LtE5rw==}
 
   '@modelcontextprotocol/client@2.0.0':
     resolution: {integrity: sha512-8f1OghQ2rjzIOfqgUCP+8GiUWqRs89njoWLNqAe8kWmDePv3s1fZXseej+QXemssEuuOvLLmLO/kqM3IQHtISw==}
@@ -1659,6 +1677,9 @@ packages:
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
 
+  isomorphic.js@0.2.5:
+    resolution: {integrity: sha512-PIeMbHqMt4DnUP3MA/Flc0HElYjMXArsw1qwJZcm9sqR8mq3l8NYizFMty0pWwE/tzIGH3EKK5+jes5mAr85yw==}
+
   jose@6.2.12:
     resolution: {integrity: sha512-9NiFmJEex0sy2Dk58j2UGBSHgUs2ypF9eZSu4L6vjOX3Dp96Sw1F3uL+H+D1sx02jZZdzUT0HgvCy59CuvXcWw==}
 
@@ -1682,6 +1703,11 @@ packages:
   json5@2.2.3:
     resolution: {integrity: sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==}
     engines: {node: '>=6'}
+    hasBin: true
+
+  lib0@0.2.117:
+    resolution: {integrity: sha512-DeXj9X5xDCjgKLU/7RR+/HQEVzuuEUiwldwOGsHK/sfAfELGWEyTcf0x+uOvCvK3O2zPmZePXWL85vtia6GyZw==}
+    engines: {node: '>=16'}
     hasBin: true
 
   lodash.defaults@4.2.0:
@@ -2220,8 +2246,18 @@ packages:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
     engines: {node: '>=0.4'}
 
+  y-protocols@1.0.7:
+    resolution: {integrity: sha512-YSVsLoXxO67J6eE/nV4AtFtT3QEotZf5sK5BHxFBXso7VDUT3Tx07IfA6hsu5Q5OmBdMkQVmFZ9QOA7fikWvnw==}
+    engines: {node: '>=16.0.0', npm: '>=8.0.0'}
+    peerDependencies:
+      yjs: ^13.0.0
+
   yallist@3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
+
+  yjs@13.6.32:
+    resolution: {integrity: sha512-lfiJIIC4Xayt5ItynE407ehlE03pCjeOc4hkR4yxxvvNJ4kuiN25B0g+Qp8XagYz361LLL7DCzR5bvFJ81QKtQ==}
+    engines: {node: '>=16.0.0', npm: '>=8.0.0'}
 
   zod@4.6.4:
     resolution: {integrity: sha512-AXSD6hvGdvRjajG/l1cC+d6IrhH+sjmPKtYeQdJIK8MFJl3LyClzS+o/YsVC+zQZPupAaeH5skwwm8YqYH7BqA==}
@@ -2630,6 +2666,22 @@ snapshots:
   '@esbuild/win32-x64@0.28.2':
     optional: true
 
+  '@hocuspocus/common@2.15.3':
+    dependencies:
+      lib0: 0.2.117
+
+  '@hocuspocus/provider@2.15.3(y-protocols@1.0.7(yjs@13.6.32))(yjs@13.6.32)':
+    dependencies:
+      '@hocuspocus/common': 2.15.3
+      '@lifeomic/attempt': 3.1.0
+      lib0: 0.2.117
+      ws: 8.21.3
+      y-protocols: 1.0.7(yjs@13.6.32)
+      yjs: 13.6.32
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
+
   '@hono/node-server@1.19.17(hono@4.13.7)':
     dependencies:
       hono: 4.13.7
@@ -2654,6 +2706,8 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.6.0
+
+  '@lifeomic/attempt@3.1.0': {}
 
   '@modelcontextprotocol/client@2.0.0':
     dependencies:
@@ -3311,6 +3365,8 @@ snapshots:
 
   isexe@2.0.0: {}
 
+  isomorphic.js@0.2.5: {}
+
   jose@6.2.12: {}
 
   js-tokens@4.0.0: {}
@@ -3345,6 +3401,10 @@ snapshots:
   jsesc@3.1.0: {}
 
   json5@2.2.3: {}
+
+  lib0@0.2.117:
+    dependencies:
+      isomorphic.js: 0.2.5
 
   lodash.defaults@4.2.0: {}
 
@@ -3800,6 +3860,15 @@ snapshots:
 
   xtend@4.0.2: {}
 
+  y-protocols@1.0.7(yjs@13.6.32):
+    dependencies:
+      lib0: 0.2.117
+      yjs: 13.6.32
+
   yallist@3.1.1: {}
+
+  yjs@13.6.32:
+    dependencies:
+      lib0: 0.2.117
 
   zod@4.6.4: {}

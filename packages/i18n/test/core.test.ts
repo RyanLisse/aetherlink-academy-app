@@ -53,8 +53,8 @@ describe('@academy/i18n core (ported i18n.test scenarios)', () => {
   });
 
   test('interpolation works', () => {
-    expect(translate('en', 'room.supportDay', {day: 3})).toBe('Support day 3');
-    expect(translate('nl', 'room.supportDay', {day: 3})).toBe('Supportdag 3');
+    expect(translate('en', 'room.supportDay', {day: 3})).toBe('Day 3');
+    expect(translate('nl', 'room.supportDay', {day: 3})).toBe('Dag 3');
   });
 
   test('html lang follows locale', () => {

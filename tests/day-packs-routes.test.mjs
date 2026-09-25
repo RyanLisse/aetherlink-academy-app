@@ -38,7 +38,7 @@ test('day 1 quiz scores the extracted key and selects stretch',async()=>{
  assert.equal(wrong.body.route,'guided');
 });
 
-test('day 2 quiz uses the complete feedback-loop pack after facilitator control',async()=>{
+test('day 2 quiz uses the Classroom 2 pack after facilitator control',async()=>{
  const {instance,host,participant}=fixture();
  const changeDay=await invoke(instance.app,'/game/control',{body:{action:'day',value:2},cookies:{academy:host.token}});
  assert.equal(changeDay.statusCode,200);
@@ -51,15 +51,15 @@ test('day 2 quiz uses the complete feedback-loop pack after facilitator control'
  assert.equal(publicPack.statusCode,200);
  assert.equal(publicPack.body.day,2);
  assert.equal(publicPack.body.quiz.key,undefined);
- assert.deepEqual(publicPack.body.lesson.loop.map(step=>step.label),['Intent','Plan','Wijziging','Test','Review','Handoff']);
+ assert.deepEqual(publicPack.body.lesson.loop.map(step=>step.label),['CLAUDE.md','Skill','Bounded run','MCP','Workflow','Handoff']);
 });
 
-test('quiz rejects wrong answer arity and accepts every implemented day pack',async()=>{
+test('quiz rejects wrong answer arity and scores every day pack 1–7',async()=>{
  const {instance,host,participant}=fixture();
  const wrongLength=await answerQuiz(instance.app,participant.token,{'d1-q1':'b','d1-q2':'a'});
  assert.equal(wrongLength.statusCode,400);
  assert.match(wrongLength.body.error,/vraag d1-q3 is niet beantwoord/);
- for(const day of [3,4,5]){
+ for(const day of [1,2,3,4,5,6,7]){
   const changeDay=await invoke(instance.app,'/game/control',{body:{action:'day',value:day},cookies:{academy:host.token}});
   assert.equal(changeDay.statusCode,200);
   const result=await answerQuiz(instance.app,participant.token,getDayPack(day).quiz.key);

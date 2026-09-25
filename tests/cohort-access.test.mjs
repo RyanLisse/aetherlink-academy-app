@@ -199,7 +199,7 @@ for (const [label,backend,options] of backends) {
    const {room:first,cohort,code}=await wave(env.store,['Alice']);
    await env.store.attachCohortRoom(cohort.id,first.roomId);
    const day1=await activate(env.store,code('Alice').code);
-   await env.store.withSession(day1.token,'browser',({p})=>{p.route='guided';p.quiz={score:1,at:'2026-10-05T09:00:00.000Z',day:1};p.progressByDay={'1':{quizScore:1,route:'guided',quizAt:'2026-10-05T09:00:00.000Z',reflection:{learned:'Intent eerst',next:'Kleinere stappen',at:'2026-10-05T15:00:00.000Z'}}};});
+   await env.store.withSession(day1.token,'browser',({p})=>{p.route='guided';p.quiz={score:1,at:'2026-10-05T09:00:00.000Z',day:1};p.progressByDay={'1':{quizScore:1,route:'guided',quizAt:'2026-10-05T09:00:00.000Z',labs:{'lab-1':{source:'arcade-lab',score:2,completedAt:'2026-10-05T11:00:00.000Z'}},reflection:{learned:'Intent eerst',next:'Kleinere stappen',at:'2026-10-05T15:00:00.000Z'}}};});
    const second=await env.store.create('Squad Orion dag 2',{slug:`proof-${randomUUID()}`});
    env.clock.now+=DAY;
    await env.store.attachCohortRoom(cohort.id,second.roomId);
@@ -211,6 +211,7 @@ for (const [label,backend,options] of backends) {
    assert.deepEqual(p.quiz,{score:1,at:'2026-10-05T09:00:00.000Z',day:1});
    assert.equal(dayProgress(r,p,1).quizScore,1);
    assert.equal(dayProgress(r,p,1).reflection.learned,'Intent eerst');
+   assert.deepEqual(p.progressByDay['1'].labs,{'lab-1':{source:'arcade-lab',score:2,completedAt:'2026-10-05T11:00:00.000Z'}});
    await env.store.withSession(day2.token,'browser',({p})=>{p.progressByDay['1']={...p.progressByDay['1'],quizScore:3};p.progressByDay['2']={quizScore:3,route:'stretch'};});
    env.clock.now+=DAY;
    await env.store.attachCohortRoom(cohort.id,first.roomId);
@@ -221,6 +222,7 @@ for (const [label,backend,options] of backends) {
    assert.equal(again.progressByDay['2'].route,'stretch');
    assert.equal(again.progressByDay['1'].quizScore,3);
    assert.equal(again.progressByDay['1'].reflection.learned,'Intent eerst');
+   assert.equal(again.progressByDay['1'].labs['lab-1'].score,2);
    await rejectsWith(()=>env.store.rotateParticipantAccess(back.token),409);
   } finally {await env.close();}
  });

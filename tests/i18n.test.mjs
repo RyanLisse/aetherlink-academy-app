@@ -65,8 +65,8 @@ test('missing keys fall back to English (never blank)', () => {
 });
 
 test('interpolation works', () => {
-  assert.equal(translate('en', 'room.supportDay', {day: 3}), 'Support day 3');
-  assert.equal(translate('nl', 'room.supportDay', {day: 3}), 'Supportdag 3');
+  assert.equal(translate('en', 'room.supportDay', {day: 3}), 'Day 3');
+  assert.equal(translate('nl', 'room.supportDay', {day: 3}), 'Dag 3');
 });
 
 test('html lang follows locale', () => {
