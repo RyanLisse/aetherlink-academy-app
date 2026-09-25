@@ -1,5 +1,6 @@
 import {randomBytes} from 'node:crypto';
 import {fail,hash} from './store.mjs';
+import {certificateEligibility,reasonText} from './certificate.mjs';
 
 export const DAY_MS=24*60*60*1000;
 export const ACCESS_DAYS=90;
@@ -110,14 +111,35 @@ export function memberStatus(codes){
  return {status:live.lastActivatedAt?'activated':'issued',lastActivatedAt:live.lastActivatedAt||null};
 }
 
-export function cohortView({cohort,members,codes,rooms,now}){
+export function memberCertificate({cohort,memberId,codes,rooms,certificates,now}){
+ const live=certificates.find(certificate=>certificate.memberId===memberId&&!certificate.revokedAt);
+ const eligibility=certificateEligibility({
+  days:cohort.days,
+  progressByDay:mergeSeatProgress(rooms,memberId),
+  evidence:rooms.flatMap(room=>(room.evidence||[]).filter(item=>item.personId===memberId)),
+  accessRevoked:memberStatus(codes).status==='revoked',
+  lastDayStarted:now>=cohort.startsAt+(cohort.days-1)*DAY_MS,
+ });
+ return {...eligibility,id:live?.id||null,issuedAt:live?.issuedAt||null};
+}
+
+export function certificateToIssue({cohort,member,codes,rooms,certificates,now,issuedBy}){
+ const current=memberCertificate({cohort,memberId:member.id,codes,rooms,certificates,now});
+ if(current.id)return null;
+ if(!current.eligible)fail(409,`Nog geen certificaat mogelijk: ${current.reasons.map(reasonText).join('; ')}.`);
+ return {id:generateAccessCode(),cohortId:cohort.id,memberId:member.id,name:member.name,cohortName:cohort.name,startsAt:cohort.startsAt,endsAt:cohortWindow(cohort).endsAt,days:cohort.days,issuedAt:now,issuedBy:issuedBy||null,revokedAt:null};
+}
+
+export const certificateVerifiableUntil=certificate=>certificate.endsAt+RETENTION_DAYS*DAY_MS;
+
+export function cohortView({cohort,members,codes,rooms,certificates,now}){
  const current=rooms.find(room=>room.id===cohort.currentRoomId);
  return {
   id:cohort.id,name:cohort.name,startsAt:cohort.startsAt,days:cohort.days,readOnlyExport:cohort.readOnlyExport,createdAt:cohort.createdAt,
   phase:accessPhase(cohort,now).phase,...cohortWindow(cohort),
   currentRoomId:cohort.currentRoomId||null,
   rooms:rooms.map(room=>({id:room.id,name:room.name,code:room.code})),
-  members:[...members].sort((a,b)=>a.name.localeCompare(b.name)).map(member=>({id:member.id,name:member.name,...memberStatus(codes.filter(code=>code.memberId===member.id)),seated:Boolean(current?.members.some(seat=>seat.id===member.id))})),
+  members:[...members].sort((a,b)=>a.name.localeCompare(b.name)).map(member=>{const own=codes.filter(code=>code.memberId===member.id);return {id:member.id,name:member.name,...memberStatus(own),seated:Boolean(current?.members.some(seat=>seat.id===member.id)),certificate:memberCertificate({cohort,memberId:member.id,codes:own,rooms,certificates,now})};}),
  };
 }
 

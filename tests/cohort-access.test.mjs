@@ -29,7 +29,7 @@ async function postgresBackend(){
  const schema=`academy_cohort_${randomUUID().replaceAll('-','')}`;
  const clock={now:START};
  const store=await new PostgresStore(pool,{schema,now:()=>clock.now}).init();
- const dump=async()=>{const rows=[];for(const table of ['cohorts','cohort_members','cohort_access_codes','sessions','rooms','access_attempts','requests','decks','participant_access'])rows.push(...(await pool.query(`SELECT * FROM "${schema}".${table}`)).rows);return JSON.stringify(rows);};
+ const dump=async()=>{const rows=[];for(const table of ['cohorts','cohort_members','cohort_access_codes','sessions','rooms','access_attempts','requests','decks','participant_access','cohort_certificates'])rows.push(...(await pool.query(`SELECT * FROM "${schema}".${table}`)).rows);return JSON.stringify(rows);};
  return {store,clock,pool,schema,dump,close:async()=>{await pool.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);await pool.end();}};
 }
 
@@ -241,7 +241,7 @@ for (const [label,backend,options] of backends) {
    assert.deepEqual(await env.store.purgeExpiredCohorts({dryRun:false}),{dryRun:false,purged:[]});
    env.clock.now=purgeAt;
    const dry=await env.store.purgeExpiredCohorts();
-   assert.deepEqual(dry,{dryRun:true,purged:[{cohortId:old.cohort.id,members:1,rooms:[old.room.roomId]}]});
+   assert.deepEqual(dry,{dryRun:true,purged:[{cohortId:old.cohort.id,members:1,rooms:[old.room.roomId],certificates:0}]});
    assert.equal((await env.store.cohortOverview()).length,2);
    const applied=await env.store.purgeExpiredCohorts({dryRun:false});
    assert.deepEqual(applied.purged.map(entry=>entry.cohortId),[old.cohort.id]);

@@ -292,6 +292,8 @@ function CohortPanel({squads,hostKey,action}){
   const date=ms=>new Date(ms).toLocaleDateString(locale==='nl'?'nl-NL':'en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
   const submit=(route,build,after)=>e=>{e.preventDefault();const form=e.currentTarget,data=Object.fromEntries(new FormData(form));action(async()=>{const result=await api(route,{hostKey,...build(data)});after(result);form.reset();await refresh();});};
   const memberAction=(route,cohortId,memberId)=>action(async()=>{const result=await api(route,{hostKey,cohortId,memberId});if(result.code)reveal([result]);await refresh();});
+  const revokeCertificate=(cohortId,certificateId)=>action(async()=>{await api('facilitator/cohort/certificate/revoke',{hostKey,cohortId,certificateId});await refresh();});
+  const openCertificate=certificateId=>{const view=window.open('','_blank');action(async()=>{const response=await fetch('/game/facilitator/cohort/certificate/view',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({hostKey,certificateId})});if(!response.ok){view?.close();throw Error((await response.json()).error);}if(view)view.location=URL.createObjectURL(new Blob([await response.text()],{type:'text/html'}));});};
   return <section className="cohort-panel" aria-labelledby="cohort-heading">
     <h3 id="cohort-heading">{t('cohort.title')}</h3>
     {codes.length>0&&<div className="cohort-codes" role="region" aria-label={t('cohort.codesTitle')}>
@@ -310,6 +312,7 @@ function CohortPanel({squads,hostKey,action}){
       <ul className="cohort-roster">{cohort.members.map(member=><li key={member.id}>
         <span><strong>{member.name}</strong><small className={'cohort-status '+member.status}>{t(`cohort.status.${member.status}`)}{member.seated?` · ${t('cohort.seated')}`:''}</small></span>
         <span className="cohort-actions">{member.status!=='revoked'&&<button type="button" onClick={()=>memberAction('facilitator/cohort/revoke',cohort.id,member.id)}>{t('cohort.revoke')}</button>}<button type="button" onClick={()=>memberAction('facilitator/cohort/reissue',cohort.id,member.id)}>{t('cohort.reissue')}</button></span>
+        <CertificateLine certificate={member.certificate} date={date} issue={()=>memberAction('facilitator/cohort/certificate/issue',cohort.id,member.id)} open={()=>openCertificate(member.certificate.id)} revoke={()=>revokeCertificate(cohort.id,member.certificate.id)}/>
       </li>)}</ul>
       <form className="cohort-add" onSubmit={submit('facilitator/cohort/members',data=>({cohortId:cohort.id,members:names(data.members)}),result=>reveal(result.codes))}>
         <label>{t('cohort.addMembers')}<textarea name="members" rows={2} required/></label>
@@ -324,6 +327,13 @@ function CohortPanel({squads,hostKey,action}){
       <button type="submit" className="gradient">{t('cohort.submitCreate')}</button>
     </form>
   </section>;
+}
+
+function CertificateLine({certificate,date,issue,open,revoke}){
+  const t=useT();
+  if(certificate.id)return <div className="cohort-certificate"><small className="cohort-status activated">{t('cert.issued',{date:date(certificate.issuedAt)})}</small><span className="cohort-actions"><button type="button" onClick={open}>{t('cert.open')}</button><button type="button" onClick={revoke}>{t('cert.revoke')}</button></span></div>;
+  if(certificate.eligible)return <div className="cohort-certificate"><span className="cohort-actions"><button type="button" onClick={issue}>{t('cert.issue')}</button></span></div>;
+  return <div className="cohort-certificate"><small className="muted">{t('cert.notYet')} {certificate.reasons.map(reason=>t(`cert.reason.${reason.code}`,{day:reason.day})).join(' · ')}</small></div>;
 }
 
 const formatSeconds=seconds=>`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;
