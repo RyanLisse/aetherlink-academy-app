@@ -1,8 +1,9 @@
 import {randomUUID} from 'node:crypto';
 import {Store,hash,fail,writable,MAX_SQUAD_SIZE} from './store.mjs';
 import {INVALID_COHORT_CODE_MESSAGE,COHORT_NO_ROOM_MESSAGE,COHORT_RATE_LIMIT_MESSAGE,attemptKeys,nextAttempt,issueAccessCode,sessionGrant,mergeSeatProgress,seatMember,cohortView,isDueForPurge,anonymizeRoom,dueCertificates,memberCertificate} from './cohort.mjs';
+import {EMAIL_CODE_INVALID_MESSAGE,EMAIL_PARTICIPANT_ONLY_MESSAGE,EMAIL_RATE_LIMIT_MESSAGE,challengeKey,checkChallenge,emailAttemptKeys,issueChallenge} from './email-login.mjs';
 export class LocalStore extends Store {
- constructor(dir,options){super(dir,options);this.queue=Promise.resolve();}
+ constructor(dir,options){super(dir,options);this.data.emails??={};this.data.emailChallenges??={};this.queue=Promise.resolve();}
  async locked(fn){
   const run=this.queue.then(async()=>{const before=structuredClone(this.data);try{const result=await fn();this.save();return result;}catch(error){this.data=before;throw error;}});
   this.queue=run.catch(()=>{});return run;
@@ -39,21 +40,73 @@ export class LocalStore extends Store {
  revokeCertificate(cohortId,certificateId){return this.locked(()=>{const cohort=this.cohortOr404(cohortId),certificate=this.data.certificates[certificateId];if(!certificate||certificate.cohortId!==cohortId)fail(404,'Certificaat niet gevonden in dit cohort.');certificate.revokedAt??=this.now();return this.cohortSnapshot(cohort);});}
  async certificate(id){return this.data.certificates[id]||null;}
  cohortOverview(){return this.locked(()=>Object.values(this.data.cohorts).sort((a,b)=>b.createdAt-a.createdAt).map(cohort=>{this.settleCertificates(cohort);return this.cohortSnapshot(cohort);}));}
+ consumeAttempts(keys){const now=this.now();let ok=true;for(const [key,limit] of keys){const {record,allowed}=nextAttempt(this.data.attempts[key],now,limit);this.data.attempts[key]=record;ok&&=allowed;}return ok;}
+ seatCohortSession(cohort,member,now){
+  const grant=sessionGrant(cohort,now),room=this.data.rooms[cohort.currentRoomId];
+  if(!room)fail(409,COHORT_NO_ROOM_MESSAGE);
+  if(!room.members.some(seat=>seat.id===member.id)&&room.members.length>=MAX_SQUAD_SIZE)fail(409,`Squad is vol (maximaal ${MAX_SQUAD_SIZE}).`);
+  seatMember(room,member,mergeSeatProgress(this.cohortRooms(cohort.id),member.id),now);room.version++;
+  return {token:this.session(room.id,member.id,'browser',member.name,grant),roomId:room.id,cohortId:cohort.id,readOnly:grant.readOnly};
+ }
  async activateCohortCode(input,{ip}={}){
   const {normalized,codeHash,keys}=attemptKeys(input,ip);
-  const allowed=await this.locked(()=>{const now=this.now();let ok=true;for(const [key,limit] of keys){const {record,allowed}=nextAttempt(this.data.attempts[key],now,limit);this.data.attempts[key]=record;ok&&=allowed;}return ok;});
+  const allowed=await this.locked(()=>this.consumeAttempts(keys));
   if(!allowed)fail(429,COHORT_RATE_LIMIT_MESSAGE);
   return this.locked(()=>{
    const now=this.now(),record=normalized&&this.data.accessCodes[codeHash];
    if(!record||record.revokedAt)fail(401,INVALID_COHORT_CODE_MESSAGE);
    const cohort=this.data.cohorts[record.cohortId],member=cohort?.members.find(candidate=>candidate.id===record.memberId);
    if(!member)fail(401,INVALID_COHORT_CODE_MESSAGE);
-   const grant=sessionGrant(cohort,now),room=this.data.rooms[cohort.currentRoomId];
-   if(!room)fail(409,COHORT_NO_ROOM_MESSAGE);
-   if(!room.members.some(seat=>seat.id===member.id)&&room.members.length>=MAX_SQUAD_SIZE)fail(409,`Squad is vol (maximaal ${MAX_SQUAD_SIZE}).`);
-   seatMember(room,member,mergeSeatProgress(this.cohortRooms(cohort.id),member.id),now);room.version++;
+   const session=this.seatCohortSession(cohort,member,now);
    record.lastActivatedAt=now;
-   return {token:this.session(room.id,member.id,'browser',member.name,grant),roomId:room.id,cohortId:cohort.id,readOnly:grant.readOnly};
+   return session;
+  });
+ }
+ emailIdentity(token){
+  const {r,p}=this.auth(token,'browser');
+  if(!p)fail(403,EMAIL_PARTICIPANT_ONLY_MESSAGE);
+  return {personId:p.id,roomId:p.cohortMemberId?null:r.id,cohortMemberId:p.cohortMemberId||null};
+ }
+ emailStatus(token){return this.locked(()=>({email:this.data.emails[this.emailIdentity(token).personId]?.email||null}));}
+ issueEmailChallenge(key,email,ip){
+  if(!this.consumeAttempts(emailAttemptKeys(email,ip)))fail(429,EMAIL_RATE_LIMIT_MESSAGE);
+  const now=this.now();
+  for(const [candidate,record] of Object.entries(this.data.emailChallenges))if(record.expiresAt<=now)delete this.data.emailChallenges[candidate];
+  const {code,record}=issueChallenge(this.data.emailChallenges[key],now);
+  this.data.emailChallenges[key]=record;
+  return code;
+ }
+ checkEmailChallenge(key,code){
+  const {ok,record}=checkChallenge(this.data.emailChallenges[key],code,this.now());
+  if(record)this.data.emailChallenges[key]=record;else delete this.data.emailChallenges[key];
+  return ok;
+ }
+ startEmailAttach(token,email,{ip}={}){return this.locked(()=>{const {personId}=this.emailIdentity(token);return {code:this.issueEmailChallenge(challengeKey('attach',email,personId),email,ip)};});}
+ async verifyEmailAttach(token,email,code){
+  const verified=await this.locked(()=>{const identity=this.emailIdentity(token);return this.checkEmailChallenge(challengeKey('attach',email,identity.personId),code)&&identity;});
+  if(!verified)fail(401,EMAIL_CODE_INVALID_MESSAGE);
+  return this.locked(()=>{
+   for(const [personId,binding] of Object.entries(this.data.emails))if(binding.email===email)delete this.data.emails[personId];
+   this.data.emails[verified.personId]={email,roomId:verified.roomId,cohortMemberId:verified.cohortMemberId,verifiedAt:this.now()};
+   return {email};
+  });
+ }
+ removeEmail(token){return this.locked(()=>{delete this.data.emails[this.emailIdentity(token).personId];return {email:null};});}
+ emailBinding(email){return Object.entries(this.data.emails).find(([,binding])=>binding.email===email);}
+ startEmailLogin(email,{ip}={}){return this.locked(()=>{const code=this.issueEmailChallenge(challengeKey('login',email),email,ip);return {code:this.emailBinding(email)?code:null};});}
+ async verifyEmailLogin(email,code){
+  const ok=await this.locked(()=>this.checkEmailChallenge(challengeKey('login',email),code));
+  return this.locked(()=>{
+   const [personId,binding]=(ok&&this.emailBinding(email))||[];
+   if(!binding)fail(401,EMAIL_CODE_INVALID_MESSAGE);
+   if(binding.cohortMemberId){
+    const member=Object.values(this.data.cohorts).flatMap(cohort=>cohort.members.map(candidate=>({cohort,candidate}))).find(({candidate})=>candidate.id===binding.cohortMemberId);
+    if(!member||!this.cohortCodes(member.cohort.id).some(entry=>entry.memberId===personId&&!entry.revokedAt))fail(401,INVALID_COHORT_CODE_MESSAGE);
+    return this.seatCohortSession(member.cohort,member.candidate,this.now());
+   }
+   const room=this.data.rooms[binding.roomId],p=room?.members.find(member=>member.id===personId);
+   if(!p)fail(401,EMAIL_CODE_INVALID_MESSAGE);
+   return {token:this.session(room.id,p.id,'browser',p.name),roomId:room.id,resumed:true};
   });
  }
  purgeExpiredCohorts({dryRun=true}={}){return this.locked(()=>{
@@ -64,6 +117,7 @@ export class LocalStore extends Store {
    const ids=cohort.members.map(member=>member.id),idSet=new Set(ids);
    for(const room of this.cohortRooms(cohort.id)){anonymizeRoom(room,ids);room.requests={};}
    for(const [key,session] of Object.entries(this.data.sessions))if(idSet.has(session.personId))delete this.data.sessions[key];
+   for(const id of ids)delete this.data.emails[id];
    for(const [key,code] of Object.entries(this.data.accessCodes))if(code.cohortId===cohort.id)delete this.data.accessCodes[key];
    for(const certificate of this.cohortCertificates(cohort.id))delete this.data.certificates[certificate.id];
    delete this.data.cohorts[cohort.id];
