@@ -21,6 +21,7 @@
     "test": "pnpm run check"
   },
   "dependencies": {
+    "@academy/lab-embed": "workspace:*",
     "zod": "4.6.4"
   },
   "devDependencies": {
