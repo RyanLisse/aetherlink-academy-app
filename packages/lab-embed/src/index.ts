@@ -1,29 +1,46 @@
 export const LAB_EMBED_VERSION = 1;
+/** Minor 1 adds graded stops: `init.gradedStops`, lab → host `answer`, host → lab `graded`. Minor 0 peers ignore them. */
+export const LAB_EMBED_MINOR = 1;
 export const MAX_LAB_MESSAGE_CHARS = 8_192;
 export const MAX_LAB_EVIDENCE_CHARS = 2_000;
+export const MAX_LAB_ANSWER_CHARS = 2_000;
+export const MAX_GRADED_STOPS = 64;
+const MAX_ATTEMPTS = 1_000_000;
 
 const LAB_ID_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/;
 const MAX_STEPS = 1_000;
 
 export type LabId = string & {readonly __brand: 'LabId'};
+export type StopId = string & {readonly __brand: 'StopId'};
 export type LabLocale = 'nl' | 'en';
 export type LabConfig = Readonly<Record<string, string | number | boolean>>;
 export type LabResult = {readonly outcome: 'completed'; readonly score?: {readonly value: number; readonly max: number}};
 export type LabCompletion = {readonly labId: LabId; readonly result: LabResult; readonly evidence?: string};
+/** A choice index or free text. The lab never learns the expected value, only the verdict. */
+export type LabAnswer = number | string;
+export type LabAnswerSubmission = {readonly labId: LabId; readonly stopId: StopId; readonly answer: LabAnswer};
+export type StopVerdict = {readonly labId: LabId; readonly stopId: StopId; readonly passed: boolean; readonly attempts: number};
 
-export type HostToLabMessage = {
-  readonly v: typeof LAB_EMBED_VERSION;
-  readonly type: 'init';
-  readonly labId: LabId;
-  readonly config: LabConfig;
-  readonly locale: LabLocale;
-};
+export type HostToLabMessage =
+  | {
+      readonly v: typeof LAB_EMBED_VERSION;
+      readonly type: 'init';
+      readonly minor: number;
+      readonly labId: LabId;
+      readonly config: LabConfig;
+      readonly locale: LabLocale;
+      readonly gradedStops: readonly StopId[];
+    }
+  | ({readonly v: typeof LAB_EMBED_VERSION; readonly type: 'graded'} & StopVerdict);
 
 export type LabToHostMessage =
   | {readonly v: typeof LAB_EMBED_VERSION; readonly type: 'ready'}
   | {readonly v: typeof LAB_EMBED_VERSION; readonly type: 'progress'; readonly step: number; readonly total: number}
+  | ({readonly v: typeof LAB_EMBED_VERSION; readonly type: 'answer'} & LabAnswerSubmission)
   | ({readonly v: typeof LAB_EMBED_VERSION; readonly type: 'complete'} & LabCompletion)
   | {readonly v: typeof LAB_EMBED_VERSION; readonly type: 'error'; readonly message: string};
+
+type InitMessage = Extract<HostToLabMessage, {type: 'init'}>;
 
 /** What a day pack declares. `src` may be relative to the Academy origin. */
 export type LabDeclaration = {readonly id: string; readonly src: string; readonly title: string; readonly config?: LabConfig};
@@ -35,6 +52,8 @@ export type EmbeddableLab = {
   readonly origin: string;
   readonly title: string;
   readonly config: LabConfig;
+  /** Ids only. The expected answers stay on the server. */
+  readonly gradedStops: readonly StopId[];
 };
 
 type Fields = Record<string, unknown>;
@@ -64,6 +83,17 @@ export function parseLabId(value: unknown): LabId | null {
   return typeof value === 'string' && LAB_ID_PATTERN.test(value) ? (value as LabId) : null;
 }
 
+export function parseStopId(value: unknown): StopId | null {
+  return typeof value === 'string' && LAB_ID_PATTERN.test(value) ? (value as StopId) : null;
+}
+
+function parseStopIds(value: unknown): StopId[] | null {
+  if (value === undefined) return [];
+  if (!Array.isArray(value) || value.length > MAX_GRADED_STOPS) return null;
+  const ids = value.map(parseStopId);
+  return ids.every(id => id !== null) && new Set(ids).size === ids.length ? (ids as StopId[]) : null;
+}
+
 function parseConfig(value: unknown): LabConfig | null {
   if (value === undefined) return {};
   const fields = record(value);
@@ -86,6 +116,21 @@ function parseResult(value: unknown): LabResult | null {
   return {outcome: 'completed', score: {value: score.value, max: score.max}};
 }
 
+function parseAnswer(value: unknown): LabAnswer | null {
+  if (typeof value === 'string') return value.length <= MAX_LAB_ANSWER_CHARS ? value : null;
+  return step(value) ? value : null;
+}
+
+/** Shared by the `answer` message and the server endpoint body. */
+export function parseLabAnswer(value: unknown): LabAnswerSubmission | null {
+  const fields = record(value);
+  if (!fields || !withinSize(fields)) return null;
+  const labId = parseLabId(fields.labId);
+  const stopId = parseStopId(fields.stopId);
+  const answer = parseAnswer(fields.answer);
+  return labId && stopId && answer !== null ? {labId, stopId, answer} : null;
+}
+
 /** Shared by the `complete` message and the server endpoint body. */
 export function parseLabCompletion(value: unknown): LabCompletion | null {
   const fields = record(value);
@@ -100,11 +145,27 @@ export function parseLabCompletion(value: unknown): LabCompletion | null {
 
 export function parseHostMessage(data: unknown): HostToLabMessage | null {
   const fields = versioned(data);
-  if (!fields || fields.type !== 'init') return null;
-  const labId = parseLabId(fields.labId);
-  const config = parseConfig(fields.config);
-  if (!labId || !config || (fields.locale !== 'nl' && fields.locale !== 'en')) return null;
-  return {v: LAB_EMBED_VERSION, type: 'init', labId, config, locale: fields.locale};
+  if (!fields) return null;
+  switch (fields.type) {
+    case 'init': {
+      const labId = parseLabId(fields.labId);
+      const config = parseConfig(fields.config);
+      const minor = fields.minor === undefined ? 0 : fields.minor;
+      const gradedStops = parseStopIds(fields.gradedStops);
+      if (!labId || !config || !gradedStops || !step(minor) || (fields.locale !== 'nl' && fields.locale !== 'en')) return null;
+      return {v: LAB_EMBED_VERSION, type: 'init', minor, labId, config, locale: fields.locale, gradedStops};
+    }
+    case 'graded': {
+      const labId = parseLabId(fields.labId);
+      const stopId = parseStopId(fields.stopId);
+      const {passed, attempts} = fields;
+      if (!labId || !stopId || typeof passed !== 'boolean' || !Number.isInteger(attempts) || (attempts as number) < 1 || (attempts as number) > MAX_ATTEMPTS)
+        return null;
+      return {v: LAB_EMBED_VERSION, type: 'graded', labId, stopId, passed, attempts: attempts as number};
+    }
+    default:
+      return null;
+  }
 }
 
 export function parseLabMessage(data: unknown): LabToHostMessage | null {
@@ -116,6 +177,10 @@ export function parseLabMessage(data: unknown): LabToHostMessage | null {
     case 'progress':
       if (!step(fields.step) || !step(fields.total) || fields.total < 1 || fields.step > fields.total) return null;
       return {v: LAB_EMBED_VERSION, type: 'progress', step: fields.step, total: fields.total};
+    case 'answer': {
+      const submission = parseLabAnswer(fields);
+      return submission && {v: LAB_EMBED_VERSION, type: 'answer', ...submission};
+    }
     case 'complete': {
       const completion = parseLabCompletion(fields);
       return completion && {v: LAB_EMBED_VERSION, type: 'complete', ...completion};
@@ -145,7 +210,11 @@ export function parseOriginAllowlist(raw: string | undefined, ...always: string[
 /** Keeps only declarations with a valid id, an HTTP(S) src and an allowlisted origin. */
 export function resolveLabs(
   declarations: readonly LabDeclaration[] | undefined,
-  {baseUrl, allowedOrigins}: {readonly baseUrl: string; readonly allowedOrigins: readonly string[]},
+  {
+    baseUrl,
+    allowedOrigins,
+    gradedStopsFor = () => [],
+  }: {readonly baseUrl: string; readonly allowedOrigins: readonly string[]; readonly gradedStopsFor?: (id: LabId) => readonly StopId[]},
 ): EmbeddableLab[] {
   const seen = new Set<string>();
   const labs: EmbeddableLab[] = [];
@@ -161,7 +230,7 @@ export function resolveLabs(
     }
     if ((url.protocol !== 'https:' && url.protocol !== 'http:') || !allowedOrigins.includes(url.origin)) continue;
     seen.add(id);
-    labs.push({id, src: url.href, origin: url.origin, title: declaration.title.trim(), config});
+    labs.push({id, src: url.href, origin: url.origin, title: declaration.title.trim(), config, gradedStops: [...gradedStopsFor(id)]});
   }
   return labs;
 }
@@ -173,11 +242,16 @@ export type MessageHub = {
   removeEventListener(type: 'message', listener: (event: LabMessageEvent) => void): void;
 };
 
-export type HostBridge = {readonly sendInit: () => void; readonly dispose: () => void};
+export type HostBridge = {
+  readonly sendInit: () => void;
+  readonly sendVerdict: (verdict: {readonly stopId: StopId; readonly passed: boolean; readonly attempts: number}) => void;
+  readonly dispose: () => void;
+};
 
 /**
  * Host side. Accepts a message only when it comes from the embedded frame's window
- * and the lab's allowlisted origin, parses, and drops `complete` for any other lab id.
+ * and the lab's allowlisted origin, parses, and drops `complete` and `answer` for any
+ * other lab id, and `answer` for a stop the lab does not grade.
  */
 export function connectHost(
   hub: MessageHub,
@@ -185,22 +259,38 @@ export function connectHost(
   lab: EmbeddableLab,
   {locale, onMessage}: {readonly locale: LabLocale; readonly onMessage: (message: LabToHostMessage) => void},
 ): HostBridge {
-  const init: HostToLabMessage = {v: LAB_EMBED_VERSION, type: 'init', labId: lab.id, config: lab.config, locale};
+  const init: InitMessage = {
+    v: LAB_EMBED_VERSION,
+    type: 'init',
+    minor: LAB_EMBED_MINOR,
+    labId: lab.id,
+    config: lab.config,
+    locale,
+    gradedStops: lab.gradedStops,
+  };
   const sendInit = () => frame.contentWindow?.postMessage(init, lab.origin);
   const listener = (event: LabMessageEvent) => {
     if (event.origin !== lab.origin || !frame.contentWindow || event.source !== frame.contentWindow) return;
     const message = parseLabMessage(event.data);
     if (!message) return;
-    if (message.type === 'complete' && message.labId !== lab.id) return;
+    if ((message.type === 'complete' || message.type === 'answer') && message.labId !== lab.id) return;
+    if (message.type === 'answer' && !lab.gradedStops.includes(message.stopId)) return;
     if (message.type === 'ready') sendInit();
     onMessage(message);
   };
   hub.addEventListener('message', listener);
-  return {sendInit, dispose: () => hub.removeEventListener('message', listener)};
+  return {
+    sendInit,
+    sendVerdict: ({stopId, passed, attempts}) =>
+      frame.contentWindow?.postMessage({v: LAB_EMBED_VERSION, type: 'graded', labId: lab.id, stopId, passed, attempts}, lab.origin),
+    dispose: () => hub.removeEventListener('message', listener),
+  };
 }
 
 export type LabBridge = {
   readonly progress: (step: number, total: number) => boolean;
+  /** Sends an answer for a graded stop. The verdict arrives through `onVerdict`. */
+  readonly answer: (stopId: StopId, answer: LabAnswer) => boolean;
   readonly complete: (result: LabResult, evidence?: string) => boolean;
   readonly error: (message: string) => boolean;
   readonly dispose: () => void;
@@ -214,7 +304,15 @@ export type LabBridge = {
 export function connectLab(
   hub: MessageHub,
   parent: PostTarget,
-  {allowedHostOrigins, onInit}: {readonly allowedHostOrigins: readonly string[]; readonly onInit: (message: HostToLabMessage) => void},
+  {
+    allowedHostOrigins,
+    onInit,
+    onVerdict = () => {},
+  }: {
+    readonly allowedHostOrigins: readonly string[];
+    readonly onInit: (message: InitMessage) => void;
+    readonly onVerdict?: (verdict: StopVerdict) => void;
+  },
 ): LabBridge {
   let bound: {readonly origin: string; readonly labId: LabId} | null = null;
   const send = (message: LabToHostMessage) => {
@@ -226,6 +324,10 @@ export function connectLab(
     if (event.source !== parent || !allowedHostOrigins.includes(event.origin)) return;
     const message = parseHostMessage(event.data);
     if (!message || (bound && (bound.origin !== event.origin || bound.labId !== message.labId))) return;
+    if (message.type === 'graded') {
+      if (bound) onVerdict({labId: message.labId, stopId: message.stopId, passed: message.passed, attempts: message.attempts});
+      return;
+    }
     bound = {origin: event.origin, labId: message.labId};
     onInit(message);
   };
@@ -233,6 +335,7 @@ export function connectLab(
   for (const origin of allowedHostOrigins) parent.postMessage({v: LAB_EMBED_VERSION, type: 'ready'}, origin);
   return {
     progress: (step, total) => send({v: LAB_EMBED_VERSION, type: 'progress', step, total}),
+    answer: (stopId, answer) => !!bound && send({v: LAB_EMBED_VERSION, type: 'answer', labId: bound.labId, stopId, answer}),
     complete: (result, evidence) =>
       !!bound && send({v: LAB_EMBED_VERSION, type: 'complete', labId: bound.labId, result, ...(evidence === undefined ? {} : {evidence})}),
     error: message => send({v: LAB_EMBED_VERSION, type: 'error', message}),

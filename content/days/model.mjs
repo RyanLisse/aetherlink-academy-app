@@ -15,6 +15,7 @@ export const openMaterial=(kind,label,open)=>({kind,label,href:null,open});
 export const question=(text,options,answer,ref)=>({question:text,options,answer,...(ref?{slide:ref}:{source:'authored-adaptation'})});
 
 export const SOURCE='Afgeleid van het lesplan (Linear, SoT) en de dagdeck; iedere stap verwijst naar zijn dia.';
+export const DEEP_HELP='Diepere hulp, zoals uitleg van een concept of feedback op je eigen werk, vraag je aan je eigen Claude via MCP. Verbind Claude Code via “Mijn leercoach”; Claude leest dan met get_screen_state en get_mission wat jij nu ziet. De Academy start zelf geen model.';
 export const DEFAULT_STOP='Stop bij geheimen, ontbrekende toegang, productiesystemen of een resultaat dat je niet werkelijk hebt uitgevoerd. Markeer het als OPEN; verzin geen uitvoer.';
 
 const OPTION_IDS='abcdefgh';
@@ -47,6 +48,7 @@ export function projectDayPack(src){
   materials:[link('deck',`Deck ${src.title.split(' · ')[0]}`,deck.route),...src.materials],
   reviewCriteria:src.proof,
   openItems:src.openItems,
+  deepHelp:DEEP_HELP,
   ...(src.triage?{triage:src.triage}:{}),
   lesson:{kicker:src.kicker,title:src.lessonTitle,lede:src.leerdoel,loop:src.loop,workedExample:open?`OPEN: ${open}`:script.join(' ')},
   quiz:dayQuiz(src.day,src.quiz),

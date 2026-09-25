@@ -7,7 +7,7 @@
 import { LESSONS } from '../src/lessons/index.ts';
 import { LessonSchema } from '../src/schema.ts';
 import { evaluateLessonAsserts, foldLesson } from '../src/fold.ts';
-import { finishStop, reachEnd, runProgress, startRun } from '../src/embed-bridge.ts';
+import { connectArcadeBridge, finishStop, reachEnd, runProgress, startRun } from '../src/embed-bridge.ts';
 import { getLesson } from '../src/lessons/index.ts';
 
 const KEY_PATTERNS: RegExp[] = [
@@ -76,6 +76,27 @@ for (const lesson of LESSONS) {
   const ok = endedEarly.step === 0 && endedEarly.total === 2 && !endedEarly.complete && done.step === 2 && done.total === 2 && done.complete;
   if (!ok) failed++;
   lines.push(`${ok ? 'ok   ' : 'EMBED'} embed-bridge · skipped checkpoint blocks completion ${JSON.stringify(endedEarly)} · all done ${JSON.stringify(done)}`);
+}
+
+{
+  const lesson = getLesson('ws-2-eve-state');
+  const listeners: ((event: { data: unknown; origin: string; source: unknown }) => void)[] = [];
+  const posted: unknown[] = [];
+  const parent = { postMessage: (message: unknown) => void posted.push(message) };
+  const origin = 'https://academy.example';
+  const bridge = connectArcadeBridge({ addEventListener: (_t, l) => void listeners.push(l), removeEventListener: () => {} }, parent, origin, lesson);
+  const deliver = (data: unknown) => listeners.forEach((l) => l({ data, origin, source: parent }));
+  deliver({ v: 1, type: 'init', minor: 1, labId: 'ws-2-eve-state', config: {}, locale: 'en', gradedStops: ['stop-2'] });
+  const [first, second] = startRun(lesson).stops;
+  const verdicts: string[] = [];
+  const sent = [bridge.submit(second!, 0, () => verdicts.push('a')), bridge.submit(second!, 1, () => verdicts.push('b'))];
+  bridge.cancel(second!);
+  deliver({ v: 1, type: 'graded', labId: 'ws-2-eve-state', stopId: 'stop-2', passed: false, attempts: 1 });
+  sent.push(bridge.submit(second!, 1, () => verdicts.push('c')));
+  deliver({ v: 1, type: 'graded', labId: 'ws-2-eve-state', stopId: 'stop-2', passed: true, attempts: 2 });
+  const ok = JSON.stringify(sent) === '[true,false,true]' && verdicts.join() === 'c' && !bridge.isGraded(first!) && bridge.isGraded(second!);
+  if (!ok) failed++;
+  lines.push(`${ok ? 'ok   ' : 'EMBED'} embed-bridge · one answer in flight per stop, cancel drops a late verdict ${JSON.stringify({ sent, verdicts })}`);
 }
 
 console.log(lines.join('\n'));
