@@ -15,16 +15,21 @@ const ID=/^[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}-[0-9A-HJKMNP-TV-Z]{4}-[0-
 
 const pass=(kind,id)=>({kind,id,passed:true});
 const open=(kind,id,title)=>({kind,id,passed:false,...(title?{title}:{})});
-const day1=[pass('quiz','d1-quiz'),pass('task','c1-a1')];
-const day2=[pass('quiz','d2-quiz'),pass('lab','lab-1'),pass('task','c2-a6')];
+const day1=[pass('quiz','d1-quiz'),pass('task','c1-a1'),open('task','c1-a2','Opdracht 2 · Nachtelijke bugjacht')];
+const day2=[pass('quiz','d2-quiz'),open('lab','lab-1'),pass('task','c2-a6'),open('task','c2-a7')];
 const base={days:2,checksByDay:{1:day1,2:day2},accessRevoked:false,lastDayStarted:true};
 
-test('completion rule: a day counts when it has content and every pass signal is green',()=>{
+test('completion rule (lighter, 2026-09-25): a day counts when its quiz is fully correct and at least one task passed',()=>{
  const table=[
-  ['all days complete',{},{eligible:true,daysCompleted:2,reasons:[]}],
-  ['quiz of day 2 not fully correct',{checksByDay:{1:day1,2:[open('quiz','d2-quiz'),pass('lab','lab-1'),pass('task','c2-a6')]}},{eligible:false,daysCompleted:1,reasons:[{code:'quiz-open',day:2,id:'d2-quiz'}]}],
-  ['a lab that was not server-graded blocks the day',{checksByDay:{1:day1,2:[pass('quiz','d2-quiz'),open('lab','lab-1'),pass('task','c2-a6')]}},{eligible:false,daysCompleted:1,reasons:[{code:'lab-open',day:2,id:'lab-1'}]}],
-  ['an unapproved task names its title',{checksByDay:{1:[pass('quiz','d1-quiz'),open('task','c1-a1','Opdracht 1 · Repository-verkenner')],2:day2}},{eligible:false,daysCompleted:1,reasons:[{code:'task-open',day:1,id:'c1-a1',title:'Opdracht 1 · Repository-verkenner'}]}],
+  ['one passed task and a fully correct quiz complete a day; other open tasks and labs do not block',{},{eligible:true,daysCompleted:2,reasons:[]}],
+  ['quiz of day 2 not fully correct',{checksByDay:{1:day1,2:[open('quiz','d2-quiz'),pass('task','c2-a6')]}},{eligible:false,daysCompleted:1,reasons:[{code:'quiz-open',day:2,id:'d2-quiz'}]}],
+  ['no task of day 1 passed',{checksByDay:{1:[pass('quiz','d1-quiz'),open('task','c1-a1'),open('task','c1-a2')],2:day2}},{eligible:false,daysCompleted:1,reasons:[{code:'no-task-passed',day:1}]}],
+  ['quiz and tasks both open on day 1',{checksByDay:{1:[open('quiz','d1-quiz'),open('task','c1-a1')],2:day2}},{eligible:false,daysCompleted:1,reasons:[{code:'quiz-open',day:1,id:'d1-quiz'},{code:'no-task-passed',day:1}]}],
+  ['a day without a quiz counts on one passed task',{checksByDay:{1:[open('task','c1-a1'),pass('task','c1-a2')],2:day2}},{eligible:true,daysCompleted:2,reasons:[]}],
+  ['a day without a quiz and no passed task stays open',{checksByDay:{1:[open('task','c1-a1')],2:day2}},{eligible:false,daysCompleted:1,reasons:[{code:'no-task-passed',day:1}]}],
+  ['a day without tasks counts on its quiz',{checksByDay:{1:[pass('quiz','d1-quiz')],2:day2}},{eligible:true,daysCompleted:2,reasons:[]}],
+  ['a day without tasks and a wrong quiz stays open',{checksByDay:{1:[open('quiz','d1-quiz')],2:day2}},{eligible:false,daysCompleted:1,reasons:[{code:'quiz-open',day:1,id:'d1-quiz'}]}],
+  ['a day with only labs has neither quiz nor task and fails closed',{checksByDay:{1:[pass('lab','lab-1')],2:day2}},{eligible:false,daysCompleted:1,reasons:[{code:'day-without-content',day:1}]}],
   ['a day without content fails closed',{days:3},{eligible:false,daysCompleted:2,reasons:[{code:'day-without-content',day:3}]}],
   ['cohort still before its last day',{lastDayStarted:false},{eligible:false,daysCompleted:2,reasons:[{code:'cohort-running'}]}],
   ['facilitator revoked access',{accessRevoked:true},{eligible:false,daysCompleted:2,reasons:[{code:'access-revoked'}]}],
@@ -66,15 +71,16 @@ async function gateway(){
 
 const host=body=>({body:{hostKey:'test-host',...body}});
 
-// Passes a whole day the way a participant does: every quick check answer right, then evidence per
-// day task, each approved by someone other than the author (alternating facilitator and a peer).
-async function completeDay(call,sessions,day,reviewers=['facilitator','bob']){
+// Passes a day the way a participant does under the lighter rule: every quick check answer right,
+// then evidence for the given day tasks (default: only the first), each approved by someone other
+// than the author (alternating facilitator and a peer).
+async function completeDay(call,sessions,day,reviewers=['facilitator','bob'],tasks=TASKS[day].slice(0,1)){
  const {facilitator,alice}=sessions;
  assert.equal((await call('POST','/game/control',{cookie:facilitator,body:{action:'day',value:day}})).status,200);
  const {key}=getDayPack(day).quiz;
  const {attemptId}=(await call('POST','/game/quiz/start',{cookie:alice,body:{}})).body;
  assert.equal((await call('POST','/game/quiz',{cookie:alice,body:{attemptId,answers:key}})).body.score,Object.keys(key).length);
- for(const [index,taskId] of TASKS[day].entries()){
+ for(const [index,taskId] of tasks.entries()){
   const submitted=await call('POST','/game/evidence',{cookie:alice,body:{requestId:`ev-${taskId}`,taskId,finding:`${taskId} bevinding (synthetisch)`,command:'npm test',observed:'groen',limitation:'alleen lokaal'}});
   assert.equal(submitted.body.taskId,taskId);
   const reviewed=await call('POST','/game/review',{cookie:sessions[reviewers[index%reviewers.length]],body:{requestId:`rv-${taskId}`,id:submitted.body.id,status:'accepted',note:'Klopt.'}});
@@ -113,8 +119,7 @@ test('Mijn certificaat: ineligible members get reasons and no certificate; eligi
   await completeDay(call,sessions,1);
   const early=await mine(call,sessions.alice);
   assert.equal(early.status,200);
-  assert.deepEqual({...early.body,reasons:reasonKeys(early.body.reasons)},{cohortName:'Wave oktober (synthetisch)',days:2,eligible:false,daysCompleted:1,reasons:['cohort-running','quiz-open:2:d2-quiz',...TASKS[2].map(id=>`task-open:2:${id}`)],status:'not-eligible',id:null,issuedAt:null,revokedAt:null});
-  assert.equal(early.body.reasons[2].title,'Opdracht 6 · Projectinstructies');
+  assert.deepEqual({...early.body,reasons:reasonKeys(early.body.reasons)},{cohortName:'Wave oktober (synthetisch)',days:2,eligible:false,daysCompleted:1,reasons:['cohort-running','quiz-open:2:d2-quiz','no-task-passed:2'],status:'not-eligible',id:null,issuedAt:null,revokedAt:null});
   assert.equal(certificateCount(store),0);
 
   await nextDay(clock,login);
@@ -161,7 +166,7 @@ test('facilitator roster issues automatically, shows reasons, keeps revoke, and 
   const roster=await rosterOf(call);
   assert.deepEqual(roster.map(member=>[member.name,member.certificate.status,reasonKeys(member.certificate.reasons)]),[
    ['Alice Jansen','issued',[]],
-   ['Bob','not-eligible',[1,2].flatMap(day=>[`quiz-open:${day}:d${day}-quiz`,...TASKS[day].map(id=>`task-open:${day}:${id}`)])],
+   ['Bob','not-eligible',[1,2].flatMap(day=>[`quiz-open:${day}:d${day}-quiz`,`no-task-passed:${day}`])],
   ]);
   const {id}=roster[0].certificate;
   assert.match(id,ID);

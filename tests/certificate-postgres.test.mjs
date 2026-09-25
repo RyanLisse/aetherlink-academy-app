@@ -6,7 +6,6 @@ import {getDayPack} from '../server/content.mjs';
 
 const DAY=24*60*60*1000;
 const START=Date.parse('2026-10-05T00:00:00Z');
-const DAY1_TASKS=['c1-setup','c1-a1','c1-a2','c1-a3','c1-a4'];
 const WAVE={name:'Wave oktober (synthetisch)',startsAt:START,days:1,readOnlyExport:true};
 
 test('PostgresStore: automatic certificate issuance is idempotent under concurrency, revocation is final, retention cascades',{skip:process.env.ACADEMY_POSTGRES_TEST!=='1'},async()=>{
@@ -27,11 +26,12 @@ test('PostgresStore: automatic certificate issuance is idempotent under concurre
   const count=async()=>(await pool.query(`SELECT count(*)::int AS count FROM "${schema}".cohort_certificates`)).rows[0].count;
 
   const first=await store.myCertificate(session);
-  assert.deepEqual([first.status,first.id,first.reasons.map(reason=>`${reason.code}:${reason.id}`)],['not-eligible',null,['quiz-open:d1-quiz',...DAY1_TASKS.map(id=>`task-open:${id}`)]]);
+  assert.deepEqual([first.status,first.id,first.reasons.map(reason=>[reason.code,reason.day,reason.id].filter(Boolean).join(':'))],['not-eligible',null,['quiz-open:1:d1-quiz','no-task-passed:1']]);
   assert.equal(await count(),0);
   await store.withSession(session,'browser',({r,p})=>{
    p.progressByDay={'1':{quizScore:getDayPack(1).quiz.questions.length}};
-   for(const taskId of DAY1_TASKS)r.evidence.push({id:`evidence-${taskId}`,personId:p.id,name:p.name,day:1,taskId,status:'accepted',review:{by:bob.memberId,reviewer:{role:'peer'},note:'Klopt (synthetisch).'}});
+   // Lighter rule: one approved task plus the fully correct quiz completes the day.
+   r.evidence.push({id:'evidence-c1-a1',personId:p.id,name:p.name,day:1,taskId:'c1-a1',status:'accepted',review:{by:bob.memberId,reviewer:{role:'peer'},note:'Klopt (synthetisch).'}});
   });
 
   const results=await Promise.all([...Array(6)].map(()=>store.myCertificate(session)).concat(store.cohortOverview(),store.cohortOverview()));
