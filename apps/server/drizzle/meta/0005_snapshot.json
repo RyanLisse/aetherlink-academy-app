@@ -1,0 +1,1950 @@
+{
+  "id": "5a63e937-ea8c-43cb-8703-185b23151334",
+  "prevId": "f6b83c9f-cebc-4974-82f8-131e407ef401",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "academy_curriculum.assignments": {
+      "name": "assignments",
+      "schema": "academy_curriculum",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "lesson_id": {
+          "name": "lesson_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slide_id": {
+          "name": "slide_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "course_id": {
+          "name": "course_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "minutes": {
+          "name": "minutes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "goal": {
+          "name": "goal",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "steps": {
+          "name": "steps",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expected": {
+          "name": "expected",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "check": {
+          "name": "check",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "checks": {
+          "name": "checks",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "allowed": {
+          "name": "allowed",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stop": {
+          "name": "stop",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hints": {
+          "name": "hints",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stretch": {
+          "name": "stretch",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "starter_path": {
+          "name": "starter_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "starter_files": {
+          "name": "starter_files",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "lesson_ids": {
+          "name": "lesson_ids",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dataset": {
+          "name": "dataset",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "search_en": {
+          "name": "search_en",
+          "type": "tsvector",
+          "primaryKey": false,
+          "notNull": true,
+          "generated": {
+            "as": "setweight(jsonb_to_tsvector('english'::regconfig, coalesce(\"title\", '{}'::jsonb), '[\"string\"]'::jsonb), 'A') || setweight(jsonb_to_tsvector('english'::regconfig, coalesce(\"goal\", '{}'::jsonb), '[\"string\"]'::jsonb), 'B') || setweight(jsonb_to_tsvector('english'::regconfig, coalesce(\"steps\", '{}'::jsonb), '[\"string\"]'::jsonb), 'C') || setweight(jsonb_to_tsvector('english'::regconfig, coalesce(\"checks\", '{}'::jsonb), '[\"string\"]'::jsonb), 'C') || setweight(jsonb_to_tsvector('english'::regconfig, coalesce(\"allowed\", '{}'::jsonb), '[\"string\"]'::jsonb), 'C') || setweight(to_tsvector('english'::regconfig, coalesce(\"expected\", '')), 'B') || setweight(to_tsvector('english'::regconfig, coalesce(\"check\", '')), 'B') || setweight(to_tsvector('english'::regconfig, coalesce(\"stop\", '')), 'B') || setweight(to_tsvector('english'::regconfig, coalesce(\"stretch\", '')), 'B')",
+            "type": "stored"
+          }
+        },
+        "search_nl": {
+          "name": "search_nl",
+          "type": "tsvector",
+          "primaryKey": false,
+          "notNull": true,
+          "generated": {
+            "as": "setweight(jsonb_to_tsvector('dutch'::regconfig, coalesce(\"title\", '{}'::jsonb), '[\"string\"]'::jsonb), 'A') || setweight(jsonb_to_tsvector('dutch'::regconfig, coalesce(\"goal\", '{}'::jsonb), '[\"string\"]'::jsonb), 'B') || setweight(jsonb_to_tsvector('dutch'::regconfig, coalesce(\"steps\", '{}'::jsonb), '[\"string\"]'::jsonb), 'C') || setweight(jsonb_to_tsvector('dutch'::regconfig, coalesce(\"checks\", '{}'::jsonb), '[\"string\"]'::jsonb), 'C') || setweight(jsonb_to_tsvector('dutch'::regconfig, coalesce(\"allowed\", '{}'::jsonb), '[\"string\"]'::jsonb), 'C') || setweight(to_tsvector('dutch'::regconfig, coalesce(\"expected\", '')), 'B') || setweight(to_tsvector('dutch'::regconfig, coalesce(\"check\", '')), 'B') || setweight(to_tsvector('dutch'::regconfig, coalesce(\"stop\", '')), 'B') || setweight(to_tsvector('dutch'::regconfig, coalesce(\"stretch\", '')), 'B')",
+            "type": "stored"
+          }
+        },
+        "private_search_en": {
+          "name": "private_search_en",
+          "type": "tsvector",
+          "primaryKey": false,
+          "notNull": true,
+          "generated": {
+            "as": "setweight(jsonb_to_tsvector('english'::regconfig, coalesce(\"hints\", '{}'::jsonb), '[\"string\"]'::jsonb), 'C')",
+            "type": "stored"
+          }
+        },
+        "private_search_nl": {
+          "name": "private_search_nl",
+          "type": "tsvector",
+          "primaryKey": false,
+          "notNull": true,
+          "generated": {
+            "as": "setweight(jsonb_to_tsvector('dutch'::regconfig, coalesce(\"hints\", '{}'::jsonb), '[\"string\"]'::jsonb), 'C')",
+            "type": "stored"
+          }
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "assignments_search_en_idx": {
+          "name": "assignments_search_en_idx",
+          "columns": [
+            {
+              "expression": "search_en",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "assignments_search_nl_idx": {
+          "name": "assignments_search_nl_idx",
+          "columns": [
+            {
+              "expression": "search_nl",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "assignments_private_search_en_idx": {
+          "name": "assignments_private_search_en_idx",
+          "columns": [
+            {
+              "expression": "private_search_en",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "assignments_private_search_nl_idx": {
+          "name": "assignments_private_search_nl_idx",
+          "columns": [
+            {
+              "expression": "private_search_nl",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "assignments_lesson_id_course_id_version_lessons_id_course_id_version_fk": {
+          "name": "assignments_lesson_id_course_id_version_lessons_id_course_id_version_fk",
+          "tableFrom": "assignments",
+          "tableTo": "lessons",
+          "schemaTo": "academy_curriculum",
+          "columnsFrom": [
+            "lesson_id",
+            "course_id",
+            "version"
+          ],
+          "columnsTo": [
+            "id",
+            "course_id",
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "assignments_slide_id_course_id_version_slides_id_course_id_version_fk": {
+          "name": "assignments_slide_id_course_id_version_slides_id_course_id_version_fk",
+          "tableFrom": "assignments",
+          "tableTo": "slides",
+          "schemaTo": "academy_curriculum",
+          "columnsFrom": [
+            "slide_id",
+            "course_id",
+            "version"
+          ],
+          "columnsTo": [
+            "id",
+            "course_id",
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "assignments_course_id_version_course_versions_course_id_version_fk": {
+          "name": "assignments_course_id_version_course_versions_course_id_version_fk",
+          "tableFrom": "assignments",
+          "tableTo": "course_versions",
+          "schemaTo": "academy_curriculum",
+          "columnsFrom": [
+            "course_id",
+            "version"
+          ],
+          "columnsTo": [
+            "course_id",
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "assignments_id_course_id_version_pk": {
+          "name": "assignments_id_course_id_version_pk",
+          "columns": [
+            "id",
+            "course_id",
+            "version"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "academy_curriculum.chat_messages": {
+      "name": "chat_messages",
+      "schema": "academy_curriculum",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "thread_id": {
+          "name": "thread_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "author_id": {
+          "name": "author_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "author_role": {
+          "name": "author_role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "body": {
+          "name": "body",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "chat_messages_thread_id_chat_threads_id_fk": {
+          "name": "chat_messages_thread_id_chat_threads_id_fk",
+          "tableFrom": "chat_messages",
+          "tableTo": "chat_threads",
+          "schemaTo": "academy_curriculum",
+          "columnsFrom": [
+            "thread_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "academy_curriculum.chat_threads": {
+      "name": "chat_threads",
+      "schema": "academy_curriculum",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "room_id": {
+          "name": "room_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "chat_threads_room_id_rooms_id_fk": {
+          "name": "chat_threads_room_id_rooms_id_fk",
+          "tableFrom": "chat_threads",
+          "tableTo": "rooms",
+          "schemaTo": "academy_curriculum",
+          "columnsFrom": [
+            "room_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "academy_curriculum.course_versions": {
+      "name": "course_versions",
+      "schema": "academy_curriculum",
+      "columns": {
+        "course_id": {
+          "name": "course_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'draft'"
+        },
+        "content_hash": {
+          "name": "content_hash",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "published_by": {
+          "name": "published_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "course_versions_course_id_courses_id_fk": {
+          "name": "course_versions_course_id_courses_id_fk",
+          "tableFrom": "course_versions",
+          "tableTo": "courses",
+          "schemaTo": "academy_curriculum",
+          "columnsFrom": [
+            "course_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "course_versions_course_id_version_pk": {
+          "name": "course_versions_course_id_version_pk",
+          "columns": [
+            "course_id",
+            "version"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "academy_curriculum.courses": {
+      "name": "courses",
+      "schema": "academy_curriculum",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "title": {
+          "name": "title",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "locale": {
+          "name": "locale",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "current_version": {
+          "name": "current_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source_git_url": {
+          "name": "source_git_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_commit": {
+          "name": "source_commit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "courses_current_version_fkey": {
+          "name": "courses_current_version_fkey",
+          "tableFrom": "courses",
+          "tableTo": "course_versions",
+          "schemaTo": "academy_curriculum",
+          "columnsFrom": [
+            "id",
+            "current_version"
+          ],
+          "columnsTo": [
+            "course_id",
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "academy_curriculum.days": {
+      "name": "days",
+      "schema": "academy_curriculum",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "track_id": {
+          "name": "track_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "course_id": {
+          "name": "course_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ordinal": {
+          "name": "ordinal",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ladder": {
+          "name": "ladder",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "schedule": {
+          "name": "schedule",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "checklist": {
+          "name": "checklist",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "guide_url": {
+          "name": "guide_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "participant_repo": {
+          "name": "participant_repo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agent_repo": {
+          "name": "agent_repo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "days_track_id_course_id_version_tracks_id_course_id_version_fk": {
+          "name": "days_track_id_course_id_version_tracks_id_course_id_version_fk",
+          "tableFrom": "days",
+          "tableTo": "tracks",
+          "schemaTo": "academy_curriculum",
+          "columnsFrom": [
+            "track_id",
+            "course_id",
+            "version"
+          ],
+          "columnsTo": [
+            "id",
+            "course_id",
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "days_course_id_version_course_versions_course_id_version_fk": {
+          "name": "days_course_id_version_course_versions_course_id_version_fk",
+          "tableFrom": "days",
+          "tableTo": "course_versions",
+          "schemaTo": "academy_curriculum",
+          "columnsFrom": [
+            "course_id",
+            "version"
+          ],
+          "columnsTo": [
+            "course_id",
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "days_id_course_id_version_pk": {
+          "name": "days_id_course_id_version_pk",
+          "columns": [
+            "id",
+            "course_id",
+            "version"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "days_ordinal_check": {
+          "name": "days_ordinal_check",
+          "value": "\"academy_curriculum\".\"days\".\"ordinal\" between 1 and 7"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "academy_curriculum.facilitator_credentials": {
+      "name": "facilitator_credentials",
+      "schema": "academy_curriculum",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "room_id": {
+          "name": "room_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "algorithm": {
+          "name": "algorithm",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'aes-256-gcm'"
+        },
+        "cipher_text": {
+          "name": "cipher_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nonce": {
+          "name": "nonce",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "facilitator_credentials_room_id_rooms_id_fk": {
+          "name": "facilitator_credentials_room_id_rooms_id_fk",
+          "tableFrom": "facilitator_credentials",
+          "tableTo": "rooms",
+          "schemaTo": "academy_curriculum",
+          "columnsFrom": [
+            "room_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "facilitator_credentials_room_id_unique": {
+          "name": "facilitator_credentials_room_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "room_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "academy_curriculum.follow_state": {
+      "name": "follow_state",
+      "schema": "academy_curriculum",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "room_id": {
+          "name": "room_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "participant_id": {
+          "name": "participant_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "following": {
+          "name": "following",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "follow_state_room_id_rooms_id_fk": {
+          "name": "follow_state_room_id_rooms_id_fk",
+          "tableFrom": "follow_state",
+          "tableTo": "rooms",
+          "schemaTo": "academy_curriculum",
+          "columnsFrom": [
+            "room_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "follow_state_room_participant_key": {
+          "name": "follow_state_room_participant_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "room_id",
+            "participant_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "academy_curriculum.glossary_terms": {
+      "name": "glossary_terms",
+      "schema": "academy_curriculum",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "course_id": {
+          "name": "course_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "locale": {
+          "name": "locale",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "term": {
+          "name": "term",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "definition": {
+          "name": "definition",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "search_en": {
+          "name": "search_en",
+          "type": "tsvector",
+          "primaryKey": false,
+          "notNull": true,
+          "generated": {
+            "as": "setweight(to_tsvector('english'::regconfig, coalesce(\"term\", '')), 'A') || setweight(to_tsvector('english'::regconfig, coalesce(\"definition\", '')), 'B')",
+            "type": "stored"
+          }
+        },
+        "search_nl": {
+          "name": "search_nl",
+          "type": "tsvector",
+          "primaryKey": false,
+          "notNull": true,
+          "generated": {
+            "as": "setweight(to_tsvector('dutch'::regconfig, coalesce(\"term\", '')), 'A') || setweight(to_tsvector('dutch'::regconfig, coalesce(\"definition\", '')), 'B')",
+            "type": "stored"
+          }
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "glossary_terms_search_en_idx": {
+          "name": "glossary_terms_search_en_idx",
+          "columns": [
+            {
+              "expression": "search_en",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "glossary_terms_search_nl_idx": {
+          "name": "glossary_terms_search_nl_idx",
+          "columns": [
+            {
+              "expression": "search_nl",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "glossary_terms_course_id_version_course_versions_course_id_version_fk": {
+          "name": "glossary_terms_course_id_version_course_versions_course_id_version_fk",
+          "tableFrom": "glossary_terms",
+          "tableTo": "course_versions",
+          "schemaTo": "academy_curriculum",
+          "columnsFrom": [
+            "course_id",
+            "version"
+          ],
+          "columnsTo": [
+            "course_id",
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "glossary_terms_id_course_id_version_pk": {
+          "name": "glossary_terms_id_course_id_version_pk",
+          "columns": [
+            "id",
+            "course_id",
+            "version"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "glossary_terms_course_version_locale_term_key": {
+          "name": "glossary_terms_course_version_locale_term_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "course_id",
+            "version",
+            "locale",
+            "term"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "academy_curriculum.lessons": {
+      "name": "lessons",
+      "schema": "academy_curriculum",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "day_id": {
+          "name": "day_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "course_id": {
+          "name": "course_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kicker": {
+          "name": "kicker",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mode": {
+          "name": "mode",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "duration_minutes": {
+          "name": "duration_minutes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lede": {
+          "name": "lede",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "loop": {
+          "name": "loop",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "worked_example": {
+          "name": "worked_example",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source": {
+          "name": "source",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "lessons_day_id_course_id_version_days_id_course_id_version_fk": {
+          "name": "lessons_day_id_course_id_version_days_id_course_id_version_fk",
+          "tableFrom": "lessons",
+          "tableTo": "days",
+          "schemaTo": "academy_curriculum",
+          "columnsFrom": [
+            "day_id",
+            "course_id",
+            "version"
+          ],
+          "columnsTo": [
+            "id",
+            "course_id",
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "lessons_course_id_version_course_versions_course_id_version_fk": {
+          "name": "lessons_course_id_version_course_versions_course_id_version_fk",
+          "tableFrom": "lessons",
+          "tableTo": "course_versions",
+          "schemaTo": "academy_curriculum",
+          "columnsFrom": [
+            "course_id",
+            "version"
+          ],
+          "columnsTo": [
+            "course_id",
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "lessons_id_course_id_version_pk": {
+          "name": "lessons_id_course_id_version_pk",
+          "columns": [
+            "id",
+            "course_id",
+            "version"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "lessons_course_version_slug_key": {
+          "name": "lessons_course_version_slug_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "course_id",
+            "version",
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "academy_curriculum.presenter_state": {
+      "name": "presenter_state",
+      "schema": "academy_curriculum",
+      "columns": {
+        "room_id": {
+          "name": "room_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "slide_id": {
+          "name": "slide_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slide_ordinal": {
+          "name": "slide_ordinal",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "presenter_state_room_id_rooms_id_fk": {
+          "name": "presenter_state_room_id_rooms_id_fk",
+          "tableFrom": "presenter_state",
+          "tableTo": "rooms",
+          "schemaTo": "academy_curriculum",
+          "columnsFrom": [
+            "room_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "academy_curriculum.progress": {
+      "name": "progress",
+      "schema": "academy_curriculum",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "room_id": {
+          "name": "room_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "participant_id": {
+          "name": "participant_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "lesson_id": {
+          "name": "lesson_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slide_id": {
+          "name": "slide_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "progress_room_id_rooms_id_fk": {
+          "name": "progress_room_id_rooms_id_fk",
+          "tableFrom": "progress",
+          "tableTo": "rooms",
+          "schemaTo": "academy_curriculum",
+          "columnsFrom": [
+            "room_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "progress_room_participant_lesson_key": {
+          "name": "progress_room_participant_lesson_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "room_id",
+            "participant_id",
+            "lesson_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "academy_curriculum.quiz_questions": {
+      "name": "quiz_questions",
+      "schema": "academy_curriculum",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "lesson_id": {
+          "name": "lesson_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "course_id": {
+          "name": "course_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "question": {
+          "name": "question",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "options": {
+          "name": "options",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "answer": {
+          "name": "answer",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "quiz_questions_lesson_id_course_id_version_lessons_id_course_id_version_fk": {
+          "name": "quiz_questions_lesson_id_course_id_version_lessons_id_course_id_version_fk",
+          "tableFrom": "quiz_questions",
+          "tableTo": "lessons",
+          "schemaTo": "academy_curriculum",
+          "columnsFrom": [
+            "lesson_id",
+            "course_id",
+            "version"
+          ],
+          "columnsTo": [
+            "id",
+            "course_id",
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "quiz_questions_course_id_version_course_versions_course_id_version_fk": {
+          "name": "quiz_questions_course_id_version_course_versions_course_id_version_fk",
+          "tableFrom": "quiz_questions",
+          "tableTo": "course_versions",
+          "schemaTo": "academy_curriculum",
+          "columnsFrom": [
+            "course_id",
+            "version"
+          ],
+          "columnsTo": [
+            "course_id",
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "quiz_questions_id_course_id_version_pk": {
+          "name": "quiz_questions_id_course_id_version_pk",
+          "columns": [
+            "id",
+            "course_id",
+            "version"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "academy_curriculum.rooms": {
+      "name": "rooms",
+      "schema": "academy_curriculum",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "course_id": {
+          "name": "course_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pinned_version": {
+          "name": "pinned_version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "rooms_course_id_pinned_version_course_versions_course_id_version_fk": {
+          "name": "rooms_course_id_pinned_version_course_versions_course_id_version_fk",
+          "tableFrom": "rooms",
+          "tableTo": "course_versions",
+          "schemaTo": "academy_curriculum",
+          "columnsFrom": [
+            "course_id",
+            "pinned_version"
+          ],
+          "columnsTo": [
+            "course_id",
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "academy_curriculum.slides": {
+      "name": "slides",
+      "schema": "academy_curriculum",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "lesson_id": {
+          "name": "lesson_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "course_id": {
+          "name": "course_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ordinal": {
+          "name": "ordinal",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kicker": {
+          "name": "kicker",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "subtitle": {
+          "name": "subtitle",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "layout": {
+          "name": "layout",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "cards": {
+          "name": "cards",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "items": {
+          "name": "items",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "columns": {
+          "name": "columns",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "steps": {
+          "name": "steps",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expected": {
+          "name": "expected",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "check": {
+          "name": "check",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "timer": {
+          "name": "timer",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "prompt": {
+          "name": "prompt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tagline": {
+          "name": "tagline",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dark": {
+          "name": "dark",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "visual": {
+          "name": "visual",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image": {
+          "name": "image",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_alt": {
+          "name": "image_alt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "image_caption": {
+          "name": "image_caption",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "keep_cards": {
+          "name": "keep_cards",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "mascot": {
+          "name": "mascot",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "concepts": {
+          "name": "concepts",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bars": {
+          "name": "bars",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "plan_b": {
+          "name": "plan_b",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "search_en": {
+          "name": "search_en",
+          "type": "tsvector",
+          "primaryKey": false,
+          "notNull": true,
+          "generated": {
+            "as": "setweight(to_tsvector('english'::regconfig, coalesce(\"title\", '')), 'A') || setweight(to_tsvector('english'::regconfig, coalesce(\"kicker\", '')), 'B') || setweight(to_tsvector('english'::regconfig, coalesce(\"subtitle\", '')), 'B') || setweight(to_tsvector('english'::regconfig, coalesce(\"expected\", '')), 'B') || setweight(to_tsvector('english'::regconfig, coalesce(\"check\", '')), 'B') || setweight(to_tsvector('english'::regconfig, coalesce(\"prompt\", '')), 'B') || setweight(to_tsvector('english'::regconfig, coalesce(\"tagline\", '')), 'B') || setweight(to_tsvector('english'::regconfig, coalesce(\"plan_b\", '')), 'B') || setweight(to_tsvector('english'::regconfig, coalesce(\"image_alt\", '')), 'B') || setweight(to_tsvector('english'::regconfig, coalesce(\"image_caption\", '')), 'B') || setweight(jsonb_to_tsvector('english'::regconfig, coalesce(\"cards\", '{}'::jsonb), '[\"string\"]'::jsonb), 'C') || setweight(jsonb_to_tsvector('english'::regconfig, coalesce(\"items\", '{}'::jsonb), '[\"string\"]'::jsonb), 'C') || setweight(jsonb_to_tsvector('english'::regconfig, coalesce(\"columns\", '{}'::jsonb), '[\"string\"]'::jsonb), 'C') || setweight(jsonb_to_tsvector('english'::regconfig, coalesce(\"steps\", '{}'::jsonb), '[\"string\"]'::jsonb), 'C') || setweight(jsonb_to_tsvector('english'::regconfig, coalesce(\"concepts\", '{}'::jsonb), '[\"string\"]'::jsonb), 'C') || setweight(jsonb_to_tsvector('english'::regconfig, coalesce(\"bars\", '{}'::jsonb), '[\"string\"]'::jsonb), 'C')",
+            "type": "stored"
+          }
+        },
+        "search_nl": {
+          "name": "search_nl",
+          "type": "tsvector",
+          "primaryKey": false,
+          "notNull": true,
+          "generated": {
+            "as": "setweight(to_tsvector('dutch'::regconfig, coalesce(\"title\", '')), 'A') || setweight(to_tsvector('dutch'::regconfig, coalesce(\"kicker\", '')), 'B') || setweight(to_tsvector('dutch'::regconfig, coalesce(\"subtitle\", '')), 'B') || setweight(to_tsvector('dutch'::regconfig, coalesce(\"expected\", '')), 'B') || setweight(to_tsvector('dutch'::regconfig, coalesce(\"check\", '')), 'B') || setweight(to_tsvector('dutch'::regconfig, coalesce(\"prompt\", '')), 'B') || setweight(to_tsvector('dutch'::regconfig, coalesce(\"tagline\", '')), 'B') || setweight(to_tsvector('dutch'::regconfig, coalesce(\"plan_b\", '')), 'B') || setweight(to_tsvector('dutch'::regconfig, coalesce(\"image_alt\", '')), 'B') || setweight(to_tsvector('dutch'::regconfig, coalesce(\"image_caption\", '')), 'B') || setweight(jsonb_to_tsvector('dutch'::regconfig, coalesce(\"cards\", '{}'::jsonb), '[\"string\"]'::jsonb), 'C') || setweight(jsonb_to_tsvector('dutch'::regconfig, coalesce(\"items\", '{}'::jsonb), '[\"string\"]'::jsonb), 'C') || setweight(jsonb_to_tsvector('dutch'::regconfig, coalesce(\"columns\", '{}'::jsonb), '[\"string\"]'::jsonb), 'C') || setweight(jsonb_to_tsvector('dutch'::regconfig, coalesce(\"steps\", '{}'::jsonb), '[\"string\"]'::jsonb), 'C') || setweight(jsonb_to_tsvector('dutch'::regconfig, coalesce(\"concepts\", '{}'::jsonb), '[\"string\"]'::jsonb), 'C') || setweight(jsonb_to_tsvector('dutch'::regconfig, coalesce(\"bars\", '{}'::jsonb), '[\"string\"]'::jsonb), 'C')",
+            "type": "stored"
+          }
+        },
+        "private_search_en": {
+          "name": "private_search_en",
+          "type": "tsvector",
+          "primaryKey": false,
+          "notNull": true,
+          "generated": {
+            "as": "setweight(to_tsvector('english'::regconfig, coalesce(\"notes\", '')), 'B')",
+            "type": "stored"
+          }
+        },
+        "private_search_nl": {
+          "name": "private_search_nl",
+          "type": "tsvector",
+          "primaryKey": false,
+          "notNull": true,
+          "generated": {
+            "as": "setweight(to_tsvector('dutch'::regconfig, coalesce(\"notes\", '')), 'B')",
+            "type": "stored"
+          }
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "slides_search_en_idx": {
+          "name": "slides_search_en_idx",
+          "columns": [
+            {
+              "expression": "search_en",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "slides_search_nl_idx": {
+          "name": "slides_search_nl_idx",
+          "columns": [
+            {
+              "expression": "search_nl",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "slides_private_search_en_idx": {
+          "name": "slides_private_search_en_idx",
+          "columns": [
+            {
+              "expression": "private_search_en",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        },
+        "slides_private_search_nl_idx": {
+          "name": "slides_private_search_nl_idx",
+          "columns": [
+            {
+              "expression": "private_search_nl",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "slides_lesson_id_course_id_version_lessons_id_course_id_version_fk": {
+          "name": "slides_lesson_id_course_id_version_lessons_id_course_id_version_fk",
+          "tableFrom": "slides",
+          "tableTo": "lessons",
+          "schemaTo": "academy_curriculum",
+          "columnsFrom": [
+            "lesson_id",
+            "course_id",
+            "version"
+          ],
+          "columnsTo": [
+            "id",
+            "course_id",
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "slides_course_id_version_course_versions_course_id_version_fk": {
+          "name": "slides_course_id_version_course_versions_course_id_version_fk",
+          "tableFrom": "slides",
+          "tableTo": "course_versions",
+          "schemaTo": "academy_curriculum",
+          "columnsFrom": [
+            "course_id",
+            "version"
+          ],
+          "columnsTo": [
+            "course_id",
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "slides_id_course_id_version_pk": {
+          "name": "slides_id_course_id_version_pk",
+          "columns": [
+            "id",
+            "course_id",
+            "version"
+          ]
+        }
+      },
+      "uniqueConstraints": {
+        "slides_course_version_lesson_ordinal_key": {
+          "name": "slides_course_version_lesson_ordinal_key",
+          "nullsNotDistinct": false,
+          "columns": [
+            "course_id",
+            "version",
+            "lesson_id",
+            "ordinal"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "slides_ordinal_check": {
+          "name": "slides_ordinal_check",
+          "value": "\"academy_curriculum\".\"slides\".\"ordinal\" >= 1"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "academy_curriculum.tracks": {
+      "name": "tracks",
+      "schema": "academy_curriculum",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "course_id": {
+          "name": "course_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ordinal": {
+          "name": "ordinal",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "case_label": {
+          "name": "case_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "tracks_course_id_version_course_versions_course_id_version_fk": {
+          "name": "tracks_course_id_version_course_versions_course_id_version_fk",
+          "tableFrom": "tracks",
+          "tableTo": "course_versions",
+          "schemaTo": "academy_curriculum",
+          "columnsFrom": [
+            "course_id",
+            "version"
+          ],
+          "columnsTo": [
+            "course_id",
+            "version"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "tracks_id_course_id_version_pk": {
+          "name": "tracks_id_course_id_version_pk",
+          "columns": [
+            "id",
+            "course_id",
+            "version"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "tracks_ordinal_check": {
+          "name": "tracks_ordinal_check",
+          "value": "\"academy_curriculum\".\"tracks\".\"ordinal\" >= 1"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {
+    "academy_curriculum": "academy_curriculum"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

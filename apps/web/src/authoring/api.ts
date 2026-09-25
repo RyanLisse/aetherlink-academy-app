@@ -137,7 +137,8 @@ function serverError(payload: unknown, status: number): AuthoringApiError {
 async function request<T>(passphrase: string, path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   headers.set('Accept', 'application/json');
-  headers.set('Authorization', `Bearer ${passphrase}`);
+  // Empty passphrase: rely on the facilitator's Google SSO cookie instead of the shared host key.
+  if (passphrase.trim()) headers.set('Authorization', `Bearer ${passphrase.trim()}`);
   if (init.body !== undefined) headers.set('Content-Type', 'application/json');
   const response = await fetch(`${API_ROOT}${path}`, {...init, headers});
   const payload = await readJson(response);
@@ -185,4 +186,82 @@ async function lessonAction(passphrase: string, lessonId: string, action: 'deck'
   const payload = await request<LessonPayload>(passphrase, `/lessons/${encodeURIComponent(lessonId)}/${action}`, {method: 'POST'});
   if (!isRecord(payload) || payload.lesson === undefined) throw new Error('Ongeldige les in serverantwoord');
   return parseLesson(payload.lesson);
+}
+
+export interface Revision {
+  readonly version: number;
+  readonly status: 'draft' | 'published';
+  readonly createdBy: string | null;
+  readonly publishedBy: string | null;
+  readonly createdAt: string;
+  readonly publishedAt: string | null;
+}
+
+export interface RevisionList {
+  readonly courseId: string;
+  readonly currentVersion: number | null;
+  readonly revisions: readonly Revision[];
+}
+
+export interface Publication {
+  readonly version: number;
+  readonly baseVersion: number;
+  readonly unchanged: boolean;
+  readonly publishedBy: string | null;
+  readonly publishedAt: string | null;
+}
+
+function nullableString(value: unknown, field: string): string | null {
+  if (value === null) return null;
+  return requiredString(value, field);
+}
+
+function parseRevision(value: unknown): Revision {
+  if (!isRecord(value)) throw new Error('Ongeldige revisie in serverantwoord');
+  const status = value.status;
+  if (status !== 'draft' && status !== 'published') throw new Error('Ongeldige revisiestatus in serverantwoord');
+  return {
+    version: requiredNumber(value.version, 'versie'),
+    status,
+    createdBy: nullableString(value.createdBy, 'maker'),
+    publishedBy: nullableString(value.publishedBy, 'publicist'),
+    createdAt: requiredString(value.createdAt, 'aanmaaktijd'),
+    publishedAt: nullableString(value.publishedAt, 'publicatietijd'),
+  };
+}
+
+export async function listRevisions(passphrase: string, courseId: string): Promise<RevisionList> {
+  const payload = await request<unknown>(passphrase, `/courses/${encodeURIComponent(courseId)}/revisions`);
+  if (!isRecord(payload) || !Array.isArray(payload.revisions)) throw new Error('Ongeldige revisielijst in serverantwoord');
+  const current = payload.currentVersion;
+  return {
+    courseId: requiredString(payload.courseId, 'cursus-id'),
+    currentVersion: current === null ? null : requiredNumber(current, 'huidige versie'),
+    revisions: payload.revisions.map(parseRevision),
+  };
+}
+
+export async function publishSnapshot(passphrase: string, lessonId: string, target: {courseId: string; curriculumLessonId: string}): Promise<Publication> {
+  const payload = await request<unknown>(passphrase, `/lessons/${encodeURIComponent(lessonId)}/publish`, {
+    method: 'POST',
+    body: JSON.stringify(target),
+  });
+  if (!isRecord(payload) || !isRecord(payload.publication)) throw new Error('Ongeldige publicatie in serverantwoord');
+  const publication = payload.publication;
+  if (typeof publication.unchanged !== 'boolean') throw new Error('Ongeldige publicatie in serverantwoord');
+  return {
+    version: requiredNumber(publication.version, 'versie'),
+    baseVersion: requiredNumber(publication.baseVersion, 'basisversie'),
+    unchanged: publication.unchanged,
+    publishedBy: nullableString(publication.publishedBy, 'publicist'),
+    publishedAt: nullableString(publication.publishedAt, 'publicatietijd'),
+  };
+}
+
+export async function exportMarkdown(passphrase: string, courseId: string, version: number, lessonId: string): Promise<string> {
+  const headers = new Headers({Accept: 'text/markdown'});
+  if (passphrase.trim()) headers.set('Authorization', `Bearer ${passphrase.trim()}`);
+  const response = await fetch(`${API_ROOT}/courses/${encodeURIComponent(courseId)}/revisions/${version}/lessons/${encodeURIComponent(lessonId)}/markdown`, {headers});
+  if (!response.ok) throw serverError(await readJson(response), response.status);
+  return response.text();
 }

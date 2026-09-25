@@ -3,15 +3,32 @@ import {
   AuthoringApiError,
   createDeck,
   createLesson,
+  exportMarkdown,
   listLessons,
+  listRevisions,
+  publishSnapshot,
   reconcileDeck,
   refreshFromSlides,
   saveSnapshot,
   type Lesson,
+  type Revision,
+  type RevisionList,
 } from './api.ts';
 import './authoring.css';
 
-type BusyAction = 'load' | 'create' | 'deck' | 'refresh' | 'snapshot' | 'reconcile' | null;
+type BusyAction = 'load' | 'create' | 'deck' | 'refresh' | 'snapshot' | 'reconcile' | 'publish' | 'revisions' | 'export' | null;
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function revisionAuthor(revision: Revision): string {
+  const author = revision.publishedBy ?? revision.createdBy;
+  if (author === 'host-key') return 'Host-sleutel';
+  return author ?? 'Import (geen auteur)';
+}
+
+function revisionTime(revision: Revision): string {
+  return new Date(revision.publishedAt ?? revision.createdAt).toLocaleString('nl-NL', {dateStyle: 'medium', timeStyle: 'short'});
+}
 
 function actionError(error: unknown): string {
   if (error instanceof AuthoringApiError) return error.message;
@@ -41,12 +58,16 @@ export function AuthoringPage() {
   const [objective, setObjective] = useState('');
   const [outlineText, setOutlineText] = useState('');
   const [reconcileDeckId, setReconcileDeckId] = useState('');
+  const [courseId, setCourseId] = useState('');
+  const [curriculumLessonId, setCurriculumLessonId] = useState('');
+  const [revisions, setRevisions] = useState<RevisionList | null>(null);
   const [busy, setBusy] = useState<BusyAction>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
   const selected = useMemo(() => lessons.find((lesson) => lesson.id === selectedId) ?? null, [lessons, selectedId]);
-  const ready = passphrase.trim().length > 0;
+  const target = {courseId: courseId.trim(), curriculumLessonId: curriculumLessonId.trim()};
+  const targetValid = UUID.test(target.courseId) && UUID.test(target.curriculumLessonId);
 
   function begin(action: Exclude<BusyAction, null>) {
     setBusy(action);
@@ -55,10 +76,6 @@ export function AuthoringPage() {
   }
 
   async function load() {
-    if (!ready) {
-      setError('Vul eerst de project-passphrase in.');
-      return;
-    }
     begin('load');
     try {
       const next = await listLessons(passphrase);
@@ -74,10 +91,6 @@ export function AuthoringPage() {
 
   async function submitLesson(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!ready) {
-      setError('Vul eerst de project-passphrase in.');
-      return;
-    }
     const cleanTitle = title.trim();
     const cleanObjective = objective.trim();
     const outline = outlineText.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
@@ -102,7 +115,7 @@ export function AuthoringPage() {
   }
 
   async function runLessonAction(action: Exclude<BusyAction, null>, operation: (lessonId: string) => Promise<Lesson>, success: string) {
-    if (!selected || !ready) return;
+    if (!selected) return;
     begin(action);
     try {
       const lesson = await operation(selected.id);
@@ -117,6 +130,55 @@ export function AuthoringPage() {
           // Preserve the original create error when the recovery read also fails.
         }
       }
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function loadRevisions() {
+    if (!UUID.test(target.courseId)) {
+      setError('Vul een geldig cursus-ID (UUID) in.');
+      return;
+    }
+    begin('revisions');
+    try {
+      setRevisions(await listRevisions(passphrase, target.courseId));
+    } catch (loadError) {
+      setError(actionError(loadError));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function publish() {
+    if (!selected || !targetValid) return;
+    begin('publish');
+    try {
+      const publication = await publishSnapshot(passphrase, selected.id, target);
+      setNotice(publication.unchanged
+        ? `Geen wijzigingen: revisie ${publication.version} blijft actueel.`
+        : `Revisie ${publication.version} gepubliceerd (op basis van ${publication.baseVersion}). Lopende sessies blijven op hun eigen versie.`);
+      setRevisions(await listRevisions(passphrase, target.courseId));
+    } catch (publishError) {
+      setError(actionError(publishError));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function downloadMarkdown(version: number) {
+    if (!UUID.test(target.curriculumLessonId) || !revisions) return;
+    begin('export');
+    try {
+      const markdown = await exportMarkdown(passphrase, revisions.courseId, version, target.curriculumLessonId);
+      const url = URL.createObjectURL(new Blob([markdown], {type: 'text/markdown'}));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `les-${target.curriculumLessonId}-v${version}.md`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (exportError) {
+      setError(actionError(exportError));
     } finally {
       setBusy(null);
     }
@@ -146,7 +208,7 @@ export function AuthoringPage() {
         <section className="authoring-access" aria-labelledby="authoring-access-title">
           <div>
             <h2 id="authoring-access-title">Toegang</h2>
-            <p>De passphrase blijft alleen in dit tabblad in het geheugen.</p>
+            <p>Ingelogd als facilitator via Google? Laat de passphrase leeg. Een passphrase blijft alleen in dit tabblad in het geheugen.</p>
           </div>
           <div className="authoring-access-form">
             <label htmlFor="authoring-passphrase">Project-passphrase</label>
@@ -159,7 +221,7 @@ export function AuthoringPage() {
                 autoComplete="off"
                 spellCheck={false}
               />
-              <button type="button" onClick={() => void load()} disabled={busy !== null || !ready}>
+              <button type="button" onClick={() => void load()} disabled={busy !== null}>
                 {busy === 'load' ? 'Laden…' : 'Lessen laden'}
               </button>
             </div>
@@ -181,7 +243,7 @@ export function AuthoringPage() {
               <span className="authoring-count">{lessons.length}</span>
             </div>
             {lessons.length === 0 ? (
-              <p className="authoring-empty">Nog geen lessen geladen. Gebruik je passphrase om te beginnen.</p>
+              <p className="authoring-empty">Nog geen lessen geladen. Klik op Lessen laden om te beginnen.</p>
             ) : (
               <ul className="authoring-lesson-list">
                 {lessons.map((lesson) => (
@@ -215,7 +277,7 @@ export function AuthoringPage() {
               <label htmlFor="lesson-outline">Outline <span>(één regel per onderdeel)</span></label>
               <textarea id="lesson-outline" rows={6} value={outlineText} onChange={(event) => setOutlineText(event.target.value)} disabled={busy !== null} />
 
-              <button type="submit" className="authoring-primary" disabled={busy !== null || !ready}>
+              <button type="submit" className="authoring-primary" disabled={busy !== null}>
                 {busy === 'create' ? 'Aanmaken…' : 'Les aanmaken'}
               </button>
             </form>
@@ -262,22 +324,22 @@ export function AuthoringPage() {
                         id="reconcile-deck-id"
                         value={reconcileDeckId}
                         onChange={(event) => setReconcileDeckId(event.target.value)}
-                        disabled={busy !== null || !ready}
+                        disabled={busy !== null}
                         autoComplete="off"
                         spellCheck={false}
                       />
-                      <button type="button" className="authoring-primary" onClick={reconcileExistingDeck} disabled={busy !== null || !ready || !reconcileDeckId.trim()}>
+                      <button type="button" className="authoring-primary" onClick={reconcileExistingDeck} disabled={busy !== null || !reconcileDeckId.trim()}>
                         {busy === 'reconcile' ? 'Koppelen…' : 'Bestaand deck koppelen'}
                       </button>
                     </div>
                   ) : (
-                    <button type="button" className="authoring-primary" onClick={() => void runLessonAction('deck', (id) => createDeck(passphrase, id), 'Deck aangemaakt.')} disabled={busy !== null || !ready}>
+                    <button type="button" className="authoring-primary" onClick={() => void runLessonAction('deck', (id) => createDeck(passphrase, id), 'Deck aangemaakt.')} disabled={busy !== null}>
                       {busy === 'deck' ? 'Deck maken…' : 'Maak deck in Slides'}
                     </button>
                   )}
                 </div>
                 {selected.deck && !selected.snapshot ? (
-                  <button type="button" onClick={() => void runLessonAction('snapshot', (id) => saveSnapshot(passphrase, id), 'Snapshot opgeslagen.')} disabled={busy !== null || !ready}>
+                  <button type="button" onClick={() => void runLessonAction('snapshot', (id) => saveSnapshot(passphrase, id), 'Snapshot opgeslagen.')} disabled={busy !== null}>
                     {busy === 'snapshot' ? 'Opslaan…' : 'Snapshot opslaan'}
                   </button>
                 ) : null}
@@ -292,7 +354,7 @@ export function AuthoringPage() {
                         <div><dt>Opgehaald</dt><dd>{new Date(selected.snapshot.capturedAt).toLocaleString('nl-NL')}</dd></div>
                       </dl>
                     </div>
-                    <button type="button" onClick={() => void runLessonAction('snapshot', (id) => saveSnapshot(passphrase, id), 'Snapshot opgeslagen.')} disabled={busy !== null || !ready}>
+                    <button type="button" onClick={() => void runLessonAction('snapshot', (id) => saveSnapshot(passphrase, id), 'Snapshot opgeslagen.')} disabled={busy !== null}>
                       {busy === 'snapshot' ? 'Opslaan…' : 'Snapshot opslaan'}
                     </button>
                   </div>
@@ -301,6 +363,58 @@ export function AuthoringPage() {
             )}
           </section>
         </div>
+
+        <section className="authoring-panel authoring-publish" aria-labelledby="authoring-publish-title">
+          <div className="authoring-panel-heading">
+            <div>
+              <p className="authoring-kicker">Curriculum</p>
+              <h2 id="authoring-publish-title">Publiceren en revisies</h2>
+            </div>
+          </div>
+          <p className="authoring-publish-intro">
+            Publiceer de laatste snapshot van de geselecteerde les als nieuwe, onveranderlijke revisie. Lopende sessies blijven op hun vastgezette versie.
+          </p>
+          <div className="authoring-publish-fields">
+            <div>
+              <label htmlFor="publish-course-id">Cursus-ID</label>
+              <input id="publish-course-id" value={courseId} onChange={(event) => setCourseId(event.target.value)} disabled={busy !== null} autoComplete="off" spellCheck={false} />
+            </div>
+            <div>
+              <label htmlFor="publish-lesson-id">Curriculum-les-ID</label>
+              <input id="publish-lesson-id" value={curriculumLessonId} onChange={(event) => setCurriculumLessonId(event.target.value)} disabled={busy !== null} autoComplete="off" spellCheck={false} />
+            </div>
+          </div>
+          <div className="authoring-publish-actions">
+            <button type="button" className="authoring-primary" onClick={() => void publish()} disabled={busy !== null || !selected?.snapshot || !targetValid}>
+              {busy === 'publish' ? 'Publiceren…' : 'Publiceer snapshot'}
+            </button>
+            <button type="button" onClick={() => void loadRevisions()} disabled={busy !== null || !UUID.test(target.courseId)}>
+              {busy === 'revisions' ? 'Laden…' : 'Revisies laden'}
+            </button>
+          </div>
+          {revisions ? (
+            revisions.revisions.length === 0 ? (
+              <p className="authoring-empty">Deze cursus heeft nog geen revisies.</p>
+            ) : (
+              <ol className="authoring-revisions" aria-label="Revisies">
+                {[...revisions.revisions].reverse().map((revision) => (
+                  <li key={revision.version} className={revision.version === revisions.currentVersion ? 'authoring-revision current' : 'authoring-revision'}>
+                    <span className="authoring-revision-version">v{revision.version}</span>
+                    <span className="authoring-revision-status">
+                      {revision.status === 'published' ? 'Gepubliceerd' : 'Concept'}
+                      {revision.version === revisions.currentVersion ? ' · actueel' : ''}
+                    </span>
+                    <span className="authoring-revision-author">{revisionAuthor(revision)}</span>
+                    <time className="authoring-revision-time" dateTime={revision.publishedAt ?? revision.createdAt}>{revisionTime(revision)}</time>
+                    <button type="button" onClick={() => void downloadMarkdown(revision.version)} disabled={busy !== null || !UUID.test(target.curriculumLessonId)}>
+                      Markdown
+                    </button>
+                  </li>
+                ))}
+              </ol>
+            )
+          ) : null}
+        </section>
       </main>
       <footer className="authoring-footer">Academy authoring · uitsluitend voor proefgebruik</footer>
     </div>
