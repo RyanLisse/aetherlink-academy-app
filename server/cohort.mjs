@@ -1,5 +1,6 @@
 import {randomBytes} from 'node:crypto';
 import {fail,hash} from './store.mjs';
+import {certificateEligibility,memberDayChecks} from './certificate.mjs';
 
 export const DAY_MS=24*60*60*1000;
 export const ACCESS_DAYS=90;
@@ -110,14 +111,41 @@ export function memberStatus(codes){
  return {status:live.lastActivatedAt?'activated':'issued',lastActivatedAt:live.lastActivatedAt||null};
 }
 
-export function cohortView({cohort,members,codes,rooms,now}){
+// Certificates are issued by the server, never by a facilitator click: whenever a member's
+// status is evaluated (participant opens "Mijn certificaat", facilitator opens the roster) and the
+// member is eligible with no certificate on record, one is created. A revoked certificate stays on
+// record, so revocation is final and is never undone by auto-issuance.
+export function memberCertificate({cohort,memberId,codes,rooms,certificates,now}){
+ const own=certificates.filter(certificate=>certificate.memberId===memberId);
+ const live=own.find(certificate=>!certificate.revokedAt);
+ const revoked=own.filter(certificate=>certificate.revokedAt).sort((a,b)=>b.revokedAt-a.revokedAt)[0];
+ const progressByDay=mergeSeatProgress(rooms,memberId);
+ const eligibility=certificateEligibility({
+  days:cohort.days,
+  checksByDay:Object.fromEntries(Array.from({length:cohort.days},(_,index)=>[index+1,memberDayChecks({rooms,memberId,progressByDay,day:index+1})])),
+  accessRevoked:memberStatus(codes).status==='revoked',
+  lastDayStarted:now>=cohort.startsAt+(cohort.days-1)*DAY_MS,
+ });
+ const status=live?'issued':revoked?'revoked':eligibility.eligible?'due':'not-eligible';
+ return {...eligibility,status,id:live?.id||null,issuedAt:live?.issuedAt||null,revokedAt:live?null:revoked?.revokedAt||null};
+}
+
+export function dueCertificates({cohort,members,codes,rooms,certificates,now}){
+ return members
+  .filter(member=>memberCertificate({cohort,memberId:member.id,codes:codes.filter(code=>code.memberId===member.id),rooms,certificates,now}).status==='due')
+  .map(member=>({id:generateAccessCode(),cohortId:cohort.id,memberId:member.id,name:member.name,cohortName:cohort.name,startsAt:cohort.startsAt,endsAt:cohortWindow(cohort).endsAt,days:cohort.days,issuedAt:now,issuedBy:null,revokedAt:null}));
+}
+
+export const certificateVerifiableUntil=certificate=>certificate.endsAt+RETENTION_DAYS*DAY_MS;
+
+export function cohortView({cohort,members,codes,rooms,certificates,now}){
  const current=rooms.find(room=>room.id===cohort.currentRoomId);
  return {
   id:cohort.id,name:cohort.name,startsAt:cohort.startsAt,days:cohort.days,readOnlyExport:cohort.readOnlyExport,createdAt:cohort.createdAt,
   phase:accessPhase(cohort,now).phase,...cohortWindow(cohort),
   currentRoomId:cohort.currentRoomId||null,
   rooms:rooms.map(room=>({id:room.id,name:room.name,code:room.code})),
-  members:[...members].sort((a,b)=>a.name.localeCompare(b.name)).map(member=>({id:member.id,name:member.name,...memberStatus(codes.filter(code=>code.memberId===member.id)),seated:Boolean(current?.members.some(seat=>seat.id===member.id))})),
+  members:[...members].sort((a,b)=>a.name.localeCompare(b.name)).map(member=>{const own=codes.filter(code=>code.memberId===member.id);return {id:member.id,name:member.name,...memberStatus(own),seated:Boolean(current?.members.some(seat=>seat.id===member.id)),certificate:memberCertificate({cohort,memberId:member.id,codes:own,rooms,certificates,now})};}),
  };
 }
 
