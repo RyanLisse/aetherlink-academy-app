@@ -7,6 +7,7 @@ import {
   getLesson,
   resolveLessonId,
 } from "../lessons";
+import { connectArcadeBridge } from "../embed-bridge";
 
 
 'use strict';
@@ -201,7 +202,7 @@ $('btnVoice').onclick = () => voice.toggle();
 if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = () => {};
 
 const player = {
-  playing: false, speechHold: false, t: 0, opIdx: 0, speed: 1, audio: null, raf: 0, lastTick: 0, forked: false, dirty: false,
+  playing: false, speechHold: false, t: 0, opIdx: 0, speed: 1, audio: null, raf: 0, lastTick: 0, forked: false, dirty: false, onEnd: null,
   load(lesson) {
     this.stop(); current = lesson; this.forked = false; this.dirty = false; checkpoint.hide();
     this.audio = lesson.audio ? Object.assign(new Audio(lesson.audio), { preload: 'auto' }) : null;
@@ -256,7 +257,7 @@ const player = {
       if (r) { editor.render(); editor.scrollCaretIntoView(); schedulePreview(); }
       this.t = next; this.updateUI();
       if (r === 'stop') { const stopOp = current.ops[this.opIdx - 1]; this.t = stopOp.t; this.pause(true); checkpoint.show(stopOp.stop, () => this.play()); return; }
-      if (this.t >= current.duration) { this.t = current.duration; this.pause(); return; }
+      if (this.t >= current.duration) { this.t = current.duration; this.pause(); this.onEnd?.(); return; }
       this.raf = requestAnimationFrame(tick);
     };
     this.raf = requestAnimationFrame(tick); this.updateUI();
@@ -465,6 +466,12 @@ export function bootApp() {
   if (!lessons.find((l) => l.id === initial.id)) lessons.unshift(initial);
   player.load(initial);
 
+  const bridge = embed && window.parent !== window ? connectArcadeBridge(window, window.parent, location.origin, initial) : null;
+  if (bridge) {
+    document.body.classList.add("lab-bridge");
+    player.onEnd = () => { if (current?.id === initial.id) bridge.ended(); };
+  }
+
   // When live checkpoint has assert, soft-evaluate against current fold (non-blocking UX)
   const _show = checkpoint.show.bind(checkpoint);
   checkpoint.show = (stop, onDone) => {
@@ -481,6 +488,7 @@ export function bootApp() {
       const r = evaluateAssert(state, stop.assert);
       if (!r.ok) console.warn("[arcade-lab] checkpoint assert failed:", r.detail);
     }
-    return _show(stop, onDone);
+    const done = bridge ? () => { if (current?.id === initial.id) bridge.stopDone(stop); onDone(); } : onDone;
+    return _show(stop, done);
   };
 }

@@ -87,6 +87,9 @@ importers:
 
   apps/arcade-lab:
     dependencies:
+      '@academy/lab-embed':
+        specifier: workspace:*
+        version: link:../../packages/lab-embed
       zod:
         specifier: 4.6.4
         version: 4.6.4
@@ -243,6 +246,12 @@ importers:
         version: 7.0.0
 
   packages/i18n:
+    devDependencies:
+      '@types/node':
+        specifier: 24.13.6
+        version: 24.13.6
+
+  packages/lab-embed:
     devDependencies:
       '@types/node':
         specifier: 24.13.6
