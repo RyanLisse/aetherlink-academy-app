@@ -86,6 +86,11 @@ jobs:
           tests/proof-postgres.test.mjs tests/proof-postgres-domain.test.mjs
           tests/canonical-postgres.test.ts tests/proof-snapshot.test.ts tests/proof-rest-rewrite.test.ts tests/proof-invalidation-race.test.ts tests/proof-reservation.test.mjs
           tests/request-retry.test.mjs
+      - name: Run migrate-v2 apply against a throwaway database
+        id: migrate
+        run: |
+          source "$RUNNER_TEMP/aetherlink-academy-ci/env.sh"
+          ACADEMY_MIGRATE_PG_TEST=1 node --import ./vendor/proof-sdk/node_modules/tsx/dist/loader.mjs --test tests/migrate-v2.test.mjs
       - name: Run PostgreSQL suggestion anchor regression
         id: anchors
         timeout-minutes: 5
