@@ -2,6 +2,7 @@ import React,{useCallback,useEffect,useRef,useState} from 'react';
 import {Presentation,Plus,ChevronLeft,ChevronRight,Maximize,Download,Trash2,Copy,RefreshCw,ArrowLeft,Sparkles} from 'lucide-react';
 import {api,apiMethod,getToken} from './api';
 import {useT} from './i18n';
+import {reportScreen} from './screen';
 
 const DIMS={'16:9':[960,540],'4:3':[960,720],'1:1':[1080,1080],'9:16':[540,960],'4:5':[864,1080]};
 const tokens=ds=>({'--ds-bg':ds?.bg||'#F5F2EA','--ds-surface':ds?.surface||'rgba(0,0,0,0.05)','--ds-text':ds?.text||'#171717','--ds-text-muted':ds?.textMuted||'#5c5c5c','--ds-accent':ds?.accent||'#0f766e','--ds-heading-font':ds?.headingFont||'Inter, system-ui, sans-serif','--ds-body-font':ds?.bodyFont||'Inter, system-ui, sans-serif','--ds-radius':ds?.radius||'8px'});
@@ -55,6 +56,9 @@ function DeckView({room,deckId,action,busy,onBack}){
  const load=useCallback(async()=>{try{const next=await api(`decks/${deckId}`);setDeck(next);setError('');}catch(e){setError(e.message);}},[deckId]);
  useEffect(()=>{load();const timer=setInterval(load,4000);return()=>clearInterval(timer);},[load]);
  const count=deck?.slides.length||0;
+ const slideId=deck?.slides[index]?.id??null;
+ useEffect(()=>{reportScreen({deckId,slideIndex:index,slideId});},[deckId,index,slideId]);
+ useEffect(()=>()=>reportScreen({deckId:null,slideIndex:null,slideId:null}),[]);
  const go=useCallback(delta=>setIndex(i=>Math.max(0,Math.min(count-1,i+delta))),[count]);
  useEffect(()=>{if(index>=count&&count)setIndex(count-1);},[count,index]);
  useEffect(()=>{const onKey=e=>{if(e.target.closest('input,textarea'))return;if(['ArrowRight','ArrowDown','PageDown'].includes(e.key)){e.preventDefault();go(1);}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(-1);}else if(e.key==='Home')setIndex(0);else if(e.key==='End')setIndex(Math.max(0,count-1));};window.addEventListener('keydown',onKey);return()=>window.removeEventListener('keydown',onKey);},[go,count]);

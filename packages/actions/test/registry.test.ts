@@ -73,6 +73,7 @@ describe('registry', () => {
       'releaseLesson',
       'review_evidence',
       'scheduleLesson',
+      'search_content',
       'search_knowledge',
       'setReveal',
       'startTimer',
