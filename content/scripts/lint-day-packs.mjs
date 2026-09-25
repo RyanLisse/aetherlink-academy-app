@@ -1,7 +1,9 @@
+// server/content.mjs loads first: it validates the packs at import time and must see day-pack-lint's
+// autograde import fully initialized, which only holds when content.mjs opens the import cycle.
+import {starterFileNames} from '../../server/content.mjs';
 import {DAY_PACKS} from '../days/index.mjs';
 import {loadDeckSlides,validateDayPacks} from '../days/validate.mjs';
 import {dayPackIssues} from '../../server/day-pack-lint.mjs';
-import {starterFileNames} from '../../server/content.mjs';
 
 const root=process.cwd();
 const errors=[

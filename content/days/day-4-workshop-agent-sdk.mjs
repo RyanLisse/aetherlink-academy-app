@@ -15,7 +15,7 @@ export default {
  leerdoel:'Je bouwt de ticket-triage van Workshop 3 opnieuw met de Claude Agent SDK en haalt op de gedeelde fixture dezelfde prioriteitslabels als het n8n-pad. De solo-lat is SOLO 2; SOLO 3 is stretch. Eve is geen verplicht pad.',
  loop:[
   {label:'SOLO 0',prompt:'Heb je de repo gecloned en wijs je Ticket Input, AI Agent, Reply, Risk en Switch aan?'},
-  {label:'SOLO 1',prompt:'Welk label verwacht de fixture per ticket?'},
+  {label:'SOLO 1',prompt:'Welk label voorspel je per fixture-ticket, en wat zegt de automatische check?'},
   {label:'SOLO 2',prompt:'Welke prioriteit geeft je eerste agent en wie reviewt die?'},
   {label:'SOLO 3',prompt:'Welke specialist splits je af en waar zit de gate?'},
   {label:'SOLO 4',prompt:'Komt elk Claude-label overeen met het verwachte n8n-label?'}
@@ -24,14 +24,14 @@ export default {
   slides:[slide(d,3,'Watch: clone, install, open the export.'),slide(d,6,'Watch: fixture tickets and expected L/M/H.'),slide(d,9,'Watch: first agent, ticket to priority.'),slide(d,12,'Watch: one specialist split.')],
   script:[
    'SOLO 0 (dia 3): git clone, npm install, open n8n/support-triage.json en benoem Ticket Input, AI Agent, Reply en Risk.',
-   'SOLO 1 (dia 6): toon de fixture-tickets en de verwachte labels (WL-1026 high, WL-1027 low).',
+   'SOLO 1 (dia 6): toon de fixture-tickets en laat de zaal per ticket een label voorspellen; de automatische check in de Academy bevestigt of het klopt.',
    'SOLO 2 (dia 9): run npm run triage -- fixtures/ticket.json --dry-run, toon de prioriteit en de menselijke gate vóór acceptatie.',
    'SOLO 3 (dia 12, stretch): demonstreer één specialist (customer-reply of risk) met gezamenlijke output en gate.'
   ]
  },
  solo:[
   {id:'w4-solo0',badge:'S0',level:'required',timerMinutes:10,title:'SOLO 0 · Clone en open de export',goal:'Clone aetherlink-day5-n8n-to-agent, draai npm install, open n8n/support-triage.json en werk op je eigen work/<naam>-branch.',doneWhen:'Installatie werkt en je wijst Ticket Input, AI Agent, Customer Reply Agent, Risk Agent en de Switch aan.',slide:slide(d,4,'Clone and open the n8n export.')},
-  {id:'w4-solo1',badge:'S1',level:'required',timerMinutes:10,title:'SOLO 1 · Bevestig de fixture',goal:'Noteer per fixture-ticket het verwachte label. Houd je Proof van Workshop 3 ernaast als je die hebt.',doneWhen:'Minstens twee tickets met hun verwachte L/M/H genoteerd.',slide:slide(d,7,'Confirm the fixture on your machine.')},
+  {id:'w4-solo1',autograde:'triage',badge:'S1',level:'required',timerMinutes:10,title:'SOLO 1 · Voorspel en check de labels',goal:'Voorspel per fixture-ticket het label (low, medium of high) en check je voorspelling met de automatische check. Houd je Proof van Workshop 3 ernaast als je die hebt.',doneWhen:'Je voorspelling voor elk fixture-ticket is ingeleverd bij de automatische check en elk label klopt; de check keurt de opdracht dan goed.',slide:slide(d,7,'Confirm the fixture on your machine.')},
   {id:'w4-solo2',badge:'S2',level:'required',timerMinutes:20,title:'SOLO 2 · Eerste agent',goal:'Laat je agent op minstens één fixture-ticket een prioriteit geven met systemPrompt en prompt. Een offline dry-run mag; die is geen modelbewijs.',doneWhen:'Agent draait op een fixture, prioriteit komt eruit, een mens heeft gereviewd en er zijn geen secrets gecommit. Dit is de solo-lat.',hint:'Pas desgewenst src/prompts.ts aan en run opnieuw offline.',slide:slide(d,10,'Run your first agent on a fixture.')},
   {id:'w4-solo3',badge:'S3',level:'stretch',timerMinutes:15,title:'SOLO 3 · Voeg een specialist toe',goal:'Splits Reply of Risk af als subagent of skill, net als L3 in n8n.',doneWhen:'Twee rollen, gezamenlijke output en een gate met draft_only en human_approval_required. Optioneel.',slide:slide(d,13,'Stretch — add a specialist role.')},
   {id:'w4-solo4',autograde:'triage',badge:'S4',level:'required',timerMinutes:15,title:'SOLO 4 · Acceptatietabel en Proof',goal:'Vul de tabel ticket → verwacht n8n-label → werkelijk Claude-label. Een verschil los je op in prompt of tools, niet met nieuwe labels.',doneWhen:'Acceptatietabel, dry-run of trace, menselijke gate en behaald niveau (2, 3 of 4).',slide:slide(d,15,'Fill the acceptance table. Ship Proof.')}

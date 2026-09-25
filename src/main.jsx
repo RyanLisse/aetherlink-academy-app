@@ -337,8 +337,7 @@ function CertificateLine({certificate,date,open,revoke}){
   const t=useT();
   if(certificate.id)return <div className="cohort-certificate"><small className="cohort-status activated">{t('cert.issued',{date:date(certificate.issuedAt)})}</small><span className="cohort-actions"><button type="button" onClick={open}>{t('cert.open')}</button><button type="button" onClick={revoke}>{t('cert.revoke')}</button></span></div>;
   if(certificate.status==='revoked')return <div className="cohort-certificate"><small className="cohort-status revoked">{t('cert.revoked',{date:date(certificate.revokedAt)})}</small></div>;
-  const openTasks={};for(const reason of certificate.reasons)if(reason.code==='task-open')openTasks[reason.day]=(openTasks[reason.day]||0)+1;
-  const summary=[...certificate.reasons.filter(reason=>reason.code!=='task-open').map(reason=>t(`cert.reason.${reason.code}`,{day:reason.day})),...Object.entries(openTasks).map(([day,count])=>t('cert.reason.tasks-open',{day,count}))];
+  const summary=certificate.reasons.map(reason=>t(`cert.reason.${reason.code}`,{day:reason.day}));
   return <div className="cohort-certificate"><small className="muted">{t('cert.notYet')} {summary.join(' · ')}</small></div>;
 }
 
