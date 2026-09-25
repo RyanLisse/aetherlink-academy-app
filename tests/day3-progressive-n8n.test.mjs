@@ -33,7 +33,8 @@ test('day 3 pack serves the n8n L1–L3 ticket ladder with the shared fixture',a
  assert.equal(pack.body.mission.id,'TRIAGE-N8N-03');
  assert.deepEqual(pack.body.steps.map(s=>s.id),['w3-l1','w3-l2','w3-l3','w3-proof']);
  assert.deepEqual(pack.body.lesson.loop.map(s=>s.label),['L1 regels','L2 oordeel','L3 specialisten','Proof','Gate']);
- assert.deepEqual(pack.body.triage.tickets.map(t=>`${t.ticketId}=${t.expected}`),['WL-1026=high','WL-1027=low','WL-9001=medium','WL-9002=medium']);
+ assert.deepEqual(pack.body.triage.tickets.map(t=>t.ticketId),['WL-1026','WL-1027','WL-9001','WL-9002']);
+ assert.doesNotMatch(JSON.stringify(pack.body),/"expected/,'the participant pack carries no expected triage labels');
  assert.equal(pack.body.quiz.key,undefined);
  assert.deepEqual(pack.body.quiz.questions.map(q=>q.id),['d3-q1','d3-q2','d3-q3']);
 });
@@ -53,7 +54,10 @@ test('day 3 starters download through the served starter route',async()=>{
  assert.equal(l1.statusCode,200);
  assert.equal(JSON.parse(l1.body).name,'AetherLink W3 · L1 Switch (no LLM)');
  const fixtures=await invoke(app,'/game/starter/:file',{params:{file:'triage-fixtures.json'},cookies:{academy:participant.token}});
- assert.equal(JSON.parse(fixtures.body).id,'support-triage-v1');
+ const served=JSON.parse(fixtures.body);
+ assert.equal(served.id,'support-triage-v1');
+ assert.deepEqual(served.tickets.map(t=>t.ticket.ticket_id),['WL-1026','WL-1027','WL-9001','WL-9002']);
+ assert.doesNotMatch(fixtures.body,/expected_priority|"why"|l1Rule/,'the served fixture has tickets, not answers');
  const missing=await invoke(app,'/game/starter/:file',{params:{file:'secrets.json'},cookies:{academy:participant.token}});
  assert.equal(missing.statusCode,404);
 });
