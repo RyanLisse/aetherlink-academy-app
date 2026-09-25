@@ -20,6 +20,7 @@ import {createSlidesService} from './slides/runtime.ts';
 import {createPortal} from './portal/index.mjs';
 import {parseLabCompletion,parseOriginAllowlist,resolveLabs} from '../packages/lab-embed/src/index.ts';
 import {createScreenStore,screenBinding,readScreenState} from './screen-state.mjs';
+import {answerQuestion} from './faq.mjs';
 const text=(v,max=4000)=>{if(typeof v!=='string'||!v.trim()||v.length>max)fail(400,`Vul tekst in (maximaal ${max} tekens).`);return v.trim();};
 const namedCookie=(req,name)=>{const value=req.headers.cookie?.split(';').map(c=>c.trim()).find(c=>c.startsWith(`${name}=`))?.slice(name.length+1);if(value===undefined)return;try{return decodeURIComponent(value);}catch{return;}};
 const cookie=req=>namedCookie(req,'academy');
@@ -82,6 +83,7 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  const allowedLabOrigins=parseOriginAllowlist(labOrigins,publicUrl.origin),dayLabs=day=>resolveLabs(labsForDay(day),{baseUrl:publicUrl.origin,allowedOrigins:allowedLabOrigins});
  const publicDayPack=pack=>({...participantDayPack(pack),labs:dayLabs(pack.day)});
  app.get('/game/day-pack',wrap(async(req,res)=>{const {r}=await browser(req),pack=getDayPack(r.day);if(!pack)fail(400,`Geen contentpakket voor supportdag ${r.day}.`);res.json(publicDayPack(pack));}));
+ app.post('/game/chat',wrap(async(req,res)=>{const {r,s}=await browser(req);if(s.personId!=='facilitator'&&r.chat===false)fail(403,'De facilitator heeft de chat voor deze kamer uitgezet.');res.json(answerQuestion({day:r.day,query:text(req.body?.q,300),locale:req.body?.locale}));}));
  app.get('/game/day-route',wrap(async(req,res)=>{const {r,p}=await browser(req);res.json({day:r.day,days:listRouteDays().map(d=>({...d,labsTotal:dayLabs(d.day).length,progress:dayProgress(r,p,d.day)}))});}));
  app.post('/game/lab-complete',wrap(async(req,res)=>{const completion=parseLabCompletion(req.body);if(!completion)fail(400,'Ongeldige labvoltooiing.');res.json(await store.withSession(token(req),'browser',({r,p})=>{if(!p)fail(403,'Alleen deelnemers ronden een lab af.');if(!dayLabs(r.day).some(lab=>lab.id===completion.labId))fail(404,`Lab ${completion.labId} hoort niet bij dag ${r.day}.`);const key=String(r.day);p.progressByDay??={};const day=p.progressByDay[key]||{},existing=day.labs?.[completion.labId];if(existing)return {recorded:false,day:r.day,labId:completion.labId,lab:existing};const lab={source:'lab-reported',result:completion.result,evidence:completion.evidence??null,at:new Date().toISOString()};p.progressByDay[key]={...day,labs:{...day.labs,[completion.labId]:lab}};return {recorded:true,day:r.day,labId:completion.labId,lab};}));}));
  app.post('/game/reflection',wrap(async(req,res)=>res.json(await store.withSession(token(req),'browser',({r,p})=>{if(!p)fail(403,'Alleen deelnemers schrijven een eigen reflectie.');const reflection={learned:text(req.body.learned),next:text(req.body.next),at:new Date().toISOString()};p.progressByDay??={};p.progressByDay[String(r.day)]={...p.progressByDay[String(r.day)],reflection};return reflection;}))));

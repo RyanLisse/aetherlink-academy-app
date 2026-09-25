@@ -423,5 +423,19 @@
   "board.sync.synced": "Proof connected · cards shared live",
   "board.sync.offline": "Proof offline · check your connection",
   "board.sync.denied": "No access to this board",
-  "board.sync.readonly": "Proof connected · read-only"
+  "board.sync.readonly": "Proof connected · read-only",
+  "chat.title": "Ask the Academy",
+  "chat.lede": "Navigation and FAQ from today’s day pack. No AI: ask your own Claude for deeper help.",
+  "chat.log": "Conversation with the Academy FAQ",
+  "chat.you": "You:",
+  "chat.source": "Source:",
+  "chat.promptLabel": "Paste this question into your own Claude:",
+  "chat.copyPrompt": "Copy question",
+  "chat.copied": "Copied",
+  "chat.label": "Your question",
+  "chat.placeholder": "E.g. where do I find my assignment?",
+  "chat.send": "Send question",
+  "chat.offForParticipants": "Off for participants. Only you see this chat.",
+  "fac.chat": "Participant chat",
+  "chat.more": "More results ({count})"
 }

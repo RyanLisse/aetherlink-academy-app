@@ -423,5 +423,19 @@
   "board.sync.synced": "Proof verbonden · kaarten live gedeeld",
   "board.sync.offline": "Proof offline · controleer je verbinding",
   "board.sync.denied": "Geen toegang tot dit bord",
-  "board.sync.readonly": "Proof verbonden · alleen lezen"
+  "board.sync.readonly": "Proof verbonden · alleen lezen",
+  "chat.title": "Vraag de Academy",
+  "chat.lede": "Navigatie en veelgestelde vragen uit het dagpakket van vandaag. Geen AI: diepere hulp vraag je aan je eigen Claude.",
+  "chat.log": "Gesprek met de Academy-FAQ",
+  "chat.you": "Jij:",
+  "chat.source": "Bron:",
+  "chat.promptLabel": "Plak deze vraag in je eigen Claude:",
+  "chat.copyPrompt": "Kopieer vraag",
+  "chat.copied": "Gekopieerd",
+  "chat.label": "Je vraag",
+  "chat.placeholder": "Bijv. waar vind ik mijn opdracht?",
+  "chat.send": "Vraag versturen",
+  "chat.offForParticipants": "Uit voor deelnemers. Alleen jij ziet deze chat.",
+  "fac.chat": "Chat voor deelnemers",
+  "chat.more": "Meer resultaten ({count})"
 }
