@@ -16,12 +16,15 @@ import {lessons,mission,initialDocument,searchKnowledge,getDayPack,listRouteDays
 import {createGoogleSso,readLoginState,signLoginState} from './google-sso.mjs';
 import {createSlidesService} from './slides/runtime.ts';
 import {createPortal} from './portal/index.mjs';
+import {READ_ONLY_MESSAGE,parseCohortInput,parseMemberNames} from './cohort.mjs';
 import {createScreenStore,screenBinding,readScreenState} from './screen-state.mjs';
 const text=(v,max=4000)=>{if(typeof v!=='string'||!v.trim()||v.length>max)fail(400,`Vul tekst in (maximaal ${max} tekens).`);return v.trim();};
 const namedCookie=(req,name)=>{const value=req.headers.cookie?.split(';').map(c=>c.trim()).find(c=>c.startsWith(`${name}=`))?.slice(name.length+1);if(value===undefined)return;try{return decodeURIComponent(value);}catch{return;}};
 const cookie=req=>namedCookie(req,'academy');
+const uuid=v=>{if(typeof v!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v))fail(400,'Ongeldige id.');return v;};
+const readOnlyExempt=new Set(['/game/logout','/game/resume','/game/join','/game/create','/game/participant/resume','/game/cohort/activate']);
 const bearer=req=>req.headers.authorization?.startsWith('Bearer ')?req.headers.authorization.slice(7):null;
-export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4400',root=process.cwd(),hostKey,publicBaseUrl=process.env.ACADEMY_PUBLIC_URL||`http://127.0.0.1:${process.env.PORT||4317}`,googleClientId=process.env.GOOGLE_CLIENT_ID,googleClientSecret=process.env.GOOGLE_CLIENT_SECRET,facilitatorDomains=process.env.ACADEMY_FACILITATOR_DOMAINS,signingSecret=process.env.PROOF_COLLAB_SIGNING_SECRET,fetchImpl=fetch,slidesService}={}){
+export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4400',root=process.cwd(),hostKey,publicBaseUrl=process.env.ACADEMY_PUBLIC_URL||`http://127.0.0.1:${process.env.PORT||4317}`,googleClientId=process.env.GOOGLE_CLIENT_ID,googleClientSecret=process.env.GOOGLE_CLIENT_SECRET,facilitatorDomains=process.env.ACADEMY_FACILITATOR_DOMAINS,signingSecret=process.env.PROOF_COLLAB_SIGNING_SECRET,fetchImpl=fetch,slidesService,trustProxy=process.env.ACADEMY_TRUST_PROXY}={}){
  const publicUrl=new URL(publicBaseUrl);if(!['http:','https:'].includes(publicUrl.protocol)||publicUrl.username||publicUrl.password||publicUrl.search||publicUrl.hash||publicUrl.pathname!=='/')throw Error('ACADEMY_PUBLIC_URL moet een HTTP(S)-origin zonder pad of credentials zijn.');
  const store=repository||new LocalStore(dir);const proof=new Proof(proofBase);const slides=slidesService||createSlidesService(repository?{pool:repository.pool,schema:repository.schema}:{dir});const app=express();const proxy=httpProxy.createProxyServer({target:proofBase,ws:true});
  const token=req=>bearer(req)||cookie(req);
@@ -33,7 +36,7 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  const sameState=(a,b)=>{const x=Buffer.from(String(a||'')),y=Buffer.from(String(b||''));return x.length===y.length&&timingSafeEqual(x,y);};
  const stateCheckFailed=(req,reason)=>{const rawCookie=req.headers.cookie;const cookieHeader=typeof rawCookie==='string'&&rawCookie.length>0;const cookieNames=cookieHeader?rawCookie.split(';').map(c=>c.trim().split('=')[0]).filter(Boolean):[];console.warn('[academy] Google-login state check failed',{cookieHeader,loginCookie:cookieNames.includes('academy-login'),cookieNames,reason,userAgent:String(req.headers['user-agent']||'').slice(0,80)});return Object.assign(new Error('Google-login mislukt (state).'),{code:'state'});};
  const requireFacilitator=async req=>{const key=Buffer.from(hash(req.body?.hostKey||''));if(timingSafeEqual(key,Buffer.from(hash(hostKey))))return null;const identity=await store.facilitator(namedCookie(req,'academy-facilitator'));if(identity)return identity;fail(403,'Ongeldige facilitator-startsleutel.');};
- app.disable('x-powered-by');app.use((req,res,next)=>{res.setHeader('Referrer-Policy','no-referrer');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Cache-Control','no-store');const origin=req.headers.origin;if(origin&&origin!==publicUrl.origin&&origin!==`${req.protocol}://${req.headers.host}`)return res.status(403).json({error:'Andere origin niet toegestaan.'});next();});
+ app.disable('x-powered-by');if(trustProxy)app.set('trust proxy',/^\d+$/.test(String(trustProxy))?Number(trustProxy):trustProxy);app.use((req,res,next)=>{res.setHeader('Referrer-Policy','no-referrer');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Cache-Control','no-store');const origin=req.headers.origin;if(origin&&origin!==publicUrl.origin&&origin!==`${req.protocol}://${req.headers.host}`)return res.status(403).json({error:'Andere origin niet toegestaan.'});next();});
  proxy.on('error',(_e,_req,res)=>{if(res.writeHead)res.writeHead(502,{'content-type':'application/json'}).end(JSON.stringify({error:'Proof is niet bereikbaar.'}));else res.destroy();});
  const webDist=path.join(root,'apps/web/dist'),webAssetsDir=path.join(webDist,'assets');
  // apps/web/public/assets shares the /assets prefix with Proof's editor bundle; only files the web build shipped bypass the Proof session.
@@ -43,6 +46,7 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
   if(!/^\/(d\/|api\/|documents\/|assets\/|ws\b)/.test(req.path)||webPublicAssets.has(req.path))return next();
   try{const session=await store.auth(cookie(req),'browser');const {r}=session;const slug=req.path.match(/^\/(?:d|documents|api\/documents|api\/agent)\/([^/]+)/)?.[1];
    if(slug&&slug!==r.proof.slug)fail(403,'Dit document hoort bij een andere kamer.');
+   if(session.s.readOnly&&!['GET','HEAD'].includes(req.method))fail(403,READ_ONLY_MESSAGE);
    const allowed=(['GET','PUT'].includes(req.method)&&req.path===`/api/documents/${r.proof.slug}`)||req.path.startsWith('/assets/')||req.path===`/d/${r.proof.slug}`||req.path==='/api/capabilities'||new RegExp(`^/api/documents/${r.proof.slug}/(open-context|collab-session|collab-refresh|info|presence|marks|content|title)$`).test(req.path);
    const agentAllowed=new RegExp(`^/api/agent/${r.proof.slug}/(state|events/pending|presence/disconnect|marks/(comment|reply|resolve|unresolve|accept|reject|suggest-insert|suggest-replace|suggest-delete))$`).test(req.path);
    if(!allowed&&!agentAllowed)fail(403,'Deze Proof-route is niet beschikbaar via de game.');
@@ -53,6 +57,12 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  });
  app.use(express.json({limit:'64kb'}));
  const buckets=new Map();app.use(['/game','/mcp','/auth'],(req,res,next)=>{const k=req.ip;const b=buckets.get(k)||{t:Date.now(),n:0};if(Date.now()-b.t>60000){b.t=Date.now();b.n=0;}b.n++;buckets.set(k,b);if(b.n>1500)return res.status(429).json({error:'Te veel verzoeken. Wacht even.'});next();});
+ app.use(async(req,res,next)=>{
+  const route=req.path.toLowerCase().replace(/\/+$/,'');
+  if(['GET','HEAD'].includes(req.method)||!route.startsWith('/game/')||route.startsWith('/game/facilitator/')||readOnlyExempt.has(route)||!token(req))return next();
+  try{const {s}=await store.auth(token(req));if(s.readOnly)return res.status(403).json({error:READ_ONLY_MESSAGE});}catch(e){if(e.status!==401)return next(e);}
+  next();
+ });
  const wrap=fn=>async(req,res,next)=>{try{await fn(req,res);}catch(e){next(e);}};
  const setSession=(res,result)=>{res.cookie('academy',result.token,{httpOnly:true,sameSite:'strict',secure:publicUrl.protocol==='https:',path:'/'});res.json(result);};
  const loginCookie={httpOnly:true,sameSite:'lax',secure:authSecure,path:'/'},loginCodes=new Set(['state','domain','token','verify','disabled','session']),mapLoginError=e=>loginCodes.has(e?.code)?e.code:'session',loginError=(res,code,detail={})=>{res.clearCookie('academy-login',loginCookie);console.warn('[academy] Google-login mislukt',{code,reason:detail.reason||null,message:typeof detail.message==='string'?detail.message.slice(0,160):null});res.redirect(302,`/?login_error=${code}`);};
@@ -65,6 +75,15 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  app.post('/game/join',wrap(async(req,res)=>setSession(res,await store.join(text(req.body.code,15),text(req.body.name,50)))));
  app.post('/game/participant/resume',wrap(async(req,res)=>setSession(res,await store.resumeParticipant(text(req.body.resumeToken,128)))));
  app.post('/game/participant/access',wrap(async(req,res)=>res.json(await store.rotateParticipantAccess(token(req)))));
+ app.post('/game/cohort/activate',wrap(async(req,res)=>setSession(res,await store.activateCohortCode(text(req.body.code,40),{ip:req.ip}))));
+ app.post('/game/facilitator/cohorts',wrap(async(req,res)=>{await requireFacilitator(req);res.json(await store.cohortOverview());}));
+ app.post('/game/facilitator/cohort/create',wrap(async(req,res)=>{const identity=await requireFacilitator(req);const input=parseCohortInput(req.body||{}),names=req.body?.members?.length?parseMemberNames(req.body.members):[];res.status(201).json(await store.createCohort(input,names,identity&&{email:identity.email,name:identity.name}));}));
+ app.post('/game/facilitator/cohort/members',wrap(async(req,res)=>{await requireFacilitator(req);res.json(await store.addCohortMembers(uuid(req.body.cohortId),parseMemberNames(req.body.members)));}));
+ app.post('/game/facilitator/cohort/attach',wrap(async(req,res)=>{await requireFacilitator(req);res.json(await store.attachCohortRoom(uuid(req.body.cohortId),uuid(req.body.roomId)));}));
+ const liveSockets=new Map();
+ const closeSockets=personId=>{for(const socket of liveSockets.get(personId)||[])socket.destroy();liveSockets.delete(personId);};
+ app.post('/game/facilitator/cohort/revoke',wrap(async(req,res)=>{await requireFacilitator(req);const result=await store.revokeCohortMember(uuid(req.body.cohortId),uuid(req.body.memberId));closeSockets(req.body.memberId);res.json(result);}));
+ app.post('/game/facilitator/cohort/reissue',wrap(async(req,res)=>{await requireFacilitator(req);const result=await store.reissueCohortCode(uuid(req.body.cohortId),uuid(req.body.memberId));closeSockets(req.body.memberId);res.json(result);}));
  app.post('/game/facilitator/overview',wrap(async(req,res)=>{await requireFacilitator(req);res.json(await store.overview());}));
  app.post('/game/facilitator/attach',wrap(async(req,res)=>{const identity=await requireFacilitator(req);setSession(res,await store.attachFacilitator(text(req.body.roomId,60),identity?.name));}));
  app.post('/game/logout',wrap(async(req,res)=>{await store.logout(token(req));res.clearCookie('academy',{path:'/'});res.json({ok:true});}));
@@ -222,6 +241,6 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  });
  app.use(express.static(path.join(root,'dist')));app.get('/',(_req,res)=>res.sendFile(path.join(root,'dist/index.html')));app.use((req,res,next)=>{if(req.method==='GET'&&(req.path==='/arcade'||req.path.startsWith('/arcade/')))return res.sendFile(path.join(root,'dist/index.html'));return next();});
  app.use((e,req,res,_next)=>{if(!e.status)console.error('[academy] unhandled',{method:req.method,path:req.path,message:e?.message,stack:e?.stack});return res.status(e.status||500).json({error:e.status?e.message:'Onverwachte serverfout. Probeer opnieuw; je invoer blijft staan.'});});
- const server=http.createServer(app);server.on('upgrade',async(req,socket,head)=>{try{const {r}=await browser(req);const url=new URL(req.url,'http://localhost');if(req.headers.origin&&req.headers.origin!==`http://${req.headers.host}`&&req.headers.origin!==`https://${req.headers.host}`)fail(403,'Origin');if(url.pathname!=='/ws'||url.searchParams.get('slug')!==r.proof.slug)fail(403,'Kamer');proxy.ws(req,socket,head);}catch(e){console.warn('WS denied',new URL(req.url,'http://localhost').pathname,e.message);socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');socket.destroy();}});
+ const server=http.createServer(app);server.on('upgrade',async(req,socket,head)=>{try{const {r,s}=await browser(req);if(s.readOnly)fail(403,READ_ONLY_MESSAGE);const url=new URL(req.url,'http://localhost');if(req.headers.origin&&req.headers.origin!==`http://${req.headers.host}`&&req.headers.origin!==`https://${req.headers.host}`)fail(403,'Origin');if(url.pathname!=='/ws'||url.searchParams.get('slug')!==r.proof.slug)fail(403,'Kamer');if(s.expiresAt){const sockets=liveSockets.get(s.personId)||new Set();liveSockets.set(s.personId,sockets.add(socket));const expiry=setTimeout(()=>socket.destroy(),Math.max(0,s.expiresAt-Date.now()));socket.once('close',()=>{clearTimeout(expiry);sockets.delete(socket);if(!sockets.size)liveSockets.delete(s.personId);});}proxy.ws(req,socket,head);}catch(e){console.warn('WS denied',new URL(req.url,'http://localhost').pathname,e.message);socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');socket.destroy();}});
  return {app,server,store,proof,slides,portal};
 }
