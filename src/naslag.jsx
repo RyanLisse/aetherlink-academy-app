@@ -5,18 +5,18 @@ import {useT,useI18n} from './i18n';
 import {Lesson} from './panels';
 import {Hit} from './chat';
 import {reportScreen} from './screen';
+import {StatusState,RemoteStatus,useRemote} from './status';
 
 // Reference view: every released day stays readable on its own, without moving the room.
 export function Naslag({room,action,busy,onNavigate}){
   const t=useT();
   const {locale}=useI18n();
-  const [days,setDays]=useState([]);
   const [error,setError]=useState('');
   const [selected,setSelected]=useState(null);
   const [query,setQuery]=useState('');
   const [result,setResult]=useState(null);
   const releasedKey=room.released?.join(',');
-  useEffect(()=>{let active=true;api('day-route').then(d=>{if(active)setDays(d.days||[]);}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[releasedKey]);
+  const remote=useRemote('day-route',[releasedKey]),days=remote.data?.days||[];
   useEffect(()=>{reportScreen({view:'naslag',day:selected});},[selected]);
   async function search(e){
     e.preventDefault();
@@ -32,8 +32,10 @@ export function Naslag({room,action,busy,onNavigate}){
       <label className="search"><Search size={18} aria-hidden="true"/><input value={query} onChange={e=>setQuery(e.target.value)} maxLength={300} placeholder={t('naslag.searchPlaceholder')} aria-label={t('naslag.searchLabel')}/></label>
       <button type="submit" disabled={!query.trim()}>{t('naslag.searchButton')}</button>
     </form>
-    {error&&<p className="error" role="alert">{error}</p>}
-    {result&&<div className="naslag-hits" aria-live="polite">{result.hits.length?result.hits.map(hit=><Hit key={hit.id} hit={hit} onNavigate={onNavigate}/>):<p className="muted">{t('naslag.noHits')}</p>}</div>}
+    {error&&<StatusState kind="error" title={t('status.errorTitle')}>{error}</StatusState>}
+    {result&&<div className="naslag-hits" aria-live="polite">{result.hits.length?result.hits.map(hit=><Hit key={hit.id} hit={hit} onNavigate={onNavigate}/>):<StatusState kind="empty" title={t('naslag.noHits')}/>}</div>}
+    <RemoteStatus remote={remote} loading={t('naslag.loading')}/>
+    {remote.status==='ready'&&!days.some(d=>d.released)&&<StatusState kind="empty" title={t('naslag.noneReleased')}/>}
     <nav className="naslag-days" aria-label={t('naslag.daysLabel')}>
       {days.map(d=>d.released
         ?<button type="button" key={d.day} aria-pressed={selected===d.day} className={selected===d.day?'selected':''} onClick={()=>setSelected(selected===d.day?null:d.day)}><span className="day-number">0{d.day}</span><span><small>{t('route.supportDay',{day:d.day})}{room.day===d.day?` · ${t('naslag.live')}`:''}</small><strong>{d.title}</strong></span></button>
