@@ -365,3 +365,33 @@ export const facilitatorCredentials = curriculum.table('facilitator_credentials'
   nonce: text('nonce').notNull(),
   createdAt: createdAt(),
 });
+
+/**
+ * Google SSO facilitator sessions. The cookie carries a random token; only its
+ * sha256 is stored, so a database read cannot be replayed as a login.
+ */
+export const facilitatorSessions = curriculum.table(
+  'facilitator_sessions',
+  {
+    tokenHash: text('token_hash').primaryKey(),
+    sub: text('sub').notNull(),
+    email: text('email').notNull(),
+    name: text('name').notNull(),
+    domain: text('domain').notNull(),
+    createdAt: createdAt(),
+    expiresAt: timestamp('expires_at', {withTimezone: true}).notNull(),
+  },
+  (t) => [index('facilitator_sessions_expires_at_idx').on(t.expiresAt)],
+);
+
+/** Server-side half of a pending Google login (PKCE verifier + nonce), keyed by sha256(state), consumed once. */
+export const facilitatorLoginStates = curriculum.table(
+  'facilitator_login_states',
+  {
+    stateHash: text('state_hash').primaryKey(),
+    nonce: text('nonce').notNull(),
+    codeVerifier: text('code_verifier').notNull(),
+    expiresAt: timestamp('expires_at', {withTimezone: true}).notNull(),
+  },
+  (t) => [index('facilitator_login_states_expires_at_idx').on(t.expiresAt)],
+);
