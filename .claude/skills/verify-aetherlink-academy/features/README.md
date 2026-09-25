@@ -34,7 +34,7 @@ Status as of 2026-09-24 at 768910c. Proven means the recipe was executed end to 
 
 - [Classroom deck](./classroom-deck.md) covers `/classroom/1` and `/deck` in projector, presenter, reader and follow modes. Proven for projector, button and key navigation, presenter and reader via `helpers/drive-classroom.mjs`; `/deck`, Chapters and Example prompt are recipe-only.
 - [Workshop decks](./workshop-decks.md) covers `/workshop/3` to `/workshop/7` and their `/lesson/workshop-N` aliases. Recipe-only.
-- [Squad room](./squad-room.md) covers facilitator squad creation, participant join, roster roles and soft rejoin in the legacy game. Recipe-only.
+- [Squad room](./squad-room.md) covers facilitator squad creation, participant join, roster roles, duplicate-name rejection and personal-link resume in the legacy game. Recipe-only.
 - [Proof evidence and review](./proof-evidence-review.md) covers the shared Proof intent document, solo evidence submission and facilitator review. Recipe-only.
 - [Remote MCP](./remote-mcp.md) covers participant MCP tokens and the `/mcp` tools, plus where `get_screen_state` and release policy actually live. Recipe-only; the 401 on unauthenticated `/mcp` was observed.
 - [Live follow](./live-follow.md) covers `/live/<room>/presenter|follow|projector` sync, detach and "everyone back". Proven through the repo harness only (`live-sync.spec.ts`, 2 passed on port 4735); not deployed on the gateway.

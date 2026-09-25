@@ -4,7 +4,6 @@ export interface JoinFormProps {
   readonly onJoin: (code: string, name: string) => void | Promise<void>;
 }
 
-/** Soft rejoin: same display name + room code restores the seat server-side. */
 export function JoinForm({onJoin}: JoinFormProps) {
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
@@ -24,7 +23,7 @@ export function JoinForm({onJoin}: JoinFormProps) {
         Display name
         <input value={name} onChange={(e) => setName(e.target.value)} autoComplete="nickname" required />
       </label>
-      <button type="submit">Join / rejoin</button>
+      <button type="submit">Join</button>
     </form>
   );
 }

@@ -69,6 +69,10 @@ jobs:
         run: pnpm run test:services
       - name: Versioned curriculum on isolated PostgreSQL
         run: pnpm --filter @academy/server run test:curriculum-db
+      - name: Full-text search and release gate on isolated PostgreSQL
+        run: pnpm --filter @academy/server run test:search-db
+      - name: Notion import on isolated PostgreSQL
+        run: pnpm --filter @academy/server run test:notion-db
 
   container:
     runs-on: ubuntu-latest

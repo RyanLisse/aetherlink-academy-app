@@ -1,0 +1,15 @@
+{
+  "provenance": {
+    "url": "http://91.99.78.17:4317/classroom/1",
+    "retrievedAt": "2026-09-25T05:55:42.899Z",
+    "bytes": 473,
+    "sha256": "d497d634bea2c3af4b3fcda490d75db5c57baed82152ab4ef74b7040d93e3710"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/html; charset=utf-8"
+    },
+    "body": "<!doctype html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\n    <meta name=\"color-scheme\" content=\"dark light\" />\n    <title>AetherLink Academy</title>\n    <script type=\"module\" crossorigin src=\"/academy-assets/index-DNSZwLFd.js\"></script>\n    <link rel=\"stylesheet\" crossorigin href=\"/academy-assets/index-DqP-IVJ1.css\">\n  </head>\n  <body>\n    <div id=\"root\"></div>\n  </body>\n</html>\n"
+  }
+}

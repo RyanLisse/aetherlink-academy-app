@@ -42,6 +42,8 @@ jobs:
           # Match port overflow-x:clip on pairs/#stage so fullPage screenshots share geometry
           # (pending pair translateX must not widen SoT screenshots on tablet/mobile).
           printf '\n#stage,.pairs{overflow-x:clip}\n' >> "$SOURCE_DECK_DIR/styles.css"
+          # AET-101: the port stacks the stamp box under the cards below 760px; mirror it so mobile parity compares like with like.
+          printf '@media(max-width:760px){.has-stamps{grid-template-columns:minmax(0,1fr)}}\n' >> "$SOURCE_DECK_DIR/styles.css"
           # AET-102: the port lets progress segments shrink and keeps the tools strip on one row below 760px; mirror it for mobile parity.
           printf '@media(max-width:760px){.progress{gap:1px}.progress .seg{min-width:0}.tools{flex-wrap:nowrap}}\n' >> "$SOURCE_DECK_DIR/styles.css"
       - run: pnpm --filter @academy/web build

@@ -1,5 +1,7 @@
 import {mkdir,writeFile} from 'node:fs/promises';
 import path from 'node:path';
+import {probeCurriculum} from './deployed-curriculum.mjs';
+import {exitCodeFor} from './deployed-smoke-checks.mjs';
 
 const rawUrl=process.env.ACADEMY_URL,hostKey=process.env.ACADEMY_HOST_KEY,expected=process.env.EXPECTED_REVISION,evidenceDir=path.resolve(process.env.EVIDENCE_DIR||'test-results/deployed-learning');
 if(!rawUrl||!hostKey||!expected){console.error('ACADEMY_URL, ACADEMY_HOST_KEY and EXPECTED_REVISION are required.');process.exit(1);}
@@ -16,6 +18,7 @@ async function requireToken(result,label){if(!result?.token)throw Error(`${label
 async function health(){const d=await json('/game/health');if(d.revision!==expected)throw Error(`revision mismatch: ${d.revision||'missing'}`);return d.revision;}
 await record('revision_begin',async()=>{state.revision=await health();});
 if(!state.revision)process.exit(1);
+for(const day of await probeCurriculum(base)){checks.push(day);console.log(`${{pass:'PASS',fail:'FAIL',unavailable:'OPEN'}[day.status]} ${day.name}: ${day.detail}`);}
 await record('setup_synthetic_squad',async()=>{const created=await post('/game/create',{name:`Learning E2E ${Date.now()}`,hostKey});state.host=await requireToken(created,'facilitator');if(!created.code)throw Error('squad code missing');state.participants=[];for(const name of ['Learner A','Learner B','Learner C','Learner D'])state.participants.push(await requireToken(await post('/game/join',{code:created.code,name}),name));});
 if(!state.host||state.participants?.length!==4)process.exit(1);
 for(const day of [1,2,3,4,5]){
@@ -29,4 +32,4 @@ for(const file of ['n8n-repository-review.json','n8n-review-README.md','claude-c
 await record('revision_end',async()=>{const after=await health();if(after!==state.revision)throw Error('revision changed during check');});
 for(const token of tokens)await request('/game/logout',{method:'POST',token}).catch(()=>{});
 await mkdir(evidenceDir,{recursive:true});await writeFile(path.join(evidenceDir,'deployed-learning-check.json'),JSON.stringify({revision:expected,checks},null,2)+'\n',{mode:0o600});
-if(checks.some(c=>c.status==='fail'))process.exitCode=1;
+process.exitCode=exitCodeFor(checks);

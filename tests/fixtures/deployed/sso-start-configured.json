@@ -1,0 +1,16 @@
+{
+  "provenance": {
+    "url": "server/google-sso.mjs startUrl() with placeholder client for https://academy.example.test, authorization_endpoint from live https://accounts.google.com/.well-known/openid-configuration",
+    "retrievedAt": "2026-09-25T05:55:43.114Z",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "response": {
+    "status": 302,
+    "headers": {
+      "location": "https://accounts.google.com/o/oauth2/v2/auth?client_id=000000000000-placeholder.apps.googleusercontent.com&redirect_uri=https%3A%2F%2Facademy.example.test%2Fauth%2Fgoogle%2Fcallback&response_type=code&scope=openid+email+profile&state=placeholder-state&nonce=placeholder-nonce&code_challenge=placeholder-challenge&code_challenge_method=S256&hd=example.test",
+      "set-cookie": "academy-login=placeholder.signature; Max-Age=600; Path=/; HttpOnly; SameSite=Lax"
+    },
+    "body": ""
+  }
+}
