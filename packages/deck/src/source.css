@@ -710,6 +710,7 @@
 .academy-deck .stamp-box .stamps{display:grid;grid-template-columns:repeat(3,auto);justify-items:center;gap:1rem 1.2rem;margin:0}
 .academy-deck .stamp-box .stamps-label{grid-column:1/-1;margin:0}
 .academy-deck .stamp-box .place-stamps{grid-column:1/-1;height:clamp(140px,20vh,180px)}
+@media(max-width:760px){.academy-deck .has-stamps{grid-template-columns:minmax(0,1fr)}}
 /* assignment: purple -> orange instead of yellow (Cons, 18 sep) */
 .academy-deck .assignment-banner{background:linear-gradient(105deg,var(--aether-purple),var(--aether-orange));color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.25)}
 .academy-deck[data-type=practice] .type-chip{background:linear-gradient(105deg,var(--aether-purple),var(--aether-orange));color:#fff}
