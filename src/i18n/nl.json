@@ -393,6 +393,7 @@
   "lab.progress": "Stap {step} van {total}",
   "lab.saving": "Voortgang opslaan…",
   "lab.done": "Afgerond · gemeld door het lab",
+  "lab.doneGraded": "Afgerond · door de server beoordeeld",
   "lab.preview": "Voorbeeld voor de facilitator: afronden telt hier niet mee.",
   "lab.error": "Lab meldt een fout: {message}",
   "route.labs": "Labs {done}/{total}",

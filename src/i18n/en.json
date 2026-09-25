@@ -393,6 +393,7 @@
   "lab.progress": "Step {step} of {total}",
   "lab.saving": "Saving progress…",
   "lab.done": "Completed · reported by the lab",
+  "lab.doneGraded": "Completed · graded by the server",
   "lab.preview": "Facilitator preview: completing it here is not recorded.",
   "lab.error": "The lab reported an error: {message}",
   "route.labs": "Labs {done}/{total}",

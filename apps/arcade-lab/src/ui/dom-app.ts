@@ -158,6 +158,35 @@ const checkpoint = {
     };
     $('cpSkip').onclick = finish;
   },
+  // Server-graded stop: the verdict comes from Academy, so wrong answers never reveal the right one.
+  showGraded(stop, submit, onPassed, onSkip) {
+    const el = $('checkpoint'); el.hidden = false;
+    const opts = stop.options || [];
+    el.innerHTML = `<div class="card"><span class="eyebrow">${opts.length ? 'Knowledge check' : 'Your answer'} · graded by Academy</span><h3>${esc(stop.title || 'Checkpoint')}</h3><p>${esc(stop.q || '')}</p>
+      ${opts.length ? opts.map((o, k) => `<button class="opt" data-k="${k}">${esc(o)}</button>`).join('') : `<textarea id="cpText" placeholder="Write your answer…"></textarea><button id="cpCheck" class="primary sm">Check answer</button>`}
+      <div class="explain" id="cpExplain" role="status" hidden></div>
+      <div class="row"><button id="cpSkip" class="ghost sm">Skip</button><button id="cpGo" class="primary" disabled>Continue</button></div></div>`;
+    const inputs = () => [...el.querySelectorAll('.opt:not(.wrong), #cpText, #cpCheck')];
+    const say = html => { const ex = $('cpExplain'); ex.hidden = false; ex.innerHTML = html; };
+    const close = next => { el.hidden = true; el.innerHTML = ''; next(); };
+    const send = (answer, button) => {
+      inputs().forEach(x => { x.disabled = true; });
+      say('Checking…');
+      const retry = () => inputs().forEach(x => { x.disabled = false; });
+      const timer = setTimeout(() => { retry(); say('<b>No answer from Academy.</b> Try again.'); }, 10000);
+      const sent = submit(answer, ({ passed, attempts }) => {
+        clearTimeout(timer);
+        button?.classList.add(passed ? 'right' : 'wrong');
+        if (passed) { say(`<b>Correct.</b> ${esc(stop.explain || '')}`); $('cpGo').disabled = false; return; }
+        retry(); say(`<b>Not quite.</b> Try again · attempt ${attempts}`);
+      });
+      if (!sent) { clearTimeout(timer); retry(); say('<b>Not connected to Academy.</b>'); }
+    };
+    el.querySelectorAll('.opt').forEach(b => b.onclick = () => send(+b.dataset.k, b));
+    if (!opts.length) $('cpCheck').onclick = () => { const text = $('cpText').value.trim(); if (text) send(text); };
+    $('cpGo').onclick = () => close(onPassed);
+    $('cpSkip').onclick = () => close(onSkip);
+  },
   hide() { $('checkpoint').hidden = true; $('checkpoint').innerHTML = ''; },
 };
 
@@ -489,6 +518,9 @@ export function bootApp() {
       if (!r.ok) console.warn("[arcade-lab] checkpoint assert failed:", r.detail);
     }
     const done = bridge ? () => { if (current?.id === initial.id) bridge.stopDone(stop); onDone(); } : onDone;
+    if (bridge && current?.id === initial.id && bridge.isGraded(stop)) {
+      return checkpoint.showGraded(stop, (answer, onVerdict) => bridge.submit(stop, answer, onVerdict), done, onDone);
+    }
     return _show(stop, done);
   };
 }
