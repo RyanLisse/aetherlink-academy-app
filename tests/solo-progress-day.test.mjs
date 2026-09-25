@@ -15,6 +15,11 @@ async function invoke(app,route,{body={},query={},cookies={},method}={}){
  return response;
 }
 
+async function answerQuiz(app,token,answers){
+ const start=await invoke(app,'/game/quiz/start',{cookies:{academy:token}});assert.equal(start.statusCode,200);
+ return invoke(app,'/game/quiz',{body:{attemptId:start.body.attemptId,answers},cookies:{academy:token}});
+}
+
 function fixture(){
  const instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-solo-progress-')),hostKey:'test-host',publicBaseUrl:'http://127.0.0.1:4320'});
  const host=instance.store.create('Solo progress',{slug:'solo-progress'});
@@ -53,14 +58,14 @@ test('get_mission returns day 1 and the corrected day 2 mission',async()=>{
 
 test('day 2 quiz does not overwrite day 1 progressByDay quiz record',async()=>{
  const {instance,host,participant}=fixture();
- const q1=await invoke(instance.app,'/game/quiz',{body:{answers:[1,0,2]},cookies:{academy:participant.token}});
+ const q1=await answerQuiz(instance.app,participant.token,{'d1-q1':'b','d1-q2':'a','d1-q3':'c'});
  assert.equal(q1.statusCode,200);
  assert.equal(q1.body.score,3);
  const after1=instance.store.auth(participant.token).p;
  assert.equal(after1.progressByDay['1'].quizScore,3);
  assert.equal(after1.progressByDay['1'].route,'stretch');
  await invoke(instance.app,'/game/control',{body:{action:'day',value:2},cookies:{academy:host.token}});
- const q2=await invoke(instance.app,'/game/quiz',{body:{answers:[0,1,0]},cookies:{academy:participant.token}});
+ const q2=await answerQuiz(instance.app,participant.token,{'d2-q1':'a','d2-q2':'b','d2-q3':'a'});
  assert.equal(q2.statusCode,200);
  assert.equal(q2.body.score,0);
  assert.equal(q2.body.route,'guided');
@@ -75,7 +80,7 @@ test('day 2 quiz does not overwrite day 1 progressByDay quiz record',async()=>{
 
 test('evidence stamps room.day and Route progress reflects quiz+evidence per day',async()=>{
  const {instance,host,participant}=fixture();
- await invoke(instance.app,'/game/quiz',{body:{answers:[1,0,2]},cookies:{academy:participant.token}});
+ await answerQuiz(instance.app,participant.token,{'d1-q1':'b','d1-q2':'a','d1-q3':'c'});
  const ev=await invoke(instance.app,'/game/evidence',{body:{requestId:'ev-day1',finding:'README wijkt af van package.json',command:'node --test',observed:'1 failing',limitation:'Nog geen tweede lezer'},cookies:{academy:participant.token}});
  assert.equal(ev.statusCode,200);
  assert.equal(ev.body.day,1);
@@ -88,7 +93,7 @@ test('evidence stamps room.day and Route progress reflects quiz+evidence per day
  assert.equal(route1.body.days[1].progress.hasQuiz,false);
  assert.equal(route1.body.days[1].progress.hasEvidence,false);
  await invoke(instance.app,'/game/control',{body:{action:'day',value:2},cookies:{academy:host.token}});
- await invoke(instance.app,'/game/quiz',{body:{answers:getDayPack(2).quiz.answers},cookies:{academy:participant.token}});
+ await answerQuiz(instance.app,participant.token,{'d2-q1':'b','d2-q2':'a','d2-q3':'c'});
  const ev2=await invoke(instance.app,'/game/evidence',{body:{requestId:'ev-day2',finding:'Capability-map gekoppeld aan CLAUDE.md',command:'node --test',observed:'ok',limitation:'Nog geen peer-check'},cookies:{academy:participant.token}});
  assert.equal(ev2.body.day,2);
  const route2=await invoke(instance.app,'/game/day-route',{cookies:{academy:participant.token}});
