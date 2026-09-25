@@ -1,49 +1,96 @@
-# Academy MVP architecture
+# Academy architecture (v2)
 
-React/Vite browser → authenticated game HTTP service → official Proof SDK server → SQLite + Yjs/Hocuspocus.
+One public origin, `https://academy.aetherlink.ai`, serves everything a participant or facilitator opens. Behind it runs one Node 24 process tree on the Hetzner CX33 `aetherlink-academy` (see [DEPLOYMENT.md](DEPLOYMENT.md)). This page describes what runs where today. It is not a roadmap.
 
-Each participant's existing Claude Code → stdio MCP adapter → restricted game MCP HTTP endpoints → Proof HTTP agent bridge. There are no model calls or Anthropic credentials in the app. The unused upstream src/agent code is not imported or bundled by this app; no Anthropic SDK dependency was added.
+```
+browser ──HTTPS──> gateway (server/app.mjs, :4317)
+                     ├── legacy React client        dist/            (built from src/)
+                     ├── apps/web SPA               apps/web/dist/   (deck, classroom, workshop, reference, archive, live)
+                     ├── apps/arcade-lab            apps/arcade-lab/dist/ at /arcade-lab
+                     ├── /mcp (Streamable HTTP)     participant's own Claude Code
+                     ├── reverse proxy ──────────> Proof (vendor/proof-sdk, loopback :4400)
+                     ├── Postgres                   server/postgres-store.mjs
+                     └── Redis (TLS)                server/presence.mjs, server/screen-state.mjs
+```
 
-Room state persists in an atomically replaced private JSON file; Proof owns the sole document in SQLite. A single game process owns room mutations. Browsers poll room state every 2 seconds and render timers from server timestamps; Proof uses real WebSocket CRDT synchronization, not polling or a textarea. The timer never rotates at expiry. The facilitator explicitly advances round, SDLC phase, support day and activity independently.
+## Process model
 
-## Boundaries
+`scripts/start.mjs` validates the runtime configuration (`server/runtime-config.mjs`), starts Proof from `vendor/proof-sdk/server/index.ts` on loopback `PROOF_PORT` (default 4400), waits for its `/health`, then starts the gateway from `createApp` in `server/app.mjs` on `PORT` (default 4317). Only the gateway takes public traffic. The container image is `Dockerfile`; `Dockerfile.vercel` is the hardened variant the CI `container` job builds, and despite its name no longer depends on Vercel.
 
-- Random room code is an invitation capability, not identity verification. A typed name is a display name. Minimum 4 / maximum 5 participants; facilitator is separate. Exactly one driver among joined participants. Roles express the workshop's mob workflow. All human squad members can concurrently edit/comment in Proof; document edit permission is not locked to the current driver. The game review controls are restricted to driver/facilitator. Proof's native human editor also offers review actions.
-- Host creation key is generated into .data/host-key; never returned by the app. Proof owner secrets stay on the server. Browser sessions and personal MCP sessions are separate 256-bit random capabilities, hashed in the room session registry and valid 12 hours. The underlying scoped Proof editor token exists in the embedded editor, but the gateway independently requires a valid browser session and matching document slug. Proof itself binds only loopback.
-- Personal MCP tokens have only five tools: mission, document, knowledge search, evidence submission and suggestions. They cannot use browser/facilitator endpoints, arbitrary Proof routes, accept suggestions, or access a specified different room. Identity on submissions comes from the token; callers cannot choose another author. Minting a new MCP token revokes the previous one for that attendee.
-- Browser sessionStorage keeps the reconnect token; HttpOnly SameSite=Strict cookie authenticates the embedded editor. Use one participant/room per browser profile. Multiple tabs in the same profile share the editor cookie, so use separate profiles for multiple test identities. No SSO, roster removal, session-recovery UI, durable offline queue for evidence, or production tenancy administration yet.
-- Evidence writes serialize through the game and use a stable participant/request idempotency key in Proof. A failed request does not display success. Retrying evidence with the same key avoids duplicate room entries. Suggested text remains separate until a human accepts. Human review of evidence is a record of a decision, not an automatic test of its truth.
-- Quiz results and assistance levels are private to learner (facilitator sees score); the room roster has no rankings. The 3-question routing is an explicitly provisional assistance choice. Observed task competence is assessed through human review, not inferred from quiz recall.
-- Default is local only. A multi-computer pilot requires a private network/SSH tunnel or reviewed HTTPS/WSS deployment and matching public WebSocket URL. Do not expose raw Proof port 4400. No public deployment performed.
+## Gateway (`server/`)
 
-## Proof pin and adjustments
+The gateway owns identity, authorization and every write. Its route groups in `server/app.mjs`:
 
-Source: https://github.com/EveryInc/proof-sdk at fb2578758f1c62776301209131181643c5f4a19a (MIT, license retained). Copied under vendor/proof-sdk with exact pnpm lockfile. Direct imports absent from upstream package.json were explicitly declared: @milkdown/prose, @milkdown/transformer, y-protocols, lib0, remark-parse, remark-stringify, unified. Native builds are allowlisted for better-sqlite3 and esbuild.
+- **Facilitators** sign in with Google SSO (`server/google-sso.mjs`).
+- **Participants** use a personal cohort code that becomes an HttpOnly session (`server/cohort.mjs`). The locked access rule is 90 days from cohort start, then writing closes and Proof stays read-only for an optional 14 days. Room codes are for live sessions only.
+- **Rooms and live state** (`/game/*`) with a WebSocket upgrade that the gateway authorizes before proxying.
+- **MCP** at `/mcp`, stateless Streamable HTTP, authenticated per request and per tool call. The participant's own Claude Code connects here. The platform makes no model calls and holds no model credentials. `tests/integration.test.mjs` pins the exact tool list.
+- **Day packs and search** from `server/content.mjs`, which reads `content/days/*.mjs`.
+- **Proof proxy.** Browser, document, asset and WebSocket traffic reaches Proof only through the gateway (`server/proof.mjs` for the HTTP agent bridge).
+- **SPA serving.** `isWebSpaPath` in `server/app.mjs` sends `/deck`, `/classroom/*`, `/workshop/*`, `/lesson/*`, `/live/*`, `/reference/*` and `/archive/*` to `apps/web/dist/index.html`. Everything else falls through to the legacy client in `dist/`.
+- **Legacy redirects.** `/legacy-redirect?site=<site>&from=<old url>` answers a 301 from the table in `apps/web/src/redirects/legacy.ts` (see [Legacy sites](#legacy-sites)).
 
-Small upstream integration changes: bind HTTP to HOST/loopback; serve built editor assets; include slug in Hocuspocus connection parameters for the room gateway; explicitly connect. COLLAB_PUBLIC_BASE_URL is set to the gateway /ws to avoid upstream localhost port+1 inference. Agent bridge sends the protocol 3 compatibility headers required by the pinned SDK's client-capabilities.ts. Seed markdown has standard blank lines after headings to match canonical serialization; otherwise this upstream version reports PROJECTION_STALE before any browser opens. Tests verify headless comments/suggestions work.
+Node 24 runs workspace TypeScript directly, so the gateway imports pure logic from `packages/*` without a build step (`packages/lab-embed`, `packages/actions` via `server/screen-state.mjs`, `packages/schema` via `server/quiz.mjs`).
 
-Proof remains the continuous rich editor, provenance/marks engine, HTTP bridge, canonical document store and live collaboration server. Academy styles its embedded editor and reads its real sync status. Some native Proof selection/comment controls remain English and use upstream styling; the Academy shell and learning content are Dutch. Browser chat/terminal control is not connected.
+## Storage
 
-## Liveblocks assessment — 13 September 2026
+- **Postgres** is the durable authority: squads, cohorts, sessions, Proof documents, marks, Yjs history, leases and snapshots. The Academy schema lives in `server/schema/academy.sql`. `init()` in `server/postgres-store.mjs` records a version and SHA-256 checksum in `system_metadata` and refuses to start on a mismatch. Migrations are numbered in that file.
+- **Redis** (TLS `rediss:` only) carries participant presence (`server/presence.mjs`) and multi-tab screen-state fan-out (`server/screen-state.mjs`). It is never the source of truth.
+- `server/local-store.mjs` is the file-backed store for tests and local runs.
 
-Recommendation: if hosted presence/event delivery is wanted, add Liveblocks behind the room transport boundary. Keep the game service authoritative for facilitator actions and Proof authoritative for document content. Do not synchronize a second copy of the Proof document into Liveblocks.
+## Proof
 
-Liveblocks Yjs supports Y.Doc + awareness but is not a drop-in replacement for Proof's Hocuspocus live document map, SQLite projections, authorization epochs and HTTP mark/suggestion semantics. Full replacement requires an adapter and concurrency/provenance tests. REST binary Yjs updates alone do not reproduce the Proof bridge.
+Proof is [EveryInc/proof-sdk](https://github.com/EveryInc/proof-sdk) pinned at `fb2578758f1c62776301209131181643c5f4a19a` (MIT) under `vendor/proof-sdk`. It is the rich editor, marks and provenance engine, canonical document store and live collaboration server. The gateway keeps Proof owner secrets, binds Proof to loopback, and sets `COLLAB_PUBLIC_BASE_URL` to the gateway `/ws`. Suggested text stays a suggestion until a human accepts it.
 
-Requires a Liveblocks project and server-only service secret, plus a room-scoped authorization endpoint. This is separate from Anthropic; no participant model API keys needed. No Liveblocks account, credentials, subscription or transport was configured in this MVP.
+## Apps
 
-Verified official references:
-- https://liveblocks.io/docs/api-reference/liveblocks-yjs
-- https://liveblocks.io/docs/api-reference/rest-api-endpoints
-- https://liveblocks.io/docs/authentication/permissions
-- https://liveblocks.io/docs/pricing/plans
+| Path | What it is | Deployed |
+| --- | --- | --- |
+| `apps/web` | React 19 SPA: classroom and workshop decks, reference reader, training-site archive, live classroom, facilitator panels | Yes, served by the gateway |
+| `apps/arcade-lab` | Agent Arcade solo lesson runtime, embedded through `packages/lab-embed` | Yes, at `/arcade-lab` |
+| `apps/server` | Effect + Drizzle workspace server, content importers (`src/importers/`), authoring and curriculum repo | No. Tests and import CLIs run it; production does not |
 
-At review time: Free has 3,000 collaboration minutes and can pause over-limit features; Pro is $30/month or $25/month annual with $30 credits, then usage charges. Collaboration metering is $0.002/minute. Confirm projected workshop usage and current terms before choosing a paid plan.
+## Packages
 
-## HTTP MCP en containerupdate
+| Path | Role | Consumers |
+| --- | --- | --- |
+| `packages/schema` | Effect schemas: `Slide`, quizzes, rooms, progress | apps/web, apps/server, packages/deck, gateway |
+| `packages/deck` | React deck (`projector`, `presenter`, `follow`, `reader` modes). Pixel parity against the source deck is gated by `.github/workflows/deck-ci.yml` | apps/web |
+| `packages/actions` | Shared action definitions and the WebMCP / screen-state adapters | apps/web, gateway |
+| `packages/lab-embed` | postMessage contract and grading between Academy and a lab | gateway, apps/arcade-lab |
+| `packages/i18n` | EN/NL catalogs | apps/web, apps/server |
+| `packages/branding` | Tokens and chrome CSS | legacy client, `server/portal` |
 
-Streamable HTTP `/mcp` gebruikt stateless SDK-transports met authenticatie per request en opnieuw per toolcall. De bestaande stdio-adapter deelt dezelfde vijf tooldefinities. `/game/connection` levert de geconfigureerde origin en onderscheidt localhost van ingestelde HTTPS; externe bereikbaarheid is apart te verifiëren. Tokens blijven squadgebonden, twaalf uur geldig en revocable. OAuth is niet geïmplementeerd.
+## Content
 
-`scripts/start.mjs` zet snapshots onder ACADEMY_DATA en kopieert bestaande snapshots zonder nieuwere exemplaren te overschrijven. De supervisor stopt bij uitval van Proof en wacht bij SIGTERM op het kindproces. De nieuwe Dockerconfiguratie is bedoeld voor één persistente host. De gedeelde runtime, inclusief Postgres-snapshots en Redis-pubsub, staat in [DEPLOYMENT.md](DEPLOYMENT.md).
+- `content/days/*.mjs` holds the live 7-day course (Classroom 1–2, Workshop 3–7), validated by `content/days/validate.mjs`.
+- `content/courses/worldline-wave-2/` holds Markdown lessons; `content/scripts/lint-*.mjs` lint each day pack.
+- The decks in `apps/web/src/deck/*-slides.ts` are the rendered slide sources for each day.
+- `content/archive/training-site.json` is the archived Squad 1/2 course version from the old training site, generated by `pnpm --filter @academy/server import-archive`. It is read-only history; see `content/archive/README.md`.
+- `training-lab/` holds participant starters and mocks referenced by lesson `starterPath`.
 
-De laatste browserwalkthrough reproduceert een hang met comments plus pending replacement. Dit is een open releaseblocker ondanks geslaagde protocoltests. Zie [actueel browserrapport](../../demo/VERIFICATION.md).
+## Agent-native apps (OpenShip)
+
+The BuilderIO agent-native apps are separate deployments, tracked in `infra/native-apps/apps.manifest.json` and `infra/native-apps/openship-projects.json`. Chat is deployed with authentication but no AI provider. The slides proof of concept runs separately. Assets, calendar, clips and content are registered, not deployed. None of them share the gateway's process or database.
+
+## Legacy sites
+
+Two older sites predate the Academy. Their content now lives on the Academy origin, and their URLs map through `apps/web/src/redirects/legacy.ts`.
+
+| Old site | Hosting | Old URLs | New page |
+| --- | --- | --- | --- |
+| `RyanLisse/aetherlink-training-site` | ChatGPT Sites, `aetherlink-training.ryanlisse.chatgpt.site` (`.openai/hosting.json` publishes `dist/`) | `/?squad=S&day=D#N`, `/?lesson=daily-brief`, `/glossary.html`, `/` | `/archive/squad-S/day-D#slide-archive-sS-dayD-N`, `/workshop/4`, `/reference/glossary`, `/archive` |
+| `jyse/aetherlink-classroom-slides` | No public hosting in the repo (no Pages, no host config; `serve.py` for local use) | `/#N`, `/presenter.html#N` | `/classroom/1?index=N-1` for N ≤ 44, else `/classroom/2?index=N-45`, plus `mode=presenter` |
+
+Both old sites route on the query string and the URL hash. A server never sees the hash, and ChatGPT Sites offers no redirect rules. So the old host serves a static stub that forwards `location.href` to `/legacy-redirect`, and the gateway answers the 301. `tests/legacy-redirect.test.mjs` asserts every target.
+
+Operator steps (not done by this change):
+
+1. Generate the stubs: `node --experimental-strip-types apps/web/scripts/legacy-stubs.ts <out> https://academy.aetherlink.ai`.
+2. Training site: in a checkout of `RyanLisse/aetherlink-training-site`, replace `dist/index.html` and `dist/glossary.html` with `<out>/training-site/*`, commit, and publish that commit through ChatGPT Sites with the existing `project_id` from `.openai/hosting.json`, as the repo README describes. Keep the other `dist/` files until the stub is live, then remove them.
+3. Classroom slides: if any copy is hosted, replace its `index.html` and `presenter.html` with `<out>/classroom-slides/*`. Otherwise nothing to deploy; the table still documents the mapping.
+4. Verify: open `https://aetherlink-training.ryanlisse.chatgpt.site/?squad=1&day=3#5` and expect `https://academy.aetherlink.ai/archive/squad-1/day-3#slide-archive-s1-day3-5`.
+
+## Decisions
+
+- [ChatGPT sign-in as a second chat runner](decisions/chatgpt-runner-terms.md): not built; terms do not clearly allow it.

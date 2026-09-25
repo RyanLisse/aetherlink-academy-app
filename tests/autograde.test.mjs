@@ -239,8 +239,8 @@ test('the prose leak detector finds an expected label written next to its ticket
  assert.deepEqual(proseLeaks('toon de verwachte labels (WL-1026 high, WL-1027 low)'),['WL-1026=high','WL-1027=low']);
 });
 
-test('no deck slide or speaker note names an expected triage label, because the deck bundle ships to the browser',()=>{
- const deckDir=new URL('../apps/web/src/deck/',import.meta.url);
- const found=readdirSync(deckDir).filter(name=>name.endsWith('.ts')).flatMap(name=>proseLeaks(readFileSync(new URL(name,deckDir),'utf8')).map(leak=>`${name}: ${leak}`));
+test('no deck slide, speaker note or archived slide names an expected triage label, because both ship to the browser',()=>{
+ const sources=[['../apps/web/src/deck/','.ts'],['../content/archive/','.json']];
+ const found=sources.flatMap(([dir,ext])=>{const base=new URL(dir,import.meta.url);return readdirSync(base).filter(name=>name.endsWith(ext)).flatMap(name=>proseLeaks(readFileSync(new URL(name,base),'utf8')).map(leak=>`${name}: ${leak}`));});
  assert.deepEqual(found,[]);
 });
