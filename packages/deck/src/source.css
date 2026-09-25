@@ -1092,7 +1092,7 @@
 .academy-deck.keynote .eyebrow{justify-content:center;margin:0 0 clamp(1.2rem,4vh,2.4rem);gap:.9rem}
 .academy-deck.keynote .kicker-text{font-size:.75rem;letter-spacing:.2em;opacity:.75;font-weight:900}
 .academy-deck.keynote .type-chip{opacity:.9;background:#24405e;color:var(--text)}
-.academy-deck.keynote .slide-count{opacity:.4;font-size:.7rem}
+.academy-deck.keynote .slide-count{opacity:.7;font-size:.7rem}
 .academy-deck.keynote h1{font-size:clamp(1.85rem,4.8vw,5rem);line-height:.95;letter-spacing:-.03em;font-weight:900;margin:0 auto;max-width:min(48rem,94vw);text-align:center;text-wrap:balance;white-space:normal}
 .academy-deck.keynote[data-type=practice] h1{font-size:clamp(1.75rem,4.2vw,4.2rem);max-width:min(42rem,94vw);line-height:1.02}
 .academy-deck.keynote p.subtitle{display:none}
