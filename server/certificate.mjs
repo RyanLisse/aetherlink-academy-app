@@ -5,9 +5,8 @@ import {dayTasks,taskPassed} from './proof-trail.mjs';
 export const CERTIFICATE_INVALID_MESSAGE='Geen geldig certificaat gevonden voor deze code.';
 
 // Certificate eligibility reads the same pass signals as the rest of the Academy (AET-103): a quiz
-// passes with every answer right, a lab only when the server graded it, and a day task when the
-// Proof trail approves it, by an accepted peer or facilitator review or by a passing auto-grade.
-// Nothing here waits on the facilitator.
+// passes with every answer right and a day task when the Proof trail approves it, by an accepted peer
+// or facilitator review or by a passing auto-grade. Nothing here waits on the facilitator.
 const safely=fn=>{try{return fn();}catch{return false;}};
 
 // Every check one member must pass for one cohort day, across all rooms of the cohort. A member can
@@ -20,7 +19,9 @@ export function memberDayChecks({rooms,memberId,progressByDay,day}){
  return [...graded,...tasks];
 }
 
-// A day counts when it has content and every check passes. A day without content fails closed.
+// The lighter rule (Ryan, 2026-09-25): a day counts when its quiz is fully correct and at least one
+// of its tasks passed. A day without a quiz is judged on its tasks alone, a day without tasks on its
+// quiz alone, and a day with neither fails closed. Labs are not part of the rule.
 export function certificateEligibility({days,checksByDay,accessRevoked,lastDayStarted}){
  const reasons=[];
  if(!lastDayStarted)reasons.push({code:'cohort-running'});
@@ -28,10 +29,13 @@ export function certificateEligibility({days,checksByDay,accessRevoked,lastDaySt
  let daysCompleted=0;
  for(let day=1;day<=days;day++){
   const checks=checksByDay[day]||[];
-  const open=checks.filter(check=>!check.passed);
-  if(!checks.length)reasons.push({code:'day-without-content',day});
-  for(const check of open)reasons.push({code:`${check.kind}-open`,day,id:check.id,...(check.title?{title:check.title}:{})});
-  if(checks.length&&!open.length)daysCompleted++;
+  const quizzes=checks.filter(check=>check.kind==='quiz'),tasks=checks.filter(check=>check.kind==='task');
+  const dayReasons=[];
+  if(!quizzes.length&&!tasks.length)dayReasons.push({code:'day-without-content',day});
+  for(const quiz of quizzes.filter(check=>!check.passed))dayReasons.push({code:'quiz-open',day,id:quiz.id});
+  if(tasks.length&&!tasks.some(task=>task.passed))dayReasons.push({code:'no-task-passed',day});
+  if(!dayReasons.length)daysCompleted++;
+  reasons.push(...dayReasons);
  }
  return {eligible:reasons.length===0,daysCompleted,reasons};
 }

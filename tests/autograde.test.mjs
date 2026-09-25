@@ -112,10 +112,10 @@ test('tasks without an autograder keep peer or facilitator review',async t=>{
  assert.equal((await task(bo.token,'w3-proof')).status,'approved');
 });
 
-test('autograde applies to the triage tasks of day 3 and the acceptance table of day 4 only',async t=>{
+test('autograde applies to the triage tasks of day 3 and SOLO 1 plus the acceptance table of day 4 only',async t=>{
  const {bo,call}=await room(t,4);
  const day4=(await call(bo.token,'tasks')).body.tasks;
- assert.deepEqual(day4.filter(task=>task.autograde).map(task=>task.id),['w4-solo4']);
+ assert.deepEqual(day4.filter(task=>task.autograde).map(task=>task.id),['w4-solo1','w4-solo4']);
  assert.equal((await call(bo.token,'tasks/w4-solo4/autograde',{labels:ALL_CORRECT})).body.status,'approved');
  const wrongDay=await call(bo.token,'tasks/w3-l1/autograde',{labels:ALL_CORRECT});
  assert.deepEqual([wrongDay.status,wrongDay.body.error],[400,'Onbekende opdracht voor supportdag 4.']);
@@ -205,4 +205,36 @@ test('dayChecks exposes quiz, lab and autograded task passes as one list',async 
 test('a day pack naming an unknown autograder fails the content lint',()=>{
  const pack={day:3,quiz:{questions:[],key:{}},steps:[{id:'w3-l1',autograde:'vibes'}],mission:{starterFiles:[]}};
  assert.deepEqual(dayPackIssues([pack],{starterDir:'.',starterFileNames:[]}).filter(issue=>issue.includes('autograder')),['day 3: step w3-l1 names unknown autograder "vibes"']);
+});
+
+test('AET-103 decision: correct labels auto-approve every triage level L1 to L3 without a human review',async t=>{
+ const {bo,grade,task}=await room(t);
+ for(const taskId of ['w3-l1','w3-l2','w3-l3'])assert.deepEqual([(await grade(bo.token,taskId,ALL_CORRECT)).body.status,(await task(bo.token,taskId)).status,(await task(bo.token,taskId)).submissions],['approved','approved',[]],taskId);
+ assert.equal((await task(bo.token,'w3-proof')).autograde,undefined,'the Proof pack stays with a human');
+});
+
+// Mentions like "WL-1026 high" in prose leak as surely as an expected_priority key.
+const proseLeaks=raw=>TRIAGE_FIXTURES.tickets.map(t=>[t.ticket.ticket_id,t.expected_priority]).filter(([id,label])=>new RegExp(`${id}\\W{1,3}${label}\\b`,'i').test(raw)).map(([id,label])=>`${id}=${label}`);
+
+test('SOLO 1 on day 4: predict the labels, then the autograder checks them; the day pack never names an expected label',async t=>{
+ const {bo,call,grade,task}=await room(t,4);
+ const pack=await call(bo.token,'day-pack');
+ const solo1=pack.body.steps.find(step=>step.id==='w4-solo1');
+ assert.deepEqual([solo1.title,solo1.autograde,solo1.slide.slide],['SOLO 1 · Voorspel en check de labels','triage',7]);
+ assert.match(solo1.goal,/^Voorspel per fixture-ticket het label/);
+ assert.deepEqual(leaks(pack.body),[]);
+ assert.deepEqual(proseLeaks(pack.raw),[]);
+ assert.doesNotMatch(pack.raw,/expected_priority|"expected"/);
+ const card=await task(bo.token,'w4-solo1');
+ assert.deepEqual([card.status,card.autograde.tickets.map(ticket=>ticket.ticketId)],['open',['WL-1026','WL-1027','WL-9001','WL-9002']]);
+ const miss=await grade(bo.token,'w4-solo1',ONE_WRONG);
+ assert.deepEqual([miss.status,miss.body.status,miss.body.autograde.score],[200,'open',3]);
+ assert.deepEqual(proseLeaks(miss.raw),[]);
+ const hit=await grade(bo.token,'w4-solo1',ALL_CORRECT);
+ assert.deepEqual([hit.body.status,hit.body.autograde.reviewer],['approved',{role:'auto-graded'}]);
+ assert.deepEqual((await grade(bo.token,'w4-solo4',ALL_CORRECT)).body.status,'approved','SOLO 4 keeps its own autograde');
+});
+
+test('the prose leak detector finds an expected label written next to its ticket',()=>{
+ assert.deepEqual(proseLeaks('toon de verwachte labels (WL-1026 high, WL-1027 low)'),['WL-1026=high','WL-1027=low']);
 });
