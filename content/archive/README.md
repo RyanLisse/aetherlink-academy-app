@@ -21,4 +21,6 @@ The Academy reads it at `/archive` and `/archive/squad-<n>/day-<d>` through the 
 
 No new layouts. The old site stored the same `layout` values the schema already has (`cards`, `image`, `bars`, `compare`, `exercise`, `pillars`, `recap`, or none). Its visual templates in `dist/templates.js` (cover, columns, stack, chain, split, grid, gate, arc, pause, figure) were derived at render time from those fields and are not data, so they map to the existing deck renderers unchanged. Slide `type` is inferred from kicker, title, layout and timer, as the old `slideType()` did.
 
-Open: the deck reader has no image renderer, so the 37 `image` slides show their title and text without the diagram. Their `image`, `imageAlt` and `imageCaption` fields are kept; the files live under `dist/assets/` at the pinned commit.
+### Images
+
+The 37 `image` slides use 12 diagrams from `dist/assets/` at the pinned commit. The importer rewrites each slide's `image` to the Academy's served copy under `/archive/training-site/` and keeps the original file in the slide's provenance as `source.image` (for example `dist/assets/intent-md.svg`). The import script copies the files into `apps/web/public/archive/training-site/`: SVGs byte for byte, the one PNG re-encoded as WebP (`cwebp -q 82`, 237,544 to 52,252 bytes; `cwebp` must be on `PATH` when you re-run the import). Alt text and captions are the old site's `imageAlt` and `imageCaption`; the deck reader falls back to the slide title only when a slide has no `imageAlt`, which no archived slide needs.

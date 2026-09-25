@@ -6,7 +6,7 @@
   "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b"
  },
  "slideCount": 224,
- "contentHash": "9004e29a2da7b50ecb0b1e0db3cec58f50a9f48bb5c7a31c6951a92332395d16",
+ "contentHash": "b2af28551c58d01f5acb73f21f896051c9526fa7f934e0550bcce9ce4b29a282",
  "decks": [
   {
    "squad": 1,
@@ -156,7 +156,7 @@
       "check": "Everyone can point at where OPEN questions live in the brief.",
       "prompt": "Show the picture. Ask participants to link one sentence to what, why or boundaries, and to point at where OPEN questions live.",
       "dark": false,
-      "image": "intent-md.svg",
+      "image": "/archive/training-site/intent-md.svg",
       "imageAlt": "intent.md brief with what, why and boundaries feeding design, build and review, with a revisit loop.",
       "imageCaption": "What, why and boundaries feed design, build and review. Change the brief before you change the plan.",
       "notes": "Vaste cadans: definitie → beeld → hoe wij ermee werken. Lees de definitie letterlijk voor, wijs het beeld aan, laat de groep de gebruiksstap zelf zeggen."
@@ -165,7 +165,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/days.js",
-      "pointer": "DAYS.day1.slides[3]"
+      "pointer": "DAYS.day1.slides[3]",
+      "image": "dist/assets/intent-md.svg"
      }
     },
     {
@@ -285,7 +286,7 @@
       "check": "Nobody thinks the data is real.",
       "prompt": "Introduce the example: the merchant, the three files, the cutoff, the five cases. Point at the five steps and say which day does which. Name the three traps out loud; the squad will meet them on Day 3.",
       "dark": false,
-      "image": "worked-example-thread.svg",
+      "image": "/archive/training-site/worked-example-thread.svg",
       "imageAlt": "Five steps on a chain: Day 1 intent.md, Day 2 plan and hand baseline, Day 3 agent in n8n, Day 4 Claude Code with hook, Day 5 gate and handoff. Below: three traps the human gate must catch.",
       "imageCaption": "The same thread every day. Nothing here touches a real system; everything can be rerun at home.",
       "keepCards": true,
@@ -295,7 +296,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/days.js",
-      "pointer": "DAYS.day1.slides[6]"
+      "pointer": "DAYS.day1.slides[6]",
+      "image": "dist/assets/worked-example-thread.svg"
      }
     },
     {
@@ -356,7 +358,7 @@
       "check": "Everyone can place a claim from today on the right step of the ladder.",
       "prompt": "Walk the four steps left to right. Ask: which step is usually skipped? Let one participant place a claim from the demo on the ladder.",
       "dark": false,
-      "image": "evidence-rule.svg",
+      "image": "/archive/training-site/evidence-rule.svg",
       "imageAlt": "Four steps: claim, source, reproduced check, reviewer; a dashed hypothesis box below; a cutoff stamp.",
       "imageCaption": "Claim → source → reproduced check → reviewer. Anything short of that stays a hypothesis and is marked OPEN.",
       "notes": "Vaste cadans: definitie → beeld → hoe wij ermee werken. Lees de definitie letterlijk voor, wijs het beeld aan, laat de groep de gebruiksstap zelf zeggen."
@@ -365,7 +367,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/days.js",
-      "pointer": "DAYS.day1.slides[8]"
+      "pointer": "DAYS.day1.slides[8]",
+      "image": "dist/assets/evidence-rule.svg"
      }
     },
     {
@@ -469,7 +472,7 @@
       "check": "Everyone can say who asks for source ids and who records the decision.",
       "prompt": "Point at each role. Ask: who is driver first, who calls the rotation, and who says \"pause\" first?",
       "dark": false,
-      "image": "mob-programming.svg",
+      "image": "/archive/training-site/mob-programming.svg",
       "imageAlt": "Four roles on one chain: driver, navigator, skeptic, scribe, with a rotate-every-5-to-7-minutes callout and one shared laptop.",
       "imageCaption": "Driver types what the navigator says. Skeptic asks for source ids, scribe records the decision. A human decides at every gate.",
       "notes": "Vaste cadans: definitie → beeld → hoe wij ermee werken. Lees de definitie letterlijk voor, wijs het beeld aan, laat de groep de gebruiksstap zelf zeggen."
@@ -478,7 +481,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/days.js",
-      "pointer": "DAYS.day1.slides[11]"
+      "pointer": "DAYS.day1.slides[11]",
+      "image": "dist/assets/mob-programming.svg"
      }
     },
     {
@@ -1051,7 +1055,7 @@
       "check": "Everyone names the three parts without looking at the slide.",
       "prompt": "One-minute recap: point at the picture and ask the room to say the concept in one sentence. The definition cards are in the notes if it does not come.",
       "dark": false,
-      "image": "intent-md.svg",
+      "image": "/archive/training-site/intent-md.svg",
       "imageAlt": "intent.md brief with what, why and boundaries feeding design, build and review, with a revisit loop.",
       "imageCaption": "What, why and boundaries feed design, build and review. Change the brief before you change the plan.",
       "notes": "Herhaling in beeld, zonder tekst op de slide. Definitiekaarten voor als het niet komt:\n• WHAT: The desired result in plain words.\n• WHY: The reason, and who is affected.\n• BOUNDARIES: Constraints, non-goals and OPEN questions. Unknowns are written down, not guessed."
@@ -1060,7 +1064,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/days.js",
-      "pointer": "DAYS.day2.slides[2]"
+      "pointer": "DAYS.day2.slides[2]",
+      "image": "dist/assets/intent-md.svg"
      }
     },
     {
@@ -1082,7 +1087,7 @@
       "check": "Everyone can say why \"it looked right\" is not evidence.",
       "prompt": "One-minute recap: point at the picture and ask the room to say the concept in one sentence. The definition cards are in the notes if it does not come.",
       "dark": false,
-      "image": "evidence-rule.svg",
+      "image": "/archive/training-site/evidence-rule.svg",
       "imageAlt": "Four steps: claim, source, reproduced check, reviewer; a dashed hypothesis box below; a cutoff stamp.",
       "imageCaption": "Claim → source → reproduced check → reviewer. Anything short of that stays a hypothesis and is marked OPEN.",
       "notes": "Herhaling in beeld, zonder tekst op de slide. Definitiekaarten voor als het niet komt:\n• CLAIM: What you say happened, in one sentence.\n• SOURCE + CHECK: A row id or file at the cutoff, and the command, calculation or sheet that reproduces it.\n• REVIEWER: Someone else reran it. Without all three it is a hypothesis and stays OPEN."
@@ -1091,7 +1096,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/days.js",
-      "pointer": "DAYS.day2.slides[3]"
+      "pointer": "DAYS.day2.slides[3]",
+      "image": "dist/assets/evidence-rule.svg"
      }
     },
     {
@@ -1113,7 +1119,7 @@
       "check": "Participants can name driver, navigator, skeptic and scribe.",
       "prompt": "One-minute recap: point at the picture and ask the room to say the concept in one sentence. The definition cards are in the notes if it does not come.",
       "dark": false,
-      "image": "mob-programming.svg",
+      "image": "/archive/training-site/mob-programming.svg",
       "imageAlt": "Four roles on one chain: driver, navigator, skeptic, scribe, with a rotate-every-5-to-7-minutes callout and one shared laptop.",
       "imageCaption": "Driver types what the navigator says. Skeptic asks for source ids, scribe records the decision. A human decides at every gate.",
       "notes": "Herhaling in beeld, zonder tekst op de slide. Definitiekaarten voor als het niet komt:\n• GROUP: 3–4 people on one shared task and one screen.\n• ROLES: Driver types, navigator directs, skeptic asks for source ids, scribe records the decision. Rotate every 5–7 minutes.\n• AI IN THE MOB: The tool suggests. Humans direct, say \"pause\" on uncertainty, and decide."
@@ -1122,7 +1128,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/days.js",
-      "pointer": "DAYS.day2.slides[4]"
+      "pointer": "DAYS.day2.slides[4]",
+      "image": "dist/assets/mob-programming.svg"
      }
     },
     {
@@ -1822,7 +1829,7 @@
       "check": "Everyone can say why \"it looked right\" is not evidence.",
       "prompt": "One-minute recap: point at the picture and ask the room to say the concept in one sentence. The definition cards are in the notes if it does not come.",
       "dark": false,
-      "image": "evidence-rule.svg",
+      "image": "/archive/training-site/evidence-rule.svg",
       "imageAlt": "Four steps: claim, source, reproduced check, reviewer; a dashed hypothesis box below; a cutoff stamp.",
       "imageCaption": "Claim → source → reproduced check → reviewer. Anything short of that stays a hypothesis and is marked OPEN.",
       "notes": "Herhaling in beeld, zonder tekst op de slide. Definitiekaarten voor als het niet komt:\n• CLAIM: What you say happened, in one sentence.\n• SOURCE + CHECK: A row id or file at the cutoff, and the command, calculation or sheet that reproduces it.\n• REVIEWER: Someone else reran it. Without all three it is a hypothesis and stays OPEN."
@@ -1831,7 +1838,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/days.js",
-      "pointer": "DAYS.day3.slides[2]"
+      "pointer": "DAYS.day3.slides[2]",
+      "image": "dist/assets/evidence-rule.svg"
      }
     },
     {
@@ -2096,7 +2104,7 @@
       "check": "Everyone can point at the phase their ticket is in and at one human gate.",
       "prompt": "Use the picture to point at the loop. Then let participants place their own ticket on one phase and point at one human gate.",
       "dark": false,
-      "image": "ai-native-sdlc-line-and-loop.png",
+      "image": "/archive/training-site/ai-native-sdlc-line-and-loop.webp",
       "imageAlt": "Traditional SDLC line on the left and AI-native loop on the right around Claude, with plan, design, build, test, deploy and maintain.",
       "imageCaption": "Traditional: the line. AI-native: the loop, with Claude helping at every point and humans directing and governing.",
       "notes": "Vaste cadans: definitie → beeld → hoe wij ermee werken. Lees de definitie letterlijk voor, wijs het beeld aan, laat de groep de gebruiksstap zelf zeggen."
@@ -2105,7 +2113,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/days.js",
-      "pointer": "DAYS.day3.slides[8]"
+      "pointer": "DAYS.day3.slides[8]",
+      "image": "dist/assets/ai-native-sdlc-line-and-loop.png"
      }
     },
     {
@@ -2954,7 +2963,7 @@
       "check": "Everyone can name the six phases and one unchanged control objective.",
       "prompt": "One-minute recap: point at the picture and ask the room to say the concept in one sentence. The definition cards are in the notes if it does not come.",
       "dark": false,
-      "image": "ai-native-sdlc-line-and-loop.png",
+      "image": "/archive/training-site/ai-native-sdlc-line-and-loop.webp",
       "imageAlt": "Traditional SDLC line on the left and AI-native loop on the right around Claude, with plan, design, build, test, deploy and maintain.",
       "imageCaption": "Traditional: the line. AI-native: the loop, with Claude helping at every point and humans directing and governing.",
       "notes": "Herhaling in beeld, zonder tekst op de slide. Definitiekaarten voor als het niet komt:\n• FROM LINE TO LOOP: Plan → Design → Build → Test → Deploy → Maintain, and what production teaches re-enters the plan.\n• AI AT EVERY POINT: AI drafts, generates, reviews first, tests and watches. Humans set intent, judge risk and own the release.\n• SAME CONTROLS, NEW ENFORCEMENT: Quality, security and traceability stay. They move from checklists and sign-offs into the pipeline."
@@ -2963,7 +2972,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/days.js",
-      "pointer": "DAYS.day4.slides[3]"
+      "pointer": "DAYS.day4.slides[3]",
+      "image": "dist/assets/ai-native-sdlc-line-and-loop.png"
      }
     },
     {
@@ -3038,7 +3048,7 @@
       "check": "Everyone can point at the three phases, the repeat and the human interrupt.",
       "prompt": "Point at the three phases, the repeat arrow and the human interrupt. Map each phase to this morning's ticket-coach: read the ticket, draft the packet, check against the contract.",
       "dark": false,
-      "image": "agentic-loop.svg",
+      "image": "/archive/training-site/agentic-loop.svg",
       "imageAlt": "Your prompt enters a loop of gather, act and verify that repeats until done; a human box can interrupt, steer or add context at any point.",
       "imageCaption": "Models reason, tools act, the platform holds the loop. The loop ends at a human gate, never at \"done\" by itself.",
       "notes": "Vaste cadans: definitie → beeld → hoe wij ermee werken. Lees de definitie letterlijk voor, wijs het beeld aan, laat de groep de gebruiksstap zelf zeggen."
@@ -3047,7 +3057,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/days.js",
-      "pointer": "DAYS.day4.slides[5]"
+      "pointer": "DAYS.day4.slides[5]",
+      "image": "dist/assets/agentic-loop.svg"
      }
     },
     {
@@ -3191,7 +3202,7 @@
       "check": "Everyone can point at what is shared and what is recorded separately.",
       "prompt": "Point at the contract, then at both adapters, then at the checker. Ask: what is shared, what is recorded separately?",
       "dark": false,
-      "image": "one-contract-two-platforms.svg",
+      "image": "/archive/training-site/one-contract-two-platforms.svg",
       "imageAlt": "One contract box feeding n8n and Claude Code boxes, both feeding the same checker.",
       "imageCaption": "One contract feeds two platforms; both outputs go through the same checker. One pair of runs proves no cause.",
       "notes": "Vaste cadans: definitie → beeld → hoe wij ermee werken. Lees de definitie letterlijk voor, wijs het beeld aan, laat de groep de gebruiksstap zelf zeggen."
@@ -3200,7 +3211,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/days.js",
-      "pointer": "DAYS.day4.slides[9]"
+      "pointer": "DAYS.day4.slides[9]",
+      "image": "dist/assets/one-contract-two-platforms.svg"
      }
     },
     {
@@ -3578,7 +3590,7 @@
       "check": "Everyone can trace the return arrow and say what it carries.",
       "prompt": "Trace the arrows. Ask: what must the reviewer see before accepting? What travels back on the return arrow?",
       "dark": false,
-      "image": "human-gate.svg",
+      "image": "/archive/training-site/human-gate.svg",
       "imageAlt": "Agent output enters a gate where a human reviews the evidence, then accept or return; a dashed arrow returns to the agent.",
       "imageCaption": "Nothing is written to a business system without this decision. Return always names the gap.",
       "notes": "Vaste cadans: definitie → beeld → hoe wij ermee werken. Lees de definitie letterlijk voor, wijs het beeld aan, laat de groep de gebruiksstap zelf zeggen."
@@ -3587,7 +3599,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/days.js",
-      "pointer": "DAYS.day4.slides[18]"
+      "pointer": "DAYS.day4.slides[18]",
+      "image": "dist/assets/human-gate.svg"
      }
     },
     {
@@ -4011,7 +4024,7 @@
       "check": "Nobody calls the model itself the agent.",
       "prompt": "One-minute recap: point at the picture and ask the room to say the concept in one sentence. The definition cards are in the notes if it does not come.",
       "dark": false,
-      "image": "agentic-loop.svg",
+      "image": "/archive/training-site/agentic-loop.svg",
       "imageAlt": "Your prompt enters a loop of gather, act and verify that repeats until done; a human box can interrupt, steer or add context at any point.",
       "imageCaption": "Models reason, tools act, the platform holds the loop. The loop ends at a human gate, never at \"done\" by itself.",
       "notes": "Herhaling in beeld, zonder tekst op de slide. Definitiekaarten voor als het niet komt:\n"
@@ -4020,7 +4033,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/days.js",
-      "pointer": "DAYS.day5.slides[3]"
+      "pointer": "DAYS.day5.slides[3]",
+      "image": "dist/assets/agentic-loop.svg"
      }
     },
     {
@@ -4042,7 +4056,7 @@
       "check": "Everyone can name the three outcomes PASS, FAIL, OPEN and what each requires.",
       "prompt": "One-minute recap: point at the picture and ask the room to say the concept in one sentence. The definition cards are in the notes if it does not come.",
       "dark": false,
-      "image": "human-gate.svg",
+      "image": "/archive/training-site/human-gate.svg",
       "imageAlt": "Agent output enters a gate where a human reviews the evidence, then accept or return; a dashed arrow returns to the agent.",
       "imageCaption": "Nothing is written to a business system without this decision. Return always names the gap.",
       "notes": "Herhaling in beeld, zonder tekst op de slide. Definitiekaarten voor als het niet komt:\n• WHAT WAITS: A draft, a preview, a trace and its evidence line. Nothing has been written to a business system.\n• WHO DECIDES: A named human who reruns one check and decides PASS, FAIL or OPEN.\n• WHAT RETURNS: A returned result names the gap. Nothing is \"probably fine\"."
@@ -4051,7 +4065,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/days.js",
-      "pointer": "DAYS.day5.slides[4]"
+      "pointer": "DAYS.day5.slides[4]",
+      "image": "dist/assets/human-gate.svg"
      }
     },
     {
@@ -4073,7 +4088,7 @@
       "check": "Everyone can name the contract and one adapter setting per platform.",
       "prompt": "One-minute recap: point at the picture and ask the room to say the concept in one sentence. The definition cards are in the notes if it does not come.",
       "dark": false,
-      "image": "one-contract-two-platforms.svg",
+      "image": "/archive/training-site/one-contract-two-platforms.svg",
       "imageAlt": "One contract box feeding n8n and Claude Code boxes, both feeding the same checker.",
       "imageCaption": "One contract feeds two platforms; both outputs go through the same checker. One pair of runs proves no cause.",
       "notes": "Herhaling in beeld, zonder tekst op de slide. Definitiekaarten voor als het niet komt:\n• THE CONTRACT: shared-prompt.md and the ticket input: what the agent must produce and must not do.\n• THE ADAPTERS: n8n: system message, model, Calculator tool. Claude Code: subagent body, read-only tools, typed invocation. Recorded per platform.\n• THE CHECKER: Both outputs go through the same checker. Differences are observations; one pair of runs proves no cause."
@@ -4082,7 +4097,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/days.js",
-      "pointer": "DAYS.day5.slides[5]"
+      "pointer": "DAYS.day5.slides[5]",
+      "image": "dist/assets/one-contract-two-platforms.svg"
      }
     },
     {
@@ -4144,7 +4160,7 @@
       "check": "Everyone can point at the phase their ticket is in and at one human gate.",
       "prompt": "Use the picture to point at the loop. Then let participants place their own ticket on one phase and point at one human gate.",
       "dark": false,
-      "image": "ai-native-sdlc-line-and-loop.png",
+      "image": "/archive/training-site/ai-native-sdlc-line-and-loop.webp",
       "imageAlt": "Traditional SDLC line on the left and AI-native loop on the right around Claude, with plan, design, build, test, deploy and maintain.",
       "imageCaption": "Traditional: the line. AI-native: the loop, with Claude helping at every point and humans directing and governing.",
       "notes": "Vaste cadans: definitie → beeld → hoe wij ermee werken. Lees de definitie letterlijk voor, wijs het beeld aan, laat de groep de gebruiksstap zelf zeggen."
@@ -4153,7 +4169,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/days.js",
-      "pointer": "DAYS.day5.slides[7]"
+      "pointer": "DAYS.day5.slides[7]",
+      "image": "dist/assets/ai-native-sdlc-line-and-loop.png"
      }
     },
     {
@@ -4271,7 +4288,7 @@
       "expected": "The room can name the same contract at each n8n and Claude Code boundary.",
       "check": "Both specialists run; sending and refunding remain outside the exercise.",
       "prompt": "Walk the attached source left to right: ticket, coordinator, both specialists, parser, Switch and draft actions. Then mark the Claude Code target: main session, both scoped specialists, separate strict validator and human gate.",
-      "image": "support-triage-flow.svg",
+      "image": "/archive/training-site/support-triage-flow.svg",
       "imageAlt": "Claude Code target: WL-1026 enters a main session, which calls customer reply and risk specialists; a separate validator checks JSON before the priority route and human gate.",
       "imageCaption": "The attached n8n flow is the source map. Its Code node only calls JSON.parse; the Claude Code target adds preserved fields, strict validation and a draft-only human gate.",
       "notes": "Bron: de aangeleverde n8n-export. De Code-node doet alleen JSON.parse; bron-schema-validatie gebeurt daar niet. Markeer daarom de strikte JSON-check en de bewaarde ticket_id/risk_note als Claude Code-target, vóór Switch en menselijke gate."
@@ -4280,7 +4297,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/days.js",
-      "pointer": "DAYS.day5.slides[10]"
+      "pointer": "DAYS.day5.slides[10]",
+      "image": "dist/assets/support-triage-flow.svg"
      }
     },
     {
@@ -4348,7 +4366,7 @@
       "check": "Nobody treats memory as hidden state; it is a file you can read and diff.",
       "prompt": "Walk one row at a time: point at the n8n box, the intent.md line, then the query() option. Show git diff step-2-design..step-3a-build-prompt -- src, then 3a..3b and 3b..3c. Mention lesson 3a's live finding: without subagents the model writes the risk note itself and the contract still passes.",
       "dark": false,
-      "image": "n8n-to-agent-fundamentals.svg",
+      "image": "/archive/training-site/n8n-to-agent-fundamentals.svg",
       "imageAlt": "Four rows — system message, prompt, tools, memory — each shown as an n8n node, the intent.md section that translates it, and the Claude Agent SDK query() option that implements it.",
       "imageCaption": "One branch per fundamental: step-3a adds systemPrompt and prompt, step-3b the two subagents via the Agent tool, step-3c markdown memory.",
       "notes": "Laat per rij zien dat het fundament hetzelfde blijft; alleen de plek verandert. Claude Agent SDK: options.systemPrompt = vaste regels, prompt = dit ticket, options.agents + Agent-tool = de twee specialisten, memory = markdownbestand per ticket in de prompt."
@@ -4357,7 +4375,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/days.js",
-      "pointer": "DAYS.day5.slides[12]"
+      "pointer": "DAYS.day5.slides[12]",
+      "image": "dist/assets/n8n-to-agent-fundamentals.svg"
      }
     },
     {
@@ -4566,7 +4585,7 @@
       "check": "Everyone can name what every session reads first and what sessions never share.",
       "prompt": "Point at the engineer, one session, one subagent and the governance bar. Ask: what does every session read first? (CLAUDE.md.) What do sessions never share? (Each other's context.)",
       "dark": false,
-      "image": "parallel-sessions-subagents.svg",
+      "image": "/archive/training-site/parallel-sessions-subagents.svg",
       "imageAlt": "An engineer steers three sessions, each in its own worktree; one session delegates to verifier, researcher and simplifier subagents; a governance bar names CLAUDE.md and permissions.",
       "imageCaption": "Traditional: one engineer, one task, waiting on builds. AI-native: several sessions in flight, repeated jobs as subagents, the engineer orchestrating.",
       "notes": "Vaste cadans: definitie → beeld → hoe wij ermee werken. Lees de definitie letterlijk voor, wijs het beeld aan, laat de groep de gebruiksstap zelf zeggen."
@@ -4575,7 +4594,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/days.js",
-      "pointer": "DAYS.day5.slides[17]"
+      "pointer": "DAYS.day5.slides[17]",
+      "image": "dist/assets/parallel-sessions-subagents.svg"
      }
     },
     {
@@ -5643,7 +5663,7 @@
       "check": "Everyone can point at the phase their ticket is in and at one human gate.",
       "prompt": "Use the picture to point at the loop. Then let participants place their own ticket on one phase and point at one human gate.",
       "dark": false,
-      "image": "ai-native-sdlc-line-and-loop.png",
+      "image": "/archive/training-site/ai-native-sdlc-line-and-loop.webp",
       "imageAlt": "Traditional SDLC line on the left and AI-native loop on the right around Claude, with plan, design, build, test, deploy and maintain.",
       "imageCaption": "Traditional: the line. AI-native: the loop, with Claude helping at every point and humans directing and governing.",
       "notes": "Vaste cadans: definitie → beeld → hoe wij ermee werken. Lees de definitie letterlijk voor, wijs het beeld aan, laat de groep de gebruiksstap zelf zeggen."
@@ -5652,7 +5672,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/squad2.js",
-      "pointer": "SQUAD2.day1.slides[9]"
+      "pointer": "SQUAD2.day1.slides[9]",
+      "image": "dist/assets/ai-native-sdlc-line-and-loop.png"
      }
     },
     {
@@ -5768,7 +5789,7 @@
       "check": "Everyone can point at where OPEN questions live in the brief.",
       "prompt": "Show the picture. Ask participants to link one sentence to what, why or boundaries, and to point at where OPEN questions live.",
       "dark": false,
-      "image": "intent-md.svg",
+      "image": "/archive/training-site/intent-md.svg",
       "imageAlt": "intent.md brief with what, why and boundaries feeding design, build and review, with a revisit loop.",
       "imageCaption": "What, why and boundaries feed design, build and review. Change the brief before you change the plan.",
       "notes": "Vaste cadans: definitie → beeld → hoe wij ermee werken. Lees de definitie letterlijk voor, wijs het beeld aan, laat de groep de gebruiksstap zelf zeggen."
@@ -5777,7 +5798,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/squad2.js",
-      "pointer": "SQUAD2.day1.slides[12]"
+      "pointer": "SQUAD2.day1.slides[12]",
+      "image": "dist/assets/intent-md.svg"
      }
     },
     {
@@ -5856,7 +5878,7 @@
       "check": "Nobody thinks the data is real.",
       "prompt": "Introduce the example: the merchant, the three files, the cutoff, the five cases. Point at the five steps and say which day does which. Name the three traps out loud; the squad will meet them on Day 3.",
       "dark": false,
-      "image": "worked-example-thread.svg",
+      "image": "/archive/training-site/worked-example-thread.svg",
       "imageAlt": "Five steps on a chain: Day 1 intent.md, Day 2 plan and hand baseline, Day 3 agent in n8n, Day 4 Claude Code with hook, Day 5 gate and handoff. Below: three traps the human gate must catch.",
       "imageCaption": "The same thread every day. Nothing here touches a real system; everything can be rerun at home.",
       "keepCards": true,
@@ -5866,7 +5888,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/squad2.js",
-      "pointer": "SQUAD2.day1.slides[14]"
+      "pointer": "SQUAD2.day1.slides[14]",
+      "image": "dist/assets/worked-example-thread.svg"
      }
     },
     {
@@ -6368,7 +6391,7 @@
       "check": "Everyone can name the six phases and one unchanged control objective.",
       "prompt": "One-minute recap: point at the picture and ask the room to say the concept in one sentence. The definition cards are in the notes if it does not come.",
       "dark": false,
-      "image": "ai-native-sdlc-line-and-loop.png",
+      "image": "/archive/training-site/ai-native-sdlc-line-and-loop.webp",
       "imageAlt": "Traditional SDLC line on the left and AI-native loop on the right around Claude, with plan, design, build, test, deploy and maintain.",
       "imageCaption": "Traditional: the line. AI-native: the loop, with Claude helping at every point and humans directing and governing.",
       "notes": "Herhaling in beeld, zonder tekst op de slide. Definitiekaarten voor als het niet komt:\n• FROM LINE TO LOOP: Plan → Design → Build → Test → Deploy → Maintain, and what production teaches re-enters the plan.\n• AI AT EVERY POINT: AI drafts, generates, reviews first, tests and watches. Humans set intent, judge risk and own the release.\n• SAME CONTROLS, NEW ENFORCEMENT: Quality, security and traceability stay. They move from checklists and sign-offs into the pipeline."
@@ -6377,7 +6400,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/squad2.js",
-      "pointer": "SQUAD2.day2.slides[3]"
+      "pointer": "SQUAD2.day2.slides[3]",
+      "image": "dist/assets/ai-native-sdlc-line-and-loop.png"
      }
     },
     {
@@ -6399,7 +6423,7 @@
       "check": "Everyone names the three parts without looking at the slide.",
       "prompt": "One-minute recap: point at the picture and ask the room to say the concept in one sentence. The definition cards are in the notes if it does not come.",
       "dark": false,
-      "image": "intent-md.svg",
+      "image": "/archive/training-site/intent-md.svg",
       "imageAlt": "intent.md brief with what, why and boundaries feeding design, build and review, with a revisit loop.",
       "imageCaption": "What, why and boundaries feed design, build and review. Change the brief before you change the plan.",
       "notes": "Herhaling in beeld, zonder tekst op de slide. Definitiekaarten voor als het niet komt:\n• WHAT: The desired result in plain words.\n• WHY: The reason, and who is affected.\n• BOUNDARIES: Constraints, non-goals and OPEN questions. Unknowns are written down, not guessed."
@@ -6408,7 +6432,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/squad2.js",
-      "pointer": "SQUAD2.day2.slides[4]"
+      "pointer": "SQUAD2.day2.slides[4]",
+      "image": "dist/assets/intent-md.svg"
      }
     },
     {
@@ -6510,7 +6535,7 @@
       "check": "Everyone can place a claim from today on the right step of the ladder.",
       "prompt": "Walk the four steps left to right. Ask: which step is usually skipped? Let one participant place a claim from the demo on the ladder.",
       "dark": false,
-      "image": "evidence-rule.svg",
+      "image": "/archive/training-site/evidence-rule.svg",
       "imageAlt": "Four steps: claim, source, reproduced check, reviewer; a dashed hypothesis box below; a cutoff stamp.",
       "imageCaption": "Claim → source → reproduced check → reviewer. Anything short of that stays a hypothesis and is marked OPEN.",
       "notes": "Vaste cadans: definitie → beeld → hoe wij ermee werken. Lees de definitie letterlijk voor, wijs het beeld aan, laat de groep de gebruiksstap zelf zeggen."
@@ -6519,7 +6544,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/squad2.js",
-      "pointer": "SQUAD2.day2.slides[7]"
+      "pointer": "SQUAD2.day2.slides[7]",
+      "image": "dist/assets/evidence-rule.svg"
      }
     },
     {
@@ -7042,7 +7068,7 @@
       "check": "Everyone can say why \"it looked right\" is not evidence.",
       "prompt": "One-minute recap: point at the picture and ask the room to say the concept in one sentence. The definition cards are in the notes if it does not come.",
       "dark": false,
-      "image": "evidence-rule.svg",
+      "image": "/archive/training-site/evidence-rule.svg",
       "imageAlt": "Four steps: claim, source, reproduced check, reviewer; a dashed hypothesis box below; a cutoff stamp.",
       "imageCaption": "Claim → source → reproduced check → reviewer. Anything short of that stays a hypothesis and is marked OPEN.",
       "notes": "Herhaling in beeld, zonder tekst op de slide. Definitiekaarten voor als het niet komt:\n• CLAIM: What you say happened, in one sentence.\n• SOURCE + CHECK: A row id or file at the cutoff, and the command, calculation or sheet that reproduces it.\n• REVIEWER: Someone else reran it. Without all three it is a hypothesis and stays OPEN."
@@ -7051,7 +7077,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/squad2.js",
-      "pointer": "SQUAD2.day3.slides[2]"
+      "pointer": "SQUAD2.day3.slides[2]",
+      "image": "dist/assets/evidence-rule.svg"
      }
     },
     {
@@ -7126,7 +7153,7 @@
       "check": "Everyone can point at the three phases, the repeat and the human interrupt.",
       "prompt": "Point at the three phases, the repeat arrow and the human interrupt. Map each phase to this morning's ticket-coach: read the ticket, draft the packet, check against the contract.",
       "dark": false,
-      "image": "agentic-loop.svg",
+      "image": "/archive/training-site/agentic-loop.svg",
       "imageAlt": "Your prompt enters a loop of gather, act and verify that repeats until done; a human box can interrupt, steer or add context at any point.",
       "imageCaption": "Models reason, tools act, the platform holds the loop. The loop ends at a human gate, never at \"done\" by itself.",
       "notes": "Vaste cadans: definitie → beeld → hoe wij ermee werken. Lees de definitie letterlijk voor, wijs het beeld aan, laat de groep de gebruiksstap zelf zeggen."
@@ -7135,7 +7162,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/squad2.js",
-      "pointer": "SQUAD2.day3.slides[4]"
+      "pointer": "SQUAD2.day3.slides[4]",
+      "image": "dist/assets/agentic-loop.svg"
      }
     },
     {
@@ -7659,7 +7687,7 @@
       "check": "Nobody calls the model itself the agent.",
       "prompt": "One-minute recap: point at the picture and ask the room to say the concept in one sentence. The definition cards are in the notes if it does not come.",
       "dark": false,
-      "image": "agentic-loop.svg",
+      "image": "/archive/training-site/agentic-loop.svg",
       "imageAlt": "Your prompt enters a loop of gather, act and verify that repeats until done; a human box can interrupt, steer or add context at any point.",
       "imageCaption": "Models reason, tools act, the platform holds the loop. The loop ends at a human gate, never at \"done\" by itself.",
       "notes": "Herhaling in beeld, zonder tekst op de slide. Definitiekaarten voor als het niet komt:\n"
@@ -7668,7 +7696,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/squad2.js",
-      "pointer": "SQUAD2.day4.slides[2]"
+      "pointer": "SQUAD2.day4.slides[2]",
+      "image": "dist/assets/agentic-loop.svg"
      }
     },
     {
@@ -7770,7 +7799,7 @@
       "check": "Everyone can point at what is shared and what is recorded separately.",
       "prompt": "Point at the contract, then at both adapters, then at the checker. Ask: what is shared, what is recorded separately?",
       "dark": false,
-      "image": "one-contract-two-platforms.svg",
+      "image": "/archive/training-site/one-contract-two-platforms.svg",
       "imageAlt": "One contract box feeding n8n and Claude Code boxes, both feeding the same checker.",
       "imageCaption": "One contract feeds two platforms; both outputs go through the same checker. One pair of runs proves no cause.",
       "notes": "Vaste cadans: definitie → beeld → hoe wij ermee werken. Lees de definitie letterlijk voor, wijs het beeld aan, laat de groep de gebruiksstap zelf zeggen."
@@ -7779,7 +7808,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/squad2.js",
-      "pointer": "SQUAD2.day4.slides[5]"
+      "pointer": "SQUAD2.day4.slides[5]",
+      "image": "dist/assets/one-contract-two-platforms.svg"
      }
     },
     {
@@ -7893,7 +7923,7 @@
       "check": "Nobody puts a human approval prompt inside the build loop.",
       "prompt": "Trace one file edit through the hook. Then point at where the full test suite lives and where the human approval lives, and say why neither belongs in the build loop.",
       "dark": false,
-      "image": "hooks-guardrails.svg",
+      "image": "/archive/training-site/hooks-guardrails.svg",
       "imageAlt": "A skill feeds a hook box; each action leaves as block, fix or allow. Below, build, commit/PR and deploy show where hooks, the test suite and human approval live.",
       "imageCaption": "Hooks live in the build. The full test suite belongs at the commit or PR. Human approval belongs at the deploy gate, because a prompt during the build stalls every parallel session.",
       "notes": "Vaste cadans: definitie → beeld → hoe wij ermee werken. Lees de definitie letterlijk voor, wijs het beeld aan, laat de groep de gebruiksstap zelf zeggen."
@@ -7902,7 +7932,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/squad2.js",
-      "pointer": "SQUAD2.day4.slides[8]"
+      "pointer": "SQUAD2.day4.slides[8]",
+      "image": "dist/assets/hooks-guardrails.svg"
      }
     },
     {
@@ -8005,7 +8036,7 @@
       "check": "Everyone can name what every session reads first and what sessions never share.",
       "prompt": "Point at the engineer, one session, one subagent and the governance bar. Ask: what does every session read first? (CLAUDE.md.) What do sessions never share? (Each other's context.)",
       "dark": false,
-      "image": "parallel-sessions-subagents.svg",
+      "image": "/archive/training-site/parallel-sessions-subagents.svg",
       "imageAlt": "An engineer steers three sessions, each in its own worktree; one session delegates to verifier, researcher and simplifier subagents; a governance bar names CLAUDE.md, hooks and permissions.",
       "imageCaption": "Traditional: one engineer, one task, waiting on builds. AI-native: several sessions in flight, repeated jobs as subagents, the engineer orchestrating.",
       "notes": "Vaste cadans: definitie → beeld → hoe wij ermee werken. Lees de definitie letterlijk voor, wijs het beeld aan, laat de groep de gebruiksstap zelf zeggen."
@@ -8014,7 +8045,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/squad2.js",
-      "pointer": "SQUAD2.day4.slides[11]"
+      "pointer": "SQUAD2.day4.slides[11]",
+      "image": "dist/assets/parallel-sessions-subagents.svg"
      }
     },
     {
@@ -8591,7 +8623,7 @@
       "check": "Everyone can name the contract and one adapter setting per platform.",
       "prompt": "One-minute recap: point at the picture and ask the room to say the concept in one sentence. The definition cards are in the notes if it does not come.",
       "dark": false,
-      "image": "one-contract-two-platforms.svg",
+      "image": "/archive/training-site/one-contract-two-platforms.svg",
       "imageAlt": "One contract box feeding n8n and Claude Code boxes, both feeding the same checker.",
       "imageCaption": "One contract feeds two platforms; both outputs go through the same checker. One pair of runs proves no cause.",
       "notes": "Herhaling in beeld, zonder tekst op de slide. Definitiekaarten voor als het niet komt:\n• THE CONTRACT: shared-prompt.md and the ticket input: what the agent must produce and must not do.\n• THE ADAPTERS: n8n: system message, model, Calculator tool. Claude Code: subagent body, read-only tools, typed invocation. Recorded per platform.\n• THE CHECKER: Both outputs go through the same checker. Differences are observations; one pair of runs proves no cause."
@@ -8600,7 +8632,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/squad2.js",
-      "pointer": "SQUAD2.day5.slides[2]"
+      "pointer": "SQUAD2.day5.slides[2]",
+      "image": "dist/assets/one-contract-two-platforms.svg"
      }
     },
     {
@@ -8622,7 +8655,7 @@
       "check": "Everyone can say why that rule is a hook and not a skill.",
       "prompt": "One-minute recap: point at the picture and ask the room to say the concept in one sentence. The definition cards are in the notes if it does not come.",
       "dark": false,
-      "image": "hooks-guardrails.svg",
+      "image": "/archive/training-site/hooks-guardrails.svg",
       "imageAlt": "A skill feeds a hook box; each action leaves as block, fix or allow. Below, build, commit/PR and deploy show where hooks, the test suite and human approval live.",
       "imageCaption": "Hooks live in the build. The full test suite belongs at the commit or PR. Human approval belongs at the deploy gate, because a prompt during the build stalls every parallel session.",
       "notes": "Herhaling in beeld, zonder tekst op de slide. Definitiekaarten voor als het niet komt:\n• SKILL VS HOOK: A skill advises. A hook runs on every matching action and holds without exception.\n• WHERE IT FIRES: Mostly during build: file edits and shell commands. Keep hooks fast and scoped to the changed file.\n• WHAT IT DOES: Blocks edits to protected paths, runs formatter and linter after an edit, keeps credentials out of the diff."
@@ -8631,7 +8664,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/squad2.js",
-      "pointer": "SQUAD2.day5.slides[3]"
+      "pointer": "SQUAD2.day5.slides[3]",
+      "image": "dist/assets/hooks-guardrails.svg"
      }
     },
     {
@@ -8653,7 +8687,7 @@
       "check": "Everyone can say the difference between a parallel session and a subagent in one sentence.",
       "prompt": "One-minute recap: point at the picture and ask the room to say the concept in one sentence. The definition cards are in the notes if it does not come.",
       "dark": false,
-      "image": "parallel-sessions-subagents.svg",
+      "image": "/archive/training-site/parallel-sessions-subagents.svg",
       "imageAlt": "An engineer steers three sessions, each in its own worktree; one session delegates to verifier, researcher and simplifier subagents; a governance bar names CLAUDE.md, hooks and permissions.",
       "imageCaption": "Traditional: one engineer, one task, waiting on builds. AI-native: several sessions in flight, repeated jobs as subagents, the engineer orchestrating.",
       "notes": "Herhaling in beeld, zonder tekst op de slide. Definitiekaarten voor als het niet komt:\n• PARALLEL SESSION: Another full Claude Code instance on its own task in its own worktree. They share only the engineer.\n• SUBAGENT: A scoped helper inside one session, with its own context and tool limits, for jobs that recur.\n• THE ENGINEER'S JOB: Steering and reviewing all of them. The ceiling is how many streams one person can review properly."
@@ -8662,7 +8696,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/squad2.js",
-      "pointer": "SQUAD2.day5.slides[4]"
+      "pointer": "SQUAD2.day5.slides[4]",
+      "image": "dist/assets/parallel-sessions-subagents.svg"
      }
     },
     {
@@ -8765,7 +8800,7 @@
       "check": "Everyone can say who asks for source ids and who records the decision.",
       "prompt": "Point at each role. Ask: who is driver first, who calls the rotation, and who says \"pause\" first?",
       "dark": false,
-      "image": "mob-programming.svg",
+      "image": "/archive/training-site/mob-programming.svg",
       "imageAlt": "Four roles on one chain: driver, navigator, skeptic, scribe, with a rotate-every-5-to-7-minutes callout and one shared laptop.",
       "imageCaption": "Driver types what the navigator says. Skeptic asks for source ids, scribe records the decision. A human decides at every gate.",
       "notes": "Vaste cadans: definitie → beeld → hoe wij ermee werken. Lees de definitie letterlijk voor, wijs het beeld aan, laat de groep de gebruiksstap zelf zeggen."
@@ -8774,7 +8809,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/squad2.js",
-      "pointer": "SQUAD2.day5.slides[7]"
+      "pointer": "SQUAD2.day5.slides[7]",
+      "image": "dist/assets/mob-programming.svg"
      }
     },
     {
@@ -8877,7 +8913,7 @@
       "check": "Everyone can trace the return arrow and say what it carries.",
       "prompt": "Trace the arrows. Ask: what must the reviewer see before accepting? What travels back on the return arrow?",
       "dark": false,
-      "image": "human-gate.svg",
+      "image": "/archive/training-site/human-gate.svg",
       "imageAlt": "Agent output enters a gate where a human reviews the evidence, then accept or return; a dashed arrow returns to the agent.",
       "imageCaption": "Nothing is written to a business system without this decision. Return always names the gap.",
       "notes": "Vaste cadans: definitie → beeld → hoe wij ermee werken. Lees de definitie letterlijk voor, wijs het beeld aan, laat de groep de gebruiksstap zelf zeggen."
@@ -8886,7 +8922,8 @@
       "repo": "RyanLisse/aetherlink-training-site",
       "commit": "df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b",
       "path": "dist/squad2.js",
-      "pointer": "SQUAD2.day5.slides[10]"
+      "pointer": "SQUAD2.day5.slides[10]",
+      "image": "dist/assets/human-gate.svg"
      }
     },
     {

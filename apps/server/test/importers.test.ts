@@ -176,7 +176,26 @@ describe('training-site archive importer', () => {
     expect(first.source).toEqual({...TRAINING_SITE, path: 'dist/days.js', pointer: 'DAYS.day1.slides[0]'});
     const squad2 = archive.decks[7]!.slides[4]!;
     expect([squad2.slide.id, squad2.slide.layout, squad2.slide.type]).toEqual(['archive-s2-day3-5', 'image', 'concept']);
-    expect(squad2.source).toEqual({...TRAINING_SITE, path: 'dist/squad2.js', pointer: 'SQUAD2.day3.slides[4]'});
+    expect(squad2.source).toEqual({...TRAINING_SITE, path: 'dist/squad2.js', pointer: 'SQUAD2.day3.slides[4]', image: 'dist/assets/agentic-loop.svg'});
+    expect(squad2.slide.image).toBe('/archive/training-site/agentic-loop.svg');
+    const imageSlides = archive.decks.flatMap((deck) => deck.slides).filter((entry) => entry.slide.layout === 'image');
+    expect(imageSlides).toHaveLength(37);
+    expect(imageSlides.filter((entry) => entry.slide.image && entry.slide.imageAlt && entry.source.image)).toHaveLength(37);
+    expect(new Set(imageSlides.map((entry) => `${entry.source.image} -> ${entry.slide.image}`))).toEqual(new Set([
+      'dist/assets/intent-md.svg -> /archive/training-site/intent-md.svg',
+      'dist/assets/worked-example-thread.svg -> /archive/training-site/worked-example-thread.svg',
+      'dist/assets/evidence-rule.svg -> /archive/training-site/evidence-rule.svg',
+      'dist/assets/mob-programming.svg -> /archive/training-site/mob-programming.svg',
+      'dist/assets/ai-native-sdlc-line-and-loop.png -> /archive/training-site/ai-native-sdlc-line-and-loop.webp',
+      'dist/assets/agentic-loop.svg -> /archive/training-site/agentic-loop.svg',
+      'dist/assets/one-contract-two-platforms.svg -> /archive/training-site/one-contract-two-platforms.svg',
+      'dist/assets/human-gate.svg -> /archive/training-site/human-gate.svg',
+      'dist/assets/support-triage-flow.svg -> /archive/training-site/support-triage-flow.svg',
+      'dist/assets/n8n-to-agent-fundamentals.svg -> /archive/training-site/n8n-to-agent-fundamentals.svg',
+      'dist/assets/parallel-sessions-subagents.svg -> /archive/training-site/parallel-sessions-subagents.svg',
+      'dist/assets/hooks-guardrails.svg -> /archive/training-site/hooks-guardrails.svg',
+    ]));
+    expect(archive.decks.flatMap((deck) => deck.slides).filter((entry) => entry.source.image)).toHaveLength(37);
     const committed = JSON.parse(readFileSync(path.resolve(here, '../../../content/archive/training-site.json'), 'utf8'));
     expect(JSON.parse(JSON.stringify(archive))).toEqual(committed);
   }, 60_000);

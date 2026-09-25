@@ -21,6 +21,7 @@ const contentType = (file: string): string => {
   if (file.endsWith('.css')) return 'text/css; charset=utf-8';
   if (file.endsWith('.svg')) return 'image/svg+xml';
   if (file.endsWith('.png')) return 'image/png';
+  if (file.endsWith('.webp')) return 'image/webp';
   if (file.endsWith('.json')) return 'application/json';
   return 'application/octet-stream';
 };
