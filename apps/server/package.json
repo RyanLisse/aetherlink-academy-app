@@ -22,7 +22,8 @@
     "dev": "node --watch --experimental-strip-types src/main.ts",
     "start": "node dist/main.js",
     "import-content": "node --experimental-strip-types scripts/import-cli.ts",
-    "import": "node --experimental-strip-types scripts/import.ts"
+    "import": "node --experimental-strip-types scripts/import.ts",
+    "import-archive": "node --experimental-strip-types scripts/import-archive.ts"
   },
   "dependencies": {
     "@academy/actions": "workspace:^",

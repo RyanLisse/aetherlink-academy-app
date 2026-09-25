@@ -110,3 +110,19 @@ CREATE TABLE IF NOT EXISTS cohort_certificates (
  revoked_at bigint
 );
 CREATE UNIQUE INDEX IF NOT EXISTS cohort_certificates_live ON cohort_certificates(member_id) WHERE revoked_at IS NULL;
+CREATE TABLE IF NOT EXISTS participant_emails (
+ person_id text PRIMARY KEY,
+ room_id uuid REFERENCES rooms(id) ON DELETE CASCADE,
+ cohort_member_id uuid REFERENCES cohort_members(id) ON DELETE CASCADE,
+ email text NOT NULL UNIQUE,
+ verified_at bigint NOT NULL,
+ CHECK ((room_id IS NULL) <> (cohort_member_id IS NULL))
+);
+CREATE TABLE IF NOT EXISTS email_challenges (
+ key text PRIMARY KEY,
+ code_hash text NOT NULL,
+ sent_at bigint NOT NULL,
+ expires_at bigint NOT NULL,
+ attempts integer NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS email_challenges_expiry ON email_challenges(expires_at);

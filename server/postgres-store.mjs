@@ -3,6 +3,7 @@ import {readFile} from 'node:fs/promises';
 import {awaitingReview} from './proof-trail.mjs';
 import {hash, secret, fail, writable, Store, MAX_SQUAD_SIZE, COHORT_ROOM_JOIN_MESSAGE, DUPLICATE_PARTICIPANT_MESSAGE, INVALID_PARTICIPANT_ACCESS_MESSAGE, COHORT_SEAT_ACCESS_MESSAGE} from './store.mjs';
 import {INVALID_COHORT_CODE_MESSAGE,COHORT_NO_ROOM_MESSAGE,COHORT_RATE_LIMIT_MESSAGE,RATE_LIMITS,attemptKeys,issueAccessCode,sessionGrant,mergeSeatProgress,seatMember,cohortView,cohortWindow,anonymizeRoom,dueCertificates,memberCertificate} from './cohort.mjs';
+import {EMAIL_CODE_INVALID_MESSAGE,EMAIL_PARTICIPANT_ONLY_MESSAGE,EMAIL_RATE_LIMITS,EMAIL_RATE_LIMIT_MESSAGE,challengeKey,checkChallenge,emailAttemptKeys,issueChallenge} from './email-login.mjs';
 
 export class PostgresStore {
  constructor(pool, {schema='academy',now=Date.now}={}) {
@@ -27,7 +28,7 @@ export class PostgresStore {
  }
  async init() {
   const sql=await readFile(new URL('./schema/academy.sql',import.meta.url),'utf8');
-  const migration=`10:${createHash('sha256').update(sql).digest('hex')}`,previousMigrations=['6:fbae0eba4b46d45c35d4d9705afa174d0d46cb651e940ac979d7c26c2ad59c2a','5:57e09fb6b675447a5d37dca65ae64d9910c99ff4c8a4214a9c04402d38284bd0','4:0b073193ff907df7232bf74f47211525b268a81df5c3dd9210879a07e5081a11','3:321f2a26590284cfb07e23cad1940e0d56c3589ac012f9c7cfaf03d7315be2a3','2:3fa9bb87a5cfb8efe24eddc2f7fa94ff0657c0d711f5f9e19e41c6f91b12f3d2','1:cfd75de0661902abf5fd6d4b2fe2984d7e9228cc111392e96686ed29d228b3e1'];
+  const migration=`11:${createHash('sha256').update(sql).digest('hex')}`,previousMigrations=['10:69d548aa2f4e29f3f498c1c3a7468eb8d6321b9971fa0abebe962358e94807fe','6:fbae0eba4b46d45c35d4d9705afa174d0d46cb651e940ac979d7c26c2ad59c2a','5:57e09fb6b675447a5d37dca65ae64d9910c99ff4c8a4214a9c04402d38284bd0','4:0b073193ff907df7232bf74f47211525b268a81df5c3dd9210879a07e5081a11','3:321f2a26590284cfb07e23cad1940e0d56c3589ac012f9c7cfaf03d7315be2a3','2:3fa9bb87a5cfb8efe24eddc2f7fa94ff0657c0d711f5f9e19e41c6f91b12f3d2','1:cfd75de0661902abf5fd6d4b2fe2984d7e9228cc111392e96686ed29d228b3e1'];
   await this.transaction(async client=>{
    await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))',[`academy-schema:${this.schema}`]);
    const existing=await client.query('SELECT 1 FROM pg_catalog.pg_namespace WHERE nspname=$1',[this.schema]);
@@ -325,40 +326,114 @@ export class PostgresStore {
    return cohorts;
   });
  }
+ async consumeAttempts(client,keys) {
+  const now=this.now();
+  await client.query('DELETE FROM access_attempts WHERE window_started_at<$1',[now-Math.max(...[...Object.values(RATE_LIMITS),...Object.values(EMAIL_RATE_LIMITS)].map(limit=>limit.windowMs))]);
+  let ok=true;
+  for(const [key,{max,windowMs}] of keys){
+   const result=await client.query(`INSERT INTO access_attempts(key,window_started_at,count) VALUES ($1,$2,1)
+    ON CONFLICT (key) DO UPDATE SET
+     count=CASE WHEN $2-access_attempts.window_started_at>=$3 THEN 1 ELSE access_attempts.count+1 END,
+     window_started_at=CASE WHEN $2-access_attempts.window_started_at>=$3 THEN $2 ELSE access_attempts.window_started_at END
+    RETURNING count`,[key,now,windowMs]);
+   ok&&=result.rows[0].count<=max;
+  }
+  return ok;
+ }
+ async seatCohortSession(client,cohortId,member,now) {
+  const cohort=await this.cohortRow(client,cohortId);
+  const grant=sessionGrant(cohort,now);
+  if(!cohort.currentRoomId)fail(409,COHORT_NO_ROOM_MESSAGE);
+  const rooms=await this.cohortRooms(client,cohort.id,true);
+  const r=rooms.find(room=>room.id===cohort.currentRoomId);
+  if(!r)fail(409,COHORT_NO_ROOM_MESSAGE);
+  if(!r.members.some(seat=>seat.id===member.id)&&r.members.length>=MAX_SQUAD_SIZE)fail(409,`Squad is vol (maximaal ${MAX_SQUAD_SIZE}).`);
+  seatMember(r,member,mergeSeatProgress(rooms,member.id),now);r.version++;
+  await this.save(client,r);
+  return {token:await this.session(client,r.id,member.id,'browser',member.name,grant),roomId:r.id,cohortId:cohort.id,readOnly:grant.readOnly};
+ }
  async activateCohortCode(input,{ip}={}) {
   const {normalized,codeHash,keys}=attemptKeys(input,ip);
-  const allowed=await this.transaction(async client=>{
-   const now=this.now();
-   await client.query('DELETE FROM access_attempts WHERE window_started_at<$1',[now-Math.max(...Object.values(RATE_LIMITS).map(limit=>limit.windowMs))]);
-   let ok=true;
-   for(const [key,{max,windowMs}] of keys){
-    const result=await client.query(`INSERT INTO access_attempts(key,window_started_at,count) VALUES ($1,$2,1)
-     ON CONFLICT (key) DO UPDATE SET
-      count=CASE WHEN $2-access_attempts.window_started_at>=$3 THEN 1 ELSE access_attempts.count+1 END,
-      window_started_at=CASE WHEN $2-access_attempts.window_started_at>=$3 THEN $2 ELSE access_attempts.window_started_at END
-     RETURNING count`,[key,now,windowMs]);
-    ok&&=result.rows[0].count<=max;
-   }
-   return ok;
-  });
+  const allowed=await this.transaction(client=>this.consumeAttempts(client,keys));
   if(!allowed)fail(429,COHORT_RATE_LIMIT_MESSAGE);
   return this.transaction(async client=>{
    const now=this.now();
    const found=normalized?await client.query(`SELECT c.cohort_id,c.member_id,m.name FROM cohort_access_codes c JOIN cohort_members m ON m.id=c.member_id WHERE c.code_hash=$1 AND c.revoked_at IS NULL FOR UPDATE OF c`,[codeHash]):{rows:[]};
    const row=found.rows[0];
    if(!row)fail(401,INVALID_COHORT_CODE_MESSAGE);
-   const cohort=await this.cohortRow(client,row.cohort_id);
-   const grant=sessionGrant(cohort,now);
-   if(!cohort.currentRoomId)fail(409,COHORT_NO_ROOM_MESSAGE);
-   const rooms=await this.cohortRooms(client,cohort.id,true);
-   const r=rooms.find(room=>room.id===cohort.currentRoomId);
-   if(!r)fail(409,COHORT_NO_ROOM_MESSAGE);
-   const member={id:row.member_id,name:row.name};
-   if(!r.members.some(seat=>seat.id===member.id)&&r.members.length>=MAX_SQUAD_SIZE)fail(409,`Squad is vol (maximaal ${MAX_SQUAD_SIZE}).`);
-   seatMember(r,member,mergeSeatProgress(rooms,member.id),now);r.version++;
-   await this.save(client,r);
+   const session=await this.seatCohortSession(client,row.cohort_id,{id:row.member_id,name:row.name},now);
    await client.query('UPDATE cohort_access_codes SET last_activated_at=$2 WHERE code_hash=$1',[codeHash,now]);
-   return {token:await this.session(client,r.id,member.id,'browser',member.name,grant),roomId:r.id,cohortId:cohort.id,readOnly:grant.readOnly};
+   return session;
+  });
+ }
+ async emailIdentity(client,token) {
+  const {r,p}=await this.authenticated(client,token,'browser');
+  if(!p)fail(403,EMAIL_PARTICIPANT_ONLY_MESSAGE);
+  return {personId:p.id,roomId:p.cohortMemberId?null:r.id,cohortMemberId:p.cohortMemberId||null};
+ }
+ async emailStatus(token) {
+  return this.transaction(async client=>{
+   const {personId}=await this.emailIdentity(client,token);
+   const found=await client.query('SELECT email FROM participant_emails WHERE person_id=$1',[personId]);
+   return {email:found.rows[0]?.email||null};
+  });
+ }
+ async issueEmailChallenge(client,key,email,ip) {
+  if(!await this.consumeAttempts(client,emailAttemptKeys(email,ip)))fail(429,EMAIL_RATE_LIMIT_MESSAGE);
+  const now=this.now();
+  await client.query('DELETE FROM email_challenges WHERE expires_at<=$1',[now]);
+  const found=await client.query('SELECT code_hash,sent_at,expires_at,attempts FROM email_challenges WHERE key=$1 FOR UPDATE',[key]);
+  const row=found.rows[0];
+  const {code,record}=issueChallenge(row&&{codeHash:row.code_hash,sentAt:Number(row.sent_at),expiresAt:Number(row.expires_at),attempts:row.attempts},now);
+  await client.query('INSERT INTO email_challenges(key,code_hash,sent_at,expires_at,attempts) VALUES ($1,$2,$3,$4,0) ON CONFLICT (key) DO UPDATE SET code_hash=EXCLUDED.code_hash,sent_at=EXCLUDED.sent_at,expires_at=EXCLUDED.expires_at,attempts=0',[key,record.codeHash,record.sentAt,record.expiresAt]);
+  return code;
+ }
+ async checkEmailChallenge(client,key,code) {
+  const found=await client.query('SELECT code_hash,sent_at,expires_at,attempts FROM email_challenges WHERE key=$1 FOR UPDATE',[key]);
+  const row=found.rows[0];
+  const {ok,record}=checkChallenge(row&&{codeHash:row.code_hash,sentAt:Number(row.sent_at),expiresAt:Number(row.expires_at),attempts:row.attempts},code,this.now());
+  if(record)await client.query('UPDATE email_challenges SET attempts=$2 WHERE key=$1',[key,record.attempts]);
+  else if(row)await client.query('DELETE FROM email_challenges WHERE key=$1',[key]);
+  return ok;
+ }
+ async startEmailAttach(token,email,{ip}={}) {
+  return this.transaction(async client=>{const {personId}=await this.emailIdentity(client,token);return {code:await this.issueEmailChallenge(client,challengeKey('attach',email,personId),email,ip)};});
+ }
+ async verifyEmailAttach(token,email,code) {
+  const verified=await this.transaction(async client=>{const identity=await this.emailIdentity(client,token);return await this.checkEmailChallenge(client,challengeKey('attach',email,identity.personId),code)&&identity;});
+  if(!verified)fail(401,EMAIL_CODE_INVALID_MESSAGE);
+  return this.transaction(async client=>{
+   await client.query('DELETE FROM participant_emails WHERE email=$1 OR person_id=$2',[email,verified.personId]);
+   await client.query('INSERT INTO participant_emails(person_id,room_id,cohort_member_id,email,verified_at) VALUES ($1,$2,$3,$4,$5)',[verified.personId,verified.roomId,verified.cohortMemberId,email,this.now()]);
+   return {email};
+  });
+ }
+ async removeEmail(token) {
+  return this.transaction(async client=>{const {personId}=await this.emailIdentity(client,token);await client.query('DELETE FROM participant_emails WHERE person_id=$1',[personId]);return {email:null};});
+ }
+ async startEmailLogin(email,{ip}={}) {
+  return this.transaction(async client=>{
+   const code=await this.issueEmailChallenge(client,challengeKey('login',email),email,ip);
+   const bound=await client.query('SELECT 1 FROM participant_emails WHERE email=$1',[email]);
+   return {code:bound.rowCount?code:null};
+  });
+ }
+ async verifyEmailLogin(email,code) {
+  const ok=await this.transaction(client=>this.checkEmailChallenge(client,challengeKey('login',email),code));
+  return this.transaction(async client=>{
+   const found=ok?await client.query('SELECT person_id,room_id,cohort_member_id FROM participant_emails WHERE email=$1',[email]):{rows:[]};
+   const binding=found.rows[0];
+   if(!binding)fail(401,EMAIL_CODE_INVALID_MESSAGE);
+   if(binding.cohort_member_id){
+    const member=await client.query(`SELECT m.id,m.name,m.cohort_id FROM cohort_members m JOIN cohort_access_codes c ON c.member_id=m.id AND c.revoked_at IS NULL WHERE m.id=$1 FOR UPDATE OF m`,[binding.cohort_member_id]);
+    const row=member.rows[0];
+    if(!row)fail(401,INVALID_COHORT_CODE_MESSAGE);
+    return this.seatCohortSession(client,row.cohort_id,{id:row.id,name:row.name},this.now());
+   }
+   const room=await client.query('SELECT data FROM rooms WHERE id=$1 FOR UPDATE',[binding.room_id]);
+   const r=room.rows[0]?.data,p=r?.members.find(member=>member.id===binding.person_id);
+   if(!p)fail(401,EMAIL_CODE_INVALID_MESSAGE);
+   return {token:await this.session(client,r.id,p.id,'browser',p.name),roomId:r.id,resumed:true};
   });
  }
  async purgeExpiredCohorts({dryRun=true}={}) {

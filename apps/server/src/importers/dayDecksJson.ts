@@ -27,30 +27,26 @@ export interface DayDecksJsonImportResult {
   readonly sourcePath: string;
 }
 
-/** Import training-template `presentations/day-decks.json` (day1..dayN → Slide[]). */
-export const importDayDecksJson = (
-  sourcePath: string,
-  options: {readonly lessonIdPrefix?: string; readonly idPrefix?: string; readonly day?: string} = {},
-): DayDecksJsonImportResult => {
+export interface DayDecksOptions {
+  readonly lessonIdPrefix?: string;
+  readonly idPrefix?: string;
+  readonly day?: string;
+}
+
+/** Decode a parsed day-decks registry (`{day1: {title, slides}, ...}`), shared by the JSON file and the training-site `window.*` registries. */
+export const decodeDayDecks = (parsed: unknown, sourceLabel: string, options: DayDecksOptions = {}): ReadonlyArray<DayDeckImport> => {
   const lessonIdPrefix = options.lessonIdPrefix ?? 'day-deck';
   const idPrefix = options.idPrefix ?? 'day-deck';
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(readFileSync(sourcePath, 'utf8'));
-  } catch (error) {
-    throw new DayDecksJsonImportError(`invalid JSON in ${sourcePath}: ${String(error)}`);
-  }
   if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-    throw new DayDecksJsonImportError(`expected object root in ${sourcePath}`);
+    throw new DayDecksJsonImportError(`expected object root in ${sourceLabel}`);
   }
 
   const root = parsed as Record<string, unknown>;
   const dayKeys = Object.keys(root).filter((key) => /^day\d+$/i.test(key)).sort((a, b) => Number(a.replace(/\D/g, '')) - Number(b.replace(/\D/g, '')));
   const selected = options.day ? dayKeys.filter((key) => key.toLowerCase() === options.day!.toLowerCase()) : dayKeys;
-  if (selected.length === 0) throw new DayDecksJsonImportError(`no day decks found in ${sourcePath}`);
+  if (selected.length === 0) throw new DayDecksJsonImportError(`no day decks found in ${sourceLabel}`);
 
-  const decks: DayDeckImport[] = [];
-  for (const dayKey of selected) {
+  return selected.map((dayKey) => {
     const day = root[dayKey];
     if (!day || typeof day !== 'object' || Array.isArray(day)) {
       throw new DayDecksJsonImportError(`day '${dayKey}' is not an object`);
@@ -69,15 +65,25 @@ export const importDayDecksJson = (
         ordinal: index + 1,
       });
     });
-    decks.push({
+    return {
       dayKey,
       title: String(record.title ?? dayKey),
       slides,
       titles: slides.map((slide) => slide.title),
       contentHash: contentHashSlides(slides),
-    });
-  }
+    };
+  });
+};
 
+/** Import training-template `presentations/day-decks.json` (day1..dayN → Slide[]). */
+export const importDayDecksJson = (sourcePath: string, options: DayDecksOptions = {}): DayDecksJsonImportResult => {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(readFileSync(sourcePath, 'utf8'));
+  } catch (error) {
+    throw new DayDecksJsonImportError(`invalid JSON in ${sourcePath}: ${String(error)}`);
+  }
+  const decks = decodeDayDecks(parsed, sourcePath, options);
   const slides = decks.flatMap((deck) => deck.slides);
   return {
     decks,

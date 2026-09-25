@@ -113,7 +113,7 @@
 @media(max-width:800px){.agent-chat-frame-wrap,.agent-chat-frame{height:520px;min-height:520px}}
 
 /* AET-8 C3: native-radio segmented choices on the join screen */
-.segmented{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:0 0 18px;padding:4px;border:1px solid var(--border);border-radius:8px;background:var(--surface2)}
+.segmented{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:6px;margin:0 0 18px;padding:4px;border:1px solid var(--border);border-radius:8px;background:var(--surface2)}
 .segmented label{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;margin:0;padding:9px 10px;min-height:44px;border:1px solid transparent;border-radius:6px;color:var(--muted);font-size:12px;text-align:center;cursor:pointer}
 .segmented label.selected{background:var(--selected);border-color:var(--border);color:var(--text);font-weight:650}
 .segmented label.selected span{color:var(--cyan)}
@@ -143,3 +143,4 @@
 @media(max-width:560px){.status-state{flex-wrap:wrap}.status-state>button:not(.status-dismiss){margin-left:34px}}
 @media(prefers-reduced-motion:reduce){.status-loading .status-icon{animation:none}}
 @media(max-width:560px){.right-rail{grid-template-columns:1fr}.right-rail .coach-cta{width:100%}.room-code .room-code-display{font-size:16px;letter-spacing:.06em;padding:10px 36px}}
+.email-access small{display:flex;align-items:center;gap:5px}.email-access input{width:100%;margin:6px 0 8px}.email-access p{overflow-wrap:anywhere}.email-access .email-actions{display:flex;flex-wrap:wrap;gap:6px}.email-access .email-actions button{flex:1 1 110px;width:auto}.email-access .text-button{width:auto;margin-top:6px}.email-access .error{margin:8px 0 0;font-size:12px}.email-sent{font-size:13px;line-height:1.45}

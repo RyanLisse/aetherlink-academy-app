@@ -49,3 +49,27 @@ for (const viewport of viewports) {
     }
   });
 }
+
+/** Archived training-site decks (AET-43) in reader mode: squad 1 day 1 and 5 (largest), squad 2 day 3 (image-layout heavy) and day 4. */
+const archivePaths = ['/archive', '/archive/squad-1/day-1', '/archive/squad-1/day-5', '/archive/squad-2/day-3', '/archive/squad-2/day-4'];
+const archiveSlideCounts: Record<string, number> = {'/archive/squad-1/day-1': 23, '/archive/squad-1/day-5': 33, '/archive/squad-2/day-3': 15, '/archive/squad-2/day-4': 23};
+
+for (const viewport of viewports) {
+  test(`archive reader has no horizontal overflow at ${viewport.name} (${viewport.width}x${viewport.height})`, async ({page}) => {
+    await page.setViewportSize({width: viewport.width, height: viewport.height});
+    for (const archivePath of archivePaths) {
+      await page.goto(archivePath);
+      await page.locator('.archive-notice').waitFor({state: 'visible'});
+      const expected = archiveSlideCounts[archivePath];
+      if (expected !== undefined) await expect(page.locator('.reader-lesson > article')).toHaveCount(expected);
+      const metrics = await page.evaluate(() => ({
+        page: {scrollWidth: document.documentElement.scrollWidth, innerWidth: window.innerWidth},
+        overflowing: [...document.querySelectorAll<HTMLElement>('.archive, .reader-lesson, .reader-lesson > article')]
+          .filter((el) => el.scrollWidth > el.clientWidth + 1)
+          .map((el) => `${el.className || el.tagName}:${el.querySelector('h2')?.textContent ?? ''}`),
+      }));
+      expect(metrics.page.scrollWidth, `${viewport.name} ${archivePath} page horizontal overflow`).toBeLessThanOrEqual(metrics.page.innerWidth + 1);
+      expect(metrics.overflowing, `${viewport.name} ${archivePath} overflowing reader elements`).toEqual([]);
+    }
+  });
+}

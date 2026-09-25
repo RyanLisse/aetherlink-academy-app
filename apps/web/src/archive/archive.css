@@ -1,0 +1,6 @@
+.archive-notice { margin: 1rem 4vw 0; padding: .8rem 1rem; max-width: 960px; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--amber); border-radius: 8px; line-height: 1.5; overflow-wrap: anywhere; }
+.archive-notice strong { color: var(--amber); margin-right: .35rem; }
+.archive-squad h2 { margin: 1.5rem 4vw 0; font-size: 1.1rem; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.archive-title { margin: 1.25rem 4vw 0; font-size: clamp(1.3rem, 3vw, 2rem); overflow-wrap: anywhere; }
+.archive-guide { margin: .4rem 4vw 0; color: var(--muted); }
+.archive-status { padding: 2rem 4vw; color: var(--muted); }

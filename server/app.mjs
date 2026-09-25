@@ -26,20 +26,22 @@ import {READ_ONLY_MESSAGE,parseCohortInput,parseMemberNames,normalizeAccessCode,
 import {CERTIFICATE_CSP,CERTIFICATE_INVALID_MESSAGE,publicVerification,renderCertificatePage,renderVerificationPage} from './certificate.mjs';
 import {parseLabAnswer,parseLabCompletion,parseOriginAllowlist,resolveLabs} from '../packages/lab-embed/src/index.ts';
 import {gradedStopsPassed,parseLabKeys,recordAttempt} from '../packages/lab-embed/src/grading.ts';
+import {isLegacySite,resolveLegacyUrl} from '../apps/web/src/redirects/legacy.ts';
 import {labGradingKeys} from './lab-keys.mjs';
 import {createScreenStore,screenBinding,readScreenState} from './screen-state.mjs';
 import {answerQuestion,rankDocuments} from './faq.mjs';
 import {courseDays,releasedDays} from './release.mjs';
+import {EMAIL_LOGIN_SENT_MESSAGE,createMailTransport,normalizeEmail,otpMail} from './email-login.mjs';
 const text=(v,max=4000)=>{if(typeof v!=='string'||!v.trim()||v.length>max)fail(400,`Vul tekst in (maximaal ${max} tekens).`);return v.trim();};
 const namedCookie=(req,name)=>{const value=req.headers.cookie?.split(';').map(c=>c.trim()).find(c=>c.startsWith(`${name}=`))?.slice(name.length+1);if(value===undefined)return;try{return decodeURIComponent(value);}catch{return;}};
 const cookie=req=>namedCookie(req,'academy');
 const uuid=v=>{if(typeof v!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v))fail(400,'Ongeldige id.');return v;};
 // screen-state (presence heartbeat) and chat (FAQ lookup) are reads over POST, so read-only members
 // can keep using the Academy as a reference after the live days.
-const readOnlyExempt=new Set(['/game/logout','/game/resume','/game/join','/game/create','/game/participant/resume','/game/cohort/activate','/game/screen-state','/game/chat']);
+const readOnlyExempt=new Set(['/game/logout','/game/resume','/game/join','/game/create','/game/participant/resume','/game/cohort/activate','/game/screen-state','/game/chat','/game/email','/game/email/attach/start','/game/email/attach/verify','/game/email/remove','/game/email/login/start','/game/email/login/verify']);
 const certificateId=v=>{const normalized=normalizeAccessCode(v);if(!normalized)fail(404,CERTIFICATE_INVALID_MESSAGE);return normalized.match(/.{4}/g).join('-');};
 const bearer=req=>req.headers.authorization?.startsWith('Bearer ')?req.headers.authorization.slice(7):null;
-export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4400',root=process.cwd(),hostKey,publicBaseUrl=process.env.ACADEMY_PUBLIC_URL||`http://127.0.0.1:${process.env.PORT||4317}`,googleClientId=process.env.GOOGLE_CLIENT_ID,googleClientSecret=process.env.GOOGLE_CLIENT_SECRET,facilitatorDomains=process.env.ACADEMY_FACILITATOR_DOMAINS,signingSecret=process.env.PROOF_COLLAB_SIGNING_SECRET,fetchImpl=fetch,slidesService,labOrigins=process.env.ACADEMY_LAB_ORIGINS,labsForDay=day=>getDayPack(day)?.labs,labKeys=labGradingKeys,trustProxy=process.env.ACADEMY_TRUST_PROXY,chatConfig=readChatConfig()}={}){
+export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4400',root=process.cwd(),hostKey,publicBaseUrl=process.env.ACADEMY_PUBLIC_URL||`http://127.0.0.1:${process.env.PORT||4317}`,googleClientId=process.env.GOOGLE_CLIENT_ID,googleClientSecret=process.env.GOOGLE_CLIENT_SECRET,facilitatorDomains=process.env.ACADEMY_FACILITATOR_DOMAINS,signingSecret=process.env.PROOF_COLLAB_SIGNING_SECRET,fetchImpl=fetch,slidesService,labOrigins=process.env.ACADEMY_LAB_ORIGINS,labsForDay=day=>getDayPack(day)?.labs,labKeys=labGradingKeys,trustProxy=process.env.ACADEMY_TRUST_PROXY,chatConfig=readChatConfig(),mailer=createMailTransport()}={}){
  const publicUrl=new URL(publicBaseUrl);if(!['http:','https:'].includes(publicUrl.protocol)||publicUrl.username||publicUrl.password||publicUrl.search||publicUrl.hash||publicUrl.pathname!=='/')throw Error('ACADEMY_PUBLIC_URL moet een HTTP(S)-origin zonder pad of credentials zijn.');
  const store=repository||new LocalStore(dir);const proof=new Proof(proofBase);const slides=slidesService||createSlidesService(repository?{pool:repository.pool,schema:repository.schema}:{dir});const app=express();const proxy=httpProxy.createProxyServer({target:proofBase,ws:true});
  const token=req=>bearer(req)||cookie(req);
@@ -88,12 +90,22 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  app.get('/auth/google/start',wrap(async(_req,res)=>{if(!googleSso.enabled)return loginError(res,'disabled');try{const state=randomBytes(32).toString('base64url'),nonce=randomBytes(32).toString('base64url'),codeVerifier=randomBytes(32).toString('base64url'),expiresAt=Date.now()+10*60*1000,codeChallenge=createHash('sha256').update(codeVerifier).digest('base64url');const location=await googleSso.startUrl({state,nonce,codeChallenge});await store.loginStateSave({stateHash:hash(state),nonce,codeVerifier,expiresAt});res.cookie('academy-login',signLoginState({state,nonce,codeVerifier,expiresAt},loginSecret),{...loginCookie,maxAge:10*60*1000});res.redirect(302,location);}catch(e){loginError(res,mapLoginError(e),{reason:e.reason,message:e.message});}}));
  app.get('/auth/google/callback',wrap(async(req,res)=>{if(!googleSso.enabled)return loginError(res,'disabled');try{const cookieValue=namedCookie(req,'academy-login');let reason,loginState=null;if(!cookieValue)reason='no-cookie';else{try{const candidate=readLoginState(cookieValue,loginSecret);if(candidate.expiresAt<Date.now())reason='expired';else if(typeof req.query?.state!=='string'||!sameState(req.query.state,candidate.state))reason='mismatch';else loginState=candidate;}catch(e){reason=e.reason||'bad-signature';}}const stateHash=typeof req.query?.state==='string'&&req.query.state?hash(req.query.state):null;if(loginState&&stateHash)await store.loginStateTake(stateHash);else if(stateHash){const record=await store.loginStateTake(stateHash);if(record)loginState={state:req.query.state,nonce:record.nonce,codeVerifier:record.codeVerifier,expiresAt:record.expiresAt};else reason='no-server-state';}else reason=reason||'no-server-state';if(!loginState)throw stateCheckFailed(req,reason);const identity=await googleSso.handleCallback(req.query,loginState),token=await store.facilitatorLogin(identity);res.clearCookie('academy-login',loginCookie);res.cookie('academy-facilitator',token,{...loginCookie,maxAge:12*60*60*1000});res.redirect(302,'/?facilitator=1');}catch(e){loginError(res,mapLoginError(e),{reason:e.reason,message:e.message});}}));
  app.post('/auth/logout',wrap(async(req,res)=>{await store.facilitatorLogout(namedCookie(req,'academy-facilitator'));res.clearCookie('academy-facilitator',loginCookie);res.status(204).end();}));
- app.get('/game/config',(_req,res)=>res.json({googleSso:googleSso.enabled,agentChatAvailable:Boolean(chatConfig),portal:true,portalLaunch:process.env.ACADEMY_PORTAL_LAUNCH!=='0'}));
+ app.get('/game/config',(_req,res)=>res.json({googleSso:googleSso.enabled,emailLogin:Boolean(mailer),agentChatAvailable:Boolean(chatConfig),portal:true,portalLaunch:process.env.ACADEMY_PORTAL_LAUNCH!=='0'}));
  app.get('/game/facilitator/me',wrap(async(req,res)=>{const identity=await store.facilitator(namedCookie(req,'academy-facilitator'));if(!identity)return res.status(401).json({error:'Geen geldige facilitator-login.'});res.json({email:identity.email,name:identity.name});}));
  app.post('/game/create',wrap(async(req,res)=>{const identity=await requireFacilitator(req),name=text(req.body.name,60),p=await proof.create(initialDocument,name+' — Onze intent');setSession(res,await store.create(name,p,identity&&{email:identity.email,name:identity.name}));}));
  app.post('/game/join',wrap(async(req,res)=>setSession(res,await store.join(text(req.body.code,15),text(req.body.name,50)))));
  app.post('/game/participant/resume',wrap(async(req,res)=>setSession(res,await store.resumeParticipant(text(req.body.resumeToken,128)))));
  app.post('/game/participant/access',wrap(async(req,res)=>res.json(await store.rotateParticipantAccess(token(req)))));
+ // Email is optional: without a mail transport every email route is absent, not merely hidden.
+ const emailRoute=fn=>wrap(async(req,res)=>{if(!mailer)return res.status(404).json({error:'Niet gevonden.'});await fn(req,res);});
+ const otpCode=v=>text(v,12);
+ app.get('/game/email',emailRoute(async(req,res)=>res.json(await store.emailStatus(token(req)))));
+ app.post('/game/email/attach/start',emailRoute(async(req,res)=>{const email=normalizeEmail(req.body?.email);const {code}=await store.startEmailAttach(token(req),email,{ip:req.ip});try{await mailer.send({to:email,...otpMail('attach',code)});}catch(error){console.error('academy mail send failed',error?.message);fail(502,'De e-mail kon niet worden verstuurd. Probeer het later opnieuw.');}res.json({ok:true});}));
+ app.post('/game/email/attach/verify',emailRoute(async(req,res)=>res.json(await store.verifyEmailAttach(token(req),normalizeEmail(req.body?.email),otpCode(req.body?.code)))));
+ app.post('/game/email/remove',emailRoute(async(req,res)=>res.json(await store.removeEmail(token(req)))));
+ // Same body, status and timing whether or not the address is bound: the send is not awaited.
+ app.post('/game/email/login/start',emailRoute(async(req,res)=>{const email=normalizeEmail(req.body?.email);const {code}=await store.startEmailLogin(email,{ip:req.ip});if(code)Promise.resolve().then(()=>mailer.send({to:email,...otpMail('login',code)})).catch(error=>console.error('academy mail send failed',error?.message));res.json({ok:true,message:EMAIL_LOGIN_SENT_MESSAGE});}));
+ app.post('/game/email/login/verify',emailRoute(async(req,res)=>setSession(res,await store.verifyEmailLogin(normalizeEmail(req.body?.email),otpCode(req.body?.code)))));
  app.post('/game/cohort/activate',wrap(async(req,res)=>setSession(res,await store.activateCohortCode(text(req.body.code,40),{ip:req.ip}))));
  app.post('/game/facilitator/cohorts',wrap(async(req,res)=>{await requireFacilitator(req);res.json(await store.cohortOverview());}));
  app.post('/game/facilitator/cohort/create',wrap(async(req,res)=>{const identity=await requireFacilitator(req);const input=parseCohortInput(req.body||{}),names=req.body?.members?.length?parseMemberNames(req.body.members):[];res.status(201).json(await store.createCohort(input,names,identity&&{email:identity.email,name:identity.name}));}));
@@ -291,7 +303,12 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  });
  // apps/web SPA (Classroom / deck / workshop / lesson / live) — AET-75+ routes live in apps/web, not root dist/
  const webIndex=path.join(webDist,'index.html');
- const isWebSpaPath=p=>p==='/deck'||p==='/reference'||p.startsWith('/reference/')||p.startsWith('/classroom/')||p.startsWith('/workshop/')||p==='/lesson'||p.startsWith('/lesson/')||p.startsWith('/live/');
+ const isWebSpaPath=p=>p==='/deck'||p==='/reference'||p.startsWith('/reference/')||p==='/archive'||p.startsWith('/archive/')||p.startsWith('/classroom/')||p.startsWith('/workshop/')||p==='/lesson'||p.startsWith('/lesson/')||p.startsWith('/live/');
+ app.get('/legacy-redirect',(req,res)=>{
+  const site=req.query.site;
+  if(!isLegacySite(site))return res.status(400).type('text').send('unknown legacy site');
+  return res.redirect(301,resolveLegacyUrl(site,typeof req.query.from==='string'?req.query.from:'/'));
+ });
  app.use(express.static(webDist,{index:false,fallthrough:true}));
  app.use((req,res,next)=>{
   if(req.method!=='GET'&&req.method!=='HEAD')return next();

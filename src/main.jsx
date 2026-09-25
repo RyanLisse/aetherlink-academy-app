@@ -1,6 +1,6 @@
 import React,{useEffect,useState,useRef} from 'react';
 import {createRoot} from 'react-dom/client';
-import {Library,Users,BookOpen,Compass,Target,Sparkles,ClipboardCheck,Sun,Moon,ArrowRight,Clock,Play,Pause,RotateCw,Shuffle,HelpCircle,Check,LogOut,Copy,FileText,ExternalLink,Presentation,X,LayoutGrid,Link,Columns3,Plus,Download,Award,ListOrdered,MessageSquare} from 'lucide-react';
+import {Library,Users,BookOpen,Compass,Target,Sparkles,ClipboardCheck,Sun,Moon,ArrowRight,Clock,Play,Pause,RotateCw,Shuffle,HelpCircle,Check,LogOut,Copy,FileText,ExternalLink,Presentation,X,LayoutGrid,Link,Columns3,Plus,Download,Award,ListOrdered,MessageSquare,Mail} from 'lucide-react';
 import {api,authApi,getToken,getParticipantAccess,saveParticipantAccess,forgetParticipantAccess,participantAccessUrl,saveSession} from './api';
 import {AppsLauncher} from './portal/AppsLauncher.jsx';
 import {Knowledge,Coach,Lesson,Solo,Review,Route,Debrief,CourseComposer,coursePosition} from './panels';
@@ -29,6 +29,9 @@ const navIds=[
   ['decks','nav.decks',Presentation],
   ['apps','nav.apps',LayoutGrid],
 ];
+
+const EMAIL_ERRORS=[[/code is ongeldig of verlopen/i,'email.err.code'],[/wacht een minuut/i,'email.err.cooldown'],[/te veel codes/i,'email.err.rate'],[/geldig e-mailadres/i,'email.err.invalid'],[/e-mail kon niet worden verstuurd/i,'email.err.send']];
+const emailError=(t,message)=>{const match=EMAIL_ERRORS.find(([pattern])=>pattern.test(message||''));return match?t(match[1]):message;};
 
 function loginErrorMessage(t,code){
   const key=`join.login.${code}`;
@@ -101,6 +104,7 @@ function App(){
             {room.code&&<div className="room-code"><small>{t('roster.roomCode')}</small><div className="room-code-actions"><button className="room-code-display" type="button" onClick={()=>action(async()=>{await navigator.clipboard.writeText(room.code);showCopied('code');})} aria-label={t('roster.copyCode',{code:room.code})} title={t('roster.copyCodeTitle')}>{room.code}{copied==='code'?<Check size={14}/>:<Copy size={14}/>}</button><button className="room-code-link" type="button" onClick={()=>action(async()=>{await navigator.clipboard.writeText(`${location.origin}/?code=${room.code}`);showCopied('link');})} title={t('roster.copyLink')}>{copied==='link'?t('roster.linkCopied'):t('roster.copyLink')}</button>{room.me.role==='Facilitator'&&<button className="room-code-link" type="button" onClick={()=>window.open(`${location.origin}/?code=${room.code}`,'_blank','noopener')} title={t('roster.testAsParticipantTitle')}><ExternalLink size={14}/>{t('roster.testAsParticipant')}</button>}</div><span className="sr-only" role="status">{copied==='code'?t('roster.codeCopied'):copied==='link'?t('roster.inviteCopied'):''}</span></div>}
             {!facilitator&&room.me.cohortMemberId&&<div className="participant-access"><small>{t('access.title')}</small><p>{t('access.cohort')}</p></div>}
             {!facilitator&&!room.me.cohortMemberId&&<div className="participant-access"><small>{t('access.title')}</small><p>{t('access.help')}</p><button type="button" onClick={()=>action(async()=>{let resumeToken=participantAccess;if(!resumeToken){const result=await api('participant/access',{});resumeToken=result.resumeToken;saveParticipantAccess(resumeToken);setParticipantAccess(resumeToken);}await navigator.clipboard.writeText(participantAccessUrl(resumeToken));showCopied('access');})}><Link size={14}/>{copied==='access'?t('access.copied'):t('access.copy')}</button><span className="sr-only" role="status">{copied==='access'?t('access.copiedStatus'):''}</span></div>}
+            {!facilitator&&<EmailAccess/>}
             {room.members.length<4&&<small className="muted">{t('roster.minMembers')}</small>}
           </section>
           <section className="panel contribution"><FileText size={20}/><h2>{t('roster.contribution')}</h2><p>{contribution}</p><small className="muted">{t('roster.modeLabel',{mode:modeLabel})}</small></section>
@@ -198,6 +202,53 @@ function Segmented({name,legend,value,options,onChange,className}){
   </fieldset>;
 }
 
+function EmailLogin({action,busy,joined}){
+  const t=useT();
+  const [email,setEmail]=useState('');
+  const [sent,setSent]=useState(false);
+  const start=()=>action(async()=>{await api('email/login/start',{email});setSent(true);});
+  return <form onSubmit={e=>{e.preventDefault();if(!sent)return start();const {code}=Object.fromEntries(new FormData(e.currentTarget));action(async()=>{saveSession(await api('email/login/verify',{email,code}));history.replaceState(null,'',location.pathname);joined();});}}>
+    <label htmlFor="join-email">{t('email.address')}<input id="join-email" name="email" type="email" required autoComplete="email" maxLength={254} value={email} onChange={e=>{setEmail(e.target.value);setSent(false);}} placeholder={t('email.placeholder')}/></label>
+    {sent&&<p className="muted email-sent" role="status">{t('email.loginSent')}</p>}
+    {sent&&<label htmlFor="join-email-code">{t('email.code')}<input id="join-email-code" name="code" required inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} placeholder="123456" autoFocus/></label>}
+    <button type="submit" className="gradient" disabled={busy}>{busy?t('join.submitBusy'):sent?t('email.loginSubmit'):t('email.sendCode')}<ArrowRight size={18}/></button>
+    {sent&&<button type="button" className="text-button" disabled={busy} onClick={start}>{t('email.resend')}</button>}
+  </form>;
+}
+
+function EmailAccess(){
+  const t=useT();
+  const [status,setStatus]=useState(null);
+  const [draft,setDraft]=useState('');
+  const [pending,setPending]=useState(null);
+  const [editing,setEditing]=useState(false);
+  const [busy,setBusy]=useState(false);
+  const [error,setError]=useState('');
+  useEffect(()=>{let active=true;api('email').then(result=>{if(active)setStatus(result);}).catch(()=>{});return()=>{active=false;};},[]);
+  if(!status)return null;
+  const run=fn=>async event=>{event?.preventDefault();setBusy(true);setError('');try{await fn(event);}catch(e){setError(emailError(t,e.message));}finally{setBusy(false);}};
+  const send=run(async()=>{await api('email/attach/start',{email:draft});setPending(draft);});
+  const reset=()=>{setPending(null);setEditing(false);setDraft('');setError('');};
+  return <div className="participant-access email-access">
+    <small><Mail size={13}/> {t('email.title')}</small>
+    {status.email&&!editing&&!pending?<>
+      <p>{t('email.linked',{email:status.email})}</p>
+      <div className="email-actions"><button type="button" disabled={busy} onClick={()=>{setEditing(true);setDraft(status.email);}}>{t('email.change')}</button><button type="button" disabled={busy} onClick={run(async()=>{setStatus(await api('email/remove',{}));})}>{t('email.remove')}</button></div>
+    </>:pending?<form onSubmit={run(async event=>{const {code}=Object.fromEntries(new FormData(event.currentTarget));setStatus(await api('email/attach/verify',{email:pending,code}));reset();})}>
+      <p role="status">{t('email.codeSent',{email:pending})}</p>
+      <label htmlFor="email-access-code">{t('email.code')}<input id="email-access-code" name="code" required inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} placeholder="123456" autoFocus/></label>
+      <div className="email-actions"><button type="submit" disabled={busy}>{t('email.confirm')}</button><button type="button" disabled={busy} onClick={send}>{t('email.resend')}</button></div>
+      <button type="button" className="text-button" onClick={reset}>{t('email.cancel')}</button>
+    </form>:<form onSubmit={send}>
+      <p>{t('email.help')}</p>
+      <label htmlFor="email-access-address" className="sr-only">{t('email.address')}</label>
+      <input id="email-access-address" type="email" required autoComplete="email" maxLength={254} value={draft} onChange={e=>setDraft(e.target.value)} placeholder={t('email.placeholder')}/>
+      <div className="email-actions"><button type="submit" disabled={busy}>{t('email.sendCode')}</button>{editing&&<button type="button" disabled={busy} onClick={reset}>{t('email.cancel')}</button>}</div>
+    </form>}
+    {error&&<p className="error" role="alert">{error}</p>}
+  </div>;
+}
+
 function Join({ready,action,busy,error,clearError,joined}){
   const t=useT();
   const params=new URLSearchParams(location.search);
@@ -207,23 +258,25 @@ function Join({ready,action,busy,error,clearError,joined}){
   const [hostKey,setHostKey]=useState('');
   const [overview,setOverview]=useState(null);
   const [googleSso,setGoogleSso]=useState(false);
+  const [emailLogin,setEmailLogin]=useState(false);
   const [facilitator,setFacilitator]=useState(null);
   const nameRef=useRef(null);
   useEffect(()=>{if(code)nameRef.current?.focus();},[]);
-  useEffect(()=>{let active=true;(async()=>{try{const config=await api('config');if(!active)return;setGoogleSso(config.googleSso);if(params.get('facilitator')==='1'||config.googleSso)try{const identity=await api('facilitator/me');if(active){setFacilitator(identity);if(!params.get('code'))setMode('create');}}catch{}}catch{}})();return()=>{active=false;};},[]);
-  const create=mode==='create',facilitatorOverview=mode==='overview',participant=!create&&!facilitatorOverview,cohortPath=participant&&joinPath==='cohort';
+  useEffect(()=>{let active=true;(async()=>{try{const config=await api('config');if(!active)return;setGoogleSso(config.googleSso);setEmailLogin(Boolean(config.emailLogin));if(params.get('facilitator')==='1'||config.googleSso)try{const identity=await api('facilitator/me');if(active){setFacilitator(identity);if(!params.get('code'))setMode('create');}}catch{}}catch{}})();return()=>{active=false;};},[]);
+  const create=mode==='create',facilitatorOverview=mode==='overview',participant=!create&&!facilitatorOverview,cohortPath=participant&&joinPath==='cohort',emailPath=participant&&emailLogin&&joinPath==='email';
   const setRole=next=>{setMode(next);setOverview(null);clearError();};
   const choosePath=next=>{setJoinPath(next);clearError();};
-  const failure=classifyJoinError(error);
+  const emailMessage=error&&emailError(t,error);
+  const failure=emailMessage&&emailMessage!==error?{key:null,title:'join.errTitle.generic',field:null,message:emailMessage}:classifyJoinError(error);
   const invalid=field=>failure?.field===field?{'aria-invalid':true,'aria-describedby':'join-error'}:{};
   const heading=facilitatorOverview?t('join.heading.overview'):create?t('join.heading.create'):t('join.heading.join');
-  const hint=facilitatorOverview?(facilitator?t('join.hint.overviewAuthed'):t('join.hint.overviewKey')):create?(facilitator?t('join.hint.createAuthed'):googleSso?t('join.hint.createGoogle'):t('join.hint.createKey')):cohortPath?t('join.hint.cohort'):t('join.hint.join');
+  const hint=facilitatorOverview?(facilitator?t('join.hint.overviewAuthed'):t('join.hint.overviewKey')):create?(facilitator?t('join.hint.createAuthed'):googleSso?t('join.hint.createGoogle'):t('join.hint.createKey')):emailPath?t('join.hint.email'):cohortPath?t('join.hint.cohort'):t('join.hint.join');
   return <main className="join">
     <div className="join-copy"><p className="muted">{t('join.eyebrow')}</p><h1>{t('join.title')} <br/><span>{t('join.titleAccent')}</span></h1><p>{t('join.lede').split('\n').map((line,i)=><React.Fragment key={i}>{line}{i===0&&<br/>}</React.Fragment>)}</p><div className="join-principles"><span><Users aria-hidden="true"/>{t('join.principle.squad')}</span><span><FileText aria-hidden="true"/>{t('join.principle.intent')}</span><span><Sparkles aria-hidden="true"/>{t('join.principle.coach')}</span></div></div>
     <section className="join-form panel" aria-labelledby="join-heading">
       <Segmented name="join-role" className="join-role" legend={t('join.roleList')} value={participant?'join':'create'} onChange={setRole} options={[{value:'join',label:t('join.participant')},{value:'create',label:t('join.facilitator')}]}/>
       <h2 id="join-heading">{heading}</h2>
-      {participant&&<Segmented name="join-path" className="join-path" legend={t('join.path.label')} value={joinPath} onChange={choosePath} options={[{value:'room',label:t('join.path.room'),detail:t('join.path.roomDetail')},{value:'cohort',label:t('join.path.cohort'),detail:t('join.path.cohortDetail')}]}/>}
+      {participant&&<Segmented name="join-path" className="join-path" legend={t('join.path.label')} value={joinPath} onChange={choosePath} options={[{value:'room',label:t('join.path.room'),detail:t('join.path.roomDetail')},{value:'cohort',label:t('join.path.cohort'),detail:t('join.path.cohortDetail')},...(emailLogin?[{value:'email',label:t('join.path.email'),detail:t('join.path.emailDetail')}]:[])]}/>}
       <p className="muted join-hint">{hint}</p>
       {facilitator&&<p className="facilitator-login" aria-live="polite">{t('join.signedIn',{name:facilitator.name,email:facilitator.email})} <button type="button" className="text-button" onClick={()=>action(async()=>{await authApi('logout',{});setFacilitator(null);setMode('join');})}>{t('join.signOut')}</button></p>}
       {create&&!facilitator&&googleSso&&<div className="join-google-block">
@@ -231,13 +284,13 @@ function Join({ready,action,busy,error,clearError,joined}){
         <a className="gradient google-login" href="/auth/google/start"><strong>G</strong> {t('join.googleButton')}</a>
         <p className="join-or" role="separator"><span>{t('join.orKey')}</span></p>
       </div>}
-      <form onSubmit={e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.currentTarget));action(async()=>{if(facilitatorOverview){setOverview(await api('facilitator/overview',data));return;}if(cohortPath){saveSession(await api('cohort/activate',{code:data.code}));history.replaceState(null,'',location.pathname);joined();return;}const result=await api(create?'create':'join',data);saveSession(result);if(!create)history.replaceState(null,'',location.pathname);joined(result.resumeToken);});}}>
+      {emailPath?<EmailLogin action={action} busy={busy} joined={joined}/>:<form onSubmit={e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.currentTarget));action(async()=>{if(facilitatorOverview){setOverview(await api('facilitator/overview',data));return;}if(cohortPath){saveSession(await api('cohort/activate',{code:data.code}));history.replaceState(null,'',location.pathname);joined();return;}const result=await api(create?'create':'join',data);saveSession(result);if(!create)history.replaceState(null,'',location.pathname);joined(result.resumeToken);});}}>
         {!facilitatorOverview&&!cohortPath&&<label htmlFor="join-name">{create?t('join.nameSquad'):t('join.nameYou')}<input id="join-name" ref={!create?nameRef:null} name="name" required maxLength={50} placeholder={create?t('join.placeholderSquad'):t('join.placeholderName')} autoComplete="nickname" {...invalid('name')}/></label>}
         {(facilitatorOverview||create)&&!facilitator&&<label htmlFor="join-hostkey">{t('join.hostKey')}<input id="join-hostkey" name="hostKey" value={hostKey} onChange={e=>setHostKey(e.target.value)} required={!googleSso||facilitatorOverview} type="password" autoComplete="off" placeholder={t('join.hostKeyPlaceholder')} {...invalid('hostKey')}/></label>}
         {cohortPath&&<label htmlFor="join-cohort-code">{t('join.cohortCode')}<input id="join-cohort-code" name="code" required type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={40} placeholder={t('join.cohortCodePlaceholder')} aria-describedby={failure?.field==='code'?'join-error join-cohort-code-help':'join-cohort-code-help'} aria-invalid={failure?.field==='code'||undefined}/><small id="join-cohort-code-help" className="muted">{t('join.cohortCodeHelp')}</small></label>}
         {participant&&!cohortPath&&<label htmlFor="join-code">{t('join.roomCode')}<input id="join-code" name="code" value={code} onChange={e=>setCode(e.target.value.toUpperCase())} required type="text" autoComplete="off" autoCapitalize="characters" placeholder={t('join.roomCodePlaceholder')} spellCheck={false} {...invalid('code')}/></label>}
         <button type="submit" className="gradient" disabled={busy} aria-busy={busy||undefined}>{busy?t('join.submitBusy'):facilitatorOverview?t('join.submitOverview'):create?t('join.submitCreate'):cohortPath?t('join.submitCohort'):t('join.submitJoin')}<ArrowRight size={18} aria-hidden="true"/></button>
-      </form>
+      </form>}
       <div className="join-live" id="join-error">{failure&&<StatusState kind="error" title={t(failure.title)} action={<button type="button" className="status-dismiss" onClick={clearError} aria-label={t('common.closeAlert')}><X size={14}/></button>}>{failure.key?t(failure.key):failure.message}</StatusState>}</div>
       {ready&&<StatusState kind="loading" inline title={t('join.restoring')}/>}
       {!create&&!facilitatorOverview&&googleSso&&!facilitator&&<p className="join-side-hint muted">{t('join.sideHint')}</p>}
