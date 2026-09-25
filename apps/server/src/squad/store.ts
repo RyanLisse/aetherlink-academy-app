@@ -3,6 +3,7 @@ import {applyControl, remainingSeconds, roleForIndex} from './control.ts';
 import {hashToken, mintSecret, newId, newRoomCode} from './crypto.ts';
 import {SquadError, squadFail} from './errors.ts';
 import {
+  DUPLICATE_PARTICIPANT_MESSAGE,
   KTD12,
   MAX_SQUAD_SIZE,
   ONLINE_MS,
@@ -18,7 +19,7 @@ import {
   type SessionRecord,
 } from './types.ts';
 
-export {KTD12, remainingSeconds, roleForIndex, SquadError};
+export {DUPLICATE_PARTICIPANT_MESSAGE, KTD12, remainingSeconds, roleForIndex, SquadError};
 
 export interface SquadStoreShape {
   readonly create: (name: string, proof: RoomProof, createdBy?: CreatedBy | null) => Effect.Effect<CreateResult, SquadError>;
@@ -117,10 +118,7 @@ export const SquadStoreMemory = (): Layer.Layer<SquadStore> =>
         const room = [...s.rooms.values()].find((r) => r.code === code.toUpperCase());
         if (!room) return yield* Effect.fail(squadFail(404, 'Kamercode niet gevonden.'));
         const existing = room.members.find((m) => m.name.toLowerCase() === name.toLowerCase());
-        if (existing) {
-          const token = yield* mintSession(room.id, existing.id, 'browser');
-          return {token, roomId: room.id, rejoined: true};
-        }
+        if (existing) return yield* Effect.fail(squadFail(409, DUPLICATE_PARTICIPANT_MESSAGE));
         if (room.members.length >= MAX_SQUAD_SIZE) {
           return yield* Effect.fail(squadFail(409, `Squad is vol (maximaal ${MAX_SQUAD_SIZE}).`));
         }

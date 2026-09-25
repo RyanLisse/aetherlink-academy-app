@@ -11,7 +11,8 @@ describe('SquadStore (AET-27 room scenarios)', () => {
     await runSquad(Effect.gen(function* () {
       const store = yield* SquadStore;
       const host = yield* store.create('Test squad', proof);
-      for (const name of ['A', 'B', 'C', 'D', 'E']) yield* store.join(host.code, name);
+      const memberToken = (yield* store.join(host.code, 'A')).token;
+      for (const name of ['B', 'C', 'D', 'E']) yield* store.join(host.code, name);
       let ctx = yield* store.auth(host.token);
       yield* store.control(ctx.r, 'mode', 'squad');
       for (const name of ['F', 'G', 'H', 'I', 'J', 'K', 'L']) yield* store.join(host.code, name);
@@ -19,7 +20,6 @@ describe('SquadStore (AET-27 room scenarios)', () => {
       expect(ctx.r.members.length).toBe(MAX_SQUAD_SIZE);
       expect(Exit.isFailure(yield* Effect.exit(store.join(host.code, 'M')))).toBe(true);
       yield* store.control(ctx.r, 'phase', 'Test');
-      const memberToken = (yield* store.join(host.code, 'A')).token;
       const driven = new Set<string>();
       for (let i = 0; i < 5; i++) {
         const auth = yield* store.auth(memberToken);
@@ -36,26 +36,20 @@ describe('SquadStore (AET-27 room scenarios)', () => {
     }));
   });
 
-  test('soft rejoin restores seat and progress', async () => {
+  test('duplicate display name is rejected without minting a session for the existing seat', async () => {
     await runSquad(Effect.gen(function* () {
       const store = yield* SquadStore;
       const host = yield* store.create('Rejoin', proof);
-      for (const name of ['A', 'B', 'C', 'D']) yield* store.join(host.code, name);
       const first = yield* store.join(host.code, 'Zoe');
-      const auth = yield* store.auth(first.token);
-      const person = auth.r.members.find((m) => m.name === 'Zoe')!;
-      person.quiz = {score: 2, at: 1, day: 1};
-      person.route = 'guided';
-      person.progressByDay = {'1': {quizScore: 2}};
-      yield* store.saveRoom(auth.r);
-      const again = yield* store.join(host.code, 'zoe');
-      expect(again.rejoined).toBe(true);
+      const error = yield* Effect.flip(store.join(host.code, 'zoe'));
+      expect(error).toBeInstanceOf(SquadError);
+      expect({status: error.status, message: error.message}).toEqual({
+        status: 409,
+        message: 'Deze naam is al in gebruik in deze kamer. Gebruik je persoonlijke deelnemerslink om opnieuw in te loggen.',
+      });
       const room = yield* store.getRoom(host.roomId);
-      expect(room.members.filter((m) => m.name.toLowerCase() === 'zoe')).toHaveLength(1);
-      const againAuth = yield* store.auth(again.token);
-      expect(againAuth.p?.id).toBe(person.id);
-      expect(againAuth.p?.route).toBe('guided');
-      expect(againAuth.p?.quiz?.score).toBe(2);
+      expect(room.members.map((m) => m.name)).toEqual(['Zoe']);
+      expect(yield* store.revokeSessions(host.roomId, (yield* store.auth(first.token)).p!.id, 'browser')).toBe(1);
     }));
   });
 

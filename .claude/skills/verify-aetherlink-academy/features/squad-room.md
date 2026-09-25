@@ -7,7 +7,7 @@ A facilitator creates a squad and shares its room code; participants join by nam
 - `squad-create` facilitator creates a squad with the start key (or Google SSO when configured).
 - `squad-join` participant joins with name and room code.
 - `squad-roles` roster shows Driver and Navigators; facilitator controls rotate roles and advance rounds.
-- `squad-rejoin` the same name and code in a fresh session restores the seat.
+- `squad-rejoin` the personal access link (`/#access=<token>`) restores the same seat in a fresh session; the same name and code is rejected with 409.
 - `squad-overview` facilitator overview lists all squads (`/?facilitator=1`, then overview).
 - `squad-errors` wrong code, wrong start key and a full squad show distinct messages.
 
@@ -26,7 +26,8 @@ Preconditions:
 - **Create.** Facilitator context: `goto('/?facilitator=1')`, fill `getByLabel('Squad name')` with `Squad Verify`, `getByLabel('Your name')` with `Facilitator`, `getByLabel('Facilitator start key')` with the key, click `getByRole('button', {name: 'Create squad'})`. The squad room opens with `getByRole('navigation', {name: 'Main navigation'})` and a room code in the header; record the code.
 - **Join.** Participant context: `goto('/')`, fill `getByLabel('Your name')` with `Participant A` and `getByLabel('Room code')` with the code, click `getByRole('button', {name: 'Join'})`. The squad room opens.
 - **Roster read-back.** In the facilitator context, the roster lists `Participant A` with a role. Reload; it is still listed.
-- **Soft rejoin.** Open a new participant context, join again as `Participant A` with the same code. The roster does not gain a second `Participant A`.
+- **Duplicate name.** Open a new participant context, join again as `Participant A` with the same code. The join returns 409, the page shows `That name already exists in this room.` and no room opens.
+- **Personal link.** In the first participant context, click `Copy my link` in the roster (or read `localStorage['academy-participant-access']`). Open `/#access=<token>` in a new context. The room opens as `Participant A` and the URL no longer contains `#access`.
 - **Wrong code.** Join with code `ZZZZZZ`. A "room not found" style error appears and no room opens.
 - **Proof.** Facilitator and participant screenshots after join, ARIA snapshot of the roster, `state.json` with the room code and roster names.
 
