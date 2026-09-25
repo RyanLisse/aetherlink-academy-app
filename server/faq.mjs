@@ -1,6 +1,7 @@
 import {lessons,getDayPack} from './content.mjs';
 import {DAY_PACKS} from '../content/days/index.mjs';
 import {NAVIGATION,CHAT_COPY} from '../content/faq/navigation.mjs';
+import {releasedDays} from './release.mjs';
 
 const STOPWORDS=new Set('de het een en of in op aan van voor met bij naar om te tot uit als dat die dit deze is zijn wordt word ben bent was er ik je jij jou jouw mijn me mij we wij ons onze u uw hij zij ze hoe wat wie welke wanneer moet moeten kan kun kunnen mag mogen wil zal niet geen wel ook nog dan maar dus zo hier daar the a an and or of in on at to for with by from is are be do does can how what which who when my me i you your it this that there'.split(' '));
 const NAVIGATION_CUES=new Set(['waar','vind','vinden','staat','staan','where','find','locate']);
@@ -50,17 +51,16 @@ function termWeight(term,fields){
  return best;
 }
 
-// Same rule as AET-100's screen state: only the room's current day. AET-104
-// makes release cumulative by changing this one function.
-export const releasedDays=currentDay=>[currentDay];
-
-export function rankDocuments(query,{day,locale='nl'}={}){
+// Ties go to the live day first, then platform navigation, then earlier released days (latest first),
+// so opening up the archive does not push today's answers or the app's own help down.
+export function rankDocuments(query,{day,days,locale='nl'}={}){
  const words=tokens(query);
  const navigation=words.some(w=>NAVIGATION_CUES.has(w));
  const conceptual=words.some(w=>CONCEPT_CUES.has(w));
  const terms=[...new Set(contentTerms(words).filter(w=>!NAVIGATION_CUES.has(w)&&!CONCEPT_CUES.has(w)))];
  if(!terms.length)return {terms,conceptual,hits:[]};
- const corpus=[...releasedDays(day).flatMap(d=>byDay.get(d)||[]),...general[locale]];
+ const earlier=days.filter(d=>d!==day).reverse();
+ const corpus=[...(days.includes(day)?byDay.get(day)||[]:[]),...general[locale],...earlier.flatMap(d=>byDay.get(d)||[])];
  const hits=corpus.map(({doc,fields},order)=>{
   const weights=terms.map(term=>termWeight(term,fields));
   const matched=weights.filter(Boolean).length;
@@ -72,10 +72,11 @@ export function rankDocuments(query,{day,locale='nl'}={}){
 
 // Deterministic and local: no model, no network. The Postgres tsvector search
 // in apps/server is the later upgrade once prod runs that server.
-export function answerQuestion({day,query,locale='nl'}){
+// `released` comes from server/release.mjs; a bare day stands for a room that is on that day.
+export function answerQuestion({day,released=releasedDays({day}),query,locale='nl'}){
  const pack=getDayPack(day);
  const lang=locale==='en'?'en':'nl';
- const {conceptual,hits}=rankDocuments(query,{day,locale:lang});
+ const {conceptual,hits}=rankDocuments(query,{day,days:released,locale:lang});
  const mode=hits.length&&!conceptual?'answer':'handoff';
  return {day,query,mode,hits,handoff:mode==='handoff'?{title:CHAT_COPY.handoffTitle[lang],text:pack?.deepHelp??null,prompt:CHAT_COPY.handoffPrompt[lang](query),link:{view:'coach',label:CHAT_COPY.coachLabel[lang]}}:null};
 }

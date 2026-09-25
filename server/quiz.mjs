@@ -15,7 +15,9 @@ export function openQuizAttempt(p,day,now){
  return {attemptId:p.quizAttempt.id,day,expiresAt:p.quizAttempt.expiresAt};
 }
 
-export function submitQuizAttempt(p,day,quiz,body,now){
+// Every attempt records on its own day (retakes: latest wins). Only an attempt on the room's
+// live day steers the live help route and quiz badge; practising an earlier day leaves them alone.
+export function submitQuizAttempt(p,day,quiz,body,now,liveDay=day){
  const attemptId=body?.attemptId,answers=body?.answers;
  if(typeof attemptId!=='string'||!answers||typeof answers!=='object'||Array.isArray(answers)||Object.values(answers).some(value=>typeof value!=='string'))fail(400,'Stuur een quizpoging-id en per vraag-id één gekozen optie-id.');
  const scoring=scoreDayQuiz(quiz,answers);
@@ -30,8 +32,7 @@ export function submitQuizAttempt(p,day,quiz,body,now){
  if(now>attempt.expiresAt)fail(410,'Je quizpoging is verlopen (30 minuten zonder inleveren). Beantwoord de vragen opnieuw.');
  const {score,total,results}=scoring,at=new Date(now).toISOString(),route=routeFor(score);
  const result={score,total,results,route,day,note:'Voorlopige hulpkeuze op basis van 3 scenario’s; geen vaardigheidsbewijs of permanent label.'};
- p.route=route;
- p.quiz={score,at,day};
+ if(day===liveDay){p.route=route;p.quiz={score,at,day};}
  p.progressByDay=p.progressByDay||{};
  p.progressByDay[String(day)]={...(p.progressByDay[String(day)]||{}),quizScore:score,route,quizAt:at};
  p.quizAttempt={...attempt,submittedAt:now,fingerprint,result};

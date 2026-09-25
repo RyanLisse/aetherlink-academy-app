@@ -1,11 +1,12 @@
 import React,{useEffect,useState,useRef} from 'react';
 import {createRoot} from 'react-dom/client';
-import {Users,BookOpen,Compass,Target,Sparkles,ClipboardCheck,Sun,Moon,ArrowRight,Clock,Play,Pause,RotateCw,Shuffle,HelpCircle,Check,LogOut,Copy,FileText,ExternalLink,Presentation,X,LayoutGrid,Link,Columns3,Plus,Download} from 'lucide-react';
+import {Library,Users,BookOpen,Compass,Target,Sparkles,ClipboardCheck,Sun,Moon,ArrowRight,Clock,Play,Pause,RotateCw,Shuffle,HelpCircle,Check,LogOut,Copy,FileText,ExternalLink,Presentation,X,LayoutGrid,Link,Columns3,Plus,Download} from 'lucide-react';
 import {api,authApi,getToken,getParticipantAccess,saveParticipantAccess,forgetParticipantAccess,participantAccessUrl,saveSession} from './api';
 import {AppsLauncher} from './portal/AppsLauncher.jsx';
 import {Knowledge,Coach,Lesson,Solo,Review,Route,Debrief} from './panels';
 import {Decks} from './slides';
 import {Chat} from './chat';
+import {Naslag} from './naslag';
 import {reportScreen,startScreenReporting} from './screen';
 import {I18nProvider,LanguageToggle,useT,useI18n} from './i18n';
 import {classroomEmbedUrl,CLASSROOM_SANDBOX} from './classroom';
@@ -20,6 +21,7 @@ const navIds=[
   ['lesson','nav.lesson',BookOpen],
   ['solo','nav.solo',Target],
   ['coach','nav.coach',Sparkles],
+  ['naslag','nav.naslag',Library],
   ['review','nav.review',ClipboardCheck],
   ['decks','nav.decks',Presentation],
   ['apps','nav.apps',LayoutGrid],
@@ -57,6 +59,8 @@ function App(){
   useEffect(()=>{if(session||!participantAccess)return;let active=true;setBusy(true);api('participant/resume',{resumeToken:participantAccess}).then(result=>{if(!active)return;saveParticipantAccess(participantAccess);saveSession(result);setSession(true);}).catch(e=>{if(!active)return;if(getParticipantAccess()===participantAccess)forgetParticipantAccess();setParticipantAccess(null);setError(e.message);}).finally(()=>{if(active)setBusy(false);});return()=>{active=false;};},[session,participantAccess]);
   useEffect(()=>{if(!session)return;let active=true;const poll=async()=>{try{const r=await api('state');if(active){setRoom(r);setConnected(true);}}catch(e){if(active){setConnected(false);setError(e.message);}}};api('resume',{}).then(poll).catch(e=>{sessionStorage.removeItem('academy-token');setRoom(null);setConnected(false);setSession(false);if(!participantAccess)setError(e.message);});const timer=setInterval(poll,2000);return()=>{active=false;clearInterval(timer);};},[session,participantAccess]);
   const participant=Boolean(room)&&room.me.role!=='Facilitator';
+  const naslagLanding=participant&&(room.readOnly||(room.allReleased&&Boolean(room.me.cohortMemberId)));
+  useEffect(()=>{if(naslagLanding)setView(current=>current==='squad'?'naslag':current);},[naslagLanding]);
   useEffect(()=>{if(!participant)return;reportScreen({view});return startScreenReporting();},[participant,view]);
   const showCopied=kind=>{setCopied(kind);clearTimeout(copiedTimer.current);copiedTimer.current=setTimeout(()=>setCopied(null),1500);};
   async function action(fn){setBusy(true);setError('');try{return await fn();}catch(e){setError(e.message);return null;}finally{setBusy(false);}}
@@ -82,7 +86,7 @@ function App(){
       {facilitator&&<FacilitatorControls room={room} control={control} busy={busy} connected={connected} onOpenClassroom={()=>setClassroomOpen(true)}/>}
       {facilitator&&classroomOpen&&<ClassroomOverlay room={room} onClose={()=>setClassroomOpen(false)}/>}
       <div className="workspace">
-        <section className="primary">{view==='squad'&&<Document room={room} theme={theme}/>}{view==='route'&&<Route room={room} onNavigate={setView}/>}{view==='lesson'&&<Lesson room={room} action={action} busy={busy}/>}{view==='solo'&&<Solo room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='coach'&&<Coach room={room} action={action}/>}{view==='review'&&<Review room={room} action={action} busy={busy}/>}{view==='decks'&&<Decks room={room} action={action} busy={busy}/>}{view==='apps'&&<AppsLauncher action={action} busy={busy} facilitator={facilitator} hostKey={''}/>}{view==='debrief'&&facilitator&&<Debrief room={room}/>}{view==='board'&&<Board room={room} action={action} busy={busy} onBoard={board=>setRoom(current=>({...current,board}))}/>}</section>
+        <section className="primary">{view==='squad'&&<Document room={room} theme={theme}/>}{view==='route'&&<Route room={room} onNavigate={setView}/>}{view==='lesson'&&<Lesson room={room} action={action} busy={busy}/>}{view==='solo'&&<Solo room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='coach'&&<Coach room={room} action={action}/>}{view==='naslag'&&<Naslag room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='review'&&<Review room={room} action={action} busy={busy}/>}{view==='decks'&&<Decks room={room} action={action} busy={busy}/>}{view==='apps'&&<AppsLauncher action={action} busy={busy} facilitator={facilitator} hostKey={''}/>}{view==='debrief'&&facilitator&&<Debrief room={room}/>}{view==='board'&&<Board room={room} action={action} busy={busy} onBoard={board=>setRoom(current=>({...current,board}))}/>}</section>
         <aside className="right-rail">
           <section className="panel roster">
             <div className="panel-heading"><h2>{t('roster.title')} <span>({room.members.length}/{t('roster.softMax')})</span></h2><Users size={17}/></div>

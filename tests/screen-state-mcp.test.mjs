@@ -45,7 +45,7 @@ test('public /mcp lists get_screen_state and returns the caller\'s live screen a
  }finally{await g.close();}
 });
 
-test('release filter follows the room\'s support day and fails closed on a stale lesson',async()=>{
+test('release filter is cumulative and a naslag heartbeat for an unreleased day is refused',async()=>{
  const g=await gateway();
  try{
   const room=g.instance.store.create('Squad',{slug:'s'}),ann=g.participant(room,'Ann');
@@ -53,11 +53,17 @@ test('release filter follows the room\'s support day and fails closed on a stale
   const setDay=async day=>assert.equal((await g.post('/game/control',room.token,{action:'day',value:day})).status,200);
   await g.post('/game/screen-state',ann.browser,{tabId:TAB_A,view:'squad'});
   await setDay(2);
-  assert.deepEqual((await g.screen(c)).room,{id:room.roomId,phase:'lesson',releasedLessonIds:[]},'day-1 is no longer released once the room is on day 2');
+  assert.deepEqual((await g.screen(c)).room,{id:room.roomId,phase:'lesson',releasedLessonIds:['day-1']},'day-1 stays released once the room is on day 2');
   await g.post('/game/screen-state',ann.browser,{tabId:TAB_A,view:'lesson'});
   assert.equal((await g.screen(c)).lessonId,'day-2');
-  await setDay(3);
-  assert.deepEqual(await g.screen(c),{error:'Lesson not found.'},'a heartbeat for an unreleased lesson is denied, not echoed');
+  assert.deepEqual((await g.screen(c)).room.releasedLessonIds,['day-1','day-2']);
+  await setDay(5);await setDay(3);
+  assert.equal((await g.post('/game/screen-state',ann.browser,{tabId:TAB_A,view:'naslag',day:4})).status,204);
+  assert.deepEqual(await g.screen(c),expected(room.roomId,{lessonId:'day-4',route:'naslag',proof:{open:false,section:null},quiz:{id:'day-4-quiz',status:'idle',itemIndex:null},room:{id:room.roomId,phase:'lesson',releasedLessonIds:['day-1','day-2','day-3','day-4','day-5']}}));
+  const refused=await g.post('/game/screen-state',ann.browser,{tabId:TAB_A,view:'naslag',day:6});
+  assert.equal(refused.status,403);
+  assert.deepEqual(await refused.json(),{error:'Deze dag is nog niet vrijgegeven.'});
+  assert.equal((await g.screen(c)).lessonId,'day-4','the refused heartbeat did not replace the last served view');
  }finally{await g.close();}
 });
 
