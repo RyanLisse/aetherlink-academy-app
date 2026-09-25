@@ -30,7 +30,7 @@ test('day 1 lesson pack and route days stay available',async()=>{
  assert.equal(pack.body.lesson.title,getDayPack(1).lesson.title);
  assert.equal(pack.body.lesson.kicker,getDayPack(1).lesson.kicker);
  assert.equal(pack.body.quiz.questions.length,3);
- assert.equal(pack.body.quiz.answers,undefined);
+ assert.equal(pack.body.quiz.key,undefined);
  const route=await invoke(instance.app,'/game/day-route',{cookies:{academy:participant.token}});
  assert.equal(route.statusCode,200);
  assert.equal(route.body.day,1);
@@ -76,7 +76,7 @@ test('day three exposes the n8n L1–L3 ticket pack and keeps route cards consis
  assert.equal(pack.statusCode,200);
  assert.equal(pack.body.mission.id,'TRIAGE-N8N-03');
  assert.deepEqual(pack.body.steps.map(s=>[s.badge,s.level]),[['L1','required'],['L2','required'],['L3','stretch'],['P','required']]);
- assert.equal(pack.body.quiz.answers,undefined);
+ assert.equal(pack.body.quiz.key,undefined);
  assert.equal(pack.body.lesson.title,getDayPack(3).lesson.title);
  assert.match(pack.body.blurb,/L1 Switch → L2 AI Agent met memory → L3 Customer Reply \+ Risk/);
  const route=await invoke(instance.app,'/game/day-route',{cookies:{academy:participant.token}});

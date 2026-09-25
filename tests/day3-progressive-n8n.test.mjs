@@ -14,6 +14,11 @@ async function invoke(app,route,{body={},query={},params={},cookies={}}={}){
  return response;
 }
 
+async function answerQuiz(app,token,answers){
+ const start=await invoke(app,'/game/quiz/start',{cookies:{academy:token}});assert.equal(start.statusCode,200);
+ return invoke(app,'/game/quiz',{body:{attemptId:start.body.attemptId,answers},cookies:{academy:token}});
+}
+
 function room(slug){
  const {app,store}=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-day3-')),hostKey:`${slug}-host`,publicBaseUrl:'http://127.0.0.1:4371'});
  const host=store.create('Day3 triage',{slug});
@@ -29,15 +34,16 @@ test('day 3 pack serves the n8n L1–L3 ticket ladder with the shared fixture',a
  assert.deepEqual(pack.body.steps.map(s=>s.id),['w3-l1','w3-l2','w3-l3','w3-proof']);
  assert.deepEqual(pack.body.lesson.loop.map(s=>s.label),['L1 regels','L2 oordeel','L3 specialisten','Proof','Gate']);
  assert.deepEqual(pack.body.triage.tickets.map(t=>`${t.ticketId}=${t.expected}`),['WL-1026=high','WL-1027=low','WL-9001=medium','WL-9002=medium']);
- assert.equal(pack.body.quiz.answers,undefined);
+ assert.equal(pack.body.quiz.key,undefined);
+ assert.deepEqual(pack.body.quiz.questions.map(q=>q.id),['d3-q1','d3-q2','d3-q3']);
 });
 
 test('day 3 quiz scores the deck-derived answers',async()=>{
  const {app,host,participant}=room('day3-quiz');
  await invoke(app,'/game/control',{body:{action:'day',value:3},cookies:{academy:host.token}});
- const perfect=await invoke(app,'/game/quiz',{body:{answers:[1,0,2]},cookies:{academy:participant.token}});
+ const perfect=await answerQuiz(app,participant.token,{'d3-q1':'b','d3-q2':'a','d3-q3':'c'});
  assert.deepEqual([perfect.statusCode,perfect.body.score,perfect.body.route,perfect.body.day],[200,3,'stretch',3]);
- const guided=await invoke(app,'/game/quiz',{body:{answers:[0,1,0]},cookies:{academy:participant.token}});
+ const guided=await answerQuiz(app,participant.token,{'d3-q1':'a','d3-q2':'b','d3-q3':'a'});
  assert.deepEqual([guided.body.score,guided.body.route],[0,'guided']);
 });
 

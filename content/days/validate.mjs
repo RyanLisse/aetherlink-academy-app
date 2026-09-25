@@ -21,7 +21,7 @@ export function slideRefs(pack){
  return [
   ...pack.demo.slides.map(ref=>['demo',ref]),
   ...pack.steps.filter(step=>step.slide).map(step=>[`step ${step.id}`,step.slide]),
-  ...pack.quiz.questions.filter(q=>q.slide).map((q,i)=>[`quiz ${i+1}`,q.slide])
+  ...Object.entries(pack.quizSlides).map(([id,ref])=>[`quiz ${id}`,ref])
  ];
 }
 
@@ -35,8 +35,7 @@ export function validateDayPacks(packs,{root,decks}){
   if(!pack.steps.length)err(pack,'no solo steps');
   if(!pack.reviewCriteria.length)err(pack,'no Proof acceptance');
   if(!pack.demo.open&&!pack.demo.slides.length)err(pack,'demo has neither slides nor an OPEN note');
-  if(pack.quiz.questions.length!==3||pack.quiz.answers.length!==3)err(pack,'quiz needs exactly 3 questions and answers');
-  pack.quiz.questions.forEach((q,i)=>{if(!Number.isInteger(pack.quiz.answers[i])||pack.quiz.answers[i]<0||pack.quiz.answers[i]>=q.options.length)err(pack,`quiz ${i+1} answer out of range`);});
+  if(pack.quiz.questions.length!==3)err(pack,'quiz needs exactly 3 questions');
   for(const file of pack.mission.starterFiles)if(!existsSync(path.join(root,'starter',file)))err(pack,`starter file missing: starter/${file}`);
   for(const material of pack.materials)if(!material.href&&!material.open)err(pack,`material "${material.label}" has no href and no OPEN reason`);
   for(const [where,ref] of slideRefs(pack)){

@@ -77,3 +77,5 @@
 .apps-launcher-list .evidence{padding:16px}
 .apps-launcher-list h3{text-transform:capitalize}
 .participant-access{margin-top:14px;padding:12px;border:1px solid color-mix(in srgb,var(--cyan) 38%,var(--border));border-radius:7px;background:color-mix(in srgb,var(--cyan) 7%,var(--surface2))}.participant-access small{display:block;color:var(--cyan);font-weight:700}.participant-access p{margin:5px 0 10px;font-size:12px;color:var(--muted);line-height:1.45}.participant-access button{width:100%;justify-content:center;font-size:11px;padding:8px 10px}
+.lab-slot{margin:26px 0}.lab-embed{border:1px solid var(--border);border-radius:7px;overflow:hidden;margin-top:12px;background:var(--surface2)}.lab-embed>header{display:flex;align-items:center;gap:9px;padding:12px 14px;flex-wrap:wrap}.lab-embed>header svg{color:var(--cyan);flex-shrink:0}.lab-embed>header strong{font-size:13px;margin-right:auto}.lab-embed .progress-chip{display:inline-flex;align-items:center;gap:5px}.lab-embed>p{padding:0 14px 10px;font-size:12px}.lab-embed iframe.lab-frame{height:640px;border-top:1px solid var(--border)}
+@media(max-width:800px){.lab-embed iframe.lab-frame{height:560px}}

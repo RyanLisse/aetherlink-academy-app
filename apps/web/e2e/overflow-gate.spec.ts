@@ -10,9 +10,8 @@ const viewports = [
 const indexesByViewport: Record<(typeof viewports)[number]['name'], number[]> = {
   desktop: [0, 20, 40, 60, 83, 90],
   tablet: [0, 20, 40, 60, 83, 90],
-  // Mobile: avoid known wide visual layouts until packages/deck ships overflow fixes (AET-23);
-  // 55 (Fresh-session test) overflows by 9px on main too.
-  mobile: [0, 10, 25, 58, 73],
+  // Mobile: avoid known wide visual layouts until packages/deck ships overflow fixes (AET-23).
+  mobile: [0, 10, 25, 55, 58, 73],
 };
 
 for (const viewport of viewports) {
@@ -28,10 +27,14 @@ for (const viewport of viewports) {
         const measure = (el: HTMLElement | null) => el
           ? {scrollWidth: el.scrollWidth, clientWidth: el.clientWidth}
           : null;
-        return {stage: measure(stage), slideMain: measure(slideMain)};
+        return {stage: measure(stage), slideMain: measure(slideMain), page: {scrollWidth: document.documentElement.scrollWidth, innerWidth: window.innerWidth}};
       });
 
       expect(metrics.stage, `${viewport.name} slide ${index} missing #stage`).not.toBeNull();
+      expect(
+        metrics.page.scrollWidth,
+        `${viewport.name} slide ${index} page horizontal overflow`,
+      ).toBeLessThanOrEqual(metrics.page.innerWidth + 1);
       expect(
         metrics.stage!.scrollWidth,
         `${viewport.name} slide ${index} #stage horizontal overflow`,

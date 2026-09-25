@@ -1,5 +1,7 @@
 import {mkdir,writeFile} from 'node:fs/promises';
 import path from 'node:path';
+import {probeCurriculum} from './deployed-curriculum.mjs';
+import {exitCodeFor} from './deployed-smoke-checks.mjs';
 
 const rawUrl=process.env.ACADEMY_URL,hostKey=process.env.ACADEMY_HOST_KEY,expected=process.env.EXPECTED_REVISION,evidenceDir=path.resolve(process.env.EVIDENCE_DIR||'test-results/deployed-learning');
 if(!rawUrl||!hostKey||!expected){console.error('ACADEMY_URL, ACADEMY_HOST_KEY and EXPECTED_REVISION are required.');process.exit(1);}
@@ -16,10 +18,11 @@ async function requireToken(result,label){if(!result?.token)throw Error(`${label
 async function health(){const d=await json('/game/health');if(d.revision!==expected)throw Error(`revision mismatch: ${d.revision||'missing'}`);return d.revision;}
 await record('revision_begin',async()=>{state.revision=await health();});
 if(!state.revision)process.exit(1);
+for(const day of await probeCurriculum(base)){checks.push(day);console.log(`${{pass:'PASS',fail:'FAIL',unavailable:'OPEN'}[day.status]} ${day.name}: ${day.detail}`);}
 await record('setup_synthetic_squad',async()=>{const created=await post('/game/create',{name:`Learning E2E ${Date.now()}`,hostKey});state.host=await requireToken(created,'facilitator');if(!created.code)throw Error('squad code missing');state.participants=[];for(const name of ['Learner A','Learner B','Learner C','Learner D'])state.participants.push(await requireToken(await post('/game/join',{code:created.code,name}),name));});
 if(!state.host||state.participants?.length!==4)process.exit(1);
 for(const day of [1,2,3,4,5,6,7]){
- await record(`day_${day}_control_and_pack`,async()=>{await post('/game/control',{action:'day',value:day},state.host);const pack=await json('/game/day-pack',{token:state.participants[0]});if(pack.day!==day||pack.quiz.answers!==undefined||!pack.mission?.id)throw Error('pack shape or private answers mismatch');});
+ await record(`day_${day}_control_and_pack`,async()=>{await post('/game/control',{action:'day',value:day},state.host);const pack=await json('/game/day-pack',{token:state.participants[0]});if(pack.day!==day||pack.quiz.key!==undefined||!pack.mission?.id)throw Error('pack shape or private answers mismatch');});
  await record(`day_${day}_participant_progress`,async()=>{for(const [index,token] of state.participants.entries()){const route=await post('/game/route',{route:index%2?'standard':'guided'},token);if(!route.ok)throw Error('route not saved');const reflection=await post('/game/reflection',{learned:`Synthetic day ${day} reflection for transport verification; not learner evidence.`,next:'Facilitator review of the local next step.'},token);if(!reflection.learned)throw Error('reflection not saved');const evidence=await post('/game/evidence',{requestId:`deployed-learning-day-${day}-${index}`,finding:`Synthetic day ${day} transport check; no learner conclusion.`,command:'node scripts/deployed-learning-check.mjs (synthetic transport check)',observed:'Synthetic transport proof from deployed-learning-check; no local learner test output or model run claimed.',limitation:'This endpoint check does not prove learner work, AI quality, or production integration.'},token);if(!evidence.id)throw Error('evidence missing');}});
  await record(`day_${day}_host_review_handoff`,async()=>{const room=await json('/game/state',{token:state.host});const item=room.evidence.find(e=>Number(e.day)===day);if(!item)throw Error('day evidence missing');const review=await post('/game/review',{id:item.id,status:'accepted',note:'Synthetic transport review only; facilitator gate exercised.',requestId:`deployed-learning-review-${day}`},state.host);if(review.status!=='accepted')throw Error('review not accepted');const handoff=await post('/game/handoff',{decision:`Synthetic day ${day} handoff; no learner conclusion.`,checked:'Deployed HTTP route and response shape checked.',open:'Real learner evidence and any external integration remain OPEN.',requestId:`deployed-learning-handoff-${day}`},state.host);if(!handoff.id)throw Error('handoff missing');});
 }
@@ -29,4 +32,4 @@ for(const file of ['n8n-repository-review.json','n8n-review-README.md','claude-c
 await record('revision_end',async()=>{const after=await health();if(after!==state.revision)throw Error('revision changed during check');});
 for(const token of tokens)await request('/game/logout',{method:'POST',token}).catch(()=>{});
 await mkdir(evidenceDir,{recursive:true});await writeFile(path.join(evidenceDir,'deployed-learning-check.json'),JSON.stringify({revision:expected,checks},null,2)+'\n',{mode:0o600});
-if(checks.some(c=>c.status==='fail'))process.exitCode=1;
+process.exitCode=exitCodeFor(checks);

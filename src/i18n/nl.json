@@ -389,5 +389,13 @@
   "apps.published": "Gepubliceerde versie (onwijzigbaar)",
   "apps.chromeHint": "Chrome/overlay (AET-51) toont Terug naar Academy zonder lescanvas-CSS.",
   "lesson.materials": "Materiaal en naslag",
-  "path.stretch": "stretch"
+  "path.stretch": "stretch",
+  "lab.heading": "Lab",
+  "lab.waiting": "Lab laden…",
+  "lab.progress": "Stap {step} van {total}",
+  "lab.saving": "Voortgang opslaan…",
+  "lab.done": "Afgerond · gemeld door het lab",
+  "lab.preview": "Voorbeeld voor de facilitator: afronden telt hier niet mee.",
+  "lab.error": "Lab meldt een fout: {message}",
+  "route.labs": "Labs {done}/{total}"
 }

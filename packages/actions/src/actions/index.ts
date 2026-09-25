@@ -21,6 +21,7 @@ import {pauseUntil} from './pause-until.ts';
 import {prevSlide} from './prev-slide.ts';
 import {releaseLesson} from './release-lesson.ts';
 import {scheduleLesson} from './schedule-lesson.ts';
+import {searchContent} from './search-content.ts';
 import {searchKnowledge} from './search-knowledge.ts';
 import {setReveal} from './set-reveal.ts';
 import {startTimer} from './start-timer.ts';
@@ -52,6 +53,13 @@ export {
   type ParticipantViewBinding,
 } from './participant-context.ts';
 export {EvidenceServices, type EvidenceServicesShape} from './evidence-services.ts';
+export {
+  ContentSearch,
+  SearchHit,
+  SearchLocale,
+  type ContentSearchShape,
+  type SearchAudience,
+} from './search-content.ts';
 export {
   LessonNotReleased,
   LOCKED_LESSON_DENIAL,
@@ -117,4 +125,7 @@ const withEvidence = registerAction(
   exportDebrief,
 );
 
-export const registry = withEvidence;
+/** F3 full-text search (AET-32), participant + facilitator scope. */
+const withSearch = registerAction(withEvidence, searchContent);
+
+export const registry = withSearch;

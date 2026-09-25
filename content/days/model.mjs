@@ -19,15 +19,14 @@ export const DEFAULT_STOP='Stop bij geheimen, ontbrekende toegang, productiesyst
 
 const OPTION_IDS='abcdefgh';
 
+const questionId=(day,index)=>`d${day}-q${index+1}`;
+
 export function dayQuiz(day,authored){
- const questions=authored.map(({question:text,options,answer,...provenance},i)=>({id:`d${day}-q${i+1}`,kind:'single-choice',question:text,options:options.map((label,j)=>({id:OPTION_IDS[j],label})),...provenance}));
+ const questions=authored.map(({question:text,options,source},i)=>({id:questionId(day,i),kind:'single-choice',question:text,options:options.map((label,j)=>({id:OPTION_IDS[j],label})),...(source?{source}:{})}));
  return {questions,key:Object.fromEntries(authored.map(({answer},i)=>[questions[i].id,OPTION_IDS[answer]]))};
 }
 
-// Positional shape served by main until AET-88 (PR #86) lands; then serve dayQuiz() as is.
-export function positionalQuiz({questions,key}){
- return {questions:questions.map(({id,kind,options,...rest})=>({...rest,options:options.map(option=>option.label)})),answers:questions.map(q=>q.options.findIndex(option=>option.id===key[q.id]))};
-}
+const quizSlides=(day,authored)=>Object.fromEntries(authored.flatMap(({slide},i)=>slide?[[questionId(day,i),slide]]:[]));
 
 export function projectDayPack(src){
  const deck=DECKS[src.deck];
@@ -50,7 +49,8 @@ export function projectDayPack(src){
   openItems:src.openItems,
   ...(src.triage?{triage:src.triage}:{}),
   lesson:{kicker:src.kicker,title:src.lessonTitle,lede:src.leerdoel,loop:src.loop,workedExample:open?`OPEN: ${open}`:script.join(' ')},
-  quiz:positionalQuiz(dayQuiz(src.day,src.quiz)),
+  quiz:dayQuiz(src.day,src.quiz),
+  quizSlides:quizSlides(src.day,src.quiz),
   mission:{stop:DEFAULT_STOP,...src.mission,checks:src.proof}
  };
 }

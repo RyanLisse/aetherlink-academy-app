@@ -14,6 +14,10 @@ pnpm --filter @academy/arcade-lab run dev   # http://localhost:4173
 
 Exact ids only via `?lesson=<id>` (see `LESSON-ID-CONTRACT.md`). Default / unknown → `ws-1-eve-weather` with soft banner. Alt: `window.__AETHERLAB_LESSON_ID__`.
 
+## Room embed
+
+With `embed=1` inside an Academy iframe, the lab reports progress and completion to the room over `@academy/lab-embed`. See `docs/LAB-EMBED.md`.
+
 ## Agent API
 
 ```ts

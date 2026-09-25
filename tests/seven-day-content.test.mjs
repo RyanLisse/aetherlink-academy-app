@@ -3,7 +3,7 @@ import test from 'node:test';
 import {DAY_PACKS} from '../content/days/index.mjs';
 import {loadDeckSlides,validateDayPacks} from '../content/days/validate.mjs';
 import {TRIAGE_FIXTURES,gradeTriage,keywordPriority} from '../content/triage/grade.mjs';
-import {getDayPack,listDaySummaries,listRouteDays,STARTER_FILES} from '../server/content.mjs';
+import {getDayPack,listDaySummaries,listRouteDays,starterFileNames} from '../server/content.mjs';
 
 const root=process.cwd();
 const decks=await loadDeckSlides(root);
@@ -18,6 +18,8 @@ test('seven day packs follow the locked day order',()=>{
 
 test('every pack passes the day-pack lint and every slide citation matches its deck',()=>{
  assert.deepEqual(validateDayPacks(DAY_PACKS,{root,decks}),[]);
+ assert.deepEqual(getDayPack(3).quiz.questions.map(q=>q.id),['d3-q1','d3-q2','d3-q3']);
+ assert.deepEqual(getDayPack(3).quiz.key,{'d3-q1':'b','d3-q2':'a','d3-q3':'c'});
  assert.equal(decks['classroom-2'][10].title,'Assignment 6: Project instructions');
  assert.deepEqual(getDayPack(2).steps[0].slide,{deck:'classroom-2',slide:55,title:'Assignment 6: Project instructions',href:'/classroom/2?index=10'});
  assert.deepEqual(getDayPack(3).demo.slides.map(s=>s.href),['/workshop/3?index=5','/workshop/3?index=8','/workshop/3?index=11']);
@@ -72,6 +74,6 @@ test('unverifiable sources stay OPEN instead of invented',()=>{
 });
 
 test('starter whitelist keeps legacy files and adds the triage starters',()=>{
- for(const file of ['README.md','n8n-repository-review.json','n8n-triage-l1-switch.json','n8n-triage-l2-agent-memory.json','n8n-triage-l3-multi-agent.json','triage-fixtures.json'])assert.equal(STARTER_FILES.has(file),true,file);
- assert.equal(STARTER_FILES.has('../package.json'),false);
+ for(const file of ['README.md','n8n-repository-review.json','n8n-triage-l1-switch.json','n8n-triage-l2-agent-memory.json','n8n-triage-l3-multi-agent.json','triage-fixtures.json'])assert.equal(starterFileNames.includes(file),true,file);
+ assert.equal(starterFileNames.includes('../package.json'),false);
 });
