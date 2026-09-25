@@ -4,6 +4,8 @@ import {api} from './api';
 import {useT,useI18n} from './i18n';
 import {LabEmbed} from './LabEmbed';
 
+export const coursePosition=room=>room.course?room.course.days.findIndex(entry=>entry.day===room.day)+1:room.day;
+
 function routeName(t,key){
   return ({guided:t('route.guided'),standard:t('route.standard'),stretch:t('route.stretch')})[key]||key;
 }
@@ -106,7 +108,7 @@ function Reflection({room,onSaved}){
   const [saved,setSaved]=useState(Boolean(existing));
   const [busy,setBusy]=useState(false);
   const [error,setError]=useState('');
-  return <form className="reflection" onSubmit={async e=>{e.preventDefault();setBusy(true);setError('');try{await api('reflection',{learned,next});setSaved(true);onSaved?.();}catch(err){setError(err.message);}finally{setBusy(false);}}}><h3>{t('reflection.title',{day:room.day})}</h3><p className="muted">{t('reflection.privacy')}</p>{error&&<p className="error" role="alert">{error}</p>}<label>{t('reflection.learned')}<textarea required maxLength={4000} value={learned} onChange={e=>{setLearned(e.target.value);setSaved(false);}}/></label><label>{t('reflection.next')}<textarea required maxLength={4000} value={next} onChange={e=>{setNext(e.target.value);setSaved(false);}}/></label><button disabled={busy}>{saved?t('reflection.saved'):t('reflection.save')}</button></form>;
+  return <form className="reflection" onSubmit={async e=>{e.preventDefault();setBusy(true);setError('');try{await api('reflection',{learned,next});setSaved(true);onSaved?.();}catch(err){setError(err.message);}finally{setBusy(false);}}}><h3>{t('reflection.title',{day:coursePosition(room)})}</h3><p className="muted">{t('reflection.privacy')}</p>{error&&<p className="error" role="alert">{error}</p>}<label>{t('reflection.learned')}<textarea required maxLength={4000} value={learned} onChange={e=>{setLearned(e.target.value);setSaved(false);}}/></label><label>{t('reflection.next')}<textarea required maxLength={4000} value={next} onChange={e=>{setNext(e.target.value);setSaved(false);}}/></label><button disabled={busy}>{saved?t('reflection.saved'):t('reflection.save')}</button></form>;
 }
 
 export function Route({room,onNavigate}){
@@ -115,7 +117,7 @@ export function Route({room,onNavigate}){
   const [error,setError]=useState('');
   useEffect(()=>{let active=true;api('day-route').then(d=>{if(active)setDays(d.days||[]);}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[room.day,room.version,room.me?.quiz?.at,room.evidence?.length,room.me?.progressByDay]);
   const chip=(label,on)=><span className={on?'progress-chip on':'progress-chip'} key={label}>{label}</span>;
-  return <section className="panel content-panel"><p className="cyan">{t('route.eyebrow')}</p><h2>{t('route.title')}</h2><p className="lede">{t('route.lede')}</p><p className="muted">{t('route.preface')}</p>{error&&<p role="alert">{error}</p>}<div className="day-list">{days.map(d=>{const prog=d.progress||{};return <div className={room.day===d.day?'current':''} key={d.day}><span className="day-number">0{d.day}</span><div><small>{t('route.supportDay',{day:d.day})} · {d.tag}</small><h3>{d.title}</h3><p>{d.blurb}</p><div className="progress-chips" aria-label={t('route.progressAria',{day:d.day})}>{chip(prog.hasQuiz?t('route.quizScore',{score:prog.quizScore}):t('route.quiz'),prog.hasQuiz)}{chip(prog.route?routeName(t,prog.route):t('route.helpChoice'),prog.hasRoute)}{chip(prog.hasEvidence?t('route.evidenceCount',{count:prog.evidenceCount}):t('route.evidence'),prog.hasEvidence)}{chip(prog.hasReview?t('route.reviewCount',{count:prog.reviewedCount}):t('route.review'),prog.hasReview)}{chip(t('route.handoff'),prog.hasHandoff)}{chip(t('route.reflection'),prog.hasReflection)}{d.labsTotal>0&&chip(t('route.labs',{done:prog.labsCompleted||0,total:d.labsTotal}),prog.labsCompleted>0)}</div></div></div>;})}</div>{room.me.role!=='Facilitator'&&<Reflection key={room.day} room={room} onSaved={()=>setDays(current=>current.map(d=>d.day===room.day?{...d,progress:{...d.progress,hasReflection:true}}:d))}/>}<button className="gradient" onClick={()=>onNavigate('lesson')}>{t('route.toLesson')}<ArrowRight size={17}/></button></section>;
+  return <section className="panel content-panel"><p className="cyan">{t('route.eyebrow')}</p><h2>{t('route.title')}</h2><p className="lede">{t('route.lede')}</p><p className="muted">{t('route.preface')}</p>{error&&<p role="alert">{error}</p>}<div className="day-list">{days.map(d=>{const prog=d.progress||{};return <div className={room.day===d.day?'current':''} key={d.day}><span className="day-number">{String(d.position).padStart(2,'0')}</span><div><small>{t('route.supportDay',{day:d.position})} · {d.tag}{d.date&&<> · <time dateTime={d.date}>{d.date}</time></>}</small><h3>{d.title}</h3><p>{d.blurb}</p><div className="progress-chips" aria-label={t('route.progressAria',{day:d.position})}>{chip(prog.hasQuiz?t('route.quizScore',{score:prog.quizScore}):t('route.quiz'),prog.hasQuiz)}{chip(prog.route?routeName(t,prog.route):t('route.helpChoice'),prog.hasRoute)}{chip(prog.hasEvidence?t('route.evidenceCount',{count:prog.evidenceCount}):t('route.evidence'),prog.hasEvidence)}{chip(prog.hasReview?t('route.reviewCount',{count:prog.reviewedCount}):t('route.review'),prog.hasReview)}{chip(t('route.handoff'),prog.hasHandoff)}{chip(t('route.reflection'),prog.hasReflection)}{d.labsTotal>0&&chip(t('route.labs',{done:prog.labsCompleted||0,total:d.labsTotal}),prog.labsCompleted>0)}</div></div></div>;})}</div>{room.me.role!=='Facilitator'&&<Reflection key={room.day} room={room} onSaved={()=>setDays(current=>current.map(d=>d.day===room.day?{...d,progress:{...d.progress,hasReflection:true}}:d))}/>}<button className="gradient" onClick={()=>onNavigate('lesson')}>{t('route.toLesson')}<ArrowRight size={17}/></button></section>;
 }
 
 export function Debrief({room}){
@@ -137,6 +139,41 @@ function SuggestionReview({room,action,busy}){
   useEffect(()=>{let active=true;const poll=()=>api('suggestions').then(d=>{if(active)setItems(d);}).catch(e=>{if(active)setError(e.message);});poll();const timer=setInterval(poll,3000);return()=>{active=false;clearInterval(timer);};},[]);
   const statusMap={pending:t('suggestions.pending'),accepted:t('suggestions.accepted'),rejected:t('suggestions.rejected')};
   return <><h3>{t('suggestions.title')}</h3>{error&&<p role="alert">{error}</p>}{!items.length&&<p className="muted">{t('suggestions.empty')}</p>}{items.map(m=><article className="evidence" key={m.id}><small>{m.by} · {statusMap[m.status]||m.status}</small><p><strong>{t('suggestions.current')}</strong> {m.quote}</p><p><strong>{t('suggestions.proposal')}</strong> {m.content||t('suggestions.delete')}</p>{m.status==='pending'&&['Driver','Facilitator'].includes(room.me.role)&&<div className="form-row"><button disabled={busy} onClick={()=>action(()=>api('suggestion-review',{id:m.id,decision:'accept',requestId:crypto.randomUUID()}))}>{t('suggestions.accept')}</button><button disabled={busy} onClick={()=>action(()=>api('suggestion-review',{id:m.id,decision:'reject',requestId:crypto.randomUUID()}))}>{t('suggestions.reject')}</button></div>}</article>)}</>;
+}
+
+export function CourseComposer({room,control,busy}){
+  const t=useT();
+  const [data,setData]=useState(null);
+  const [draft,setDraft]=useState(null);
+  const [error,setError]=useState('');
+  useEffect(()=>{let active=true;api('course').then(d=>{if(active){setData(d);setDraft(d.course);}}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[JSON.stringify(room.course)]);
+  if(error)return <section className="panel content-panel"><p role="alert">{error}</p></section>;
+  if(!data)return <section className="panel content-panel"><p className="muted">{t('course.loading')}</p></section>;
+  const packs=Object.fromEntries(data.packs.map(pack=>[pack.day,pack]));
+  const intro=<><p className="cyan">{t('course.eyebrow')}</p><h2>{t('course.title')}</h2><p className="lede">{t('course.lede')}</p></>;
+  if(!draft)return <section className="panel content-panel course-composer">{intro}<p className="muted">{t('course.none')}</p><button className="gradient" onClick={()=>setDraft(data.template)}>{t('course.fromTemplate')}<ArrowRight size={17}/></button></section>;
+  const setDays=days=>setDraft({...draft,days});
+  const edit=(index,patch)=>setDays(draft.days.map((entry,i)=>i===index?{...entry,...patch}:entry));
+  const move=(index,delta)=>{const days=[...draft.days];const [entry]=days.splice(index,1);days.splice(index+delta,0,entry);setDays(days);};
+  const excluded=data.packs.filter(pack=>!draft.days.some(entry=>entry.day===pack.day));
+  return <section className="panel content-panel course-composer">{intro}
+    <label className="course-name">{t('course.name')}<input value={draft.name} maxLength={80} onChange={e=>setDraft({...draft,name:e.target.value})}/></label>
+    <ol className="course-days">{draft.days.map((entry,index)=>{const pack=packs[entry.day];return <li key={entry.day} className={room.day===entry.day?'current':''}>
+      <span className="day-number">{String(index+1).padStart(2,'0')}</span>
+      <div className="course-day-fields"><small>{t('course.pack',{day:entry.day,tag:pack.tag})}</small>
+        <label>{t('course.dayTitle')}<input value={entry.title??''} placeholder={pack.title} maxLength={120} onChange={e=>edit(index,{title:e.target.value||null})}/></label>
+        <label>{t('course.date')}<input type="date" value={entry.date??''} onChange={e=>edit(index,{date:e.target.value||null})}/></label>
+      </div>
+      <div className="course-day-actions">
+        <button type="button" disabled={index===0} onClick={()=>move(index,-1)} aria-label={t('course.up',{title:pack.title})}>↑</button>
+        <button type="button" disabled={index===draft.days.length-1} onClick={()=>move(index,1)} aria-label={t('course.down',{title:pack.title})}>↓</button>
+        <button type="button" disabled={draft.days.length===1} onClick={()=>setDays(draft.days.filter((_,i)=>i!==index))}>{t('course.exclude')}</button>
+      </div>
+    </li>;})}</ol>
+    {excluded.length>0&&<><h3>{t('course.excluded')}</h3><ul className="course-excluded">{excluded.map(pack=><li key={pack.day}><span>{t('course.pack',{day:pack.day,tag:pack.tag})} · {pack.title}</span><button type="button" onClick={()=>setDays([...draft.days,{day:pack.day,title:null,date:null}])}>{t('course.include')}</button></li>)}</ul></>}
+    <div className="form-row"><button className="gradient" disabled={busy} onClick={()=>control('course',draft)}>{t('course.save')}</button>{data.course&&<button type="button" disabled={busy} onClick={()=>control('course',null)}>{t('course.remove')}</button>}</div>
+    <p className="muted">{t('course.sot')}</p>
+  </section>;
 }
 
 const trailKey=room=>room.evidence.map(e=>e.id+':'+e.status).join(',');
