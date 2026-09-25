@@ -1,6 +1,7 @@
 import express from 'express';
 import {agentInstructions} from './agent-setup.mjs';
 import {dayProgress,debrief,exportDebrief} from './progress.mjs';
+import {findTask,taskStatus,taskTrail,reviewQueue,peerQueue,transition,reviewEvent,reviewerRole,authorizeTaskReview} from './proof-trail.mjs';
 import {applyBoardAction,boardMarkdown,boardView,parseBoard,roomDocument} from './debrief-board.mjs';
 import http from 'node:http';
 import httpProxy from 'http-proxy';
@@ -18,14 +19,16 @@ import {openQuizAttempt,participantDayPack,submitQuizAttempt} from './quiz.mjs';
 import {createGoogleSso,readLoginState,signLoginState} from './google-sso.mjs';
 import {createSlidesService} from './slides/runtime.ts';
 import {createPortal} from './portal/index.mjs';
-import {parseLabCompletion,parseOriginAllowlist,resolveLabs} from '../packages/lab-embed/src/index.ts';
+import {parseLabAnswer,parseLabCompletion,parseOriginAllowlist,resolveLabs} from '../packages/lab-embed/src/index.ts';
+import {gradedStopsPassed,parseLabKeys,recordAttempt} from '../packages/lab-embed/src/grading.ts';
+import {labGradingKeys} from './lab-keys.mjs';
 import {createScreenStore,screenBinding,readScreenState} from './screen-state.mjs';
 import {answerQuestion} from './faq.mjs';
 const text=(v,max=4000)=>{if(typeof v!=='string'||!v.trim()||v.length>max)fail(400,`Vul tekst in (maximaal ${max} tekens).`);return v.trim();};
 const namedCookie=(req,name)=>{const value=req.headers.cookie?.split(';').map(c=>c.trim()).find(c=>c.startsWith(`${name}=`))?.slice(name.length+1);if(value===undefined)return;try{return decodeURIComponent(value);}catch{return;}};
 const cookie=req=>namedCookie(req,'academy');
 const bearer=req=>req.headers.authorization?.startsWith('Bearer ')?req.headers.authorization.slice(7):null;
-export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4400',root=process.cwd(),hostKey,publicBaseUrl=process.env.ACADEMY_PUBLIC_URL||`http://127.0.0.1:${process.env.PORT||4317}`,googleClientId=process.env.GOOGLE_CLIENT_ID,googleClientSecret=process.env.GOOGLE_CLIENT_SECRET,facilitatorDomains=process.env.ACADEMY_FACILITATOR_DOMAINS,signingSecret=process.env.PROOF_COLLAB_SIGNING_SECRET,fetchImpl=fetch,slidesService,labOrigins=process.env.ACADEMY_LAB_ORIGINS,labsForDay=day=>getDayPack(day)?.labs}={}){
+export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4400',root=process.cwd(),hostKey,publicBaseUrl=process.env.ACADEMY_PUBLIC_URL||`http://127.0.0.1:${process.env.PORT||4317}`,googleClientId=process.env.GOOGLE_CLIENT_ID,googleClientSecret=process.env.GOOGLE_CLIENT_SECRET,facilitatorDomains=process.env.ACADEMY_FACILITATOR_DOMAINS,signingSecret=process.env.PROOF_COLLAB_SIGNING_SECRET,fetchImpl=fetch,slidesService,labOrigins=process.env.ACADEMY_LAB_ORIGINS,labsForDay=day=>getDayPack(day)?.labs,labKeys=labGradingKeys}={}){
  const publicUrl=new URL(publicBaseUrl);if(!['http:','https:'].includes(publicUrl.protocol)||publicUrl.username||publicUrl.password||publicUrl.search||publicUrl.hash||publicUrl.pathname!=='/')throw Error('ACADEMY_PUBLIC_URL moet een HTTP(S)-origin zonder pad of credentials zijn.');
  const store=repository||new LocalStore(dir);const proof=new Proof(proofBase);const slides=slidesService||createSlidesService(repository?{pool:repository.pool,schema:repository.schema}:{dir});const app=express();const proxy=httpProxy.createProxyServer({target:proofBase,ws:true});
  const token=req=>bearer(req)||cookie(req);
@@ -80,12 +83,14 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  app.post('/game/control',wrap(async(req,res)=>res.json(await store.withSession(token(req),'browser',({r,s})=>{if(s.personId!=='facilitator')fail(403,'Alleen de facilitator bedient de ronde.');const value=['time','duration'].includes(req.body.action)?Number(req.body.value):req.body.value;Store.prototype.control.call({remaining:store.remaining,save(){}},r,req.body.action,value);return store.view(r,s);})))) ;
  app.get('/game/knowledge',wrap(async(req,res)=>{const {r}=await browser(req);const pack=getDayPack(r.day);res.json({lessons:searchKnowledge(String(req.query.q||'')),mission:pack?.mission||mission});}));
  // Labs are embeddable only from origins configured here, never from the pack or the client.
- const allowedLabOrigins=parseOriginAllowlist(labOrigins,publicUrl.origin),dayLabs=day=>resolveLabs(labsForDay(day),{baseUrl:publicUrl.origin,allowedOrigins:allowedLabOrigins});
+ const allowedLabOrigins=parseOriginAllowlist(labOrigins,publicUrl.origin),gradingKeys=parseLabKeys(labKeys),dayLabs=day=>resolveLabs(labsForDay(day),{baseUrl:publicUrl.origin,allowedOrigins:allowedLabOrigins,gradedStopsFor:id=>[...(gradingKeys.get(id)?.keys()??[])]});
+ const participantLab=(r,p,labId)=>{if(!p)fail(403,'Alleen deelnemers maken een lab.');if(!dayLabs(r.day).some(lab=>lab.id===labId))fail(404,`Lab ${labId} hoort niet bij dag ${r.day}.`);const key=String(r.day);p.progressByDay??={};return {key,day:p.progressByDay[key]||{}};};
  const publicDayPack=pack=>({...participantDayPack(pack),labs:dayLabs(pack.day)});
  app.get('/game/day-pack',wrap(async(req,res)=>{const {r}=await browser(req),pack=getDayPack(r.day);if(!pack)fail(400,`Geen contentpakket voor supportdag ${r.day}.`);res.json(publicDayPack(pack));}));
  app.post('/game/chat',wrap(async(req,res)=>{const {r,s}=await browser(req);if(s.personId!=='facilitator'&&r.chat===false)fail(403,'De facilitator heeft de chat voor deze kamer uitgezet.');res.json(answerQuestion({day:r.day,query:text(req.body?.q,300),locale:req.body?.locale}));}));
  app.get('/game/day-route',wrap(async(req,res)=>{const {r,p}=await browser(req);res.json({day:r.day,days:listRouteDays().map(d=>({...d,labsTotal:dayLabs(d.day).length,progress:dayProgress(r,p,d.day)}))});}));
- app.post('/game/lab-complete',wrap(async(req,res)=>{const completion=parseLabCompletion(req.body);if(!completion)fail(400,'Ongeldige labvoltooiing.');res.json(await store.withSession(token(req),'browser',({r,p})=>{if(!p)fail(403,'Alleen deelnemers ronden een lab af.');if(!dayLabs(r.day).some(lab=>lab.id===completion.labId))fail(404,`Lab ${completion.labId} hoort niet bij dag ${r.day}.`);const key=String(r.day);p.progressByDay??={};const day=p.progressByDay[key]||{},existing=day.labs?.[completion.labId];if(existing)return {recorded:false,day:r.day,labId:completion.labId,lab:existing};const lab={source:'lab-reported',result:completion.result,evidence:completion.evidence??null,at:new Date().toISOString()};p.progressByDay[key]={...day,labs:{...day.labs,[completion.labId]:lab}};return {recorded:true,day:r.day,labId:completion.labId,lab};}));}));
+ app.post('/game/lab-answer',wrap(async(req,res)=>{const submission=parseLabAnswer(req.body);if(!submission)fail(400,'Ongeldig labantwoord.');res.json(await store.withSession(token(req),'browser',({r,p})=>{const {key,day}=participantLab(r,p,submission.labId),answerKey=gradingKeys.get(submission.labId)?.get(submission.stopId);if(!answerKey)fail(404,`Stop ${submission.stopId} wordt niet beoordeeld.`);const stops=day.labStops?.[submission.labId]||{},{recorded,stop}=recordAttempt(stops[submission.stopId],answerKey,submission,new Date().toISOString());if(recorded)p.progressByDay[key]={...day,labStops:{...day.labStops,[submission.labId]:{...stops,[submission.stopId]:stop}}};return {recorded,day:r.day,labId:submission.labId,stop};}));}));
+ app.post('/game/lab-complete',wrap(async(req,res)=>{const completion=parseLabCompletion(req.body);if(!completion)fail(400,'Ongeldige labvoltooiing.');res.json(await store.withSession(token(req),'browser',({r,p})=>{const {key,day}=participantLab(r,p,completion.labId),existing=day.labs?.[completion.labId];if(existing)return {recorded:false,day:r.day,labId:completion.labId,lab:existing};const graded=gradedStopsPassed(gradingKeys.get(completion.labId),day.labStops?.[completion.labId]);if(graded.passed<graded.total)fail(409,`Nog niet alle beoordeelde stops gehaald (${graded.passed}/${graded.total}).`);const lab=graded.total?{source:'server-graded',result:{outcome:'completed',score:{value:graded.passed,max:graded.total}},evidence:completion.evidence??null,at:new Date().toISOString()}:{source:'lab-reported',result:completion.result,evidence:completion.evidence??null,at:new Date().toISOString()};p.progressByDay[key]={...day,labs:{...day.labs,[completion.labId]:lab}};return {recorded:true,day:r.day,labId:completion.labId,lab};}));}));
  app.post('/game/reflection',wrap(async(req,res)=>res.json(await store.withSession(token(req),'browser',({r,p})=>{if(!p)fail(403,'Alleen deelnemers schrijven een eigen reflectie.');const reflection={learned:text(req.body.learned),next:text(req.body.next),at:new Date().toISOString()};p.progressByDay??={};p.progressByDay[String(r.day)]={...p.progressByDay[String(r.day)],reflection};return reflection;}))));
  app.get('/game/debrief',wrap(async(req,res)=>{const {r,s}=await browser(req);if(s.personId!=='facilitator')fail(403,'Alleen de facilitator bekijkt de debrief.');res.json(debrief(r));}));
  app.get('/game/debrief/export',wrap(async(req,res)=>{const {r,s}=await browser(req);if(s.personId!=='facilitator')fail(403,'Alleen de facilitator exporteert de debrief.');const board=r.board?parseBoard((await proof.state({proof:r.board.proof})).markdown):null;res.type('text/markdown').set('Content-Disposition','attachment; filename="squad-overdracht.md"').send(exportDebrief(r,board));}));
@@ -112,22 +117,30 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  async function commentQuote(r){const state=await proof.state(r);const quote=state.markdown.split('\n').find(line=>line.trim())?.replace(/^#+\s*/,'').trim();if(!quote)fail(409,'Het document heeft nog geen tekst voor commentaar.');return quote;}
  async function evidence(token,input){
   const {r,p,s}=await store.auth(token);if(!p)fail(403,'Alleen een deelnemer kan bewijs indienen.');
-  const key=text(input.requestId,100),fields={finding:text(input.finding),command:text(input.command,1000),observed:text(input.observed),limitation:text(input.limitation)};
+  const taskId=input.taskId==null||input.taskId===''?undefined:findTask(r.day,text(input.taskId,100)).id;
+  const key=text(input.requestId,100),fields={finding:text(input.finding),command:text(input.command,1000),observed:text(input.observed),limitation:text(input.limitation),...(taskId?{taskId}:{})};
   const fingerprint=hash(JSON.stringify(fields));
-  const reserved=await store.reserveRequest(token,'evidence',key,fingerprint,{value:{id:randomUUID(),requestId:key,personId:p.id,name:p.name,source:s.kind==='mcp'?'MCP-client':'Deelnemer',...fields,day:r.day,at:new Date().toISOString(),status:'pending'},actor:`${s.kind==='mcp'?'ai':'human'}:${p.name}:${p.id}`,quote:await commentQuote(r)},({p})=>{if(!p)fail(403,'Alleen deelnemers.');});
+  const canSubmit=({r,p},e)=>{if(e.taskId)transition(taskStatus(r,p.id,e.taskId,e.day),'submit');};
+  const reserved=await store.reserveRequest(token,'evidence',key,fingerprint,{value:{id:randomUUID(),requestId:key,personId:p.id,name:p.name,source:s.kind==='mcp'?'MCP-client':'Deelnemer',...fields,day:r.day,at:new Date().toISOString(),status:'pending'},actor:`${s.kind==='mcp'?'ai':'human'}:${p.name}:${p.id}`,quote:await commentQuote(r)},context=>{if(!context.p)fail(403,'Alleen deelnemers.');canSubmit(context,{taskId,day:context.r.day});});
   if(reserved.completed)return reserved.result;
   const {value:e,actor,quote}=reserved.intent;
-  await proof.comment(r,actor,`Bewijs ${e.id}\n${e.finding}\nControle: ${e.command}\nWaargenomen: ${e.observed}\nBeperking: ${e.limitation}\nStatus: ingediend, nog niet door een mens beoordeeld.`,quote,`${p.id}:${key}`);
-  return store.completeRequest(token,'evidence',key,fingerprint,({r,p})=>{r.evidence.push(e);if(p){p.progressByDay=p.progressByDay||{};const keyDay=String(e.day);const prev=p.progressByDay[keyDay]||{};p.progressByDay[keyDay]={...prev,evidenceCount:(prev.evidenceCount||0)+1,evidenceAt:e.at};}return e;});
+  await proof.comment(r,actor,`Bewijs ${e.id}\n${e.finding}\nControle: ${e.command}\nWaargenomen: ${e.observed}\nBeperking: ${e.limitation}\n${e.taskId?`Opdracht: ${e.taskId}\n`:''}Status: ingediend, nog niet door een mens beoordeeld.`,quote,`${p.id}:${key}`);
+  return store.completeRequest(token,'evidence',key,fingerprint,({r,p})=>{canSubmit({r,p},e);r.evidence.push(e);if(p){p.progressByDay=p.progressByDay||{};const keyDay=String(e.day);const prev=p.progressByDay[keyDay]||{};p.progressByDay[keyDay]={...prev,evidenceCount:(prev.evidenceCount||0)+1,evidenceAt:e.at};}return e;});
  }
  app.post('/game/evidence',wrap(async(req,res)=>{await browser(req);res.json(await evidence(token(req),req.body));}));
+ app.get('/game/tasks',wrap(async(req,res)=>{const {r,p}=await browser(req);if(!p)fail(403,'Alleen deelnemers hebben een eigen opdrachtenlijst.');res.json({day:r.day,tasks:taskTrail(r,p.id,r.day)});}));
+ app.get('/game/tasks/peer',wrap(async(req,res)=>{const {r,p}=await browser(req);if(!p)fail(403,'Alleen deelnemers beoordelen elkaars opdrachten.');res.json(peerQueue(r,p.id));}));
+ app.get('/game/tasks/queue',wrap(async(req,res)=>{const {r,s}=await browser(req);if(s.personId!=='facilitator')fail(403,'Alleen de facilitator ziet de beoordelingswachtrij.');res.json(reviewQueue(r));}));
  app.post('/game/review',wrap(async(req,res)=>{
-  const {r,s}=await browser(req);
+  const {r,s,p}=await browser(req);
   if(!['accepted','needs-work'].includes(req.body.status))fail(400,'Ongeldige beoordeling.');
   const fields={id:text(req.body.id,100),status:req.body.status,note:text(req.body.note)},key=text(req.body.requestId,100),fingerprint=hash(JSON.stringify(fields));
-  const saved=await store.reserveRequest(token(req),'review',key,fingerprint,{value:{...fields,by:s.personId,at:new Date().toISOString()},actor:`human:${s.personId}`,quote:await commentQuote(r)},context=>{reviewer(context);const e=context.r.evidence.find(e=>e.id===fields.id);if(!e)fail(404,'Bewijs niet gevonden.');if(e.personId===context.s.personId)fail(403,'Laat een andere deelnemer jouw bewijs beoordelen.');});if(saved.completed)return res.json(saved.result);
+  const sso=s.personId==='facilitator'?await store.facilitator(namedCookie(req,'academy-facilitator')):null;
+  const reviewedBy={role:reviewerRole(s),name:sso?.name||p?.name||s.displayName||'Facilitator',email:sso?.email||null};
+  const canReview=(context,e)=>{if(!e.taskId)return;authorizeTaskReview(context);transition(taskStatus(context.r,e.personId,e.taskId,e.day),reviewEvent(fields.status));};
+  const saved=await store.reserveRequest(token(req),'review',key,fingerprint,{value:{...fields,by:s.personId,reviewer:reviewedBy,at:new Date().toISOString()},actor:`human:${s.personId}`,quote:await commentQuote(r)},context=>{const e=context.r.evidence.find(e=>e.id===fields.id);if(!e?.taskId)reviewer(context);if(!e)fail(404,'Bewijs niet gevonden.');if(e.personId===context.s.personId)fail(403,'Laat een andere deelnemer jouw bewijs beoordelen.');canReview(context,e);});if(saved.completed)return res.json(saved.result);
   const {value:intent,actor,quote}=saved.intent;await proof.comment(r,actor,`Review bewijs ${intent.id}: ${intent.status}\n${intent.note}`,quote,`review:${s.personId}:${key}`);
-  res.json(await store.completeRequest(token(req),'review',key,fingerprint,context=>{const target=context.r.evidence.find(x=>x.id===intent.id);if(!target)fail(404,'Bewijs niet gevonden.');target.status=intent.status;target.review={by:intent.by,note:intent.note,at:intent.at};return target;}));
+  res.json(await store.completeRequest(token(req),'review',key,fingerprint,context=>{const target=context.r.evidence.find(x=>x.id===intent.id);if(!target)fail(404,'Bewijs niet gevonden.');canReview(context,target);target.status=intent.status;target.review={by:intent.by,reviewer:intent.reviewer,note:intent.note,at:intent.at};return target;}));
  }));
  app.post('/game/handoff',wrap(async(req,res)=>{
   const {r,s}=await browser(req);
@@ -150,7 +163,7 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  app.delete('/game/decks/:deckId',wrap(async(req,res)=>res.json(await slides.run('deleteDeck',deckActor(await browser(req)),{deckId:deckId(req)}))));
  app.get('/game/decks/:deckId/export.html',wrap(async(req,res)=>{const result=await slides.run('exportHtml',deckActor(await browser(req)),{deckId:deckId(req)});res.type('text/html').set('Content-Disposition',`attachment; filename="${result.filename}"`).set('Content-Security-Policy',"default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src https: data:; font-src https: data:").send(result.html);}));
  async function executeMcp(token,tool,input){const a=await store.auth(token,'mcp');const {r,p}=a;if(!p)fail(403,'Geen deelnemer.');let result;
-  switch(tool){case 'get_mission':{const pack=getDayPack(r.day);result={session:{roomId:r.id,participantId:p.id,participantName:p.name,squadName:r.name},mission:pack?.mission||mission,day:r.day,phase:r.phase,route:p.route,role:r.members[r.driver]?.id===p.id?'Driver':'Navigator',coach:'Leg begrippen uit, citeer les-IDs, pas hints aan de hulpkeuze aan. Lees eerst de gedeelde intent. Geen browserchat of model-API vanuit de game.'};break;}
+  switch(tool){case 'get_mission':{const pack=getDayPack(r.day);result={session:{roomId:r.id,participantId:p.id,participantName:p.name,squadName:r.name},mission:pack?.mission||mission,day:r.day,phase:r.phase,route:p.route,role:r.members[r.driver]?.id===p.id?'Driver':'Navigator',tasks:taskTrail(r,p.id,r.day),coach:'Leg begrippen uit, citeer les-IDs, pas hints aan de hulpkeuze aan. Lees eerst de gedeelde intent. Geen browserchat of model-API vanuit de game.'};break;}
   case 'get_document':result=await proof.state(r);break;
   case 'get_screen_state':result=await readScreenState(a,screens);break;
   case 'search_knowledge':result={lessons:searchKnowledge(String(input.query||''))};break;
