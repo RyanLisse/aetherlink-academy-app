@@ -16,6 +16,7 @@ import {lessons,mission,initialDocument,searchKnowledge,getDayPack,listRouteDays
 import {createGoogleSso,readLoginState,signLoginState} from './google-sso.mjs';
 import {createSlidesService} from './slides/runtime.ts';
 import {createPortal} from './portal/index.mjs';
+import {createScreenStore,screenBinding,readScreenState} from './screen-state.mjs';
 const text=(v,max=4000)=>{if(typeof v!=='string'||!v.trim()||v.length>max)fail(400,`Vul tekst in (maximaal ${max} tekens).`);return v.trim();};
 const namedCookie=(req,name)=>{const value=req.headers.cookie?.split(';').map(c=>c.trim()).find(c=>c.startsWith(`${name}=`))?.slice(name.length+1);if(value===undefined)return;try{return decodeURIComponent(value);}catch{return;}};
 const cookie=req=>namedCookie(req,'academy');
@@ -80,6 +81,8 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  app.get('/game/debrief',wrap(async(req,res)=>{const {r,s}=await browser(req);if(s.personId!=='facilitator')fail(403,'Alleen de facilitator bekijkt de debrief.');res.json(debrief(r));}));
  app.get('/game/debrief/export',wrap(async(req,res)=>{const {r,s}=await browser(req);if(s.personId!=='facilitator')fail(403,'Alleen de facilitator exporteert de debrief.');res.type('text/markdown').set('Content-Disposition','attachment; filename="squad-overdracht.md"').send(exportDebrief(r));}));
  app.get('/game/document',wrap(async(req,res)=>{const {r}=await browser(req);res.json(await proof.state(r));}));
+ const screens=createScreenStore(presence);
+ app.post('/game/screen-state',wrap(async(req,res)=>{await screens.save(screenBinding(await browser(req),req.body));res.status(204).end();}));
  app.post('/game/help',wrap(async(req,res)=>res.json(await store.withSession(token(req),'browser',({p})=>{if(!p)fail(400,'De facilitator heeft geen solo-profiel.');p.help=!p.help;return {help:p.help};}))));
  app.post('/game/quiz',wrap(async(req,res)=>res.json(await store.withSession(token(req),'browser',({r,p})=>{if(!p)fail(400,'Alleen deelnemers.');const pack=getDayPack(r.day);if(!pack)fail(400,`Geen contentpakket voor supportdag ${r.day}.`);const answers=req.body?.answers,expected=pack.quiz.questions.length;if(!Array.isArray(answers)||answers.length!==expected)fail(400,`Beantwoord alle ${expected} vragen.`);if(answers.some((answer,index)=>!Number.isInteger(answer)||answer<0||answer>=pack.quiz.questions[index].options.length))fail(400,'Gebruik een geldige optie voor elke vraag.');const score=answers.filter((answer,index)=>answer===pack.quiz.answers[index]).length;const at=new Date().toISOString();p.route=score<=1?'guided':score===2?'standard':'stretch';p.quiz={score,at,day:r.day};p.progressByDay=p.progressByDay||{};p.progressByDay[String(r.day)]={...(p.progressByDay[String(r.day)]||{}),quizScore:score,route:p.route,quizAt:at};return {score,route:p.route,day:r.day,note:'Voorlopige hulpkeuze op basis van 3 scenario’s; geen vaardigheidsbewijs of permanent label.'};}))));
  app.post('/game/route',wrap(async(req,res)=>{if(!['guided','standard','stretch'].includes(req.body.route))fail(400,'Ongeldige hulpkeuze.');await store.withSession(token(req),'browser',({r,p})=>{if(!p)fail(400,'Alleen deelnemers.');p.route=req.body.route;p.progressByDay??={};p.progressByDay[String(r.day)]={...p.progressByDay[String(r.day)],route:p.route};});res.json({ok:true});}));
@@ -129,6 +132,7 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  async function executeMcp(token,tool,input){const a=await store.auth(token,'mcp');const {r,p}=a;if(!p)fail(403,'Geen deelnemer.');let result;
   switch(tool){case 'get_mission':{const pack=getDayPack(r.day);result={session:{roomId:r.id,participantId:p.id,participantName:p.name,squadName:r.name},mission:pack?.mission||mission,day:r.day,phase:r.phase,route:p.route,role:r.members[r.driver]?.id===p.id?'Driver':'Navigator',coach:'Leg begrippen uit, citeer les-IDs, pas hints aan de hulpkeuze aan. Lees eerst de gedeelde intent. Geen browserchat of model-API vanuit de game.'};break;}
   case 'get_document':result=await proof.state(r);break;
+  case 'get_screen_state':result=await readScreenState(a,screens);break;
   case 'search_knowledge':result={lessons:searchKnowledge(String(input.query||''))};break;
   case 'submit_evidence':result=await evidence(token,input);break;
   case 'list_decks':case 'get_deck':case 'create_deck':case 'add_slide':case 'update_slide':case 'patch_deck':case 'export_deck_html':{const action={list_decks:'listDecks',get_deck:'getDeck',create_deck:'createDeck',add_slide:'addSlide',update_slide:'updateSlide',patch_deck:'patchDeck',export_deck_html:'exportHtml'}[tool];result=await slides.run(action,deckActor(a),input||{});break;}

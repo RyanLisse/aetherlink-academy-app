@@ -69,7 +69,7 @@ jobs:
         id: unit
         run: >-
           node --import ./vendor/proof-sdk/node_modules/tsx/dist/loader.mjs --test
-          tests/room.test.mjs tests/remote-mcp.test.mjs tests/proof-stale-retry.test.mjs tests/suggestion-accept-persisted-retry.test.ts tests/runtime-config.test.mjs tests/browser-auth-boundary.test.mjs tests/headless-empty-document.test.ts tests/collab-marks-observer.test.ts tests/anchor-stability.test.ts
+          tests/room.test.mjs tests/remote-mcp.test.mjs tests/screen-state-mcp.test.mjs tests/proof-stale-retry.test.mjs tests/suggestion-accept-persisted-retry.test.ts tests/runtime-config.test.mjs tests/browser-auth-boundary.test.mjs tests/headless-empty-document.test.ts tests/collab-marks-observer.test.ts tests/anchor-stability.test.ts
           tests/google-sso.test.mjs tests/facilitator-sso-routes.test.mjs
           tests/participant-access.test.mjs tests/participant-access-routes.test.mjs tests/participant-access-ui.test.mjs
           tests/agent-setup.test.mjs tests/web-public-assets.test.mjs tests/five-day-content.test.mjs tests/day-packs-routes.test.mjs tests/lesson-route-day.test.mjs tests/solo-progress-day.test.mjs tests/learning-progress.test.mjs

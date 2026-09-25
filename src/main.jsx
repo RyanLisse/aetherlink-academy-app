@@ -5,6 +5,7 @@ import {api,authApi,getToken,getParticipantAccess,saveParticipantAccess,forgetPa
 import {AppsLauncher} from './portal/AppsLauncher.jsx';
 import {Knowledge,Coach,Lesson,Solo,Review,Route,Debrief} from './panels';
 import {Decks} from './slides';
+import {reportScreen,startScreenReporting} from './screen';
 import {I18nProvider,LanguageToggle,useT,useI18n} from './i18n';
 import {classroomEmbedUrl,CLASSROOM_SANDBOX} from './classroom';
 import {ArcadeApp, isArcadePath} from './arcade/ArcadeApp.jsx';
@@ -53,6 +54,8 @@ function App(){
   useEffect(()=>{if(!accessFromUrl)return;const url=new URL(location.href);url.hash='';history.replaceState(null,'',url.pathname+url.search);},[accessFromUrl]);
   useEffect(()=>{if(session||!participantAccess)return;let active=true;setBusy(true);api('participant/resume',{resumeToken:participantAccess}).then(result=>{if(!active)return;saveParticipantAccess(participantAccess);saveSession(result);setSession(true);}).catch(e=>{if(!active)return;if(getParticipantAccess()===participantAccess)forgetParticipantAccess();setParticipantAccess(null);setError(e.message);}).finally(()=>{if(active)setBusy(false);});return()=>{active=false;};},[session,participantAccess]);
   useEffect(()=>{if(!session)return;let active=true;const poll=async()=>{try{const r=await api('state');if(active){setRoom(r);setConnected(true);}}catch(e){if(active){setConnected(false);setError(e.message);}}};api('resume',{}).then(poll).catch(e=>{sessionStorage.removeItem('academy-token');setRoom(null);setConnected(false);setSession(false);if(!participantAccess)setError(e.message);});const timer=setInterval(poll,2000);return()=>{active=false;clearInterval(timer);};},[session,participantAccess]);
+  const participant=Boolean(room)&&room.me.role!=='Facilitator';
+  useEffect(()=>{if(!participant)return;reportScreen({view});return startScreenReporting();},[participant,view]);
   const showCopied=kind=>{setCopied(kind);clearTimeout(copiedTimer.current);copiedTimer.current=setTimeout(()=>setCopied(null),1500);};
   async function action(fn){setBusy(true);setError('');try{return await fn();}catch(e){setError(e.message);return null;}finally{setBusy(false);}}
   async function leaveSession(){setBusy(true);setError('');try{await api('logout',{});sessionStorage.removeItem('academy-token');sessionStorage.removeItem('academy-mcp-'+room.me.id);sessionStorage.removeItem(`academy-agent-setup:${room.id}:${room.me.id}`);forgetParticipantAccess();location.reload();}catch(err){setError(err.message);}finally{setBusy(false);}}
