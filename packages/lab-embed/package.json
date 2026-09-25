@@ -1,0 +1,17 @@
+{
+  "name": "@academy/lab-embed",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Versioned postMessage contract between an Academy room and an embedded lab (Arcade Lab).",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsgo --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.6"
+  }
+}

@@ -15,7 +15,7 @@ test('all five day packs are concrete and uniquely identified', () => {
     }
     assert.ok(pack.mission.allowed.length >= 3);
     assert.ok(pack.reviewCriteria.length >= 3);
-    assert.equal(pack.quiz.questions.length, pack.quiz.answers.length);
+    assert.equal(pack.quiz.questions.length, Object.keys(pack.quiz.key).length);
     assert.ok(pack.quiz.questions.every(question => question.source === 'authored-adaptation' || pack.day === 1));
   }
 });

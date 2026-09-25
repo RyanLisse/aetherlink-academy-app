@@ -7,6 +7,8 @@
 import { LESSONS } from '../src/lessons/index.ts';
 import { LessonSchema } from '../src/schema.ts';
 import { evaluateLessonAsserts, foldLesson } from '../src/fold.ts';
+import { finishStop, reachEnd, runProgress, startRun } from '../src/embed-bridge.ts';
+import { getLesson } from '../src/lessons/index.ts';
 
 const KEY_PATTERNS: RegExp[] = [
   /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
@@ -65,6 +67,15 @@ for (const lesson of LESSONS) {
     failed++;
     lines.push(`ERROR ${lesson.id}: ${(e as Error).message}`);
   }
+}
+
+{
+  const run = startRun(getLesson('sample-counter'));
+  const endedEarly = runProgress(reachEnd(run));
+  const done = runProgress(reachEnd(finishStop(run, run.stops[0]!)));
+  const ok = endedEarly.step === 0 && endedEarly.total === 2 && !endedEarly.complete && done.step === 2 && done.total === 2 && done.complete;
+  if (!ok) failed++;
+  lines.push(`${ok ? 'ok   ' : 'EMBED'} embed-bridge · skipped checkpoint blocks completion ${JSON.stringify(endedEarly)} · all done ${JSON.stringify(done)}`);
 }
 
 console.log(lines.join('\n'));
