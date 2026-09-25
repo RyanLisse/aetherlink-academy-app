@@ -77,6 +77,7 @@ function App(){
     <main>
       <div className="room-heading"><div><p className="muted">{t('room.supportDay',{day:room.day})} · {dayLabel}</p><h1>{room.name}</h1></div><div className="round"><span>{t('room.round',{round:room.round})} · {roundStatus}</span><strong><Clock size={22}/><Timer room={room}/></strong></div></div>
       <div className="sdlc" aria-label={t('room.sdlc')}>{phases.map((p,i)=><React.Fragment key={p}><div className={p===room.phase?'active':''}><span>{p}</span></div>{i<5&&<span className="phase-line"/>}</React.Fragment>)}</div>
+      {room.readOnly&&<div className="read-only-banner" role="status"><div><strong>{t('readOnly.title')}</strong><p>{t('readOnly.help')}</p></div><button type="button" onClick={()=>action(async()=>{const doc=await api('document');const link=document.createElement('a');link.href=URL.createObjectURL(new Blob([doc.markdown||''],{type:'text/markdown'}));link.download=`${room.name}.md`;link.click();URL.revokeObjectURL(link.href);})}><FileText size={15}/>{t('readOnly.export')}</button></div>}
       {error&&<div className="error" role="alert">{error}<button onClick={()=>setError('')} aria-label={t('common.closeAlert')}>×</button></div>}
       {facilitator&&<FacilitatorControls room={room} control={control} busy={busy} connected={connected} onOpenClassroom={()=>setClassroomOpen(true)}/>}
       {facilitator&&classroomOpen&&<ClassroomOverlay room={room} onClose={()=>setClassroomOpen(false)}/>}
@@ -87,8 +88,9 @@ function App(){
             <div className="panel-heading"><h2>{t('roster.title')} <span>({room.members.length}/{t('roster.softMax')})</span></h2><Users size={17}/></div>
             {room.members.length===0&&<p className="muted">{t('roster.empty')}</p>}
             {room.members.map(m=><div className="member" key={m.id}><span className="avatar">{m.name.slice(0,2).toUpperCase()}</span><div><strong>{m.name}{m.id===room.me.id?` ${t('common.you')}`:''}</strong><small className={m.role==='Driver'?'cyan':''}>{m.role}</small></div><span className={'presence '+(m.online?'present':'')} title={m.online?t('roster.online'):t('roster.offline')}/>{m.help&&<HelpCircle size={17} className="cyan" aria-label={t('roster.helpAsked')}/>}</div>)}
-            <div className="room-code"><small>{t('roster.roomCode')}</small><div className="room-code-actions"><button className="room-code-display" type="button" onClick={()=>action(async()=>{await navigator.clipboard.writeText(room.code);showCopied('code');})} aria-label={t('roster.copyCode',{code:room.code})} title={t('roster.copyCodeTitle')}>{room.code}{copied==='code'?<Check size={14}/>:<Copy size={14}/>}</button><button className="room-code-link" type="button" onClick={()=>action(async()=>{await navigator.clipboard.writeText(`${location.origin}/?code=${room.code}`);showCopied('link');})} title={t('roster.copyLink')}>{copied==='link'?t('roster.linkCopied'):t('roster.copyLink')}</button>{room.me.role==='Facilitator'&&<button className="room-code-link" type="button" onClick={()=>window.open(`${location.origin}/?code=${room.code}`,'_blank','noopener')} title={t('roster.testAsParticipantTitle')}><ExternalLink size={14}/>{t('roster.testAsParticipant')}</button>}</div><span className="sr-only" role="status">{copied==='code'?t('roster.codeCopied'):copied==='link'?t('roster.inviteCopied'):''}</span></div>
-            {!facilitator&&<div className="participant-access"><small>{t('access.title')}</small><p>{t('access.help')}</p><button type="button" onClick={()=>action(async()=>{let resumeToken=participantAccess;if(!resumeToken){const result=await api('participant/access',{});resumeToken=result.resumeToken;saveParticipantAccess(resumeToken);setParticipantAccess(resumeToken);}await navigator.clipboard.writeText(participantAccessUrl(resumeToken));showCopied('access');})}><Link size={14}/>{copied==='access'?t('access.copied'):t('access.copy')}</button><span className="sr-only" role="status">{copied==='access'?t('access.copiedStatus'):''}</span></div>}
+            {room.code&&<div className="room-code"><small>{t('roster.roomCode')}</small><div className="room-code-actions"><button className="room-code-display" type="button" onClick={()=>action(async()=>{await navigator.clipboard.writeText(room.code);showCopied('code');})} aria-label={t('roster.copyCode',{code:room.code})} title={t('roster.copyCodeTitle')}>{room.code}{copied==='code'?<Check size={14}/>:<Copy size={14}/>}</button><button className="room-code-link" type="button" onClick={()=>action(async()=>{await navigator.clipboard.writeText(`${location.origin}/?code=${room.code}`);showCopied('link');})} title={t('roster.copyLink')}>{copied==='link'?t('roster.linkCopied'):t('roster.copyLink')}</button>{room.me.role==='Facilitator'&&<button className="room-code-link" type="button" onClick={()=>window.open(`${location.origin}/?code=${room.code}`,'_blank','noopener')} title={t('roster.testAsParticipantTitle')}><ExternalLink size={14}/>{t('roster.testAsParticipant')}</button>}</div><span className="sr-only" role="status">{copied==='code'?t('roster.codeCopied'):copied==='link'?t('roster.inviteCopied'):''}</span></div>}
+            {!facilitator&&room.me.cohortMemberId&&<div className="participant-access"><small>{t('access.title')}</small><p>{t('access.cohort')}</p></div>}
+            {!facilitator&&!room.me.cohortMemberId&&<div className="participant-access"><small>{t('access.title')}</small><p>{t('access.help')}</p><button type="button" onClick={()=>action(async()=>{let resumeToken=participantAccess;if(!resumeToken){const result=await api('participant/access',{});resumeToken=result.resumeToken;saveParticipantAccess(resumeToken);setParticipantAccess(resumeToken);}await navigator.clipboard.writeText(participantAccessUrl(resumeToken));showCopied('access');})}><Link size={14}/>{copied==='access'?t('access.copied'):t('access.copy')}</button><span className="sr-only" role="status">{copied==='access'?t('access.copiedStatus'):''}</span></div>}
             {room.members.length<4&&<small className="muted">{t('roster.minMembers')}</small>}
           </section>
           <section className="panel contribution"><FileText size={20}/><h2>{t('roster.contribution')}</h2><p>{contribution}</p><small className="muted">{t('roster.modeLabel',{mode:modeLabel})}</small></section>
@@ -181,6 +183,7 @@ function Join({ready,action,busy,error,joined}){
   const params=new URLSearchParams(location.search);
   const [mode,setMode]=useState(params.get('facilitator')==='1'?'create':'join');
   const [code,setCode]=useState(()=>params.get('code')?.toUpperCase()||'');
+  const [joinPath,setJoinPath]=useState(params.get('cohort')==='1'?'cohort':'room');
   const [hostKey,setHostKey]=useState('');
   const [overview,setOverview]=useState(null);
   const [googleSso,setGoogleSso]=useState(false);
@@ -189,9 +192,14 @@ function Join({ready,action,busy,error,joined}){
   const roleRef=useRef(null);
   useEffect(()=>{if(code)nameRef.current?.focus();else roleRef.current?.focus();},[]);
   useEffect(()=>{let active=true;(async()=>{try{const config=await api('config');if(!active)return;setGoogleSso(config.googleSso);if(params.get('facilitator')==='1'||config.googleSso)try{const identity=await api('facilitator/me');if(active){setFacilitator(identity);if(!params.get('code'))setMode('create');}}catch{}}catch{}})();return()=>{active=false;};},[]);
-  const create=mode==='create',facilitatorOverview=mode==='overview',participant=!create&&!facilitatorOverview;
+  const create=mode==='create',facilitatorOverview=mode==='overview',participant=!create&&!facilitatorOverview,cohortPath=participant&&joinPath==='cohort';
   const setRole=next=>{setMode(next);setOverview(null);};
   const plainError=error&&(
+    /cohortcode is ongeldig/i.test(error)?t('join.err.cohortInvalid'):
+    /cohorttoegang is verlopen/i.test(error)?t('join.err.cohortExpired'):
+    /nog geen actieve kamer/i.test(error)?t('join.err.cohortNoRoom'):
+    /pogingen met een cohortcode/i.test(error)?t('join.err.cohortRate'):
+    /kamer hoort bij een cohort/i.test(error)?t('join.err.cohortRoom'):
     /ongeldige facilitator-startsleutel|start key/i.test(error)?t('join.err.hostKey'):
     /deelnemerslink is ongeldig/i.test(error)?t('join.err.accessInvalid'):
     /naam is al in gebruik/i.test(error)?t('join.err.duplicate'):
@@ -200,7 +208,7 @@ function Join({ready,action,busy,error,joined}){
     error
   );
   const heading=facilitatorOverview?t('join.heading.overview'):create?t('join.heading.create'):t('join.heading.join');
-  const hint=facilitatorOverview?(facilitator?t('join.hint.overviewAuthed'):t('join.hint.overviewKey')):create?(facilitator?t('join.hint.createAuthed'):googleSso?t('join.hint.createGoogle'):t('join.hint.createKey')):t('join.hint.join');
+  const hint=facilitatorOverview?(facilitator?t('join.hint.overviewAuthed'):t('join.hint.overviewKey')):create?(facilitator?t('join.hint.createAuthed'):googleSso?t('join.hint.createGoogle'):t('join.hint.createKey')):cohortPath?t('join.hint.cohort'):t('join.hint.join');
   return <main className="join">
     <div className="join-copy"><p className="muted">{t('join.eyebrow')}</p><h1>{t('join.title')}<br/><span>{t('join.titleAccent')}</span></h1><p>{t('join.lede').split('\n').map((line,i)=><React.Fragment key={i}>{line}{i===0&&<br/>}</React.Fragment>)}</p><div className="join-principles"><span><Users/>{t('join.principle.squad')}</span><span><FileText/>{t('join.principle.intent')}</span><span><Sparkles/>{t('join.principle.coach')}</span></div></div>
     <section className="join-form panel" aria-labelledby="join-heading">
@@ -209,6 +217,7 @@ function Join({ready,action,busy,error,joined}){
         <button type="button" role="tab" className={create?'selected':''} aria-selected={create} onClick={()=>setRole('create')}>{t('join.facilitator')}</button>
       </div>
       <h2 id="join-heading">{heading}</h2>
+      {participant&&<div className="join-path" role="radiogroup" aria-label={t('join.path.label')}>{['room','cohort'].map(option=><button key={option} type="button" role="radio" aria-checked={joinPath===option} className={joinPath===option?'selected':''} onClick={()=>setJoinPath(option)}>{t(`join.path.${option}`)}</button>)}</div>}
       <p className="muted">{hint}</p>
       {facilitator&&<p className="facilitator-login" aria-live="polite">{t('join.signedIn',{name:facilitator.name,email:facilitator.email})} <button type="button" className="text-button" onClick={()=>action(async()=>{await authApi('logout',{});setFacilitator(null);setMode('join');})}>{t('join.signOut')}</button></p>}
       {create&&!facilitator&&googleSso&&<div className="join-google-block">
@@ -217,11 +226,12 @@ function Join({ready,action,busy,error,joined}){
         <p className="join-or" role="separator"><span>{t('join.orKey')}</span></p>
       </div>}
       <p className="muted" data-arcade-entry><a href="/arcade">Agent Arcade — je eerste agent</a> (LIS-59)</p>
-      <form onSubmit={e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.currentTarget));action(async()=>{if(facilitatorOverview){setOverview(await api('facilitator/overview',data));return;}const result=await api(create?'create':'join',data);saveSession(result);if(!create)history.replaceState(null,'',location.pathname);joined(result.resumeToken);});}}>
-        {!facilitatorOverview&&<label htmlFor="join-name">{create?t('join.nameSquad'):t('join.nameYou')}<input id="join-name" ref={!create?nameRef:null} name="name" required maxLength={50} placeholder={create?t('join.placeholderSquad'):t('join.placeholderName')} autoComplete="nickname"/></label>}
+      <form onSubmit={e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.currentTarget));action(async()=>{if(facilitatorOverview){setOverview(await api('facilitator/overview',data));return;}if(cohortPath){saveSession(await api('cohort/activate',{code:data.code}));history.replaceState(null,'',location.pathname);joined();return;}const result=await api(create?'create':'join',data);saveSession(result);if(!create)history.replaceState(null,'',location.pathname);joined(result.resumeToken);});}}>
+        {!facilitatorOverview&&!cohortPath&&<label htmlFor="join-name">{create?t('join.nameSquad'):t('join.nameYou')}<input id="join-name" ref={!create?nameRef:null} name="name" required maxLength={50} placeholder={create?t('join.placeholderSquad'):t('join.placeholderName')} autoComplete="nickname"/></label>}
         {(facilitatorOverview||create)&&!facilitator&&<label htmlFor="join-hostkey">{t('join.hostKey')}<input id="join-hostkey" name="hostKey" value={hostKey} onChange={e=>setHostKey(e.target.value)} required={!googleSso||facilitatorOverview} type="password" autoComplete="off" placeholder={t('join.hostKeyPlaceholder')}/></label>}
-        {participant&&<label htmlFor="join-code">{t('join.roomCode')}<input id="join-code" name="code" value={code} onChange={e=>setCode(e.target.value.toUpperCase())} required type="text" autoComplete="off" placeholder={t('join.roomCodePlaceholder')} spellCheck={false}/></label>}
-        <button type="submit" className="gradient" disabled={busy}>{busy?t('join.submitBusy'):facilitatorOverview?t('join.submitOverview'):create?t('join.submitCreate'):t('join.submitJoin')}<ArrowRight size={18}/></button>
+        {cohortPath&&<label htmlFor="join-cohort-code">{t('join.cohortCode')}<input id="join-cohort-code" name="code" required type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={40} placeholder={t('join.cohortCodePlaceholder')} aria-describedby="join-cohort-code-help"/><small id="join-cohort-code-help" className="muted">{t('join.cohortCodeHelp')}</small></label>}
+        {participant&&!cohortPath&&<label htmlFor="join-code">{t('join.roomCode')}<input id="join-code" name="code" value={code} onChange={e=>setCode(e.target.value.toUpperCase())} required type="text" autoComplete="off" placeholder={t('join.roomCodePlaceholder')} spellCheck={false}/></label>}
+        <button type="submit" className="gradient" disabled={busy}>{busy?t('join.submitBusy'):facilitatorOverview?t('join.submitOverview'):create?t('join.submitCreate'):cohortPath?t('join.submitCohort'):t('join.submitJoin')}<ArrowRight size={18}/></button>
       </form>
       <div className="join-live" aria-live="assertive">{plainError&&<p className="error" role="alert">{plainError}</p>}</div>
       {!create&&!facilitatorOverview&&googleSso&&!facilitator&&<p className="join-side-hint muted">{t('join.sideHint')}</p>}
@@ -266,7 +276,54 @@ function FacilitatorOverview({squads:initial,hostKey,action,joined,onError}){
   const t=useT();
   const [squads,setSquads]=useState(initial);
   useEffect(()=>{let active=true;const poll=async()=>{try{const next=await api('facilitator/overview',{hostKey});if(active)setSquads(next);}catch(e){if(active)onError(e);}};const timer=setInterval(poll,5000);return()=>{active=false;clearInterval(timer);};},[hostKey,onError]);
-  return <div className="facilitator-overview">{!squads.length?<p className="empty">{t('overview.empty')}</p>:squads.map(squad=><article className="evidence" key={squad.id}><h3>{squad.name}</h3><p>{t('overview.roomCode')} <code>{squad.code}</code></p><p>{t('overview.round',{round:squad.round,phase:squad.phase,day:squad.day})}</p><p>{squad.running?t('overview.running'):t('overview.paused')} · {formatSeconds(squad.remaining)}</p><ul>{squad.members.map(member=><li key={member.id}>{member.name} · {member.role} · {member.online?t('overview.online'):t('overview.offline')} · {member.help?t('overview.askingHelp'):''}</li>)}</ul><p>{t('overview.evidence',{evidence:squad.evidence,handoffs:squad.handoffs})}</p>{squad.awaitingReview>0&&<p className="cyan">{t('overview.awaitingReview',{count:squad.awaitingReview})}</p>}<p>{t('overview.board',{status:squad.board==='open'?t('board.open'):squad.board==='closed'?t('board.closed'):t('overview.boardNone')})}</p><button type="button" onClick={()=>action(async()=>{const result=await api('facilitator/attach',{hostKey,roomId:squad.id});saveSession(result);joined();})}>{t('overview.open')}</button></article>)}</div>;
+  return <div className="facilitator-overview"><CohortPanel squads={squads} hostKey={hostKey} action={action}/>{!squads.length?<p className="empty">{t('overview.empty')}</p>:squads.map(squad=><article className="evidence" key={squad.id}><h3>{squad.name}</h3><p>{t('overview.roomCode')} <code>{squad.code}</code></p><p>{t('overview.round',{round:squad.round,phase:squad.phase,day:squad.day})}</p><p>{squad.running?t('overview.running'):t('overview.paused')} · {formatSeconds(squad.remaining)}</p><ul>{squad.members.map(member=><li key={member.id}>{member.name} · {member.role} · {member.online?t('overview.online'):t('overview.offline')} · {member.help?t('overview.askingHelp'):''}</li>)}</ul><p>{t('overview.evidence',{evidence:squad.evidence,handoffs:squad.handoffs})}</p>{squad.awaitingReview>0&&<p className="cyan">{t('overview.awaitingReview',{count:squad.awaitingReview})}</p>}<p>{t('overview.board',{status:squad.board==='open'?t('board.open'):squad.board==='closed'?t('board.closed'):t('overview.boardNone')})}</p><button type="button" onClick={()=>action(async()=>{const result=await api('facilitator/attach',{hostKey,roomId:squad.id});saveSession(result);joined();})}>{t('overview.open')}</button></article>)}</div>;
+}
+
+function CohortPanel({squads,hostKey,action}){
+  const t=useT();
+  const {locale}=useI18n();
+  const [cohorts,setCohorts]=useState([]);
+  const [codes,setCodes]=useState([]);
+  const [copied,setCopied]=useState(false);
+  const refresh=async()=>setCohorts(await api('facilitator/cohorts',{hostKey}));
+  useEffect(()=>{action(refresh);},[hostKey]);
+  const reveal=list=>{setCodes(current=>[...current,...list]);setCopied(false);};
+  const names=value=>String(value||'').split('\n').map(name=>name.trim()).filter(Boolean);
+  const date=ms=>new Date(ms).toLocaleDateString(locale==='nl'?'nl-NL':'en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
+  const submit=(route,build,after)=>e=>{e.preventDefault();const form=e.currentTarget,data=Object.fromEntries(new FormData(form));action(async()=>{const result=await api(route,{hostKey,...build(data)});after(result);form.reset();await refresh();});};
+  const memberAction=(route,cohortId,memberId)=>action(async()=>{const result=await api(route,{hostKey,cohortId,memberId});if(result.code)reveal([result]);await refresh();});
+  return <section className="cohort-panel" aria-labelledby="cohort-heading">
+    <h3 id="cohort-heading">{t('cohort.title')}</h3>
+    {codes.length>0&&<div className="cohort-codes" role="region" aria-label={t('cohort.codesTitle')}>
+      <strong>{t('cohort.codesTitle')}</strong><p>{t('cohort.codesHelp')}</p>
+      <ul>{codes.map(entry=><li key={entry.memberId+entry.code}><span>{entry.name}</span><code>{entry.code}</code></li>)}</ul>
+      <div className="cohort-actions"><button type="button" onClick={()=>action(async()=>{await navigator.clipboard.writeText(codes.map(entry=>`${entry.name}\t${entry.code}`).join('\n'));setCopied(true);})}>{copied?t('cohort.copied'):t('cohort.copyAll')}</button><button type="button" className="text-button" onClick={()=>setCodes([])}>{t('cohort.hideCodes')}</button></div>
+    </div>}
+    {!cohorts.length&&<p className="muted">{t('cohort.empty')}</p>}
+    {cohorts.map(cohort=><article className="cohort-card" key={cohort.id}>
+      <header><h4>{cohort.name}</h4><span className={'cohort-phase '+cohort.phase}>{t(`cohort.phase.${cohort.phase}`)}</span></header>
+      <p className="muted">{t('cohort.window',{start:date(cohort.startsAt),active:date(cohort.activeEndsAt),readOnly:date(cohort.readOnlyEndsAt)})}</p>
+      <form className="cohort-attach" key={cohort.currentRoomId||"none"} onSubmit={submit('facilitator/cohort/attach',data=>({cohortId:cohort.id,roomId:data.roomId}),()=>{})}>
+        <label>{t('cohort.room')}<select name="roomId" defaultValue={cohort.currentRoomId||''} required><option value="" disabled>{t('cohort.noRoom')}</option>{squads.map(squad=><option key={squad.id} value={squad.id}>{squad.name} · {squad.code}</option>)}</select></label>
+        <button type="submit">{t('cohort.attach')}</button>
+      </form>
+      <ul className="cohort-roster">{cohort.members.map(member=><li key={member.id}>
+        <span><strong>{member.name}</strong><small className={'cohort-status '+member.status}>{t(`cohort.status.${member.status}`)}{member.seated?` · ${t('cohort.seated')}`:''}</small></span>
+        <span className="cohort-actions">{member.status!=='revoked'&&<button type="button" onClick={()=>memberAction('facilitator/cohort/revoke',cohort.id,member.id)}>{t('cohort.revoke')}</button>}<button type="button" onClick={()=>memberAction('facilitator/cohort/reissue',cohort.id,member.id)}>{t('cohort.reissue')}</button></span>
+      </li>)}</ul>
+      <form className="cohort-add" onSubmit={submit('facilitator/cohort/members',data=>({cohortId:cohort.id,members:names(data.members)}),result=>reveal(result.codes))}>
+        <label>{t('cohort.addMembers')}<textarea name="members" rows={2} required/></label>
+        <button type="submit">{t('cohort.submitAdd')}</button>
+      </form>
+    </article>)}
+    <form className="cohort-create" onSubmit={submit('facilitator/cohort/create',data=>({name:data.name,startDate:data.startDate,days:Number(data.days),members:names(data.members)}),result=>reveal(result.codes))}>
+      <strong>{t('cohort.create')}</strong>
+      <label>{t('cohort.name')}<input name="name" required maxLength={60} placeholder={t('cohort.namePlaceholder')}/></label>
+      <div className="cohort-row"><label>{t('cohort.startDate')}<input name="startDate" type="date" required/></label><label>{t('cohort.days')}<input name="days" type="number" min={1} max={14} defaultValue={5} required/></label></div>
+      <label>{t('cohort.members')}<textarea name="members" rows={4}/></label>
+      <button type="submit" className="gradient">{t('cohort.submitCreate')}</button>
+    </form>
+  </section>;
 }
 
 const formatSeconds=seconds=>`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;
