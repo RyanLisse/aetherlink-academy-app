@@ -570,5 +570,22 @@
   "course.include": "Include",
   "course.save": "Save course for this room",
   "course.remove": "Back to fixed order",
-  "course.sot": "Only order, selection, titles and dates can be changed per course. Lesson content is changed at the source."
+  "course.sot": "Only order, selection, titles and dates can be changed per course. Lesson content is changed at the source.",
+  "nav.naslag": "Reference",
+  "naslag.eyebrow": "Reference",
+  "naslag.title": "Everything released so far, to reread",
+  "naslag.lede": "Reread released days, practise a quiz again or look something up. The room stays on the facilitator's day.",
+  "naslag.ledeAll": "The training is complete: every day is open. Reread, practise and look things up whenever you like.",
+  "naslag.searchLabel": "Search the reference",
+  "naslag.searchPlaceholder": "Search released days, for example credential or CLAUDE.md",
+  "naslag.searchButton": "Search",
+  "naslag.noHits": "Nothing found in the released days. Try other words or ask your own Claude via My learning coach.",
+  "naslag.daysLabel": "Days in the reference",
+  "naslag.live": "live",
+  "naslag.locked": "Not released yet",
+  "naslag.deckReference": "Deck reference per day",
+  "naslag.glossary": "Glossary",
+  "naslag.dayDeck": "Day {day} slides in the deck reference",
+  "naslag.practiceHint": "Practice attempt for day {day}. The score counts for day {day}; today's help choice stays as it is.",
+  "naslag.practiceResult": "Saved on day {day}. Retakes are fine; your best score for this day is kept."
 }

@@ -70,12 +70,15 @@ test('no match or a conceptual question hands off to the participant’s own Cla
  assert.equal(why.hits[0].id,'d3:step:w3-l1');
 });
 
-test('only the room’s released day is searchable',()=>{
+test('every released day is searchable and nothing after the room’s day',()=>{
  const day4Titles=DAY_SOURCES[3].solo.map(step=>step.title);
  for(const title of day4Titles){
   assert.ok(answerQuestion({day:4,query:title}).hits[0].id.startsWith('d4:'),title);
-  assert.deepEqual(answerQuestion({day:3,query:title}).hits.filter(hit=>/^d[1-7]:/.test(hit.id)&&!hit.id.startsWith('d3:')),[],title);
+  assert.deepEqual(answerQuestion({day:3,query:title}).hits.filter(hit=>/^d[4-7]:/.test(hit.id)),[],title);
  }
+ assert.equal(answerQuestion({day:5,query:'Heb ik een credential nodig voor L1?'}).hits[0].id,'d3:step:w3-l1');
+ assert.deepEqual(answerQuestion({day:2,query:'Heb ik een credential nodig voor L1?'}).hits.filter(hit=>hit.id.startsWith('d3:')),[]);
+ assert.equal(answerQuestion({day:2,released:[1,2,3],query:'Heb ik een credential nodig voor L1?'}).hits[0].id,'d3:step:w3-l1');
 });
 
 test('quiz questions, quiz keys and the facilitator demo script never come back',()=>{

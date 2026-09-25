@@ -570,5 +570,22 @@
   "course.include": "Opnemen",
   "course.save": "Cursus opslaan voor deze kamer",
   "course.remove": "Terug naar vaste volgorde",
-  "course.sot": "Alleen volgorde, selectie, titels en datums zijn per cursus aan te passen. Lesinhoud wijzig je in de bron."
+  "course.sot": "Alleen volgorde, selectie, titels en datums zijn per cursus aan te passen. Lesinhoud wijzig je in de bron.",
+  "nav.naslag": "Naslag",
+  "naslag.eyebrow": "Naslag",
+  "naslag.title": "Alles wat al vrijgegeven is, om na te lezen",
+  "naslag.lede": "Lees vrijgegeven dagen terug, oefen een quiz opnieuw of zoek iets op. De kamer blijft op de dag van de facilitator staan.",
+  "naslag.ledeAll": "De training is afgerond: alle dagen staan open. Lees terug, oefen opnieuw en zoek op wanneer je wilt.",
+  "naslag.searchLabel": "Zoek in de naslag",
+  "naslag.searchPlaceholder": "Zoek in vrijgegeven dagen, bijvoorbeeld credential of CLAUDE.md",
+  "naslag.searchButton": "Zoek",
+  "naslag.noHits": "Niets gevonden in de vrijgegeven dagen. Probeer andere woorden of vraag je eigen Claude via Mijn leercoach.",
+  "naslag.daysLabel": "Dagen in de naslag",
+  "naslag.live": "live",
+  "naslag.locked": "Nog niet vrijgegeven",
+  "naslag.deckReference": "Deck-naslag per dag",
+  "naslag.glossary": "Begrippenlijst",
+  "naslag.dayDeck": "Dia's van dag {day} in de deck-naslag",
+  "naslag.practiceHint": "Oefenpoging voor dag {day}. De score telt voor dag {day}; je hulpkeuze van vandaag blijft zoals hij is.",
+  "naslag.practiceResult": "Opgeslagen bij dag {day}. Opnieuw proberen mag; je beste score voor deze dag blijft staan."
 }

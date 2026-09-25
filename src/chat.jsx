@@ -11,7 +11,7 @@ function ChatLink({link,onNavigate}){
  return <a className="chat-link" href={link.href} target="_blank" rel="noopener noreferrer">{link.label}<ExternalLink size={12} aria-hidden="true"/></a>;
 }
 
-function Hit({hit,onNavigate}){
+export function Hit({hit,onNavigate}){
  const t=useT();
  return <div className="chat-hit">
   <strong>{hit.title}</strong>{hit.open&&<span className="chat-open">OPEN</span>}

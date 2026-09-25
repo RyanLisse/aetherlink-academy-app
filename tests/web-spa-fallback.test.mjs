@@ -47,9 +47,9 @@ async function get(port, pathname) {
   return {status: res.status, text, contentType: res.headers.get('content-type') || ''};
 }
 
-test('apps/web SPA fallback returns index for classroom/deck/workshop/lesson/live', async () => {
+test('apps/web SPA fallback returns index for classroom/deck/workshop/lesson/live/reference', async () => {
   await withServer(async ({port}) => {
-    for (const route of ['/classroom/1', '/classroom/2', '/workshop/5', '/workshop/3', '/workshop/4', '/workshop/6', '/workshop/7', '/lesson/classroom-1', '/lesson/classroom-2', '/lesson/workshop-3', '/lesson/workshop-4', '/lesson/workshop-6', '/lesson/workshop-7', '/deck', '/live/demo']) {
+    for (const route of ['/classroom/1', '/classroom/2', '/workshop/5', '/workshop/3', '/workshop/4', '/workshop/6', '/workshop/7', '/lesson/classroom-1', '/lesson/classroom-2', '/lesson/workshop-3', '/lesson/workshop-4', '/lesson/workshop-6', '/lesson/workshop-7', '/deck', '/live/demo', '/reference', '/reference/day/2', '/reference/glossary']) {
       const res = await get(port, route);
       assert.equal(res.status, 200, `${route} status`);
       assert.match(res.text, /data-surface="classroom-deck"/, `${route} body`);
