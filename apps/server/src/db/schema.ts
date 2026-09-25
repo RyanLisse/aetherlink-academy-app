@@ -1,7 +1,7 @@
 import type {AnyPgColumn} from 'drizzle-orm/pg-core';
 import {boolean, check, foreignKey, integer, jsonb, pgSchema, primaryKey, text, timestamp, unique, uuid} from 'drizzle-orm/pg-core';
 import {sql} from 'drizzle-orm';
-import type {LocalizedText} from '@academy/schema';
+import type {DayChecklistItem, DayScheduleEntry, LocalizedText} from '@academy/schema';
 
 export const curriculum = pgSchema('academy_curriculum');
 
@@ -82,8 +82,8 @@ export const days = curriculum.table(
     kind: text('kind', {enum: ['teaching', 'support']}).notNull(),
     title: localized('title').notNull(),
     ladder: jsonb('ladder').$type<readonly string[]>(),
-    schedule: jsonb('schedule').$type<ReadonlyArray<{label: LocalizedText; start?: string; end?: string}>>(),
-    checklist: jsonb('checklist').$type<readonly LocalizedText[]>(),
+    schedule: jsonb('schedule').$type<readonly DayScheduleEntry[]>(),
+    checklist: jsonb('checklist').$type<readonly DayChecklistItem[]>(),
     guideUrl: text('guide_url'),
     participantRepo: text('participant_repo'),
     agentRepo: text('agent_repo'),
