@@ -29,16 +29,16 @@ export default {
   ]
  },
  solo:[
-  {id:'w3-l1',badge:'L1',level:'required',timerMinutes:15,title:'L1 · Switch zonder LLM',goal:'Bouw of inspecteer L1 op je eigen machine: ticket → Switch → Low/Medium/High. Geen LLM. Benoem input, takken en foutpad.',doneWhen:'De flow draait, de labels kloppen met de fixture, de stappen zijn genoteerd en een mens bevestigt de tak. Gate vóór L2.',hint:'Importeer n8n-triage-l1-switch.json; er is geen credential nodig.',slide:slide(d,7,'Build or inspect L1 on your machine.')},
-  {id:'w3-l2',badge:'L2',level:'required',timerMinutes:20,title:'L2 · Eén AI Agent met memory',goal:'Zelfde keten plus één begrensde AI Agent met memory. De agent stelt een prioriteit voor; een mens reviewt. Leg trace en instellingen vast.',doneWhen:'Een AI-run vastgelegd, prioriteit door een mens gereviewd, geen stille auto-send en de Proof-velden gestart. Dit is de solo-lat.',hint:'Importeer n8n-triage-l2-agent-memory.json en kies je eigen credential op het chatmodel.',slide:slide(d,10,'Reach L2 on your own machine.')},
-  {id:'w3-l3',badge:'L3',level:'stretch',timerMinutes:15,title:'L3 · Reply en Risk als specialisten',goal:'Splits antwoord en risico over twee specialisten, orkestreer ze en documenteer wie wat doet.',doneWhen:'Twee rollen benoemd, gezamenlijke output en een expliciete menselijke gate. Optioneel.',hint:'Importeer n8n-triage-l3-multi-agent.json; elk specialistenmodel heeft een credential nodig.',slide:slide(d,13,'Stretch L3 — same tickets.')},
+  {id:'w3-l1',autograde:'triage',badge:'L1',level:'required',timerMinutes:15,title:'L1 · Switch zonder LLM',goal:'Bouw of inspecteer L1 op je eigen machine: ticket → Switch → Low/Medium/High. Geen LLM. Benoem input, takken en foutpad.',doneWhen:'De flow draait, de labels kloppen met de fixture, de stappen zijn genoteerd en een mens bevestigt de tak. Gate vóór L2.',hint:'Importeer n8n-triage-l1-switch.json; er is geen credential nodig.',slide:slide(d,7,'Build or inspect L1 on your machine.')},
+  {id:'w3-l2',autograde:'triage',badge:'L2',level:'required',timerMinutes:20,title:'L2 · Eén AI Agent met memory',goal:'Zelfde keten plus één begrensde AI Agent met memory. De agent stelt een prioriteit voor; een mens reviewt. Leg trace en instellingen vast.',doneWhen:'Een AI-run vastgelegd, prioriteit door een mens gereviewd, geen stille auto-send en de Proof-velden gestart. Dit is de solo-lat.',hint:'Importeer n8n-triage-l2-agent-memory.json en kies je eigen credential op het chatmodel.',slide:slide(d,10,'Reach L2 on your own machine.')},
+  {id:'w3-l3',autograde:'triage',badge:'L3',level:'stretch',timerMinutes:15,title:'L3 · Reply en Risk als specialisten',goal:'Splits antwoord en risico over twee specialisten, orkestreer ze en documenteer wie wat doet.',doneWhen:'Twee rollen benoemd, gezamenlijke output en een expliciete menselijke gate. Optioneel.',hint:'Importeer n8n-triage-l3-multi-agent.json; elk specialistenmodel heeft een credential nodig.',slide:slide(d,13,'Stretch L3 — same tickets.')},
   {id:'w3-proof',badge:'P',level:'required',timerMinutes:10,title:'Proof-pakket exporteren',goal:'Exporteer je flow of maak een screenshot, beschrijf de L/M/H-regels in één alinea en noteer je niveau.',doneWhen:'Export of screenshot, regels in één alinea, menselijke gate benoemd en behaald niveau vastgelegd.',slide:slide(d,15,'Export your Proof pack before you leave.')}
  ],
  materials:[
   starter('n8n-triage-l1-switch.json','n8n-starter L1 · Switch'),
   starter('n8n-triage-l2-agent-memory.json','n8n-starter L2 · AI Agent + memory'),
   starter('n8n-triage-l3-multi-agent.json','n8n-starter L3 · Reply + Risk'),
-  starter('triage-fixtures.json','Gedeelde fixture-tickets met verwachte labels'),
+  starter('triage-fixtures.json','Gedeelde fixture-tickets (de server controleert je labels)'),
   openMaterial('vehicle','Workshop-n8n-instantie','De deck verwijst naar “the workshop n8n instance”; de URL staat niet in het lesplan.')
  ],
  proof:[

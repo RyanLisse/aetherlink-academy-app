@@ -1,7 +1,8 @@
 import express from 'express';
 import {agentInstructions} from './agent-setup.mjs';
 import {dayProgress,debrief,exportDebrief} from './progress.mjs';
-import {findTask,taskStatus,taskTrail,reviewQueue,peerQueue,transition,reviewEvent,reviewerRole,authorizeTaskReview} from './proof-trail.mjs';
+import {findTask,taskStatus,taskTrail,reviewQueue,peerQueue,transition,reviewEvent,reviewerRole,authorizeTaskReview,submitAutograde} from './proof-trail.mjs';
+import {PARTICIPANT_FIXTURES} from '../content/triage/grade.mjs';
 import {applyBoardAction,boardMarkdown,boardView,parseBoard,roomDocument} from './debrief-board.mjs';
 import http from 'node:http';
 import httpProxy from 'http-proxy';
@@ -158,6 +159,7 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  }
  app.post('/game/evidence',wrap(async(req,res)=>{await browser(req);res.json(await evidence(token(req),req.body));}));
  app.get('/game/tasks',wrap(async(req,res)=>{const {r,p}=await browser(req);if(!p)fail(403,'Alleen deelnemers hebben een eigen opdrachtenlijst.');res.json({day:r.day,tasks:taskTrail(r,p.id,r.day)});}));
+ app.post('/game/tasks/:taskId/autograde',wrap(async(req,res)=>res.json(await store.withSession(token(req),'browser',({r,p})=>{if(!p)fail(403,'Alleen deelnemers leveren labels in voor automatische beoordeling.');return submitAutograde(r,p,findTask(r.day,String(req.params.taskId)),req.body,new Date().toISOString());}))));
  app.get('/game/tasks/peer',wrap(async(req,res)=>{const {r,p}=await browser(req);if(!p)fail(403,'Alleen deelnemers beoordelen elkaars opdrachten.');res.json(peerQueue(r,p.id));}));
  app.get('/game/tasks/queue',wrap(async(req,res)=>{const {r,s}=await browser(req);if(s.personId!=='facilitator')fail(403,'Alleen de facilitator ziet de beoordelingswachtrij.');res.json(reviewQueue(r));}));
  app.post('/game/review',wrap(async(req,res)=>{
@@ -212,7 +214,7 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
   if(req.headers.origin&&req.headers.origin!==publicUrl.origin)return res.status(403).json({error:'Andere origin niet toegestaan.'});
   await mcpNodeHandler(req,res,req.body);
  }));
- app.get('/game/starter/:file',wrap(async(req,res)=>{await browser(req);if(!starterFileNames.includes(req.params.file))fail(404,'Bestand niet gevonden.');res.type('text/plain').send(readFileSync(path.join(root,'starter',req.params.file),'utf8'));}));
+ app.get('/game/starter/:file',wrap(async(req,res)=>{await browser(req);if(!starterFileNames.includes(req.params.file))fail(404,'Bestand niet gevonden.');res.type('text/plain').send(req.params.file==='triage-fixtures.json'?JSON.stringify(PARTICIPANT_FIXTURES,null,2)+'\n':readFileSync(path.join(root,'starter',req.params.file),'utf8'));}));
 
  const resolvePortalActor=async req=>{
   const facilitator=await store.facilitator(namedCookie(req,'academy-facilitator'));

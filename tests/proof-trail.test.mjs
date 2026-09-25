@@ -48,6 +48,10 @@ const TABLE=[
  ['approved','submit',409],
  ['approved','approve',409],
  ['approved','request_changes',409],
+ ['open','autograde_pass','approved'],
+ ['submitted','autograde_pass','approved'],
+ ['changes_requested','autograde_pass','approved'],
+ ['approved','autograde_pass',409],
 ];
 for(const [status,event,expected] of TABLE)test(`transition ${status} --${event}--> ${expected}`,()=>{
  if(expected===409)assert.throws(()=>transition(status,event),error=>error.status===409);
@@ -115,8 +119,8 @@ test('task → submit → changes requested → resubmit → approved, visible t
  assert.equal(overview.body[0].awaitingReview,0);
 });
 
-test('reviewer roles are a closed list that AET-103 can extend with auto-graded',()=>{
- assert.deepEqual(REVIEWER_ROLES,['peer','facilitator']);
+test('reviewer roles are a closed list that includes the autograder',()=>{
+ assert.deepEqual(REVIEWER_ROLES,['peer','facilitator','auto-graded']);
 });
 
 test('a peer in the same room reviews task evidence; the author sees the decision and who made it',async()=>{
