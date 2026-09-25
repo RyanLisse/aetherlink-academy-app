@@ -13,6 +13,8 @@ import {I18nProvider,LanguageToggle,useT,useI18n} from './i18n';
 import {classroomEmbedUrl,CLASSROOM_SANDBOX} from './classroom';
 import {connectBoard} from './board-doc';
 import {ArcadeApp, isArcadePath} from './arcade/ArcadeApp.jsx';
+import {StatusState} from './status';
+import {classifyJoinError} from './join-errors.mjs';
 import './style.css';
 
 const phases=['Plan','Design','Build','Test','Deploy','Maintain'];
@@ -59,7 +61,7 @@ function App(){
   useEffect(()=>{document.documentElement.dataset.theme=theme;localStorage.setItem('academy-theme',theme);},[theme]);
   useEffect(()=>{if(!accessFromUrl)return;const url=new URL(location.href);url.hash='';history.replaceState(null,'',url.pathname+url.search);},[accessFromUrl]);
   useEffect(()=>{if(session||!participantAccess)return;let active=true;setBusy(true);api('participant/resume',{resumeToken:participantAccess}).then(result=>{if(!active)return;saveParticipantAccess(participantAccess);saveSession(result);setSession(true);}).catch(e=>{if(!active)return;if(getParticipantAccess()===participantAccess)forgetParticipantAccess();setParticipantAccess(null);setError(e.message);}).finally(()=>{if(active)setBusy(false);});return()=>{active=false;};},[session,participantAccess]);
-  useEffect(()=>{if(!session)return;let active=true;const poll=async()=>{try{const r=await api('state');if(active){setRoom(r);setConnected(true);}}catch(e){if(active){setConnected(false);setError(e.message);}}};api('resume',{}).then(poll).catch(e=>{sessionStorage.removeItem('academy-token');setRoom(null);setConnected(false);setSession(false);if(!participantAccess)setError(e.message);});const timer=setInterval(poll,2000);return()=>{active=false;clearInterval(timer);};},[session,participantAccess]);
+  useEffect(()=>{if(!session)return;let active=true;const poll=async()=>{try{const r=await api('state');if(active){setRoom(r);setConnected(true);}}catch(e){if(active){setConnected(false);if(e.status&&e.status<500)setError(e.message);}}};api('resume',{}).then(poll).catch(e=>{sessionStorage.removeItem('academy-token');setRoom(null);setConnected(false);setSession(false);if(!participantAccess)setError(e.message);});const timer=setInterval(poll,2000);return()=>{active=false;clearInterval(timer);};},[session,participantAccess]);
   useEffect(()=>{if(!session)return;let active=true;api('config').then(config=>{if(active)setAgentChatAvailable(Boolean(config.agentChatAvailable));}).catch(()=>{if(active)setAgentChatAvailable(false);});return()=>{active=false;};},[session]);
   const participant=Boolean(room)&&room.me.role!=='Facilitator';
   const naslagLanding=participant&&(room.readOnly||(room.allReleased&&Boolean(room.me.cohortMemberId)));
@@ -71,7 +73,7 @@ function App(){
   const themeButton=<button className="icon-button" aria-label={theme==='dark'?t('theme.light'):t('theme.dark')} onClick={()=>setTheme(theme==='dark'?'light':'dark')}>{theme==='dark'?<Sun size={19}/>:<Moon size={19}/>}</button>;
   const localeToggle=<LanguageToggle/>;
   if(isArcadePath(location.pathname))return <ArcadeApp themeButton={themeButton}/>;
-  if(!session||!room)return <><header className="welcome-header"><Brand/><div className="welcome-actions">{localeToggle}{themeButton}</div></header><Join ready={session} action={action} busy={busy} error={error} joined={resumeToken=>{if(resumeToken)setParticipantAccess(resumeToken);setSession(true);}}/></>;
+  if(!session||!room)return <><header className="welcome-header"><Brand/><div className="welcome-actions">{localeToggle}{themeButton}</div></header><Join ready={session} action={action} busy={busy} error={error} clearError={()=>setError('')} joined={resumeToken=>{if(resumeToken)setParticipantAccess(resumeToken);setSession(true);}}/></>;
   const facilitator=room.me.role==='Facilitator';
   const control=(actionName,value)=>action(async()=>{const r=await api('control',{action:actionName,value});setRoom(r);});
   const dayLabel=room.day<=2?t('room.guided'):room.day===3?t('room.coached'):room.day===4?t('room.hints'):t('room.independent');
@@ -84,7 +86,8 @@ function App(){
     <main>
       <div className="room-heading"><div><p className="muted">{t('room.supportDay',{day:coursePosition(room)})} · {dayLabel}</p><h1>{room.name}</h1></div><div className="round"><span>{t('room.round',{round:room.round})} · {roundStatus}</span><strong><Clock size={22}/><Timer room={room}/></strong></div></div>
       <div className="sdlc" aria-label={t('room.sdlc')}>{phases.map((p,i)=><React.Fragment key={p}><div className={p===room.phase?'active':''}><span>{p}</span></div>{i<5&&<span className="phase-line"/>}</React.Fragment>)}</div>
-      {room.readOnly&&<div className="read-only-banner" role="status"><div><strong>{t('readOnly.title')}</strong><p>{t('readOnly.help')}</p></div><button type="button" onClick={()=>action(async()=>{const doc=await api('document');const link=document.createElement('a');link.href=URL.createObjectURL(new Blob([doc.markdown||''],{type:'text/markdown'}));link.download=`${room.name}.md`;link.click();URL.revokeObjectURL(link.href);})}><FileText size={15}/>{t('readOnly.export')}</button></div>}
+      {!connected&&<StatusState kind="offline" title={t('status.offline')}>{t('status.offlineHelp')}</StatusState>}
+      {room.readOnly&&<StatusState kind="readonly" title={t('readOnly.title')} action={<button type="button" onClick={()=>action(async()=>{const doc=await api('document');const link=document.createElement('a');link.href=URL.createObjectURL(new Blob([doc.markdown||''],{type:'text/markdown'}));link.download=`${room.name}.md`;link.click();URL.revokeObjectURL(link.href);})}><FileText size={15} aria-hidden="true"/>{t('readOnly.export')}</button>}>{t('readOnly.help')}</StatusState>}
       {error&&<div className="error" role="alert">{error}<button onClick={()=>setError('')} aria-label={t('common.closeAlert')}>×</button></div>}
       {facilitator&&<FacilitatorControls room={room} control={control} busy={busy} connected={connected} onOpenClassroom={()=>setClassroomOpen(true)}/>}
       {facilitator&&classroomOpen&&<ClassroomOverlay room={room} onClose={()=>setClassroomOpen(false)}/>}
@@ -185,7 +188,17 @@ function ClassroomOverlay({room,onClose}){
 
 function Brand(){const t=useT();return <div className="brand">AetherLink <span>{t('brand.academy')}</span></div>;}
 
-function Join({ready,action,busy,error,joined}){
+function Segmented({name,legend,value,options,onChange,className}){
+  return <fieldset className={'segmented '+(className||'')}>
+    <legend className="sr-only">{legend}</legend>
+    {options.map(option=><label key={option.value} className={value===option.value?'selected':''}>
+      <input type="radio" name={name} value={option.value} checked={value===option.value} onChange={()=>onChange(option.value)}/>
+      <span>{option.label}</span>{option.detail&&<small>{option.detail}</small>}
+    </label>)}
+  </fieldset>;
+}
+
+function Join({ready,action,busy,error,clearError,joined}){
   const t=useT();
   const params=new URLSearchParams(location.search);
   const [mode,setMode]=useState(params.get('facilitator')==='1'?'create':'join');
@@ -196,85 +209,81 @@ function Join({ready,action,busy,error,joined}){
   const [googleSso,setGoogleSso]=useState(false);
   const [facilitator,setFacilitator]=useState(null);
   const nameRef=useRef(null);
-  const roleRef=useRef(null);
-  useEffect(()=>{if(code)nameRef.current?.focus();else roleRef.current?.focus();},[]);
+  useEffect(()=>{if(code)nameRef.current?.focus();},[]);
   useEffect(()=>{let active=true;(async()=>{try{const config=await api('config');if(!active)return;setGoogleSso(config.googleSso);if(params.get('facilitator')==='1'||config.googleSso)try{const identity=await api('facilitator/me');if(active){setFacilitator(identity);if(!params.get('code'))setMode('create');}}catch{}}catch{}})();return()=>{active=false;};},[]);
   const create=mode==='create',facilitatorOverview=mode==='overview',participant=!create&&!facilitatorOverview,cohortPath=participant&&joinPath==='cohort';
-  const setRole=next=>{setMode(next);setOverview(null);};
-  const plainError=error&&(
-    /cohortcode is ongeldig/i.test(error)?t('join.err.cohortInvalid'):
-    /cohorttoegang is verlopen/i.test(error)?t('join.err.cohortExpired'):
-    /nog geen actieve kamer/i.test(error)?t('join.err.cohortNoRoom'):
-    /pogingen met een cohortcode/i.test(error)?t('join.err.cohortRate'):
-    /kamer hoort bij een cohort/i.test(error)?t('join.err.cohortRoom'):
-    /ongeldige facilitator-startsleutel|start key/i.test(error)?t('join.err.hostKey'):
-    /deelnemerslink is ongeldig/i.test(error)?t('join.err.accessInvalid'):
-    /naam is al in gebruik/i.test(error)?t('join.err.duplicate'):
-    /kamer niet gevonden|ongeldige kamercode|niet gevonden|room not found|invalid room/i.test(error)?t('join.err.room'):
-    /vol|volzet|maximaal|te veel|full|capacity/i.test(error)?t('join.err.full'):
-    error
-  );
+  const setRole=next=>{setMode(next);setOverview(null);clearError();};
+  const choosePath=next=>{setJoinPath(next);clearError();};
+  const failure=classifyJoinError(error);
+  const invalid=field=>failure?.field===field?{'aria-invalid':true,'aria-describedby':'join-error'}:{};
   const heading=facilitatorOverview?t('join.heading.overview'):create?t('join.heading.create'):t('join.heading.join');
   const hint=facilitatorOverview?(facilitator?t('join.hint.overviewAuthed'):t('join.hint.overviewKey')):create?(facilitator?t('join.hint.createAuthed'):googleSso?t('join.hint.createGoogle'):t('join.hint.createKey')):cohortPath?t('join.hint.cohort'):t('join.hint.join');
   return <main className="join">
-    <div className="join-copy"><p className="muted">{t('join.eyebrow')}</p><h1>{t('join.title')}<br/><span>{t('join.titleAccent')}</span></h1><p>{t('join.lede').split('\n').map((line,i)=><React.Fragment key={i}>{line}{i===0&&<br/>}</React.Fragment>)}</p><div className="join-principles"><span><Users/>{t('join.principle.squad')}</span><span><FileText/>{t('join.principle.intent')}</span><span><Sparkles/>{t('join.principle.coach')}</span></div></div>
+    <div className="join-copy"><p className="muted">{t('join.eyebrow')}</p><h1>{t('join.title')} <br/><span>{t('join.titleAccent')}</span></h1><p>{t('join.lede').split('\n').map((line,i)=><React.Fragment key={i}>{line}{i===0&&<br/>}</React.Fragment>)}</p><div className="join-principles"><span><Users aria-hidden="true"/>{t('join.principle.squad')}</span><span><FileText aria-hidden="true"/>{t('join.principle.intent')}</span><span><Sparkles aria-hidden="true"/>{t('join.principle.coach')}</span></div></div>
     <section className="join-form panel" aria-labelledby="join-heading">
-      <div className="join-role" role="tablist" aria-label={t('join.roleList')}>
-        <button ref={roleRef} type="button" role="tab" className={participant?'selected':''} aria-selected={participant} onClick={()=>setRole('join')}>{t('join.participant')}</button>
-        <button type="button" role="tab" className={create?'selected':''} aria-selected={create} onClick={()=>setRole('create')}>{t('join.facilitator')}</button>
-      </div>
+      <Segmented name="join-role" className="join-role" legend={t('join.roleList')} value={participant?'join':'create'} onChange={setRole} options={[{value:'join',label:t('join.participant')},{value:'create',label:t('join.facilitator')}]}/>
       <h2 id="join-heading">{heading}</h2>
-      {participant&&<div className="join-path" role="radiogroup" aria-label={t('join.path.label')}>{['room','cohort'].map(option=><button key={option} type="button" role="radio" aria-checked={joinPath===option} className={joinPath===option?'selected':''} onClick={()=>setJoinPath(option)}>{t(`join.path.${option}`)}</button>)}</div>}
-      <p className="muted">{hint}</p>
+      {participant&&<Segmented name="join-path" className="join-path" legend={t('join.path.label')} value={joinPath} onChange={choosePath} options={[{value:'room',label:t('join.path.room'),detail:t('join.path.roomDetail')},{value:'cohort',label:t('join.path.cohort'),detail:t('join.path.cohortDetail')}]}/>}
+      <p className="muted join-hint">{hint}</p>
       {facilitator&&<p className="facilitator-login" aria-live="polite">{t('join.signedIn',{name:facilitator.name,email:facilitator.email})} <button type="button" className="text-button" onClick={()=>action(async()=>{await authApi('logout',{});setFacilitator(null);setMode('join');})}>{t('join.signOut')}</button></p>}
       {create&&!facilitator&&googleSso&&<div className="join-google-block">
         <p className="join-google-lede">{t('join.googleLede')}</p>
         <a className="gradient google-login" href="/auth/google/start"><strong>G</strong> {t('join.googleButton')}</a>
         <p className="join-or" role="separator"><span>{t('join.orKey')}</span></p>
       </div>}
-      <p className="muted" data-arcade-entry><a href="/arcade">Agent Arcade — je eerste agent</a> (LIS-59)</p>
       <form onSubmit={e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.currentTarget));action(async()=>{if(facilitatorOverview){setOverview(await api('facilitator/overview',data));return;}if(cohortPath){saveSession(await api('cohort/activate',{code:data.code}));history.replaceState(null,'',location.pathname);joined();return;}const result=await api(create?'create':'join',data);saveSession(result);if(!create)history.replaceState(null,'',location.pathname);joined(result.resumeToken);});}}>
-        {!facilitatorOverview&&!cohortPath&&<label htmlFor="join-name">{create?t('join.nameSquad'):t('join.nameYou')}<input id="join-name" ref={!create?nameRef:null} name="name" required maxLength={50} placeholder={create?t('join.placeholderSquad'):t('join.placeholderName')} autoComplete="nickname"/></label>}
-        {(facilitatorOverview||create)&&!facilitator&&<label htmlFor="join-hostkey">{t('join.hostKey')}<input id="join-hostkey" name="hostKey" value={hostKey} onChange={e=>setHostKey(e.target.value)} required={!googleSso||facilitatorOverview} type="password" autoComplete="off" placeholder={t('join.hostKeyPlaceholder')}/></label>}
-        {cohortPath&&<label htmlFor="join-cohort-code">{t('join.cohortCode')}<input id="join-cohort-code" name="code" required type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={40} placeholder={t('join.cohortCodePlaceholder')} aria-describedby="join-cohort-code-help"/><small id="join-cohort-code-help" className="muted">{t('join.cohortCodeHelp')}</small></label>}
-        {participant&&!cohortPath&&<label htmlFor="join-code">{t('join.roomCode')}<input id="join-code" name="code" value={code} onChange={e=>setCode(e.target.value.toUpperCase())} required type="text" autoComplete="off" placeholder={t('join.roomCodePlaceholder')} spellCheck={false}/></label>}
-        <button type="submit" className="gradient" disabled={busy}>{busy?t('join.submitBusy'):facilitatorOverview?t('join.submitOverview'):create?t('join.submitCreate'):cohortPath?t('join.submitCohort'):t('join.submitJoin')}<ArrowRight size={18}/></button>
+        {!facilitatorOverview&&!cohortPath&&<label htmlFor="join-name">{create?t('join.nameSquad'):t('join.nameYou')}<input id="join-name" ref={!create?nameRef:null} name="name" required maxLength={50} placeholder={create?t('join.placeholderSquad'):t('join.placeholderName')} autoComplete="nickname" {...invalid('name')}/></label>}
+        {(facilitatorOverview||create)&&!facilitator&&<label htmlFor="join-hostkey">{t('join.hostKey')}<input id="join-hostkey" name="hostKey" value={hostKey} onChange={e=>setHostKey(e.target.value)} required={!googleSso||facilitatorOverview} type="password" autoComplete="off" placeholder={t('join.hostKeyPlaceholder')} {...invalid('hostKey')}/></label>}
+        {cohortPath&&<label htmlFor="join-cohort-code">{t('join.cohortCode')}<input id="join-cohort-code" name="code" required type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={40} placeholder={t('join.cohortCodePlaceholder')} aria-describedby={failure?.field==='code'?'join-error join-cohort-code-help':'join-cohort-code-help'} aria-invalid={failure?.field==='code'||undefined}/><small id="join-cohort-code-help" className="muted">{t('join.cohortCodeHelp')}</small></label>}
+        {participant&&!cohortPath&&<label htmlFor="join-code">{t('join.roomCode')}<input id="join-code" name="code" value={code} onChange={e=>setCode(e.target.value.toUpperCase())} required type="text" autoComplete="off" autoCapitalize="characters" placeholder={t('join.roomCodePlaceholder')} spellCheck={false} {...invalid('code')}/></label>}
+        <button type="submit" className="gradient" disabled={busy} aria-busy={busy||undefined}>{busy?t('join.submitBusy'):facilitatorOverview?t('join.submitOverview'):create?t('join.submitCreate'):cohortPath?t('join.submitCohort'):t('join.submitJoin')}<ArrowRight size={18} aria-hidden="true"/></button>
       </form>
-      <div className="join-live" aria-live="assertive">{plainError&&<p className="error" role="alert">{plainError}</p>}</div>
+      <div className="join-live" id="join-error">{failure&&<StatusState kind="error" title={t(failure.title)} action={<button type="button" className="status-dismiss" onClick={clearError} aria-label={t('common.closeAlert')}><X size={14}/></button>}>{failure.key?t(failure.key):failure.message}</StatusState>}</div>
+      {ready&&<StatusState kind="loading" inline title={t('join.restoring')}/>}
       {!create&&!facilitatorOverview&&googleSso&&!facilitator&&<p className="join-side-hint muted">{t('join.sideHint')}</p>}
-      <button type="button" className="text-button" onClick={()=>{setMode('overview');setOverview(null);}}>{t('join.overviewLink')}</button>
-      {ready&&<p className="muted" aria-live="polite">{t('join.restoring')}</p>}
+      <div className="join-secondary">
+        <button type="button" className="text-button" onClick={()=>setRole('overview')}>{t('join.overviewLink')}</button>
+        <a href="/arcade" data-arcade-entry>{t('join.arcadeLink')}</a>
+      </div>
       <small>{t('join.noApiKey')}</small>
       {facilitatorOverview&&overview&&<FacilitatorOverview squads={overview} hostKey={hostKey} action={action} joined={joined} onError={e=>action(async()=>{throw e;})}/>}
     </section>
   </main>;
 }
 
-function FacilitatorControls({room,control,busy,connected,onOpenClassroom}){
+function FacilitatorControls({room,control:send,busy,connected,onOpenClassroom}){
   const t=useT();
+  // Ignore input while a command is in flight instead of disabling: a disabled
+  // button drops keyboard focus when the blur-commit of a time field starts.
+  const control=(...args)=>{if(!busy)send(...args);};
   const [time,setTime]=useState(String(Math.ceil(room.remaining/60)));
   const [duration,setDuration]=useState(String(Math.ceil((room.roundSeconds||1500)/60)));
   useEffect(()=>setTime(String(Math.ceil(room.remaining/60))),[room.remaining]);
   useEffect(()=>setDuration(String(Math.ceil((room.roundSeconds||1500)/60))),[room.roundSeconds]);
-  const commit=(draft,name)=>{const minutes=Number(draft);if(Number.isFinite(minutes))control(name,minutes*60);};
+  const commit=(draft,name,current)=>{const minutes=Number(draft);if(Number.isFinite(minutes)&&minutes*60!==current)control(name,minutes*60);};
   const enter=e=>{if(e.key==='Enter'){e.preventDefault();e.currentTarget.blur();}};
-  const disabled=busy||!connected;
-  return <div className="facilitator-controls" role="toolbar" aria-label={t('fac.toolbar')}>
+  const disabled=!connected;
+  return <div className="facilitator-controls" role="region" aria-label={t('fac.toolbar')}>
     <div className="facilitator-controls-row facilitator-controls-time">
       <strong id="facilitator-label">{t('fac.label')}</strong>
-      <button type="button" disabled={disabled} onClick={()=>control(room.running?'pause':'start')} aria-pressed={room.running}>{room.running?<Pause size={16}/>:<Play size={16}/>} {room.running?t('fac.pause'):t('fac.startTimer')}</button>
-      <button type="button" disabled={disabled} onClick={()=>control('next')}><RotateCw size={16}/>{t('fac.nextRound')}</button><button type="button" disabled={disabled||!room.members.length} onClick={()=>control('shuffle')}><Shuffle size={16}/>{t('fac.shuffleRoles')}</button>
-      <label>{t('fac.timeMin')}<input type="number" min={0} max={120} value={time} onChange={e=>setTime(e.target.value)} onBlur={()=>commit(time,'time')} onKeyDown={enter} aria-describedby="facilitator-label"/></label>
-      <button type="button" disabled={disabled} onClick={()=>control('time',Math.max(0,room.remaining+300))} aria-label={t('fac.plus5')}>+5 min</button>
-      <button type="button" disabled={disabled} onClick={()=>control('time',Math.max(0,room.remaining-300))} aria-label={t('fac.minus5')}>-5 min</button>
-      <label>{t('fac.roundMin')}<input type="number" min={1} max={120} value={duration} onChange={e=>setDuration(e.target.value)} onBlur={()=>commit(duration,'duration')} onKeyDown={enter}/></label>
+      <div className="fac-group" role="group" aria-label={t('fac.round')}>
+        <button type="button" disabled={disabled} onClick={()=>control(room.running?'pause':'start')} aria-pressed={room.running}>{room.running?<Pause size={16} aria-hidden="true"/>:<Play size={16} aria-hidden="true"/>}{room.running?t('fac.pause'):t('fac.startTimer')}</button>
+        <button type="button" disabled={disabled} onClick={()=>control('next')}><RotateCw size={16} aria-hidden="true"/>{t('fac.nextRound')}</button>
+        <button type="button" disabled={disabled||!room.members.length} onClick={()=>control('shuffle')}><Shuffle size={16} aria-hidden="true"/>{t('fac.shuffleRoles')}</button>
+      </div>
+      <div className="fac-group">
+        <label>{t('fac.timeMin')}<input type="number" min={0} max={120} value={time} onChange={e=>setTime(e.target.value)} onBlur={()=>commit(time,'time',Math.ceil(room.remaining/60)*60)} onKeyDown={enter}/></label>
+        <button type="button" disabled={disabled} onClick={()=>control('time',Math.max(0,room.remaining+300))} title={t('fac.plus5')}>+5 min</button>
+        <button type="button" disabled={disabled} onClick={()=>control('time',Math.max(0,room.remaining-300))} title={t('fac.minus5')}>−5 min</button>
+      </div>
     </div>
-    <div className="facilitator-controls-row facilitator-controls-context" aria-label={t('fac.context')}>
+    <div className="facilitator-controls-row facilitator-controls-context" role="group" aria-label={t('fac.context')}>
+      <label>{t('fac.roundMin')}<input type="number" min={1} max={120} value={duration} onChange={e=>setDuration(e.target.value)} onBlur={()=>commit(duration,'duration',room.roundSeconds||1500)} onKeyDown={enter}/></label>
       <label>{t('fac.phase')}<select value={room.phase} onChange={e=>control('phase',e.target.value)}>{phases.map(p=><option key={p}>{p}</option>)}</select></label>
       <label>{t('fac.day')}<select value={room.day} onChange={e=>control('day',Number(e.target.value))}>{(room.course?.days.map(entry=>entry.day)??Array.from({length:7},(_,i)=>i+1)).map((day,i)=><option key={day} value={day}>{i+1}</option>)}</select></label>
       <label>{t('fac.format')}<select value={room.mode} onChange={e=>control('mode',e.target.value)}><option value="lesson">{t('fac.format.lesson')}</option><option value="solo">{t('fac.format.solo')}</option><option value="squad">{t('fac.format.squad')}</option><option value="review">{t('fac.format.review')}</option></select></label>
       <label className="facilitator-toggle"><input type="checkbox" checked={room.chat} disabled={disabled} onChange={e=>control('chat',e.target.checked)}/>{t('fac.chat')}</label>
-      <button type="button" className="classroom-open" onClick={onOpenClassroom} aria-label={t('classroom.open')}><Presentation size={16}/>{t('classroom.title')}</button>
+      <button type="button" className="classroom-open" onClick={onOpenClassroom} aria-label={t('classroom.open')}><Presentation size={16} aria-hidden="true"/>{t('classroom.title')}</button>
     </div>
   </div>;
 }
@@ -283,7 +292,7 @@ function FacilitatorOverview({squads:initial,hostKey,action,joined,onError}){
   const t=useT();
   const [squads,setSquads]=useState(initial);
   useEffect(()=>{let active=true;const poll=async()=>{try{const next=await api('facilitator/overview',{hostKey});if(active)setSquads(next);}catch(e){if(active)onError(e);}};const timer=setInterval(poll,5000);return()=>{active=false;clearInterval(timer);};},[hostKey,onError]);
-  return <div className="facilitator-overview"><CohortPanel squads={squads} hostKey={hostKey} action={action}/>{!squads.length?<p className="empty">{t('overview.empty')}</p>:squads.map(squad=><article className="evidence" key={squad.id}><h3>{squad.name}</h3><p>{t('overview.roomCode')} <code>{squad.code}</code></p><p>{t('overview.round',{round:squad.round,phase:squad.phase,day:squad.day})}</p><p>{squad.running?t('overview.running'):t('overview.paused')} · {formatSeconds(squad.remaining)}</p><ul>{squad.members.map(member=><li key={member.id}>{member.name} · {member.role} · {member.online?t('overview.online'):t('overview.offline')} · {member.help?t('overview.askingHelp'):''}</li>)}</ul><p>{t('overview.evidence',{evidence:squad.evidence,handoffs:squad.handoffs})}</p>{squad.awaitingReview>0&&<p className="cyan">{t('overview.awaitingReview',{count:squad.awaitingReview})}</p>}<p>{t('overview.board',{status:squad.board==='open'?t('board.open'):squad.board==='closed'?t('board.closed'):t('overview.boardNone')})}</p><button type="button" onClick={()=>action(async()=>{const result=await api('facilitator/attach',{hostKey,roomId:squad.id});saveSession(result);joined();})}>{t('overview.open')}</button></article>)}</div>;
+  return <div className="facilitator-overview"><CohortPanel squads={squads} hostKey={hostKey} action={action}/>{!squads.length?<StatusState kind="empty" title={t('overview.empty')}/>:squads.map(squad=><article className="evidence" key={squad.id}><h3>{squad.name}</h3><p>{t('overview.roomCode')} <code>{squad.code}</code></p><p>{t('overview.round',{round:squad.round,phase:squad.phase,day:squad.day})}</p><p>{squad.running?t('overview.running'):t('overview.paused')} · {formatSeconds(squad.remaining)}</p><ul>{squad.members.map(member=><li key={member.id}>{member.name} · {member.role} · {member.online?t('overview.online'):t('overview.offline')} · {member.help?t('overview.askingHelp'):''}</li>)}</ul><p>{t('overview.evidence',{evidence:squad.evidence,handoffs:squad.handoffs})}</p>{squad.awaitingReview>0&&<p className="cyan">{t('overview.awaitingReview',{count:squad.awaitingReview})}</p>}<p>{t('overview.board',{status:squad.board==='open'?t('board.open'):squad.board==='closed'?t('board.closed'):t('overview.boardNone')})}</p><button type="button" onClick={()=>action(async()=>{const result=await api('facilitator/attach',{hostKey,roomId:squad.id});saveSession(result);joined();})}>{t('overview.open')}</button></article>)}</div>;
 }
 
 function CohortPanel({squads,hostKey,action}){
@@ -353,8 +362,8 @@ function MyCertificate({room}){
   const date=ms=>new Date(ms).toLocaleDateString(locale==='nl'?'nl-NL':'en-GB',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
   return <section className="panel content-panel my-certificate" aria-labelledby="my-certificate-heading">
     <p className="cyan">{t('mycert.eyebrow')}</p><h2 id="my-certificate-heading">{t('mycert.title')}</h2>
-    {error&&<p role="alert">{error}</p>}
-    {!mine&&!error&&<p className="muted">{t('mycert.loading')}</p>}
+    {error&&<StatusState kind="error" title={t('status.errorTitle')}>{error}</StatusState>}
+    {!mine&&!error&&<StatusState kind="loading" title={t('mycert.loading')}/>}
     {mine?.status==='no-cohort'&&<p className="lede">{t('mycert.noCohort')}</p>}
     {mine?.status==='issued'&&<div className="my-certificate-issued">
       <p className="lede">{t('mycert.issued',{cohort:mine.cohortName,date:date(mine.issuedAt)})}</p>
@@ -402,7 +411,7 @@ function Board({room,action,busy,onBoard}){
   const add=(event,index)=>{event.preventDefault();const text=(drafts[index]||'').trim();if(!text||!link.current)return;link.current.add(index,text);setDrafts(current=>({...current,[index]:''}));};
   return <section className="panel document board"><div className="document-heading"><div><h2>{t('board.title')}</h2><p>{t(!board?'board.none':closed?'board.closedLede':'board.lede')}</p></div>{board&&<span className={'board-status '+board.status}>{t(closed?'board.closed':'board.open')}</span>}</div>
     {facilitator&&<div className="board-actions">{(!board||closed)&&<button type="button" className="gradient" disabled={busy} onClick={()=>change('open')}>{t(board?'board.reopen':'board.start')}</button>}{board&&!closed&&<button type="button" disabled={busy} onClick={()=>change('close')}>{t('board.closeAction')}</button>}{board&&<a className="text-button" href="/game/debrief/export" download><Download size={16}/>{t('debrief.export')}</a>}</div>}
-    {!board&&<p className="muted board-empty">{t(facilitator?'board.emptyFacilitator':'board.emptyParticipant')}</p>}
+    {!board&&<div className="board-empty"><StatusState kind="empty" title={t('board.none')}>{t(facilitator?'board.emptyFacilitator':'board.emptyParticipant')}</StatusState></div>}
     {board&&<><div className="document-status"><i/>{t(closed&&sync==='synced'?'board.sync.readonly':'board.sync.'+sync)}</div><div className="board-columns">{columns.map((column,index)=><section className="board-column" key={index} aria-label={column.title}><h3>{column.title}<span>{column.cards.length}</span></h3><ul>{column.cards.map((card,cardIndex)=><li key={cardIndex}>{card}</li>)}</ul>{!column.cards.length&&<p className="muted">{t('board.noCards')}</p>}{!closed&&<form onSubmit={event=>add(event,index)}><label className="sr-only" htmlFor={'card-'+index}>{t('board.addLabel',{column:column.title})}</label><textarea id={'card-'+index} rows={2} maxLength={280} value={drafts[index]||''} placeholder={t('board.placeholder')} onChange={event=>setDrafts(current=>({...current,[index]:event.target.value}))} onKeyDown={event=>{if(event.key==='Enter'&&!event.shiftKey)add(event,index);}}/><button type="submit" disabled={sync!=='synced'||!(drafts[index]||'').trim()}><Plus size={15}/>{t('board.add')}</button></form>}</section>)}</div><div className="document-foot"><span>{t(closed?'board.footClosed':'board.footOpen')}</span><small>{t('board.columnsPlaceholder')}</small></div></>}</section>;
 }
 
