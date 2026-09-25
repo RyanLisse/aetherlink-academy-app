@@ -70,3 +70,13 @@ Bij falende login logt de callback altijd:
 Voor `login_error=verify` lees `reason` (bijv. `aud` = client-id mismatch). Voor `login_error=session` is de JWT ok maar faalde `facilitator_sessions` insert/cleanup — controleer Postgres (`expires_at` is epoch-milliseconds bigint, niet `timestamptz`; vergelijk met `$1` ms, niet `now()`). De facilitator-startsleutel (`ACADEMY_HOST_KEY`) blijft het noodpad tot SSO live bewezen is.
 
 Live Vercel Hobby kan `402 DEPLOYMENT_DISABLED` geven; code-fix en specs gaan wel door zonder production mutate.
+
+## Inloggen met e-mail (optioneel, AET-57)
+
+E-mail is nooit verplicht: cohortcode plus HttpOnly-sessie blijft de standaardtoegang. Een deelnemer kan een geverifieerd e-mailadres koppelen en daarmee later met een code van 6 cijfers opnieuw inloggen (herstel bij een kwijtgeraakte cohortcode of persoonlijke link).
+
+- `ACADEMY_MAIL_TRANSPORT=smtp` met `ACADEMY_SMTP_HOST`, `ACADEMY_SMTP_PORT` (standaard 587, STARTTLS verplicht; 465 is directe TLS), `ACADEMY_SMTP_FROM` (bijv. `AetherLink Academy <academy@jouwdomein>`) en samen `ACADEMY_SMTP_USER` en `ACADEMY_SMTP_PASS`. `ACADEMY_SMTP_REQUIRE_TLS=0` alleen voor een lokale testserver.
+- `ACADEMY_MAIL_TRANSPORT=log` schrijft mails naar de serverlog, alleen voor ontwikkeling. Met `NODE_ENV=production` wordt dit geweigerd.
+- Niet ingesteld, onbekend of onvolledig: alle `/game/email/*`-routes geven 404 en de UI toont de optie niet.
+
+Codes zijn 10 minuten geldig, staan gehasht in `email_challenges`, hebben maximaal 5 pogingen en 60 seconden resend-cooldown. Verzenden is begrensd op 5 per adres per uur en 20 per IP per 15 minuten (`access_attempts`). Het login-antwoord is identiek voor bekende en onbekende adressen. Geverifieerde adressen staan in `participant_emails`, niet in de kamerdata, dus nooit in MCP, chat of de view van andere deelnemers. `scripts/cohort-retention.mjs --apply` verwijdert ze met het cohort.
