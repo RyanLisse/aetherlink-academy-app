@@ -12,6 +12,7 @@ import {workshop4SourceSlides} from './deck/workshop4-slides.js';
 import {workshop6SourceSlides} from './deck/workshop6-slides.js';
 import {workshop7SourceSlides} from './deck/workshop7-slides.js';
 import {normalizeSlides} from './deck/normalize.js';
+import {matchReference, ReferenceView} from './reference/index.ts';
 import './deck/deck.css';
 
 export type RouteId = 'squad' | 'route' | 'lesson' | 'solo' | 'coach' | 'review' | 'connection';
@@ -205,8 +206,11 @@ export function usePathname(): [string, (path: string) => void] {
 
 export function AppRoutes({children}: {readonly children?: ReactNode}) {
   const [pathname, navigate] = usePathname();
-  const deckLike = pathname === '/deck' || isClassroom1Path(pathname) || isClassroom2Path(pathname) || isWorkshop5Path(pathname) || isWorkshop3Path(pathname) || isWorkshop4Path(pathname) || isWorkshop6Path(pathname) || isWorkshop7Path(pathname);
+  const [referencePath = '', referenceAnchor] = pathname.split('#');
+  const reference = matchReference(referencePath);
+  const deckLike = reference !== null || pathname === '/deck' || isClassroom1Path(pathname) || isClassroom2Path(pathname) || isWorkshop5Path(pathname) || isWorkshop3Path(pathname) || isWorkshop4Path(pathname) || isWorkshop6Path(pathname) || isWorkshop7Path(pathname);
   const connection = useConnection(fetchConnection, 5000, !deckLike);
+  if (reference) return <ReferenceView page={reference} navigate={navigate} anchor={referenceAnchor ?? (window.location.hash.slice(1) || null)} />;
   if (pathname === '/deck') return <DeckDemo slides={DECK_SLIDES} />;
   if (isClassroom1Path(pathname)) return <DeckDemo slides={CLASSROOM_1_SLIDES} />;
   if (isClassroom2Path(pathname)) return <DeckDemo slides={CLASSROOM_2_SLIDES} />;

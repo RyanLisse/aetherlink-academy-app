@@ -1,7 +1,8 @@
 import type {AnyPgColumn} from 'drizzle-orm/pg-core';
-import {boolean, check, foreignKey, integer, jsonb, pgSchema, primaryKey, text, timestamp, unique, uuid} from 'drizzle-orm/pg-core';
+import {boolean, check, customType, foreignKey, index, integer, jsonb, pgSchema, primaryKey, text, timestamp, unique, uuid} from 'drizzle-orm/pg-core';
 import {sql} from 'drizzle-orm';
 import type {LocalizedText} from '@academy/schema';
+import {SEARCH_DOCUMENTS, vectorSql, type SearchDocument} from '../search/documents.ts';
 
 export const curriculum = pgSchema('academy_curriculum');
 
@@ -14,6 +15,21 @@ const globalId = () => uuid('id').primaryKey().defaultRandom();
 const contentId = () => uuid('id').notNull().defaultRandom();
 const localized = (name: string) => jsonb(name).$type<LocalizedText>();
 const createdAt = () => timestamp('created_at', {withTimezone: true}).notNull().defaultNow();
+
+const tsvector = customType<{data: string}>({dataType: () => 'tsvector'});
+/**
+ * Stored EN + NL vectors per document, split by audience: `search_*` holds only
+ * participant-visible text, `private_search_*` holds facilitator-only text.
+ * Field lists live in `search/documents.ts`.
+ */
+const searchColumns = (document: SearchDocument) => ({
+  searchEn: tsvector('search_en').notNull().generatedAlwaysAs(sql.raw(vectorSql('english', document.public))),
+  searchNl: tsvector('search_nl').notNull().generatedAlwaysAs(sql.raw(vectorSql('dutch', document.public))),
+});
+const privateSearchColumns = (document: SearchDocument) => ({
+  privateSearchEn: tsvector('private_search_en').notNull().generatedAlwaysAs(sql.raw(vectorSql('english', document.private))),
+  privateSearchNl: tsvector('private_search_nl').notNull().generatedAlwaysAs(sql.raw(vectorSql('dutch', document.private))),
+});
 
 export const courseVersions = curriculum.table(
   'course_versions',
@@ -162,11 +178,17 @@ export const slides = curriculum.table(
     bars: jsonb('bars').$type<{stages: ReadonlyArray<{name: string; w: number; accent?: boolean; ghost?: boolean}>; scale: string; caption: string}>(),
     planB: text('plan_b'),
     notes: text('notes'),
+    ...searchColumns(SEARCH_DOCUMENTS.slides),
+    ...privateSearchColumns(SEARCH_DOCUMENTS.slides),
     createdAt: createdAt(),
   },
   (t) => [
     primaryKey({columns: [t.id, t.courseId, t.version]}),
     unique('slides_course_version_lesson_ordinal_key').on(t.courseId, t.version, t.lessonId, t.ordinal),
+    index('slides_search_en_idx').using('gin', t.searchEn),
+    index('slides_search_nl_idx').using('gin', t.searchNl),
+    index('slides_private_search_en_idx').using('gin', t.privateSearchEn),
+    index('slides_private_search_nl_idx').using('gin', t.privateSearchNl),
     foreignKey({columns: [t.lessonId, t.courseId, t.version], foreignColumns: [lessons.id, lessons.courseId, lessons.version]}),
     foreignKey({columns: [t.courseId, t.version], foreignColumns: [courseVersions.courseId, courseVersions.version]}),
     check('slides_ordinal_check', sql`${t.ordinal} >= 1`),
@@ -196,10 +218,16 @@ export const assignments = curriculum.table(
     starterFiles: jsonb('starter_files').$type<readonly string[]>(),
     lessonIds: jsonb('lesson_ids').$type<readonly string[]>(),
     dataset: text('dataset'),
+    ...searchColumns(SEARCH_DOCUMENTS.assignments),
+    ...privateSearchColumns(SEARCH_DOCUMENTS.assignments),
     createdAt: createdAt(),
   },
   (t) => [
     primaryKey({columns: [t.id, t.courseId, t.version]}),
+    index('assignments_search_en_idx').using('gin', t.searchEn),
+    index('assignments_search_nl_idx').using('gin', t.searchNl),
+    index('assignments_private_search_en_idx').using('gin', t.privateSearchEn),
+    index('assignments_private_search_nl_idx').using('gin', t.privateSearchNl),
     foreignKey({columns: [t.lessonId, t.courseId, t.version], foreignColumns: [lessons.id, lessons.courseId, lessons.version]}),
     foreignKey({columns: [t.slideId, t.courseId, t.version], foreignColumns: [slides.id, slides.courseId, slides.version]}),
     foreignKey({columns: [t.courseId, t.version], foreignColumns: [courseVersions.courseId, courseVersions.version]}),
@@ -224,6 +252,32 @@ export const quizQuestions = curriculum.table(
     primaryKey({columns: [t.id, t.courseId, t.version]}),
     foreignKey({columns: [t.lessonId, t.courseId, t.version], foreignColumns: [lessons.id, lessons.courseId, lessons.version]}),
     foreignKey({columns: [t.courseId, t.version], foreignColumns: [courseVersions.courseId, courseVersions.version]}),
+  ],
+);
+
+/**
+ * Course glossary, one row per term per locale. No importer produces glossary
+ * entries yet, so this table starts empty; search and the reference view read
+ * it without inventing content.
+ */
+export const glossaryTerms = curriculum.table(
+  'glossary_terms',
+  {
+    id: contentId(),
+    courseId: uuid('course_id').notNull(),
+    version: integer('version').notNull(),
+    locale: text('locale', {enum: ['en', 'nl']}).notNull(),
+    term: text('term').notNull(),
+    definition: text('definition').notNull(),
+    ...searchColumns(SEARCH_DOCUMENTS.glossary_terms),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    primaryKey({columns: [t.id, t.courseId, t.version]}),
+    unique('glossary_terms_course_version_locale_term_key').on(t.courseId, t.version, t.locale, t.term),
+    foreignKey({columns: [t.courseId, t.version], foreignColumns: [courseVersions.courseId, courseVersions.version]}),
+    index('glossary_terms_search_en_idx').using('gin', t.searchEn),
+    index('glossary_terms_search_nl_idx').using('gin', t.searchNl),
   ],
 );
 
