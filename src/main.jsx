@@ -252,7 +252,7 @@ function FacilitatorControls({room,control,busy,connected,onOpenClassroom}){
     </div>
     <div className="facilitator-controls-row facilitator-controls-context" aria-label={t('fac.context')}>
       <label>{t('fac.phase')}<select value={room.phase} onChange={e=>control('phase',e.target.value)}>{phases.map(p=><option key={p}>{p}</option>)}</select></label>
-      <label>{t('fac.day')}<select value={room.day} onChange={e=>control('day',Number(e.target.value))}>{[1,2,3,4,5].map(n=><option key={n}>{n}</option>)}</select></label>
+      <label>{t('fac.day')}<select value={room.day} onChange={e=>control('day',Number(e.target.value))}>{Array.from({length:7},(_,i)=>i+1).map(n=><option key={n}>{n}</option>)}</select></label>
       <label>{t('fac.format')}<select value={room.mode} onChange={e=>control('mode',e.target.value)}><option value="lesson">{t('fac.format.lesson')}</option><option value="solo">{t('fac.format.solo')}</option><option value="squad">{t('fac.format.squad')}</option><option value="review">{t('fac.format.review')}</option></select></label>
       <button type="button" className="classroom-open" onClick={onOpenClassroom} aria-label={t('classroom.open')}><Presentation size={16}/>{t('classroom.title')}</button>
     </div>

@@ -55,29 +55,33 @@ for(const [status,event,expected] of TABLE)test(`transition ${status} --${event}
 });
 
 test('tasks come from day-pack ids: the mission, or the progressive steps when a day has them',()=>{
- assert.deepEqual(dayTasks(1),[{id:'ATLAS-REVIEW-01',title:'Maak de repository begrijpelijk'}]);
- assert.deepEqual(dayTasks(3).map(t=>t.id),['n8n-zero','n8n-one','n8n-multi']);
+ assert.deepEqual(dayTasks(1).map(t=>t.id),['c1-setup','c1-a1','c1-a2','c1-a3','c1-a4']);
+ assert.deepEqual(dayTasks(1)[0],{id:'c1-setup',title:'Oefenrepository opzetten'});
+ assert.deepEqual(dayTasks(3).map(t=>t.id),['w3-l1','w3-l2','w3-l3','w3-proof']);
  assert.deepEqual(dayTasks(9),[]);
 });
 
 test('task → submit → changes requested → resubmit → approved, visible to participant and facilitator',async()=>{
  const {instance,learner,driver,facilitator,comments,as,submit,review,tasks,queue}=fixture();
- assert.deepEqual((await tasks(learner.token)).body,{day:1,tasks:[{id:'ATLAS-REVIEW-01',title:'Maak de repository begrijpelijk',day:1,status:'open',submissions:[]}]});
+ const openList=(await tasks(learner.token)).body;
+ assert.equal(openList.day,1);
+ assert.deepEqual(openList.tasks[0],{id:'c1-setup',title:'Oefenrepository opzetten',day:1,status:'open',submissions:[]});
+ assert.deepEqual(openList.tasks.map(t=>t.status),['open','open','open','open','open']);
 
- const first=await submit(learner.token,'t-1','ATLAS-REVIEW-01');
+ const first=await submit(learner.token,'t-1','c1-setup');
  assert.equal(first.statusCode,200);
- assert.equal(first.body.taskId,'ATLAS-REVIEW-01');
- assert.match(comments.at(-1).text,/Opdracht: ATLAS-REVIEW-01\nStatus: ingediend/);
+ assert.equal(first.body.taskId,'c1-setup');
+ assert.match(comments.at(-1).text,/Opdracht: c1-setup\nStatus: ingediend/);
  assert.equal((await tasks(learner.token)).body.tasks[0].status,'submitted');
  assert.equal((await tasks(driver.token)).body.tasks[0].status,'open','another participant sees only their own trail');
 
- const again=await submit(learner.token,'t-2','ATLAS-REVIEW-01');
+ const again=await submit(learner.token,'t-2','c1-setup');
  assert.equal(again.statusCode,409);
  assert.equal(again.body.error,'Deze opdracht wacht op beoordeling of is al goedgekeurd.');
 
  const waiting=await queue(facilitator);
  assert.equal(waiting.statusCode,200);
- assert.deepEqual(waiting.body.queue.map(({name,taskId,taskTitle,attempt,day})=>({name,taskId,taskTitle,attempt,day})),[{name:'Bo',taskId:'ATLAS-REVIEW-01',taskTitle:'Maak de repository begrijpelijk',attempt:1,day:1}]);
+ assert.deepEqual(waiting.body.queue.map(({name,taskId,taskTitle,attempt,day})=>({name,taskId,taskTitle,attempt,day})),[{name:'Bo',taskId:'c1-setup',taskTitle:'Oefenrepository opzetten',attempt:1,day:1}]);
  assert.deepEqual(waiting.body.members.map(m=>[m.name,m.tasks[0].status]),[['Ada','open'],['Bo','submitted'],['Cy','open']]);
 
  const self=await review(as(learner.token),first.body.id,'accepted','Mijn eigen werk','r-self');
@@ -96,7 +100,7 @@ test('task → submit → changes requested → resubmit → approved, visible t
  const twice=await review(facilitator,first.body.id,'accepted','Toch goed','r-2');
  assert.equal(twice.statusCode,409);
 
- const second=await submit(learner.token,'t-3','ATLAS-REVIEW-01');
+ const second=await submit(learner.token,'t-3','c1-setup');
  assert.equal(second.statusCode,200);
  assert.equal((await queue(facilitator)).body.queue[0].attempt,2);
  const approved=await review(facilitator,second.body.id,'accepted','Reproduceerbaar.','r-3');
@@ -105,7 +109,7 @@ test('task → submit → changes requested → resubmit → approved, visible t
  assert.equal(final.status,'approved');
  assert.deepEqual(final.submissions.map(s=>[s.status,s.review.note]),[['needs-work','Voeg de letterlijke foutmelding toe.'],['accepted','Reproduceerbaar.']]);
  assert.deepEqual((await queue(facilitator)).body.members.map(m=>[m.name,m.tasks[0].status]),[['Ada','open'],['Bo','approved'],['Cy','open']]);
- assert.equal((await submit(learner.token,'t-4','ATLAS-REVIEW-01')).statusCode,409);
+ assert.equal((await submit(learner.token,'t-4','c1-setup')).statusCode,409);
 
  const overview=await invoke(instance.app,'/game/facilitator/overview',{body:{hostKey:'test-host'}});
  assert.equal(overview.body[0].awaitingReview,0);
@@ -117,12 +121,12 @@ test('reviewer roles are a closed list that AET-103 can extend with auto-graded'
 
 test('a peer in the same room reviews task evidence; the author sees the decision and who made it',async()=>{
  const {learner,peer,driver,as,submit,review,tasks,peerList}=fixture();
- const sent=await submit(learner.token,'p-1','ATLAS-REVIEW-01');
+ const sent=await submit(learner.token,'p-1','c1-setup');
  assert.equal(sent.statusCode,200);
 
  const cyList=await peerList(as(peer.token));
  assert.equal(cyList.statusCode,200);
- assert.deepEqual(cyList.body.queue.map(({evidenceId,name,taskId,taskTitle,attempt,day})=>({evidenceId,name,taskId,taskTitle,attempt,day})),[{evidenceId:sent.body.id,name:'Bo',taskId:'ATLAS-REVIEW-01',taskTitle:'Maak de repository begrijpelijk',attempt:1,day:1}]);
+ assert.deepEqual(cyList.body.queue.map(({evidenceId,name,taskId,taskTitle,attempt,day})=>({evidenceId,name,taskId,taskTitle,attempt,day})),[{evidenceId:sent.body.id,name:'Bo',taskId:'c1-setup',taskTitle:'Oefenrepository opzetten',attempt:1,day:1}]);
  assert.equal(cyList.body.members,undefined,'peers do not get the room-wide status board');
  assert.deepEqual((await peerList(as(learner.token))).body.queue,[],'the author never sees their own submission to review');
 
@@ -134,7 +138,7 @@ test('a peer in the same room reviews task evidence; the author sees the decisio
  assert.deepEqual(trail.submissions[0].review,{note:'Noem de exacte foutmelding.',at:decided.body.review.at,reviewer:{role:'peer',name:'Cy',email:null}});
  assert.deepEqual((await peerList(as(driver.token))).body.queue,[]);
 
- const again=await submit(learner.token,'p-2','ATLAS-REVIEW-01');
+ const again=await submit(learner.token,'p-2','c1-setup');
  const approved=await review(as(driver.token),again.body.id,'accepted','Nu reproduceerbaar.','p-r-2');
  assert.equal(approved.statusCode,200);
  assert.equal((await tasks(learner.token)).body.tasks[0].status,'approved');
@@ -142,7 +146,7 @@ test('a peer in the same room reviews task evidence; the author sees the decisio
 
 test('a participant from another room cannot see or review the submission',async()=>{
  const {instance,learner,as,submit,review,tasks,peerList}=fixture();
- const sent=await submit(learner.token,'x-1','ATLAS-REVIEW-01');
+ const sent=await submit(learner.token,'x-1','c1-setup');
  const other=instance.store.create('Andere squad',{slug:'other'},{email:'fac@example.test',name:'Fac Ilitator'});
  const outsider=instance.store.join(other.code,'Dex');
  assert.deepEqual((await peerList(as(outsider.token))).body.queue,[]);
@@ -154,7 +158,7 @@ test('a participant from another room cannot see or review the submission',async
 
 test('two peers deciding the same submission at once: exactly one decision lands',async()=>{
  const {instance,host,learner,peer,driver,as,submit,review,tasks}=fixture();
- const sent=await submit(learner.token,'race-1','ATLAS-REVIEW-01');
+ const sent=await submit(learner.token,'race-1','c1-setup');
  const results=await Promise.all([review(as(driver.token),sent.body.id,'accepted','Goed','race-a'),review(as(peer.token),sent.body.id,'needs-work','Nog niet','race-b')]);
  assert.deepEqual(results.map(r=>r.statusCode).sort(),[200,409]);
  const winner=results.find(r=>r.statusCode===200).body.review;
@@ -199,12 +203,12 @@ test('MCP: get_mission lists own tasks and submit_evidence maps to a task',async
  await invoke(instance.app,'/game/control',{body:{action:'day',value:3},cookies:{academy:host.token}});
  const call=(tool,body={})=>invoke(instance.app,'/game/mcp/:tool',{params:{tool},body,headers:{authorization:'Bearer '+mcp}});
  const mission=await call('get_mission');
- assert.deepEqual(mission.body.tasks.map(t=>[t.id,t.status]),[['n8n-zero','open'],['n8n-one','open'],['n8n-multi','open']]);
- const sent=await call('submit_evidence',{requestId:'mcp-1',finding:'Flow draait',command:'n8n execute',observed:'3 items',limitation:'Fixture-data',taskId:'n8n-zero'});
+ assert.deepEqual(mission.body.tasks.map(t=>[t.id,t.status]),[['w3-l1','open'],['w3-l2','open'],['w3-l3','open'],['w3-proof','open']]);
+ const sent=await call('submit_evidence',{requestId:'mcp-1',finding:'Flow draait',command:'n8n execute',observed:'3 items',limitation:'Fixture-data',taskId:'w3-l1'});
  assert.equal(sent.statusCode,200);
  assert.equal(sent.body.source,'MCP-client');
- assert.deepEqual((await call('get_mission')).body.tasks.map(t=>t.status),['submitted','open','open']);
- assert.deepEqual((await queue(facilitator)).body.queue.map(q=>[q.name,q.taskId,q.taskTitle]),[['Bo','n8n-zero','Flow zonder AI-agent']]);
+ assert.deepEqual((await call('get_mission')).body.tasks.map(t=>t.status),['submitted','open','open','open']);
+ assert.deepEqual((await queue(facilitator)).body.queue.map(q=>[q.name,q.taskId,q.taskTitle]),[['Bo','w3-l1','L1 · Switch zonder LLM']]);
  const overview=await invoke(instance.app,'/game/facilitator/overview',{body:{hostKey:'test-host'}});
  assert.equal(overview.body[0].awaitingReview,1);
 });

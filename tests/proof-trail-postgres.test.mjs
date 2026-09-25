@@ -32,7 +32,7 @@ test('Proof trail transitions hold across two instances sharing Postgres',{skip:
   const ada=await two.join(host.code,'Ada');
   const cy=await one.join(host.code,'Cy');
   const sso=`academy-facilitator=${await two.facilitatorLogin({sub:'g-1',email:'fac@example.test',name:'Fac Ilitator',domain:'example.test'})}`;
-  const evidence=requestId=>({requestId,finding:'README wijkt af',command:'node --test',observed:'1 failing',limitation:'Lokaal',taskId:'ATLAS-REVIEW-01'});
+  const evidence=requestId=>({requestId,finding:'README wijkt af',command:'node --test',observed:'1 failing',limitation:'Lokaal',taskId:'c1-setup'});
 
   const race=await Promise.all([call(0,'evidence',learner.token,{body:evidence('race-a')}),call(1,'evidence',learner.token,{body:evidence('race-b')})]);
   assert.deepEqual(race.map(r=>r.status).sort(),[200,409]);
@@ -40,7 +40,7 @@ test('Proof trail transitions hold across two instances sharing Postgres',{skip:
 
   assert.equal((await call(1,'tasks',learner.token)).body.tasks[0].status,'submitted');
   const queue=await call(1,'tasks/queue',host.token);
-  assert.deepEqual(queue.body.queue.map(q=>[q.name,q.taskId,q.attempt]),[['Bo','ATLAS-REVIEW-01',1]]);
+  assert.deepEqual(queue.body.queue.map(q=>[q.name,q.taskId,q.attempt]),[['Bo','c1-setup',1]]);
   assert.equal((await one.overview())[0].awaitingReview,1);
 
   assert.equal((await call(0,'tasks/queue',learner.token)).status,403);
