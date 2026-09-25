@@ -36,4 +36,4 @@ Done means live behavior plus evidence (screenshot/video or linked proof), not a
 
 - Soft max squad size **12** (no hard fail at 5); practice still starts from **4** members.
 - Facilitator **Shuffle roles** randomizes Driver among current members (others remain Navigator).
-- Soft rejoin: same display name + room code restores the existing seat/role/progress (no email OTP).
+- Rejoin: a personal access link (high-entropy, only its hash stored) restores the existing seat/role/progress (no email OTP). A display name is never a credential; a duplicate name in a room is rejected (AET-56).

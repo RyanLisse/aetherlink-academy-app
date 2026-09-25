@@ -17,11 +17,11 @@ const shell = (pathname: string) =>
   );
 
 describe('AET-27 soft route mounts', () => {
-  test('squad route mounts JoinForm (soft rejoin entry)', () => {
+  test('squad route mounts JoinForm', () => {
     const html = shell('/');
     expect(html).toContain('data-mounted="join"');
     expect(html).toContain('Room code');
-    expect(html).toContain('Join / rejoin');
+    expect(html).toContain('>Join</button>');
     expect(html).not.toContain('data-route="squad"');
   });
 
