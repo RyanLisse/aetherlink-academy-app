@@ -449,5 +449,19 @@
   "peer.lede": "Ingediende opdrachten van andere deelnemers in jouw kamer, voor vandaag. Je besluit komt als Proof-commentaar bij het bewijs.",
   "peer.title": "Te beoordelen ({count})",
   "review.taskLabel": "Opdracht {task}",
-  "overview.awaitingReview": "Wacht op beoordeling: {count}"
+  "overview.awaitingReview": "Wacht op beoordeling: {count}",
+  "chat.title": "Vraag de Academy",
+  "chat.lede": "Navigatie en veelgestelde vragen uit het dagpakket van vandaag. Geen AI: diepere hulp vraag je aan je eigen Claude.",
+  "chat.log": "Gesprek met de Academy-FAQ",
+  "chat.you": "Jij:",
+  "chat.source": "Bron:",
+  "chat.promptLabel": "Plak deze vraag in je eigen Claude:",
+  "chat.copyPrompt": "Kopieer vraag",
+  "chat.copied": "Gekopieerd",
+  "chat.label": "Je vraag",
+  "chat.placeholder": "Bijv. waar vind ik mijn opdracht?",
+  "chat.send": "Vraag versturen",
+  "chat.offForParticipants": "Uit voor deelnemers. Alleen jij ziet deze chat.",
+  "fac.chat": "Chat voor deelnemers",
+  "chat.more": "Meer resultaten ({count})"
 }
