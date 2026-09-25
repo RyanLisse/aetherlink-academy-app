@@ -1,6 +1,6 @@
 import {randomBytes} from 'node:crypto';
 import {fail,hash} from './store.mjs';
-import {certificateEligibility,reasonText} from './certificate.mjs';
+import {certificateEligibility} from './certificate.mjs';
 
 export const DAY_MS=24*60*60*1000;
 export const ACCESS_DAYS=90;
@@ -111,8 +111,14 @@ export function memberStatus(codes){
  return {status:live.lastActivatedAt?'activated':'issued',lastActivatedAt:live.lastActivatedAt||null};
 }
 
+// Certificates are issued by the server, never by a facilitator click: whenever a member's
+// status is evaluated (participant opens "Mijn certificaat", facilitator opens the roster) and the
+// member is eligible with no certificate on record, one is created. A revoked certificate stays on
+// record, so revocation is final and is never undone by auto-issuance.
 export function memberCertificate({cohort,memberId,codes,rooms,certificates,now}){
- const live=certificates.find(certificate=>certificate.memberId===memberId&&!certificate.revokedAt);
+ const own=certificates.filter(certificate=>certificate.memberId===memberId);
+ const live=own.find(certificate=>!certificate.revokedAt);
+ const revoked=own.filter(certificate=>certificate.revokedAt).sort((a,b)=>b.revokedAt-a.revokedAt)[0];
  const eligibility=certificateEligibility({
   days:cohort.days,
   progressByDay:mergeSeatProgress(rooms,memberId),
@@ -120,14 +126,14 @@ export function memberCertificate({cohort,memberId,codes,rooms,certificates,now}
   accessRevoked:memberStatus(codes).status==='revoked',
   lastDayStarted:now>=cohort.startsAt+(cohort.days-1)*DAY_MS,
  });
- return {...eligibility,id:live?.id||null,issuedAt:live?.issuedAt||null};
+ const status=live?'issued':revoked?'revoked':eligibility.eligible?'due':'not-eligible';
+ return {...eligibility,status,id:live?.id||null,issuedAt:live?.issuedAt||null,revokedAt:live?null:revoked?.revokedAt||null};
 }
 
-export function certificateToIssue({cohort,member,codes,rooms,certificates,now,issuedBy}){
- const current=memberCertificate({cohort,memberId:member.id,codes,rooms,certificates,now});
- if(current.id)return null;
- if(!current.eligible)fail(409,`Nog geen certificaat mogelijk: ${current.reasons.map(reasonText).join('; ')}.`);
- return {id:generateAccessCode(),cohortId:cohort.id,memberId:member.id,name:member.name,cohortName:cohort.name,startsAt:cohort.startsAt,endsAt:cohortWindow(cohort).endsAt,days:cohort.days,issuedAt:now,issuedBy:issuedBy||null,revokedAt:null};
+export function dueCertificates({cohort,members,codes,rooms,certificates,now}){
+ return members
+  .filter(member=>memberCertificate({cohort,memberId:member.id,codes:codes.filter(code=>code.memberId===member.id),rooms,certificates,now}).status==='due')
+  .map(member=>({id:generateAccessCode(),cohortId:cohort.id,memberId:member.id,name:member.name,cohortName:cohort.name,startsAt:cohort.startsAt,endsAt:cohortWindow(cohort).endsAt,days:cohort.days,issuedAt:now,issuedBy:null,revokedAt:null}));
 }
 
 export const certificateVerifiableUntil=certificate=>certificate.endsAt+RETENTION_DAYS*DAY_MS;

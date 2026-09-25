@@ -3,12 +3,17 @@ import {getDayPack} from './content.mjs';
 
 export const CERTIFICATE_INVALID_MESSAGE='Geen geldig certificaat gevonden voor deze code.';
 
+// The single definition of "this piece of work passed". An accepted review counts whoever gave it
+// (a peer, the driver or the facilitator), so nothing asynchronous waits on the facilitator.
+// AET-103 extension point: auto-graded passes (`source:'auto-graded'`) will be added here.
+export const taskPassed=item=>item.status==='accepted';
+
 // One row per cohort day requirement. A day counts only when every applicable row passes;
 // `applies` keeps the quiz row off days whose content pack has no quiz.
 export const DAY_REQUIREMENTS=[
  {code:'quiz-missing',applies:day=>Boolean(getDayPack(day)?.quiz),passes:facts=>facts.quizDone},
  {code:'evidence-missing',applies:()=>true,passes:facts=>facts.evidence>0},
- {code:'evidence-not-accepted',applies:()=>true,passes:facts=>facts.evidence===0||facts.accepted>0},
+ {code:'evidence-not-accepted',applies:()=>true,passes:facts=>facts.evidence===0||facts.passed>0},
 ];
 
 export function certificateEligibility({days,progressByDay,evidence,accessRevoked,lastDayStarted}){
@@ -18,23 +23,12 @@ export function certificateEligibility({days,progressByDay,evidence,accessRevoke
  let daysCompleted=0;
  for(let day=1;day<=days;day++){
   const own=evidence.filter(item=>Number(item.day)===day);
-  const facts={quizDone:progressByDay[String(day)]?.quizScore!=null,evidence:own.length,accepted:own.filter(item=>item.status==='accepted').length};
+  const facts={quizDone:progressByDay[String(day)]?.quizScore!=null,evidence:own.length,passed:own.filter(taskPassed).length};
   const failed=DAY_REQUIREMENTS.filter(rule=>rule.applies(day)&&!rule.passes(facts));
   for(const rule of failed)reasons.push({code:rule.code,day});
   if(!failed.length)daysCompleted++;
  }
  return {eligible:reasons.length===0,daysCompleted,reasons};
-}
-
-export function reasonText({code,day}){
- const prefix=day?`Dag ${day}: `:'';
- return prefix+{
-  'cohort-running':'het cohort is nog niet bij de laatste dag',
-  'access-revoked':'cohorttoegang is ingetrokken',
-  'quiz-missing':'quiz niet gemaakt',
-  'evidence-missing':'geen bewijs ingediend',
-  'evidence-not-accepted':'bewijs nog niet geaccepteerd',
- }[code];
 }
 
 export function publicVerification(certificate){

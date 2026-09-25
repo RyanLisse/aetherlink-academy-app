@@ -2,7 +2,7 @@ import {createHash, randomBytes, randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {awaitingReview} from './proof-trail.mjs';
 import {hash, secret, fail, writable, Store, MAX_SQUAD_SIZE, COHORT_ROOM_JOIN_MESSAGE, DUPLICATE_PARTICIPANT_MESSAGE, INVALID_PARTICIPANT_ACCESS_MESSAGE, COHORT_SEAT_ACCESS_MESSAGE} from './store.mjs';
-import {INVALID_COHORT_CODE_MESSAGE,COHORT_NO_ROOM_MESSAGE,COHORT_RATE_LIMIT_MESSAGE,RATE_LIMITS,attemptKeys,issueAccessCode,sessionGrant,mergeSeatProgress,seatMember,cohortView,cohortWindow,anonymizeRoom,certificateToIssue} from './cohort.mjs';
+import {INVALID_COHORT_CODE_MESSAGE,COHORT_NO_ROOM_MESSAGE,COHORT_RATE_LIMIT_MESSAGE,RATE_LIMITS,attemptKeys,issueAccessCode,sessionGrant,mergeSeatProgress,seatMember,cohortView,cohortWindow,anonymizeRoom,dueCertificates,memberCertificate} from './cohort.mjs';
 
 export class PostgresStore {
  constructor(pool, {schema='academy',now=Date.now}={}) {
@@ -219,10 +219,24 @@ export class PostgresStore {
   if(!row)fail(404,'Cohort niet gevonden.');
   return {id:row.id,name:row.name,startsAt:Number(row.starts_at),days:row.days,readOnlyExport:row.read_only_export,currentRoomId:row.current_room_id,createdAt:Number(row.created_at)};
  }
- async cohortSnapshot(client,cohort) {
+ async cohortFacts(client,cohort) {
   const members=await client.query('SELECT id,name FROM cohort_members WHERE cohort_id=$1 ORDER BY created_at,name',[cohort.id]);
   const codes=await client.query('SELECT member_id,revoked_at,last_activated_at FROM cohort_access_codes WHERE cohort_id=$1',[cohort.id]);
-  return cohortView({cohort,members:members.rows,codes:codes.rows.map(row=>({memberId:row.member_id,revokedAt:row.revoked_at===null?null:Number(row.revoked_at),lastActivatedAt:row.last_activated_at===null?null:Number(row.last_activated_at)})),rooms:await this.cohortRooms(client,cohort.id),certificates:await this.certificates(client,'cohort_id=$1',[cohort.id]),now:this.now()});
+  return {cohort,members:members.rows,codes:codes.rows.map(row=>({memberId:row.member_id,revokedAt:row.revoked_at===null?null:Number(row.revoked_at),lastActivatedAt:row.last_activated_at===null?null:Number(row.last_activated_at)})),rooms:await this.cohortRooms(client,cohort.id),certificates:await this.certificates(client,'cohort_id=$1',[cohort.id]),now:this.now()};
+ }
+ async cohortSnapshot(client,cohort) {
+  return cohortView(await this.cohortFacts(client,cohort));
+ }
+ // Reads without a lock first; only when a certificate is due does it take the cohort row lock
+ // (the same lock member revoke, code reissue and certificate revoke take) and re-evaluate, so
+ // concurrent evaluations insert one certificate and a revoke in flight is never overtaken.
+ async settleCertificates(client,cohortId) {
+  let cohort=await this.cohortRow(client,cohortId);
+  let facts=await this.cohortFacts(client,cohort);
+  if(!dueCertificates(facts).length)return facts;
+  cohort=await this.cohortRow(client,cohortId,true);
+  for(const certificate of dueCertificates(await this.cohortFacts(client,cohort)))await client.query('INSERT INTO cohort_certificates(id,cohort_id,member_id,member_name,cohort_name,starts_at,ends_at,days,issued_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',[certificate.id,cohort.id,certificate.memberId,certificate.name,certificate.cohortName,certificate.startsAt,certificate.endsAt,certificate.days,certificate.issuedAt]);
+  return this.cohortFacts(client,cohort);
  }
  async issueCode(client,cohortId,memberId) {
   const {code,codeHash}=issueAccessCode();
@@ -287,20 +301,17 @@ export class PostgresStore {
  async certificate(id) {
   return this.transaction(async client=>(await this.certificates(client,'id=$1',[id]))[0]||null);
  }
- async issueCertificate(cohortId,memberId,issuedBy) {
+ async myCertificate(token) {
   return this.transaction(async client=>{
-   const cohort=await this.cohortRow(client,cohortId,true);
-   const member=(await client.query('SELECT id,name FROM cohort_members WHERE id=$1 AND cohort_id=$2',[memberId,cohortId])).rows[0];
-   if(!member)fail(404,'Deelnemer niet gevonden in dit cohort.');
-   const codes=await client.query('SELECT member_id,revoked_at,last_activated_at FROM cohort_access_codes WHERE member_id=$1',[memberId]);
-   const certificate=certificateToIssue({cohort,member,codes:codes.rows.map(row=>({memberId:row.member_id,revokedAt:row.revoked_at,lastActivatedAt:row.last_activated_at})),rooms:await this.cohortRooms(client,cohortId),certificates:await this.certificates(client,'cohort_id=$1',[cohortId]),now:this.now(),issuedBy});
-   if(certificate)await client.query('INSERT INTO cohort_certificates(id,cohort_id,member_id,member_name,cohort_name,starts_at,ends_at,days,issued_at,issued_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',[certificate.id,cohortId,memberId,certificate.name,certificate.cohortName,certificate.startsAt,certificate.endsAt,certificate.days,certificate.issuedAt,certificate.issuedBy?JSON.stringify(certificate.issuedBy):null]);
-   return this.cohortSnapshot(client,cohort);
+   const {r,p}=await this.authenticated(client,token,'browser');
+   if(!p?.cohortMemberId||!r.cohortId)return null;
+   const facts=await this.settleCertificates(client,r.cohortId);
+   return {cohortName:facts.cohort.name,days:facts.cohort.days,...memberCertificate({...facts,memberId:p.cohortMemberId,codes:facts.codes.filter(code=>code.memberId===p.cohortMemberId)})};
   });
  }
  async revokeCertificate(cohortId,certificateId) {
   return this.transaction(async client=>{
-   const cohort=await this.cohortRow(client,cohortId);
+   const cohort=await this.cohortRow(client,cohortId,true);
    const found=await client.query('UPDATE cohort_certificates SET revoked_at=COALESCE(revoked_at,$3) WHERE id=$1 AND cohort_id=$2 RETURNING id',[certificateId,cohortId,this.now()]);
    if(!found.rowCount)fail(404,'Certificaat niet gevonden in dit cohort.');
    return this.cohortSnapshot(client,cohort);
@@ -310,7 +321,7 @@ export class PostgresStore {
   return this.transaction(async client=>{
    const ids=await client.query('SELECT id FROM cohorts ORDER BY created_at DESC');
    const cohorts=[];
-   for(const {id} of ids.rows)cohorts.push(await this.cohortSnapshot(client,await this.cohortRow(client,id)));
+   for(const {id} of ids.rows)cohorts.push(cohortView(await this.settleCertificates(client,id)));
    return cohorts;
   });
  }

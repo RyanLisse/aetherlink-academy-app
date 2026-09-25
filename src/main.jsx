@@ -1,6 +1,6 @@
 import React,{useEffect,useState,useRef} from 'react';
 import {createRoot} from 'react-dom/client';
-import {Users,BookOpen,Compass,Target,Sparkles,ClipboardCheck,Sun,Moon,ArrowRight,Clock,Play,Pause,RotateCw,Shuffle,HelpCircle,Check,LogOut,Copy,FileText,ExternalLink,Presentation,X,LayoutGrid,Link,Columns3,Plus,Download} from 'lucide-react';
+import {Users,BookOpen,Compass,Target,Sparkles,ClipboardCheck,Sun,Moon,ArrowRight,Clock,Play,Pause,RotateCw,Shuffle,HelpCircle,Check,LogOut,Copy,FileText,ExternalLink,Presentation,X,LayoutGrid,Link,Columns3,Plus,Download,Award} from 'lucide-react';
 import {api,authApi,getToken,getParticipantAccess,saveParticipantAccess,forgetParticipantAccess,participantAccessUrl,saveSession} from './api';
 import {AppsLauncher} from './portal/AppsLauncher.jsx';
 import {Knowledge,Coach,Lesson,Solo,Review,Route,Debrief} from './panels';
@@ -73,7 +73,7 @@ function App(){
   const contribution=facilitator?t('roster.contributionFacilitator'):room.me.role==='Driver'?t('roster.contributionDriver'):t('roster.contributionNavigator');
   return <div className="app" key={locale}>
     <header className="topbar"><Brand/><div className="account"><span className={'connection '+(connected?'online':'offline')} role="status" aria-live="polite"><i/>{connected?t('account.connected'):t('account.disconnected')}</span>{localeToggle}{themeButton}<span className="avatar small">{room.me.name.slice(0,2).toUpperCase()}</span><span>{room.me.name}</span><button className="icon-button" aria-label={t('account.leave')} onClick={leaveSession}><LogOut size={17}/></button></div></header>
-    <aside className="sidebar"><nav aria-label={t('nav.main')}>{navIds.map(([id,labelKey,Icon])=><button key={id} className={view===id?'selected':''} onClick={()=>setView(id)}><Icon size={19}/>{t(labelKey)}</button>)}{(facilitator||room.board)&&<button className={view==='board'?'selected':''} onClick={()=>setView('board')}><Columns3 size={19}/>{t('nav.board')}</button>}{facilitator&&<button className={view==='debrief'?'selected':''} onClick={()=>setView('debrief')}><ClipboardCheck size={19}/>{t('nav.debrief')}</button>}</nav><div className="sidebar-bottom"><span>{t('nav.tagline1')}</span><span>{t('nav.tagline2')}</span><strong>{t('nav.tagline3')}</strong><hr/><small>{t('nav.schedule')}</small></div></aside>
+    <aside className="sidebar"><nav aria-label={t('nav.main')}>{navIds.map(([id,labelKey,Icon])=><button key={id} className={view===id?'selected':''} onClick={()=>setView(id)}><Icon size={19}/>{t(labelKey)}</button>)}{(facilitator||room.board)&&<button className={view==='board'?'selected':''} onClick={()=>setView('board')}><Columns3 size={19}/>{t('nav.board')}</button>}{facilitator&&<button className={view==='debrief'?'selected':''} onClick={()=>setView('debrief')}><ClipboardCheck size={19}/>{t('nav.debrief')}</button>}{!facilitator&&room.me.cohortMemberId&&<button className={view==='certificate'?'selected':''} onClick={()=>setView('certificate')}><Award size={19}/>{t('nav.certificate')}</button>}</nav><div className="sidebar-bottom"><span>{t('nav.tagline1')}</span><span>{t('nav.tagline2')}</span><strong>{t('nav.tagline3')}</strong><hr/><small>{t('nav.schedule')}</small></div></aside>
     <main>
       <div className="room-heading"><div><p className="muted">{t('room.supportDay',{day:room.day})} · {dayLabel}</p><h1>{room.name}</h1></div><div className="round"><span>{t('room.round',{round:room.round})} · {roundStatus}</span><strong><Clock size={22}/><Timer room={room}/></strong></div></div>
       <div className="sdlc" aria-label={t('room.sdlc')}>{phases.map((p,i)=><React.Fragment key={p}><div className={p===room.phase?'active':''}><span>{p}</span></div>{i<5&&<span className="phase-line"/>}</React.Fragment>)}</div>
@@ -82,7 +82,7 @@ function App(){
       {facilitator&&<FacilitatorControls room={room} control={control} busy={busy} connected={connected} onOpenClassroom={()=>setClassroomOpen(true)}/>}
       {facilitator&&classroomOpen&&<ClassroomOverlay room={room} onClose={()=>setClassroomOpen(false)}/>}
       <div className="workspace">
-        <section className="primary">{view==='squad'&&<Document room={room} theme={theme}/>}{view==='route'&&<Route room={room} onNavigate={setView}/>}{view==='lesson'&&<Lesson room={room} action={action} busy={busy}/>}{view==='solo'&&<Solo room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='coach'&&<Coach room={room} action={action}/>}{view==='review'&&<Review room={room} action={action} busy={busy}/>}{view==='decks'&&<Decks room={room} action={action} busy={busy}/>}{view==='apps'&&<AppsLauncher action={action} busy={busy} facilitator={facilitator} hostKey={''}/>}{view==='debrief'&&facilitator&&<Debrief room={room}/>}{view==='board'&&<Board room={room} action={action} busy={busy} onBoard={board=>setRoom(current=>({...current,board}))}/>}</section>
+        <section className="primary">{view==='squad'&&<Document room={room} theme={theme}/>}{view==='route'&&<Route room={room} onNavigate={setView}/>}{view==='lesson'&&<Lesson room={room} action={action} busy={busy}/>}{view==='solo'&&<Solo room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='coach'&&<Coach room={room} action={action}/>}{view==='review'&&<Review room={room} action={action} busy={busy}/>}{view==='decks'&&<Decks room={room} action={action} busy={busy}/>}{view==='apps'&&<AppsLauncher action={action} busy={busy} facilitator={facilitator} hostKey={''}/>}{view==='debrief'&&facilitator&&<Debrief room={room}/>}{view==='board'&&<Board room={room} action={action} busy={busy} onBoard={board=>setRoom(current=>({...current,board}))}/>}{view==='certificate'&&!facilitator&&<MyCertificate room={room}/>}</section>
         <aside className="right-rail">
           <section className="panel roster">
             <div className="panel-heading"><h2>{t('roster.title')} <span>({room.members.length}/{t('roster.softMax')})</span></h2><Users size={17}/></div>
@@ -312,7 +312,7 @@ function CohortPanel({squads,hostKey,action}){
       <ul className="cohort-roster">{cohort.members.map(member=><li key={member.id}>
         <span><strong>{member.name}</strong><small className={'cohort-status '+member.status}>{t(`cohort.status.${member.status}`)}{member.seated?` · ${t('cohort.seated')}`:''}</small></span>
         <span className="cohort-actions">{member.status!=='revoked'&&<button type="button" onClick={()=>memberAction('facilitator/cohort/revoke',cohort.id,member.id)}>{t('cohort.revoke')}</button>}<button type="button" onClick={()=>memberAction('facilitator/cohort/reissue',cohort.id,member.id)}>{t('cohort.reissue')}</button></span>
-        <CertificateLine certificate={member.certificate} date={date} issue={()=>memberAction('facilitator/cohort/certificate/issue',cohort.id,member.id)} open={()=>openCertificate(member.certificate.id)} revoke={()=>revokeCertificate(cohort.id,member.certificate.id)}/>
+        <CertificateLine certificate={member.certificate} date={date} open={()=>openCertificate(member.certificate.id)} revoke={()=>revokeCertificate(cohort.id,member.certificate.id)}/>
       </li>)}</ul>
       <form className="cohort-add" onSubmit={submit('facilitator/cohort/members',data=>({cohortId:cohort.id,members:names(data.members)}),result=>reveal(result.codes))}>
         <label>{t('cohort.addMembers')}<textarea name="members" rows={2} required/></label>
@@ -329,11 +329,38 @@ function CohortPanel({squads,hostKey,action}){
   </section>;
 }
 
-function CertificateLine({certificate,date,issue,open,revoke}){
+function CertificateLine({certificate,date,open,revoke}){
   const t=useT();
   if(certificate.id)return <div className="cohort-certificate"><small className="cohort-status activated">{t('cert.issued',{date:date(certificate.issuedAt)})}</small><span className="cohort-actions"><button type="button" onClick={open}>{t('cert.open')}</button><button type="button" onClick={revoke}>{t('cert.revoke')}</button></span></div>;
-  if(certificate.eligible)return <div className="cohort-certificate"><span className="cohort-actions"><button type="button" onClick={issue}>{t('cert.issue')}</button></span></div>;
+  if(certificate.status==='revoked')return <div className="cohort-certificate"><small className="cohort-status revoked">{t('cert.revoked',{date:date(certificate.revokedAt)})}</small></div>;
   return <div className="cohort-certificate"><small className="muted">{t('cert.notYet')} {certificate.reasons.map(reason=>t(`cert.reason.${reason.code}`,{day:reason.day})).join(' · ')}</small></div>;
+}
+
+function MyCertificate({room}){
+  const t=useT();
+  const {locale}=useI18n();
+  const [mine,setMine]=useState(null);
+  const [error,setError]=useState('');
+  useEffect(()=>{let active=true;api('certificate').then(result=>{if(active)setMine(result);}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[room.version]);
+  const date=ms=>new Date(ms).toLocaleDateString(locale==='nl'?'nl-NL':'en-GB',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
+  return <section className="panel content-panel my-certificate" aria-labelledby="my-certificate-heading">
+    <p className="cyan">{t('mycert.eyebrow')}</p><h2 id="my-certificate-heading">{t('mycert.title')}</h2>
+    {error&&<p role="alert">{error}</p>}
+    {!mine&&!error&&<p className="muted">{t('mycert.loading')}</p>}
+    {mine?.status==='no-cohort'&&<p className="lede">{t('mycert.noCohort')}</p>}
+    {mine?.status==='issued'&&<div className="my-certificate-issued">
+      <p className="lede">{t('mycert.issued',{cohort:mine.cohortName,date:date(mine.issuedAt)})}</p>
+      <p><a className="button-link gradient" href={mine.certificateUrl} target="_blank" rel="noopener"><Award size={16}/>{t('mycert.open')}</a></p>
+      <dl><div><dt>{t('mycert.verificationId')}</dt><dd><code>{mine.id}</code></dd></div><div><dt>{t('mycert.verifyAt')}</dt><dd><code>{mine.verifyUrl}</code></dd></div></dl>
+      <p className="muted">{t('mycert.share')}</p>
+    </div>}
+    {mine?.status==='revoked'&&<p className="lede">{t('mycert.revoked')}</p>}
+    {(mine?.status==='not-eligible'||mine?.status==='due')&&<div>
+      <p className="lede">{t('mycert.notYet',{done:mine.daysCompleted,days:mine.days})}</p>
+      <ul className="my-certificate-todo">{mine.reasons.map(reason=><li key={reason.code+(reason.day||'')}>{t(`mycert.reason.${reason.code}`,{day:reason.day})}</li>)}</ul>
+      <p className="muted">{t('mycert.automatic')}</p>
+    </div>}
+  </section>;
 }
 
 const formatSeconds=seconds=>`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;
