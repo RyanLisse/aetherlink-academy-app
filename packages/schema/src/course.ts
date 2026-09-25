@@ -24,6 +24,26 @@ export const Track = Schema.Struct({
 });
 export type Track = Schema.Schema.Type<typeof Track>;
 
+/** Where an imported value came from. Only one-time imports set it; Academy-authored values omit it. */
+export const ImportSource = Schema.Struct({
+  system: Schema.Literal('notion'),
+  pageUrl: Schema.String,
+  retrievedAt: Schema.String,
+  locator: Schema.optional(Schema.String),
+});
+export type ImportSource = Schema.Schema.Type<typeof ImportSource>;
+
+export const DayScheduleEntry = Schema.Struct({
+  label: LocalizedText,
+  start: Schema.optional(Schema.String),
+  end: Schema.optional(Schema.String),
+  source: Schema.optional(ImportSource),
+});
+export type DayScheduleEntry = Schema.Schema.Type<typeof DayScheduleEntry>;
+
+export const DayChecklistItem = Schema.Struct({...LocalizedText.fields, source: Schema.optional(ImportSource)});
+export type DayChecklistItem = Schema.Schema.Type<typeof DayChecklistItem>;
+
 export const Day = Schema.Struct({
   id: DayId,
   trackId: TrackId,
@@ -33,8 +53,8 @@ export const Day = Schema.Struct({
   kind: DayKind,
   title: LocalizedText,
   ladder: Schema.optional(Schema.Array(Schema.String)),
-  schedule: Schema.optional(Schema.Array(Schema.Struct({label: LocalizedText, start: Schema.optional(Schema.String), end: Schema.optional(Schema.String)}))),
-  checklist: Schema.optional(Schema.Array(LocalizedText)),
+  schedule: Schema.optional(Schema.Array(DayScheduleEntry)),
+  checklist: Schema.optional(Schema.Array(DayChecklistItem)),
   guideUrl: Schema.optional(Schema.String),
   participantRepo: Schema.optional(Schema.String),
   agentRepo: Schema.optional(Schema.String),
