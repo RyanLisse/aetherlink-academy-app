@@ -4,7 +4,7 @@ import {dayProgress,debrief,exportDebrief} from './progress.mjs';
 import http from 'node:http';
 import httpProxy from 'http-proxy';
 import {createHash,createHmac,randomBytes,randomUUID,timingSafeEqual} from 'node:crypto';
-import {readFileSync,existsSync,writeFileSync} from 'node:fs';
+import {readFileSync,existsSync,writeFileSync,readdirSync} from 'node:fs';
 import path from 'node:path';
 import {Store,secret,hash,fail} from './store.mjs';
 import {LocalStore} from './local-store.mjs';
@@ -17,6 +17,7 @@ import {createGoogleSso,readLoginState,signLoginState} from './google-sso.mjs';
 import {createSlidesService} from './slides/runtime.ts';
 import {createPortal} from './portal/index.mjs';
 import {parseLabCompletion,parseOriginAllowlist,resolveLabs} from '../packages/lab-embed/src/index.ts';
+import {createScreenStore,screenBinding,readScreenState} from './screen-state.mjs';
 const text=(v,max=4000)=>{if(typeof v!=='string'||!v.trim()||v.length>max)fail(400,`Vul tekst in (maximaal ${max} tekens).`);return v.trim();};
 const namedCookie=(req,name)=>{const value=req.headers.cookie?.split(';').map(c=>c.trim()).find(c=>c.startsWith(`${name}=`))?.slice(name.length+1);if(value===undefined)return;try{return decodeURIComponent(value);}catch{return;}};
 const cookie=req=>namedCookie(req,'academy');
@@ -35,9 +36,12 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  const requireFacilitator=async req=>{const key=Buffer.from(hash(req.body?.hostKey||''));if(timingSafeEqual(key,Buffer.from(hash(hostKey))))return null;const identity=await store.facilitator(namedCookie(req,'academy-facilitator'));if(identity)return identity;fail(403,'Ongeldige facilitator-startsleutel.');};
  app.disable('x-powered-by');app.use((req,res,next)=>{res.setHeader('Referrer-Policy','no-referrer');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Cache-Control','no-store');const origin=req.headers.origin;if(origin&&origin!==publicUrl.origin&&origin!==`${req.protocol}://${req.headers.host}`)return res.status(403).json({error:'Andere origin niet toegestaan.'});next();});
  proxy.on('error',(_e,_req,res)=>{if(res.writeHead)res.writeHead(502,{'content-type':'application/json'}).end(JSON.stringify({error:'Proof is niet bereikbaar.'}));else res.destroy();});
+ const webDist=path.join(root,'apps/web/dist'),webAssetsDir=path.join(webDist,'assets');
+ // apps/web/public/assets shares the /assets prefix with Proof's editor bundle; only files the web build shipped bypass the Proof session.
+ const webPublicAssets=new Set(existsSync(webAssetsDir)?readdirSync(webAssetsDir,{recursive:true,withFileTypes:true}).filter(e=>e.isFile()).map(e=>'/assets/'+path.relative(webAssetsDir,path.join(e.parentPath,e.name)).split(path.sep).join('/')):[]);
  // Proof retains the single authoritative Yjs document. Only authenticated room paths pass this gateway.
  app.use(async(req,res,next)=>{
-  if(!/^\/(d\/|api\/|documents\/|assets\/|ws\b)/.test(req.path))return next();
+  if(!/^\/(d\/|api\/|documents\/|assets\/|ws\b)/.test(req.path)||webPublicAssets.has(req.path))return next();
   try{const session=await store.auth(cookie(req),'browser');const {r}=session;const slug=req.path.match(/^\/(?:d|documents|api\/documents|api\/agent)\/([^/]+)/)?.[1];
    if(slug&&slug!==r.proof.slug)fail(403,'Dit document hoort bij een andere kamer.');
    const allowed=(['GET','PUT'].includes(req.method)&&req.path===`/api/documents/${r.proof.slug}`)||req.path.startsWith('/assets/')||req.path===`/d/${r.proof.slug}`||req.path==='/api/capabilities'||new RegExp(`^/api/documents/${r.proof.slug}/(open-context|collab-session|collab-refresh|info|presence|marks|content|title)$`).test(req.path);
@@ -81,6 +85,8 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  app.get('/game/debrief',wrap(async(req,res)=>{const {r,s}=await browser(req);if(s.personId!=='facilitator')fail(403,'Alleen de facilitator bekijkt de debrief.');res.json(debrief(r));}));
  app.get('/game/debrief/export',wrap(async(req,res)=>{const {r,s}=await browser(req);if(s.personId!=='facilitator')fail(403,'Alleen de facilitator exporteert de debrief.');res.type('text/markdown').set('Content-Disposition','attachment; filename="squad-overdracht.md"').send(exportDebrief(r));}));
  app.get('/game/document',wrap(async(req,res)=>{const {r}=await browser(req);res.json(await proof.state(r));}));
+ const screens=createScreenStore(presence);
+ app.post('/game/screen-state',wrap(async(req,res)=>{await screens.save(screenBinding(await browser(req),req.body));res.status(204).end();}));
  app.post('/game/help',wrap(async(req,res)=>res.json(await store.withSession(token(req),'browser',({p})=>{if(!p)fail(400,'De facilitator heeft geen solo-profiel.');p.help=!p.help;return {help:p.help};}))));
  app.post('/game/quiz',wrap(async(req,res)=>res.json(await store.withSession(token(req),'browser',({r,p})=>{if(!p)fail(400,'Alleen deelnemers.');const pack=getDayPack(r.day);if(!pack)fail(400,`Geen contentpakket voor supportdag ${r.day}.`);const answers=req.body?.answers,expected=pack.quiz.questions.length;if(!Array.isArray(answers)||answers.length!==expected)fail(400,`Beantwoord alle ${expected} vragen.`);if(answers.some((answer,index)=>!Number.isInteger(answer)||answer<0||answer>=pack.quiz.questions[index].options.length))fail(400,'Gebruik een geldige optie voor elke vraag.');const score=answers.filter((answer,index)=>answer===pack.quiz.answers[index]).length;const at=new Date().toISOString();p.route=score<=1?'guided':score===2?'standard':'stretch';p.quiz={score,at,day:r.day};p.progressByDay=p.progressByDay||{};p.progressByDay[String(r.day)]={...(p.progressByDay[String(r.day)]||{}),quizScore:score,route:p.route,quizAt:at};return {score,route:p.route,day:r.day,note:'Voorlopige hulpkeuze op basis van 3 scenario’s; geen vaardigheidsbewijs of permanent label.'};}))));
  app.post('/game/route',wrap(async(req,res)=>{if(!['guided','standard','stretch'].includes(req.body.route))fail(400,'Ongeldige hulpkeuze.');await store.withSession(token(req),'browser',({r,p})=>{if(!p)fail(400,'Alleen deelnemers.');p.route=req.body.route;p.progressByDay??={};p.progressByDay[String(r.day)]={...p.progressByDay[String(r.day)],route:p.route};});res.json({ok:true});}));
@@ -130,6 +136,7 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  async function executeMcp(token,tool,input){const a=await store.auth(token,'mcp');const {r,p}=a;if(!p)fail(403,'Geen deelnemer.');let result;
   switch(tool){case 'get_mission':{const pack=getDayPack(r.day);result={session:{roomId:r.id,participantId:p.id,participantName:p.name,squadName:r.name},mission:pack?.mission||mission,day:r.day,phase:r.phase,route:p.route,role:r.members[r.driver]?.id===p.id?'Driver':'Navigator',coach:'Leg begrippen uit, citeer les-IDs, pas hints aan de hulpkeuze aan. Lees eerst de gedeelde intent. Geen browserchat of model-API vanuit de game.'};break;}
   case 'get_document':result=await proof.state(r);break;
+  case 'get_screen_state':result=await readScreenState(a,screens);break;
   case 'search_knowledge':result={lessons:searchKnowledge(String(input.query||''))};break;
   case 'submit_evidence':result=await evidence(token,input);break;
   case 'list_decks':case 'get_deck':case 'create_deck':case 'add_slide':case 'update_slide':case 'patch_deck':case 'export_deck_html':{const action={list_decks:'listDecks',get_deck:'getDeck',create_deck:'createDeck',add_slide:'addSlide',update_slide:'updateSlide',patch_deck:'patchDeck',export_deck_html:'exportHtml'}[tool];result=await slides.run(action,deckActor(a),input||{});break;}
@@ -208,7 +215,6 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
   return res.sendFile(index);
  });
  // apps/web SPA (Classroom / deck / workshop / lesson / live) — AET-75+ routes live in apps/web, not root dist/
- const webDist=path.join(root,'apps/web/dist');
  const webIndex=path.join(webDist,'index.html');
  const isWebSpaPath=p=>p==='/deck'||p.startsWith('/classroom/')||p.startsWith('/workshop/')||p==='/lesson'||p.startsWith('/lesson/')||p.startsWith('/live/');
  app.use(express.static(webDist,{index:false,fallthrough:true}));
