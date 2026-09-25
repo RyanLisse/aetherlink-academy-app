@@ -10,9 +10,8 @@ const viewports = [
 const indexesByViewport: Record<(typeof viewports)[number]['name'], number[]> = {
   desktop: [0, 20, 40, 60, 83, 90],
   tablet: [0, 20, 40, 60, 83, 90],
-  // Mobile: avoid known wide visual layouts until packages/deck ships overflow fixes (AET-23);
-  // 55 (Fresh-session test) overflows by 9px on main too.
-  mobile: [0, 10, 25, 58, 73],
+  // Mobile: avoid known wide visual layouts until packages/deck ships overflow fixes (AET-23).
+  mobile: [0, 10, 25, 55, 58, 73],
 };
 
 for (const viewport of viewports) {
