@@ -29,6 +29,7 @@
     "lint:content:support-5": "node content/scripts/lint-support-5.mjs"
   },
   "dependencies": {
+    "@hocuspocus/provider": "2.15.3",
     "@modelcontextprotocol/client": "2.0.0",
     "@modelcontextprotocol/core": "2.0.0",
     "@modelcontextprotocol/express": "2.0.0",
@@ -42,6 +43,7 @@
     "pg": "8.16.3",
     "react": "19.1.1",
     "react-dom": "19.1.1",
+    "yjs": "13.6.32",
     "zod": "4.6.4"
   },
   "devDependencies": {
