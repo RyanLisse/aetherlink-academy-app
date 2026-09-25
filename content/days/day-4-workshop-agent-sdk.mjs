@@ -21,7 +21,7 @@ export default {
   {label:'SOLO 4',prompt:'Komt elk Claude-label overeen met het verwachte n8n-label?'}
  ],
  demo:{
-  slides:[slide(d,3,'Watch: clone, install, open the export.'),slide(d,6,'Watch: fixture tickets and expected L/M/H.'),slide(d,9,'Watch: first agent, ticket to priority.'),slide(d,12,'Watch: one specialist split.')],
+  slides:[slide(d,3,'Watch: clone, install, open the export.'),slide(d,6,'Watch: fixture tickets, predict L/M/H.'),slide(d,9,'Watch: first agent, ticket to priority.'),slide(d,12,'Watch: one specialist split.')],
   script:[
    'SOLO 0 (dia 3): git clone, npm install, open n8n/support-triage.json en benoem Ticket Input, AI Agent, Reply en Risk.',
    'SOLO 1 (dia 6): toon de fixture-tickets en laat de zaal per ticket een label voorspellen; de automatische check in de Academy bevestigt of het klopt.',

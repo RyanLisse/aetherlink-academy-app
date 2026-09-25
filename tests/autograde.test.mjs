@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync} from 'node:fs';
+import {mkdtempSync,readdirSync,readFileSync} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {createApp} from '../server/app.mjs';
@@ -237,4 +237,10 @@ test('SOLO 1 on day 4: predict the labels, then the autograder checks them; the 
 
 test('the prose leak detector finds an expected label written next to its ticket',()=>{
  assert.deepEqual(proseLeaks('toon de verwachte labels (WL-1026 high, WL-1027 low)'),['WL-1026=high','WL-1027=low']);
+});
+
+test('no deck slide or speaker note names an expected triage label, because the deck bundle ships to the browser',()=>{
+ const deckDir=new URL('../apps/web/src/deck/',import.meta.url);
+ const found=readdirSync(deckDir).filter(name=>name.endsWith('.ts')).flatMap(name=>proseLeaks(readFileSync(new URL(name,deckDir),'utf8')).map(leak=>`${name}: ${leak}`));
+ assert.deepEqual(found,[]);
 });
