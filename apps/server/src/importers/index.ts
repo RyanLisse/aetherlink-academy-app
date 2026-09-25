@@ -8,4 +8,4 @@ export {DraftLedger, type DraftRecord} from './draftLedger.ts';
 export {writeSlidesDraft, type DraftWriteResult} from './postgresDraft.ts';
 export {slidesToAggregate} from './slidesAggregate.ts';
 export {stableUuid} from './stableUuid.ts';
-export {importTrainingSiteArchive, TRAINING_SITE_REGISTRIES, TrainingSiteArchiveError, type TrainingSiteArchive, type ArchivedDeck, type ArchivedSlide, type SlideProvenance} from './trainingSiteArchive.ts';
+export {importTrainingSiteArchive, ARCHIVE_IMAGE_BASE, TRAINING_SITE_REGISTRIES, TrainingSiteArchiveError, type TrainingSiteArchive, type ArchivedDeck, type ArchivedSlide, type SlideProvenance} from './trainingSiteArchive.ts';

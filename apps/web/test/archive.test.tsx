@@ -1,6 +1,11 @@
 // @vitest-environment jsdom
 import {act} from 'react';
 import {createRoot} from 'react-dom/client';
+import {existsSync} from 'node:fs';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {Deck} from '@academy/deck';
+import {decodeSlide} from '@academy/schema';
 import {describe, expect, test} from 'vitest';
 import raw from '../../../content/archive/training-site.json' with {type: 'json'};
 import {matchArchive, parseArchive} from '../src/archive/archive.ts';
@@ -65,6 +70,42 @@ describe('training-site archive', () => {
     const notes = catalog.decks[2]!.slides.map((slide) => slide.notes).filter((note): note is string => typeof note === 'string' && note.length > 40);
     expect(notes.length).toBeGreaterThan(0);
     for (const note of notes) expect(host.textContent).not.toContain(note);
+    await unmount();
+  });
+
+  test('the 37 image slides point at diagrams served from apps/web/public', () => {
+    const images = catalog.decks.flatMap((deck) => deck.slides).filter((slide) => slide.layout === 'image');
+    expect(images).toHaveLength(37);
+    const served = new Set(images.map((slide) => slide.image));
+    expect(served.size).toBe(12);
+    for (const src of served) {
+      expect(src).toMatch(/^\/archive\/training-site\/[a-z0-9-]+\.(svg|webp)$/);
+      expect(existsSync(path.join(path.dirname(fileURLToPath(import.meta.url)), '../public', src!)), src).toBe(true);
+    }
+  });
+
+  test('the reader renders an image slide as a figure with the original alt text and caption', async () => {
+    const {host, unmount} = await mount(<ArchiveView page={{kind: 'deck', squad: 1, day: 1}} navigate={() => {}} catalog={catalog} />);
+    const article = host.querySelectorAll('.reader-lesson > article')[3]!;
+    expect(article.querySelector('h2')!.textContent).toBe('Intent.md in one picture');
+    const img = article.querySelector('figure.slide-figure img')!;
+    expect(img.getAttribute('src')).toBe('/archive/training-site/intent-md.svg');
+    expect(img.getAttribute('alt')).toBe('intent.md brief with what, why and boundaries feeding design, build and review, with a revisit loop.');
+    expect(article.querySelector('figure.slide-figure figcaption')!.textContent).toBe('What, why and boundaries feed design, build and review. Change the brief before you change the plan.');
+    expect(host.querySelectorAll('.reader-lesson figure.slide-figure img')).toHaveLength(4);
+    await unmount();
+  });
+
+  test('without imageAlt the figure falls back to the slide title, and a slide without an image renders no figure', async () => {
+    const synthetic = [
+      decodeSlide({id: 'synthetic-1', lessonId: 'synthetic', ordinal: 1, title: 'Synthetic diagram slide', type: 'concept', layout: 'image', image: '/archive/training-site/human-gate.svg'}),
+      decodeSlide({id: 'synthetic-2', lessonId: 'synthetic', ordinal: 2, title: 'Synthetic image layout without a file', type: 'concept', layout: 'image'}),
+    ];
+    const {host, unmount} = await mount(<Deck slides={synthetic} index={0} revealStep={-1} mode="reader" onIndexChange={() => {}} onRevealStepChange={() => {}} />);
+    const figures = host.querySelectorAll('figure.slide-figure');
+    expect(figures).toHaveLength(1);
+    expect(figures[0]!.querySelector('img')!.getAttribute('alt')).toBe('Synthetic diagram slide');
+    expect(figures[0]!.querySelector('figcaption')).toBeNull();
     await unmount();
   });
 

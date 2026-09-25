@@ -36,7 +36,25 @@ export interface SlideProvenance extends ArchiveOrigin {
   readonly path: string;
   /** Location inside the registry, e.g. `DAYS.day3.slides[4]`. */
   readonly pointer: string;
+  /** The diagram file at the pinned commit, e.g. `dist/assets/intent-md.svg`; only on `image` slides. */
+  readonly image?: string;
 }
+
+/** Where the Academy serves the archived diagrams (apps/web/public). */
+export const ARCHIVE_IMAGE_BASE = '/archive/training-site/';
+
+export interface ArchiveImageAsset {
+  /** Path in the training-site checkout. */
+  readonly source: string;
+  /** File name under apps/web/public/archive/training-site; raster images are re-encoded as webp. */
+  readonly served: string;
+}
+
+/** The old site resolved `image` as `assets/<file>` next to `dist/index.html`. */
+export const archiveImageAsset = (file: string): ArchiveImageAsset => ({
+  source: `dist/assets/${file}`,
+  served: file.replace(/\.(png|jpe?g)$/i, '.webp'),
+});
 
 export interface ArchivedSlide {
   readonly slide: Slide;
@@ -84,7 +102,8 @@ const guideUrlOf = (registry: Record<string, unknown>, dayKey: string): string |
 
 /**
  * Import the Squad 1/2 day decks of a RyanLisse/aetherlink-training-site checkout as an archived course version.
- * Slides go through the day-decks importer unchanged; the old site's templates are derived at render time, so the
+ * Slides go through the day-decks importer unchanged except `image`, which is rewritten to the Academy's served copy
+ * (the source file stays in provenance). The old site's templates are derived at render time, so the
  * registries' `layout` values already are schema layouts and no archive-only layout is needed.
  */
 export const importTrainingSiteArchive = (checkoutDir: string, origin: ArchiveOrigin): TrainingSiteArchive => {
@@ -97,10 +116,12 @@ export const importTrainingSiteArchive = (checkoutDir: string, origin: ArchiveOr
       lessonId: `${prefix}-${deck.dayKey}`,
       title: deck.title,
       guideUrl: guideUrlOf(raw, deck.dayKey),
-      slides: deck.slides.map((slide, index) => ({
-        slide,
-        source: {...origin, path: registry.path, pointer: `${registry.global}.${deck.dayKey}.slides[${index}]`},
-      })),
+      slides: deck.slides.map((slide, index): ArchivedSlide => {
+        const source = {...origin, path: registry.path, pointer: `${registry.global}.${deck.dayKey}.slides[${index}]`};
+        if (!slide.image) return {slide, source};
+        const asset = archiveImageAsset(slide.image);
+        return {slide: {...slide, image: ARCHIVE_IMAGE_BASE + asset.served}, source: {...source, image: asset.source}};
+      }),
     }));
   });
   const slides = decks.flatMap((deck) => deck.slides.map((entry) => entry.slide));

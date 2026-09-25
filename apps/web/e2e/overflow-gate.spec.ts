@@ -67,9 +67,18 @@ for (const viewport of viewports) {
         overflowing: [...document.querySelectorAll<HTMLElement>('.archive, .reader-lesson, .reader-lesson > article')]
           .filter((el) => el.scrollWidth > el.clientWidth + 1)
           .map((el) => `${el.className || el.tagName}:${el.querySelector('h2')?.textContent ?? ''}`),
+        clippedTools: [...document.querySelectorAll<HTMLElement>('.academy-deck .toolbar .tools > button')]
+          .filter((el) => el.offsetParent !== null && el.getBoundingClientRect().right > window.innerWidth + 1)
+          .map((el) => el.id),
+        imageSources: [...document.querySelectorAll<HTMLImageElement>('.reader-lesson figure.slide-figure img')].map((img) => img.getAttribute('src') ?? ''),
       }));
       expect(metrics.page.scrollWidth, `${viewport.name} ${archivePath} page horizontal overflow`).toBeLessThanOrEqual(metrics.page.innerWidth + 1);
       expect(metrics.overflowing, `${viewport.name} ${archivePath} overflowing reader elements`).toEqual([]);
+      expect(metrics.clippedTools, `${viewport.name} ${archivePath} toolbar buttons past the right edge`).toEqual([]);
+      for (const src of new Set(metrics.imageSources)) {
+        const response = await page.request.get(src);
+        expect(`${response.status()} ${response.headers()['content-type']}`, src).toMatch(/^200 image\/(svg\+xml|webp)/);
+      }
     }
   });
 }
