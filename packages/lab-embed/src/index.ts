@@ -4,7 +4,7 @@ export const LAB_EMBED_MINOR = 1;
 export const MAX_LAB_MESSAGE_CHARS = 8_192;
 export const MAX_LAB_EVIDENCE_CHARS = 2_000;
 export const MAX_LAB_ANSWER_CHARS = 2_000;
-const MAX_GRADED_STOPS = 64;
+export const MAX_GRADED_STOPS = 64;
 const MAX_ATTEMPTS = 1_000_000;
 
 const LAB_ID_PATTERN = /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/;

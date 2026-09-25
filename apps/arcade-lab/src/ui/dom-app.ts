@@ -159,7 +159,7 @@ const checkpoint = {
     $('cpSkip').onclick = finish;
   },
   // Server-graded stop: the verdict comes from Academy, so wrong answers never reveal the right one.
-  showGraded(stop, submit, onPassed, onSkip) {
+  showGraded(stop, submit, cancel, onPassed, onSkip) {
     const el = $('checkpoint'); el.hidden = false;
     const opts = stop.options || [];
     el.innerHTML = `<div class="card"><span class="eyebrow">${opts.length ? 'Knowledge check' : 'Your answer'} · graded by Academy</span><h3>${esc(stop.title || 'Checkpoint')}</h3><p>${esc(stop.q || '')}</p>
@@ -168,12 +168,13 @@ const checkpoint = {
       <div class="row"><button id="cpSkip" class="ghost sm">Skip</button><button id="cpGo" class="primary" disabled>Continue</button></div></div>`;
     const inputs = () => [...el.querySelectorAll('.opt:not(.wrong), #cpText, #cpCheck')];
     const say = html => { const ex = $('cpExplain'); ex.hidden = false; ex.innerHTML = html; };
-    const close = next => { el.hidden = true; el.innerHTML = ''; next(); };
+    let timer = 0;
+    const close = next => { clearTimeout(timer); cancel(); el.hidden = true; el.innerHTML = ''; next(); };
     const send = (answer, button) => {
       inputs().forEach(x => { x.disabled = true; });
       say('Checking…');
       const retry = () => inputs().forEach(x => { x.disabled = false; });
-      const timer = setTimeout(() => { retry(); say('<b>No answer from Academy.</b> Try again.'); }, 10000);
+      timer = setTimeout(() => { cancel(); retry(); say('<b>No answer from Academy.</b> Try again.'); }, 10000);
       const sent = submit(answer, ({ passed, attempts }) => {
         clearTimeout(timer);
         button?.classList.add(passed ? 'right' : 'wrong');
@@ -519,7 +520,7 @@ export function bootApp() {
     }
     const done = bridge ? () => { if (current?.id === initial.id) bridge.stopDone(stop); onDone(); } : onDone;
     if (bridge && current?.id === initial.id && bridge.isGraded(stop)) {
-      return checkpoint.showGraded(stop, (answer, onVerdict) => bridge.submit(stop, answer, onVerdict), done, onDone);
+      return checkpoint.showGraded(stop, (answer, onVerdict) => bridge.submit(stop, answer, onVerdict), () => bridge.cancel(stop), done, onDone);
     }
     return _show(stop, done);
   };

@@ -24,18 +24,18 @@ export function LabEmbed({lab,saved,preview}){
   useEffect(()=>{
     const connection=connectHost(window,frame.current,preview?previewLab(lab):lab,{locale,onMessage:message=>{
       if(message.type==='progress')setProgress(message);
-      else if(message.type==='error')setError(message.message);
+      else if(message.type==='error')setError(t('lab.error',{message:message.message}));
       else if(message.type==='answer'){
         setError('');
         api('lab-answer',{labId:message.labId,stopId:message.stopId,answer:message.answer})
           .then(result=>connection.sendVerdict(result.stop))
-          .catch(err=>setError(err.message));
+          .catch(err=>setError(t('lab.answerFailed',{message:err.message})));
       }
       else if(message.type==='complete'&&!preview&&!reported.current){
         reported.current=true;setStatus('saving');
         api('lab-complete',{labId:message.labId,result:message.result,...(message.evidence?{evidence:message.evidence}:{})})
           .then(result=>{setSource(result.lab.source);setStatus('done');})
-          .catch(err=>{reported.current=false;setStatus('open');setError(err.message);});
+          .catch(err=>{reported.current=false;setStatus('open');setError(t('lab.saveFailed',{message:err.message}));});
       }
     }});
     bridge.current=connection;connection.sendInit();
@@ -45,7 +45,7 @@ export function LabEmbed({lab,saved,preview}){
   return <article className="lab-embed" data-lab-id={lab.id} data-lab-status={status}>
     <header><FlaskConical size={17}/><strong>{lab.title}</strong><span className={status==='done'?'progress-chip on':'progress-chip'} role="status">{status==='done'&&<Check size={13}/>}{statusText}</span></header>
     {preview&&<p className="muted">{t('lab.preview')}</p>}
-    {error&&<p className="error" role="alert">{t('lab.error',{message:error})}</p>}
+    {error&&<p className="error" role="alert">{error}</p>}
     <iframe ref={frame} className="lab-frame" src={lab.src} title={lab.title} sandbox={SANDBOX} referrerPolicy="no-referrer" loading="lazy" onLoad={()=>bridge.current?.sendInit()}/>
   </article>;
 }

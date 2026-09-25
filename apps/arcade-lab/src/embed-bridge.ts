@@ -31,7 +31,9 @@ export type ArcadeBridge = {
   readonly ended: () => void;
   /** True when the host grades this stop on the server; the lab then must not reveal or decide the answer. */
   readonly isGraded: (stop: Stop) => boolean;
+  /** One answer per stop is in flight at a time; a second submit returns false until the verdict or `cancel`. */
   readonly submit: (stop: Stop, answer: LabAnswer, onVerdict: (verdict: Verdict) => void) => boolean;
+  readonly cancel: (stop: Stop) => void;
 };
 
 /** Same-origin only: the Academy gateway serves Arcade Lab under /arcade-lab/. */
@@ -62,10 +64,11 @@ export function connectArcadeBridge(hub: MessageHub, parent: PostTarget, hostOri
     isGraded: stop => graded.has(stopIdOf(run, stop)),
     submit: (stop, answer, onVerdict) => {
       const stopId = stopIdOf(run, stop);
-      if (!graded.has(stopId) || !bridge?.answer(stopId, answer)) return false;
+      if (!graded.has(stopId) || waiting.has(stopId) || !bridge?.answer(stopId, answer)) return false;
       waiting.set(stopId, onVerdict);
       return true;
     },
+    cancel: stop => void waiting.delete(stopIdOf(run, stop)),
     stopDone: stop => {
       run = finishStop(run, stop);
       report();

@@ -50,5 +50,7 @@ describe('parseLabKeys', () => {
     expect(() => parseLabKeys({lab: {'stop-1': {kind: 'match'}}})).toThrow('match needs includes or regex');
     expect(() => parseLabKeys({lab: {'stop-1': {kind: 'match', regex: 'x', flags: 'g'}}})).toThrow('flags may only use i, m, s, u');
     expect(() => parseLabKeys({lab: {'stop-1': {kind: 'exec', code: 'return 1'}}})).toThrow('unknown kind exec');
+    const tooMany = Object.fromEntries(Array.from({length: 65}, (_, i) => [`stop-${i + 1}`, {kind: 'choice', correct: 0}]));
+    expect(() => parseLabKeys({lab: tooMany})).toThrow('lab has more than 64 graded stops');
   });
 });

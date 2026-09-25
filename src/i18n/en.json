@@ -396,6 +396,8 @@
   "lab.doneGraded": "Completed · graded by the server",
   "lab.preview": "Facilitator preview: completing it here is not recorded.",
   "lab.error": "The lab reported an error: {message}",
+  "lab.answerFailed": "Answer not checked: {message}",
+  "lab.saveFailed": "Progress not saved: {message}",
   "route.labs": "Labs {done}/{total}",
   "nav.board": "Debrief board",
   "board.title": "Debrief board",

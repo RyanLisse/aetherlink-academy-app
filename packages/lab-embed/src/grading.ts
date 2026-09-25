@@ -1,4 +1,4 @@
-import {parseLabId, parseStopId, type LabAnswer, type LabId, type StopId} from './index.ts';
+import {MAX_GRADED_STOPS, parseLabId, parseStopId, type LabAnswer, type LabId, type StopId} from './index.ts';
 
 /**
  * Server-only answer keys for graded stops. Kinds mirror what Arcade Lab checkpoints
@@ -49,6 +49,7 @@ export function parseLabKeys(raw: unknown): LabKeys {
   for (const [rawLabId, rawStops] of Object.entries(raw)) {
     const labId = parseLabId(rawLabId);
     if (!labId || !isRecord(rawStops)) throw new Error(`lab keys: invalid lab ${rawLabId}`);
+    if (Object.keys(rawStops).length > MAX_GRADED_STOPS) throw new Error(`lab keys: ${labId} has more than ${MAX_GRADED_STOPS} graded stops`);
     const stops = new Map<StopId, GradeKey>();
     for (const [rawStopId, rawKey] of Object.entries(rawStops)) {
       const stopId = parseStopId(rawStopId);

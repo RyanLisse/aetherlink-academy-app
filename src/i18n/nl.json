@@ -396,6 +396,8 @@
   "lab.doneGraded": "Afgerond · door de server beoordeeld",
   "lab.preview": "Voorbeeld voor de facilitator: afronden telt hier niet mee.",
   "lab.error": "Lab meldt een fout: {message}",
+  "lab.answerFailed": "Antwoord niet nagekeken: {message}",
+  "lab.saveFailed": "Voortgang niet opgeslagen: {message}",
   "route.labs": "Labs {done}/{total}",
   "nav.board": "Debriefbord",
   "board.title": "Debriefbord",
