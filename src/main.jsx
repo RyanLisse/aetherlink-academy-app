@@ -5,6 +5,7 @@ import {api,authApi,getToken,saveSession} from './api';
 import {AppsLauncher} from './portal/AppsLauncher.jsx';
 import {Knowledge,Coach,Lesson,Solo,Review,Route,Debrief} from './panels';
 import {Decks} from './slides';
+import {reportScreen,startScreenReporting} from './screen';
 import {I18nProvider,LanguageToggle,useT,useI18n} from './i18n';
 import {classroomEmbedUrl,CLASSROOM_SANDBOX} from './classroom';
 import {ArcadeApp, isArcadePath} from './arcade/ArcadeApp.jsx';
@@ -49,6 +50,8 @@ function App(){
   useEffect(()=>()=>clearTimeout(copiedTimer.current),[]);
   useEffect(()=>{document.documentElement.dataset.theme=theme;localStorage.setItem('academy-theme',theme);},[theme]);
   useEffect(()=>{if(!session)return;let active=true;const poll=async()=>{try{const r=await api('state');if(active){setRoom(r);setConnected(true);}}catch(e){if(active){setConnected(false);setError(e.message);}}};api('resume',{}).then(poll).catch(e=>setError(e.message));const timer=setInterval(poll,2000);return()=>{active=false;clearInterval(timer);};},[session]);
+  const participant=Boolean(room)&&room.me.role!=='Facilitator';
+  useEffect(()=>{if(!participant)return;reportScreen({view});return startScreenReporting();},[participant,view]);
   const showCopied=kind=>{setCopied(kind);clearTimeout(copiedTimer.current);copiedTimer.current=setTimeout(()=>setCopied(null),1500);};
   async function action(fn){setBusy(true);setError('');try{return await fn();}catch(e){setError(e.message);return null;}finally{setBusy(false);}}
   async function leaveSession(){setBusy(true);setError('');try{await api('logout',{});sessionStorage.removeItem('academy-token');sessionStorage.removeItem('academy-mcp-'+room.me.id);sessionStorage.removeItem(`academy-agent-setup:${room.id}:${room.me.id}`);location.reload();}catch(err){setError(err.message);}finally{setBusy(false);}}
