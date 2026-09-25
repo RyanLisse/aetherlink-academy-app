@@ -1,0 +1,16 @@
+{
+  "provenance": {
+    "url": "http://91.99.78.17:4317/academy-assets/index-DNSZwLFd.js",
+    "retrievedAt": "2026-09-25T05:55:42.920Z",
+    "bytes": 692325,
+    "sha256": "9707fb6581c4d382297fc5e4b8cf72f16648002699c37fa3362767b8533b3b8e",
+    "trim": "every match of /.{0,40}\"\\/(?:classroom|workshop|lesson)\\/[a-z0-9-]+\".{0,40}/g, joined by newlines"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "text/javascript; charset=utf-8"
+    },
+    "body": "tion:y}),a]})}function ob(a){return a===\"/classroom/1\"||a===\"/lesson/classroom-1\"}function sb(\na){return a===\"/classroom/2\"||a===\"/lesson/classroom-2\"}function cb(a){return a===\"/workshop/5\"\n||a===\"/lesson/workshop-5\"}function ub(a){return a===\"/workshop/3\"\n||a===\"/lesson/workshop-3\"}function db(a){return a===\"/workshop/4\"\n||a===\"/lesson/workshop-4\"}function fb(a){return a===\"/workshop/6\"\n||a===\"/lesson/workshop-6\"}function hb(a){return a===\"/workshop/7\"\n||a===\"/lesson/workshop-7\"}const oh=Hu(K0),FC=oh.filter(a=>a.lesso"
+  }
+}

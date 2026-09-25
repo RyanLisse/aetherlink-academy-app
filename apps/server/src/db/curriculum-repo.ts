@@ -1,7 +1,7 @@
 import {randomUUID} from 'node:crypto';
 import {PgClient} from '@effect/sql-pg';
 import type {SqlError} from 'effect/unstable/sql/SqlError';
-import {and, desc, eq, sql, type SQLWrapper} from 'drizzle-orm';
+import {and, desc, eq, exists, sql, type SQLWrapper} from 'drizzle-orm';
 import {drizzle} from 'drizzle-orm/node-postgres';
 import {Context, Data, Effect, Layer} from 'effect';
 import {decodeParticipantQuizQuestion, decodeQuizQuestion, decodeSlide, participantSlide, type ParticipantQuizQuestion, type QuizQuestion, type Slide} from '@academy/schema';
@@ -105,6 +105,15 @@ const normalizeQuizRow = (row: Record<string, unknown>): Record<string, unknown>
   if (normalized.source === null) delete normalized.source;
   return normalized;
 };
+
+/** Participants only ever read published revisions; a draft (for example an unreviewed import) stays facilitator-only. */
+const publishedRevision = (courseId: string, version: number) =>
+  exists(
+    db
+      .select({one: sql`1`.as('one')})
+      .from(schema.courseVersions)
+      .where(and(eq(schema.courseVersions.courseId, courseId), eq(schema.courseVersions.version, version), eq(schema.courseVersions.status, 'published'))),
+  );
 
 export interface CurriculumRepoShape {
   readonly currentVersion: (courseId: string) => Effect.Effect<number | null, SqlError | CourseNotFound>;
@@ -301,13 +310,13 @@ export const CurriculumRepoLive: Layer.Layer<CurriculumRepo, never, PgClient.PgC
         const slidesQuery = db
           .select(participantSlideColumns)
           .from(schema.slides)
-          .where(and(eq(schema.slides.lessonId, lessonId), eq(schema.slides.courseId, courseId), eq(schema.slides.version, version)))
+          .where(and(eq(schema.slides.lessonId, lessonId), eq(schema.slides.courseId, courseId), eq(schema.slides.version, version), publishedRevision(courseId, version)))
           .orderBy(schema.slides.ordinal)
           .toSQL();
         const quizQuery = db
           .select(participantQuizColumns)
           .from(schema.quizQuestions)
-          .where(and(eq(schema.quizQuestions.lessonId, lessonId), eq(schema.quizQuestions.courseId, courseId), eq(schema.quizQuestions.version, version)))
+          .where(and(eq(schema.quizQuestions.lessonId, lessonId), eq(schema.quizQuestions.courseId, courseId), eq(schema.quizQuestions.version, version), publishedRevision(courseId, version)))
           .toSQL();
         const slides = (yield* run<Record<string, unknown>>(sqlClient, slidesQuery)).map((row) => participantSlide(decodeSlide(normalizeSlideRow(row))));
         const quizQuestions = (yield* run<Record<string, unknown>>(sqlClient, quizQuery)).map((row) => decodeParticipantQuizQuestion(normalizeQuizRow(row)));
