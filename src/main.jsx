@@ -1,7 +1,7 @@
 import React,{useEffect,useState,useRef} from 'react';
 import {createRoot} from 'react-dom/client';
-import {Users,BookOpen,Compass,Target,Sparkles,ClipboardCheck,Sun,Moon,ArrowRight,Clock,Play,Pause,RotateCw,Shuffle,HelpCircle,Check,LogOut,Copy,FileText,ExternalLink,Presentation,X,LayoutGrid} from 'lucide-react';
-import {api,authApi,getToken,saveSession} from './api';
+import {Users,BookOpen,Compass,Target,Sparkles,ClipboardCheck,Sun,Moon,ArrowRight,Clock,Play,Pause,RotateCw,Shuffle,HelpCircle,Check,LogOut,Copy,FileText,ExternalLink,Presentation,X,LayoutGrid,Link} from 'lucide-react';
+import {api,authApi,getToken,getParticipantAccess,saveParticipantAccess,forgetParticipantAccess,participantAccessUrl,saveSession} from './api';
 import {AppsLauncher} from './portal/AppsLauncher.jsx';
 import {Knowledge,Coach,Lesson,Solo,Review,Route,Debrief} from './panels';
 import {Decks} from './slides';
@@ -45,17 +45,21 @@ function App(){
   const [busy,setBusy]=useState(false);
   const [copied,setCopied]=useState(null);
   const [classroomOpen,setClassroomOpen]=useState(false);
+  const accessFromUrl=useRef(new URLSearchParams(location.hash.slice(1)).get('access')).current;
+  const [participantAccess,setParticipantAccess]=useState(()=>accessFromUrl||getParticipantAccess());
   const copiedTimer=useRef(null);
   useEffect(()=>()=>clearTimeout(copiedTimer.current),[]);
   useEffect(()=>{document.documentElement.dataset.theme=theme;localStorage.setItem('academy-theme',theme);},[theme]);
-  useEffect(()=>{if(!session)return;let active=true;const poll=async()=>{try{const r=await api('state');if(active){setRoom(r);setConnected(true);}}catch(e){if(active){setConnected(false);setError(e.message);}}};api('resume',{}).then(poll).catch(e=>setError(e.message));const timer=setInterval(poll,2000);return()=>{active=false;clearInterval(timer);};},[session]);
+  useEffect(()=>{if(!accessFromUrl)return;const url=new URL(location.href);url.hash='';history.replaceState(null,'',url.pathname+url.search);},[accessFromUrl]);
+  useEffect(()=>{if(session||!participantAccess)return;let active=true;setBusy(true);api('participant/resume',{resumeToken:participantAccess}).then(result=>{if(!active)return;saveParticipantAccess(participantAccess);saveSession(result);setSession(true);}).catch(e=>{if(!active)return;if(getParticipantAccess()===participantAccess)forgetParticipantAccess();setParticipantAccess(null);setError(e.message);}).finally(()=>{if(active)setBusy(false);});return()=>{active=false;};},[session,participantAccess]);
+  useEffect(()=>{if(!session)return;let active=true;const poll=async()=>{try{const r=await api('state');if(active){setRoom(r);setConnected(true);}}catch(e){if(active){setConnected(false);setError(e.message);}}};api('resume',{}).then(poll).catch(e=>{sessionStorage.removeItem('academy-token');setRoom(null);setConnected(false);setSession(false);if(!participantAccess)setError(e.message);});const timer=setInterval(poll,2000);return()=>{active=false;clearInterval(timer);};},[session,participantAccess]);
   const showCopied=kind=>{setCopied(kind);clearTimeout(copiedTimer.current);copiedTimer.current=setTimeout(()=>setCopied(null),1500);};
   async function action(fn){setBusy(true);setError('');try{return await fn();}catch(e){setError(e.message);return null;}finally{setBusy(false);}}
-  async function leaveSession(){setBusy(true);setError('');try{await api('logout',{});sessionStorage.removeItem('academy-token');sessionStorage.removeItem('academy-mcp-'+room.me.id);sessionStorage.removeItem(`academy-agent-setup:${room.id}:${room.me.id}`);location.reload();}catch(err){setError(err.message);}finally{setBusy(false);}}
+  async function leaveSession(){setBusy(true);setError('');try{await api('logout',{});sessionStorage.removeItem('academy-token');sessionStorage.removeItem('academy-mcp-'+room.me.id);sessionStorage.removeItem(`academy-agent-setup:${room.id}:${room.me.id}`);forgetParticipantAccess();location.reload();}catch(err){setError(err.message);}finally{setBusy(false);}}
   const themeButton=<button className="icon-button" aria-label={theme==='dark'?t('theme.light'):t('theme.dark')} onClick={()=>setTheme(theme==='dark'?'light':'dark')}>{theme==='dark'?<Sun size={19}/>:<Moon size={19}/>}</button>;
   const localeToggle=<LanguageToggle/>;
   if(isArcadePath(location.pathname))return <ArcadeApp themeButton={themeButton}/>;
-  if(!session||!room)return <><header className="welcome-header"><Brand/><div className="welcome-actions">{localeToggle}{themeButton}</div></header><Join ready={session} action={action} busy={busy} error={error} joined={()=>setSession(true)}/></>;
+  if(!session||!room)return <><header className="welcome-header"><Brand/><div className="welcome-actions">{localeToggle}{themeButton}</div></header><Join ready={session} action={action} busy={busy} error={error} joined={resumeToken=>{if(resumeToken)setParticipantAccess(resumeToken);setSession(true);}}/></>;
   const facilitator=room.me.role==='Facilitator';
   const control=(actionName,value)=>action(async()=>{const r=await api('control',{action:actionName,value});setRoom(r);});
   const dayLabel=room.day<=2?t('room.guided'):room.day===3?t('room.coached'):room.day===4?t('room.hints'):t('room.independent');
@@ -79,6 +83,7 @@ function App(){
             {room.members.length===0&&<p className="muted">{t('roster.empty')}</p>}
             {room.members.map(m=><div className="member" key={m.id}><span className="avatar">{m.name.slice(0,2).toUpperCase()}</span><div><strong>{m.name}{m.id===room.me.id?` ${t('common.you')}`:''}</strong><small className={m.role==='Driver'?'cyan':''}>{m.role}</small></div><span className={'presence '+(m.online?'present':'')} title={m.online?t('roster.online'):t('roster.offline')}/>{m.help&&<HelpCircle size={17} className="cyan" aria-label={t('roster.helpAsked')}/>}</div>)}
             <div className="room-code"><small>{t('roster.roomCode')}</small><div className="room-code-actions"><button className="room-code-display" type="button" onClick={()=>action(async()=>{await navigator.clipboard.writeText(room.code);showCopied('code');})} aria-label={t('roster.copyCode',{code:room.code})} title={t('roster.copyCodeTitle')}>{room.code}{copied==='code'?<Check size={14}/>:<Copy size={14}/>}</button><button className="room-code-link" type="button" onClick={()=>action(async()=>{await navigator.clipboard.writeText(`${location.origin}/?code=${room.code}`);showCopied('link');})} title={t('roster.copyLink')}>{copied==='link'?t('roster.linkCopied'):t('roster.copyLink')}</button>{room.me.role==='Facilitator'&&<button className="room-code-link" type="button" onClick={()=>window.open(`${location.origin}/?code=${room.code}`,'_blank','noopener')} title={t('roster.testAsParticipantTitle')}><ExternalLink size={14}/>{t('roster.testAsParticipant')}</button>}</div><span className="sr-only" role="status">{copied==='code'?t('roster.codeCopied'):copied==='link'?t('roster.inviteCopied'):''}</span></div>
+            {!facilitator&&<div className="participant-access"><small>{t('access.title')}</small><p>{t('access.help')}</p><button type="button" onClick={()=>action(async()=>{let resumeToken=participantAccess;if(!resumeToken){const result=await api('participant/access',{});resumeToken=result.resumeToken;saveParticipantAccess(resumeToken);setParticipantAccess(resumeToken);}await navigator.clipboard.writeText(participantAccessUrl(resumeToken));showCopied('access');})}><Link size={14}/>{copied==='access'?t('access.copied'):t('access.copy')}</button><span className="sr-only" role="status">{copied==='access'?t('access.copiedStatus'):''}</span></div>}
             {room.members.length<4&&<small className="muted">{t('roster.minMembers')}</small>}
           </section>
           <section className="panel contribution"><FileText size={20}/><h2>{t('roster.contribution')}</h2><p>{contribution}</p><small className="muted">{t('roster.modeLabel',{mode:modeLabel})}</small></section>
@@ -182,6 +187,8 @@ function Join({ready,action,busy,error,joined}){
   const setRole=next=>{setMode(next);setOverview(null);};
   const plainError=error&&(
     /ongeldige facilitator-startsleutel|start key/i.test(error)?t('join.err.hostKey'):
+    /deelnemerslink is ongeldig/i.test(error)?t('join.err.accessInvalid'):
+    /naam is al in gebruik/i.test(error)?t('join.err.duplicate'):
     /kamer niet gevonden|ongeldige kamercode|niet gevonden|room not found|invalid room/i.test(error)?t('join.err.room'):
     /vol|volzet|maximaal|te veel|full|capacity/i.test(error)?t('join.err.full'):
     error
@@ -204,7 +211,7 @@ function Join({ready,action,busy,error,joined}){
         <p className="join-or" role="separator"><span>{t('join.orKey')}</span></p>
       </div>}
       <p className="muted" data-arcade-entry><a href="/arcade">Agent Arcade — je eerste agent</a> (LIS-59)</p>
-      <form onSubmit={e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.currentTarget));action(async()=>{if(facilitatorOverview){setOverview(await api('facilitator/overview',data));return;}const result=await api(create?'create':'join',data);saveSession(result);if(!create)history.replaceState(null,'',location.pathname);joined();});}}>
+      <form onSubmit={e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.currentTarget));action(async()=>{if(facilitatorOverview){setOverview(await api('facilitator/overview',data));return;}const result=await api(create?'create':'join',data);saveSession(result);if(!create)history.replaceState(null,'',location.pathname);joined(result.resumeToken);});}}>
         {!facilitatorOverview&&<label htmlFor="join-name">{create?t('join.nameSquad'):t('join.nameYou')}<input id="join-name" ref={!create?nameRef:null} name="name" required maxLength={50} placeholder={create?t('join.placeholderSquad'):t('join.placeholderName')} autoComplete="nickname"/></label>}
         {(facilitatorOverview||create)&&!facilitator&&<label htmlFor="join-hostkey">{t('join.hostKey')}<input id="join-hostkey" name="hostKey" value={hostKey} onChange={e=>setHostKey(e.target.value)} required={!googleSso||facilitatorOverview} type="password" autoComplete="off" placeholder={t('join.hostKeyPlaceholder')}/></label>}
         {participant&&<label htmlFor="join-code">{t('join.roomCode')}<input id="join-code" name="code" value={code} onChange={e=>setCode(e.target.value.toUpperCase())} required type="text" autoComplete="off" placeholder={t('join.roomCodePlaceholder')} spellCheck={false}/></label>}

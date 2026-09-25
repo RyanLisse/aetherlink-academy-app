@@ -62,6 +62,8 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  app.get('/game/facilitator/me',wrap(async(req,res)=>{const identity=await store.facilitator(namedCookie(req,'academy-facilitator'));if(!identity)return res.status(401).json({error:'Geen geldige facilitator-login.'});res.json({email:identity.email,name:identity.name});}));
  app.post('/game/create',wrap(async(req,res)=>{const identity=await requireFacilitator(req),name=text(req.body.name,60),p=await proof.create(initialDocument,name+' — Onze intent');setSession(res,await store.create(name,p,identity&&{email:identity.email,name:identity.name}));}));
  app.post('/game/join',wrap(async(req,res)=>setSession(res,await store.join(text(req.body.code,15),text(req.body.name,50)))));
+ app.post('/game/participant/resume',wrap(async(req,res)=>setSession(res,await store.resumeParticipant(text(req.body.resumeToken,128)))));
+ app.post('/game/participant/access',wrap(async(req,res)=>res.json(await store.rotateParticipantAccess(token(req)))));
  app.post('/game/facilitator/overview',wrap(async(req,res)=>{await requireFacilitator(req);res.json(await store.overview());}));
  app.post('/game/facilitator/attach',wrap(async(req,res)=>{const identity=await requireFacilitator(req);setSession(res,await store.attachFacilitator(text(req.body.roomId,60),identity?.name));}));
  app.post('/game/logout',wrap(async(req,res)=>{await store.logout(token(req));res.clearCookie('academy',{path:'/'});res.json({ok:true});}));
