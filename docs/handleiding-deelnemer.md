@@ -152,8 +152,8 @@ Stap voor stap door AetherLink Academy als squadlid. Alle labels komen letterlij
    De applicatie toont kort "Bestaande sessie herstellen…" en zet dezelfde room, ronde, roster en rol terug zolang je browserprofiel de sessie bewaart.
 4. Gebruik één deelnemer per browserprofiel.
    Het Proof-document deelt de sessiecookie binnen dat profiel.
-5. Meld je opnieuw aan als je `sessionStorage` hebt gewist of een ander apparaat of browser gebruikt.
-   Vul dan opnieuw "Je naam" en "Kamercode" in.
+5. Gebruik je persoonlijke toegangslink als je `sessionStorage` hebt gewist of een ander apparaat of browser gebruikt.
+   Zie "Opnieuw aanmelden met je persoonlijke link".
 
 ## Wat de game niet doet
 
@@ -175,8 +175,13 @@ server/mcp-tools.mjs
 server/store.mjs
 README.md
 
-## Opnieuw aanmelden (soft rejoin)
+## Opnieuw aanmelden met je persoonlijke link
 
-1. Open opnieuw het startscherm.
-2. Vul dezelfde weergavenaam en dezelfde kamercode in.
-3. De applicatie herstelt je bestaande seat, rol en voortgang — zonder e-mail of OTP.
+1. Kopieer direct na het deelnemen je link met "Kopieer mijn link" onder "Jouw persoonlijke toegangslink" in de roster.
+   Bewaar de link op een plek die alleen jij kunt openen. Wie de link heeft, komt binnen als jou.
+2. Open de link later in een browser.
+   De applicatie zet je bestaande seat, rol en voortgang terug en haalt de link uit de adresbalk.
+3. Dezelfde naam en kamercode opnieuw invullen werkt niet.
+   Je ziet dan "Deze naam bestaat al in deze kamer.". Zo kan niemand je seat overnemen met alleen je naam.
+4. Kopieer je link opnieuw als je nog bent aangemeld.
+   Heb je geen link meer en ben je niet meer aangemeld, vraag dan je facilitator om hulp.

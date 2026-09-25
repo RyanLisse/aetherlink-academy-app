@@ -19,6 +19,15 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 ALTER TABLE sessions ADD COLUMN IF NOT EXISTS display_name text;
 CREATE INDEX IF NOT EXISTS sessions_person ON sessions(room_id, person_id, kind);
+CREATE TABLE IF NOT EXISTS participant_access (
+ room_id uuid NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
+ person_id text NOT NULL,
+ secret_hash text PRIMARY KEY,
+ verified_email text,
+ created_at timestamptz NOT NULL DEFAULT now(),
+ UNIQUE (room_id, person_id)
+);
+CREATE INDEX IF NOT EXISTS participant_access_person ON participant_access(room_id, person_id);
 CREATE TABLE IF NOT EXISTS facilitator_sessions (
  token_hash text PRIMARY KEY,
  sub text NOT NULL,

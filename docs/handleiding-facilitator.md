@@ -126,7 +126,10 @@ Als "Inloggen met Google" op het aanmeldscherm staat, meld je aan met je Google 
 ## Problemen oplossen
 
 1. Controleer de naam als een deelnemer niet kan aanmelden.
-   Bij dezelfde naam + kamercode herstelt soft rejoin de bestaande seat (geen blanco seat, geen foutmelding over dubbele naam).
+   Een naam die al in de kamer staat, wordt geweigerd met "Deze naam is al in gebruik in deze kamer.". Een naam is geen inlogmiddel.
+   Een deelnemer komt terug op de eigen seat via de persoonlijke toegangslink uit de roster ("Kopieer mijn link").
+   Deelnemers die vóór deze wijziging zijn aangemeld hebben nog geen link. Zolang ze aangemeld zijn, kunnen ze er een kopiëren.
+   Is een deelnemer zonder link de sessie kwijt, laat hem dan met een herkenbare andere naam opnieuw deelnemen. De voortgang van de oude seat blijft zichtbaar in het facilitatoroverzicht.
 2. Controleer de groepsgrootte.
    Bij twaalf leden staat er "Squad is vol (maximaal 12).".
 3. Controleer de code.
@@ -139,7 +142,7 @@ Als "Inloggen met Google" op het aanmeldscherm staat, meld je aan met je Google 
 6. Gebruik één deelnemer per browserprofiel.
    Het Proof-iframe deelt de sessiecookie binnen één profiel.
 7. Laat de deelnemer opnieuw aanmelden na het wissen van `sessionStorage`.
-   Op een ander apparaat of in een andere browser zijn opnieuw de naam en "Kamercode" nodig.
+   Op een ander apparaat of in een andere browser is de persoonlijke toegangslink nodig.
 
 ## Wat je nooit doet
 
