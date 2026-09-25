@@ -1,4 +1,17 @@
 import {DAY_COUNT} from '../content/days/index.mjs';
+import {getDayPack} from './content.mjs';
+import {dayTasks,taskPassed} from './proof-trail.mjs';
+
+// Every server-graded check for one participant and day, each with its own pass signal. A quiz passes
+// with every answer right, a lab only when the server graded its stops, a task when it is approved.
+export function dayChecks(room,person,day){
+ const saved=person?.progressByDay?.[String(day)]||{},quizTotal=getDayPack(day)?.quiz?.questions?.length??0;
+ return [
+  ...(quizTotal?[{kind:'quiz',id:`d${day}-quiz`,source:'server-graded',passed:saved.quizScore===quizTotal}]:[]),
+  ...Object.entries(saved.labs||{}).map(([id,lab])=>({kind:'lab',id,source:lab.source,passed:lab.source==='server-graded'})),
+  ...dayTasks(day).filter(task=>task.grader).map(task=>({kind:'task',id:task.id,source:'auto-graded',passed:taskPassed(room,person?.id,task.id,day)}))
+ ];
+}
 export function dayProgress(room, person, day) {
  const saved=person?.progressByDay?.[String(day)]||{};
  const evidence=(room.evidence||[]).filter(item=>item.personId===person?.id&&Number(item.day)===day);

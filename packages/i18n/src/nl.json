@@ -480,6 +480,7 @@
   "tasks.status.submitted": "Ingediend",
   "tasks.status.changes_requested": "Aanpassen gevraagd",
   "tasks.status.approved": "Goedgekeurd",
+  "tasks.status.auto_approved": "Automatisch goedgekeurd",
   "tasks.feedback": "Feedback van {name}:",
   "tasks.attempts": "Inzendingen: {count}",
   "tasks.field": "Bij opdracht",
@@ -509,5 +510,16 @@
   "chat.send": "Vraag versturen",
   "chat.offForParticipants": "Uit voor deelnemers. Alleen jij ziet deze chat.",
   "fac.chat": "Chat voor deelnemers",
-  "chat.more": "Meer resultaten ({count})"
+  "chat.more": "Meer resultaten ({count})",
+  "autograde.summary": "Labels laten controleren",
+  "autograde.lede": "Kies per fixture-ticket het label dat jouw agent gaf. De server vergelijkt met de verwachte labels; die zie je niet, alleen of elk label klopt.",
+  "autograde.choose": "Kies label",
+  "autograde.priority.low": "Low",
+  "autograde.priority.medium": "Medium",
+  "autograde.priority.high": "High",
+  "autograde.correct": "Klopt",
+  "autograde.incorrect": "Klopt niet",
+  "autograde.result": "{score}/{total} labels goed · poging {attempts}. Pas je agent aan, niet de labels.",
+  "autograde.passed": "{score}/{total} labels goed · automatisch goedgekeurd na {attempts} poging(en).",
+  "autograde.submit": "Labels controleren"
 }

@@ -39,11 +39,12 @@ test('day 3 and day 4 are graded on one fixture set with the same labels',()=>{
  const day3=getDayPack(3).triage,day4=getDayPack(4).triage;
  assert.equal(day3,day4);
  assert.deepEqual(day3.tickets,[
-  {ticketId:'WL-1026',expected:'high',synthetic:false},
-  {ticketId:'WL-1027',expected:'low',synthetic:false},
-  {ticketId:'WL-9001',expected:'medium',synthetic:true},
-  {ticketId:'WL-9002',expected:'medium',synthetic:true}
+  {ticketId:'WL-1026',synthetic:false},
+  {ticketId:'WL-1027',synthetic:false},
+  {ticketId:'WL-9001',synthetic:true},
+  {ticketId:'WL-9002',synthetic:true}
  ]);
+ assert.deepEqual(TRIAGE_FIXTURES.tickets.map(t=>`${t.ticket.ticket_id}=${t.expected_priority}`),['WL-1026=high','WL-1027=low','WL-9001=medium','WL-9002=medium']);
  const n8nL1=Object.fromEntries(TRIAGE_FIXTURES.tickets.map(({ticket})=>[ticket.ticket_id,keywordPriority(ticket.message)]));
  assert.deepEqual(n8nL1,{'WL-1026':'high','WL-1027':'low','WL-9001':'medium','WL-9002':'medium'});
  assert.equal(gradeTriage(n8nL1).pass,true);

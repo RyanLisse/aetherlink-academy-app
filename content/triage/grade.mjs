@@ -27,8 +27,20 @@ export const TRIAGE_ACCEPTANCE={
  fixtureSet:fixtures.id,
  fixtureFile:'triage-fixtures.json',
  labels:PRIORITIES,
- tickets:fixtures.tickets.map(({ticket,expected_priority,synthetic})=>({ticketId:ticket.ticket_id,expected:expected_priority,synthetic})),
+ tickets:fixtures.tickets.map(({ticket,synthetic})=>({ticketId:ticket.ticket_id,synthetic})),
  grader:'node content/triage/grade.mjs <labels.json>'
+};
+
+// What participants download as triage-fixtures.json. Expected priorities, the reasoning behind them and
+// the L1 keyword rule that reproduces them stay server-side; the server grades submitted labels.
+export const PARTICIPANT_FIXTURES={
+ id:fixtures.id,
+ purpose:fixtures.purpose,
+ dataNotice:fixtures.dataNotice,
+ labels:PRIORITIES,
+ routes:fixtures.routes,
+ tickets:fixtures.tickets.map(({ticket,synthetic,origin})=>({ticket,synthetic,origin})),
+ special:fixtures.special
 };
 
 const normalize=label=>typeof label==='string'?label.trim().toLowerCase():null;

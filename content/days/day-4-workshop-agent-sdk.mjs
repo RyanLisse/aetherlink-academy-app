@@ -34,11 +34,11 @@ export default {
   {id:'w4-solo1',badge:'S1',level:'required',timerMinutes:10,title:'SOLO 1 · Bevestig de fixture',goal:'Noteer per fixture-ticket het verwachte label. Houd je Proof van Workshop 3 ernaast als je die hebt.',doneWhen:'Minstens twee tickets met hun verwachte L/M/H genoteerd.',slide:slide(d,7,'Confirm the fixture on your machine.')},
   {id:'w4-solo2',badge:'S2',level:'required',timerMinutes:20,title:'SOLO 2 · Eerste agent',goal:'Laat je agent op minstens één fixture-ticket een prioriteit geven met systemPrompt en prompt. Een offline dry-run mag; die is geen modelbewijs.',doneWhen:'Agent draait op een fixture, prioriteit komt eruit, een mens heeft gereviewd en er zijn geen secrets gecommit. Dit is de solo-lat.',hint:'Pas desgewenst src/prompts.ts aan en run opnieuw offline.',slide:slide(d,10,'Run your first agent on a fixture.')},
   {id:'w4-solo3',badge:'S3',level:'stretch',timerMinutes:15,title:'SOLO 3 · Voeg een specialist toe',goal:'Splits Reply of Risk af als subagent of skill, net als L3 in n8n.',doneWhen:'Twee rollen, gezamenlijke output en een gate met draft_only en human_approval_required. Optioneel.',slide:slide(d,13,'Stretch — add a specialist role.')},
-  {id:'w4-solo4',badge:'S4',level:'required',timerMinutes:15,title:'SOLO 4 · Acceptatietabel en Proof',goal:'Vul de tabel ticket → verwacht n8n-label → werkelijk Claude-label. Een verschil los je op in prompt of tools, niet met nieuwe labels.',doneWhen:'Acceptatietabel, dry-run of trace, menselijke gate en behaald niveau (2, 3 of 4).',slide:slide(d,15,'Fill the acceptance table. Ship Proof.')}
+  {id:'w4-solo4',autograde:'triage',badge:'S4',level:'required',timerMinutes:15,title:'SOLO 4 · Acceptatietabel en Proof',goal:'Vul de tabel ticket → verwacht n8n-label → werkelijk Claude-label. Een verschil los je op in prompt of tools, niet met nieuwe labels.',doneWhen:'Acceptatietabel, dry-run of trace, menselijke gate en behaald niveau (2, 3 of 4).',slide:slide(d,15,'Fill the acceptance table. Ship Proof.')}
  ],
  materials:[
   link('vehicle','Rebuild-repository aetherlink-day5-n8n-to-agent','https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent','Dia 2; SOLO.md in de repo'),
-  starter('triage-fixtures.json','Gedeelde fixture-tickets met verwachte labels')
+  starter('triage-fixtures.json','Gedeelde fixture-tickets (de server controleert je labels)')
  ],
  proof:[
   'Acceptatietabel ticket → verwacht n8n-label → werkelijk Claude-label op dezelfde fixture als Workshop 3 (dia 14 en 15).',
