@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A guided beginner workshop for building weather and council agents with Eve, then porting the ideas to the Claude Agent SDK.">
+  <title>Build your first agents · Guided workbook</title>
+  <style>
+    :root { --paper:#f7f3ea; --card:#fffdf8; --ink:#18312f; --muted:#5f6e69; --teal:#087f72; --pale:#dff2ed; --line:#cfd8d2; --warm:#f1e5cb; --good:#176b4d; --bad:#9a3f37; }
+    * { box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { margin:0; background:var(--paper); color:var(--ink); font:18px/1.65 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    a { color:var(--teal); text-underline-offset:.18em; }
+    a:hover { text-decoration-thickness:2px; }
+    a:focus-visible, summary:focus-visible, input:focus-visible, textarea:focus-visible { outline:3px solid #e7a941; outline-offset:3px; }
+    .top { position:sticky; top:0; z-index:5; display:flex; justify-content:space-between; gap:1rem; align-items:center; padding:.75rem clamp(1rem,4vw,3rem); background:rgba(247,243,234,.96); border-bottom:1px solid var(--line); }
+    .brand { color:var(--ink); font-weight:800; text-decoration:none; }
+    .top nav { display:flex; gap:1rem; font-size:.9rem; }
+    .shell { width:min(1180px,94%); margin:auto; display:grid; grid-template-columns:240px minmax(0,1fr); gap:clamp(1.5rem,4vw,4rem); }
+    aside { position:sticky; top:5rem; align-self:start; padding:2.5rem 0; }
+    aside strong { display:block; margin-bottom:.7rem; font-size:.78rem; letter-spacing:.13em; text-transform:uppercase; }
+    aside ol { margin:0; padding-left:1.5rem; }
+    aside li { margin:.5rem 0; color:var(--muted); }
+    aside a { color:inherit; text-decoration:none; }
+    main { min-width:0; padding:clamp(3rem,7vw,6rem) 0 7rem; }
+    .eyebrow { margin:0 0 .8rem; color:var(--teal); font-size:.78rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
+    h1 { max-width:800px; margin:0; font-size:clamp(2.7rem,7vw,5.5rem); line-height:.96; letter-spacing:-.055em; }
+    .lead { max-width:720px; margin:1.5rem 0; color:var(--muted); font-size:1.2rem; }
+    .notice { margin:2rem 0 4rem; padding:1.2rem 1.4rem; background:var(--warm); border-left:5px solid #c88a2b; border-radius:0 14px 14px 0; }
+    .notice p { margin:.35rem 0; }
+    .card { position:relative; margin:0 0 2rem; padding:clamp(1.5rem,4vw,3rem); background:var(--card); border:1px solid var(--line); border-radius:24px; box-shadow:0 16px 45px rgba(24,49,47,.07); scroll-margin-top:5.5rem; }
+    .number { position:absolute; top:1.5rem; right:1.5rem; display:grid; place-items:center; width:2.7rem; height:2.7rem; background:var(--pale); color:var(--teal); border-radius:50%; font-weight:900; }
+    h2 { max-width:650px; margin:0 3rem 1rem 0; font-size:clamp(1.8rem,4vw,2.7rem); line-height:1.1; letter-spacing:-.035em; }
+    h3 { margin:1.8rem 0 .4rem; font-size:1rem; letter-spacing:.08em; text-transform:uppercase; }
+    .loop { display:grid; grid-template-columns:repeat(4,1fr); gap:.6rem; margin:1.5rem 0; }
+    .loop span { padding:.65rem .7rem; background:var(--pale); border-radius:10px; color:var(--teal); font-size:.8rem; font-weight:800; text-align:center; }
+    .loop span::before { display:block; color:var(--ink); font-size:.72rem; }
+    .loop span:nth-child(1)::before { content:"01"; }.loop span:nth-child(2)::before { content:"02"; }.loop span:nth-child(3)::before { content:"03"; }.loop span:nth-child(4)::before { content:"04"; }
+    pre { overflow:auto; margin:1rem 0; padding:1rem 1.2rem; background:#173330; color:#f4fbf8; border-radius:14px; font: .9rem/1.55 ui-monospace,SFMono-Regular,Consolas,monospace; white-space:pre-wrap; }
+    code { padding:.1em .3em; background:var(--pale); border-radius:5px; font-size:.9em; }
+    pre code { padding:0; background:none; }
+    details { margin:1rem 0; padding:.8rem 1rem; border:1px solid var(--line); border-radius:12px; }
+    details[open] { background:#f6fbf9; }
+    summary { cursor:pointer; color:var(--teal); font-weight:750; }
+    fieldset { margin:1.3rem 0; padding:1.2rem; border:1px solid var(--line); border-radius:14px; }
+    legend { padding:0 .4rem; font-weight:800; }
+    label.option { display:block; margin:.55rem 0; padding:.5rem .7rem; border-radius:9px; cursor:pointer; }
+    label.option:hover { background:var(--pale); }
+    .feedback { display:none; margin:.7rem 0 0; padding:.75rem 1rem; border-radius:10px; }
+    .quiz:has(input.correct:checked) .right { display:block; background:#e2f3e9; color:var(--good); }
+    .quiz:has(input.wrong:checked) .wrong-note { display:block; background:#f8e7e3; color:var(--bad); }
+    .notes { display:block; margin-top:1.2rem; font-weight:750; }
+    .notes small { display:block; color:var(--muted); font-weight:400; }
+    textarea { width:100%; min-height:90px; margin-top:.45rem; padding:.8rem; resize:vertical; color:var(--ink); background:#fff; border:1px solid #9badA6; border-radius:10px; font:inherit; }
+    .next { display:inline-block; margin-top:1rem; padding:.7rem 1rem; color:#fff; background:var(--teal); border-radius:10px; font-weight:800; text-decoration:none; }
+    .columns { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    .mini { padding:1rem; background:var(--pale); border-radius:14px; }
+    .mini strong { display:block; }
+    footer { padding:2rem 0 0; color:var(--muted); }
+    @media (max-width:800px) { .shell { display:block; } aside { position:static; padding:1.5rem 0 0; } aside ol { display:flex; overflow:auto; gap:1rem; list-style:none; padding:0 0 .7rem; } aside li { flex:0 0 auto; } .top nav a:first-child { display:none; } .loop,.columns { grid-template-columns:1fr; } }
+    @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto; } }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="#start">FIRST AGENTS</a>
+    <nav aria-label="Workbook links"><a href="01-facilitator-guide.md">Facilitator guide</a><a href="#lesson-1">Start lesson</a></nav>
+  </header>
+  <div class="shell">
+    <aside aria-label="Lesson roadmap">
+      <strong>Your roadmap</strong>
+      <ol>
+        <li><a href="#lesson-1">Predict the fixture</a></li>
+        <li><a href="#lesson-2">Shape the behavior</a></li>
+        <li><a href="#lesson-3">Build a council</a></li>
+        <li><a href="#lesson-4">Port the pattern</a></li>
+        <li><a href="#lesson-5">Change one rule</a></li>
+      </ol>
+    </aside>
+    <main id="start">
+      <p class="eyebrow">Guided workbook · run your agents in your workshop workspace</p>
+      <h1>Build your first agents.</h1>
+      <p class="lead">Start with one predictable weather tool. Expand to four independent council voices and a judge. Then carry the same ideas into the Claude Agent SDK.</p>
+      <div class="notice" role="note">
+        <p><strong>Workshop prerequisite.</strong> Nontechnical learners need the prepared workshop workspace supplied by the facilitator. Open its terminal and editor before Lesson 1.</p>
+        <p><strong>Developers setting up independently.</strong> Follow the self-setup section in <a href="02-eve-tutorial.md">the Eve tutorial</a>. Live model calls can cost money. This page makes no calls.</p>
+        <p>Example replies are illustrative. Your live replies will vary. Notes typed here last only while this page remains open and are not saved.</p>
+      </div>
+
+      <section class="card" id="lesson-1">
+        <span class="number" aria-hidden="true">1</span><p class="eyebrow">Weather · 10 minutes</p><h2>Predict before you ask.</h2>
+        <div class="loop" aria-label="Learning loop"><span>PREDICT</span><span>CHANGE</span><span>RUN</span><span>INSPECT</span></div>
+        <p>The starter weather agent has a local tool. Its fixture always returns <strong>72°F and Sunny</strong>, while repeating the city you supplied.</p>
+        <h3>Predict</h3><p>Say the likely temperature and condition aloud before anyone submits a prompt.</p>
+        <h3>Change and run</h3><p>Change the city in this starter prompt, then ask it in your prepared workspace:</p><pre tabindex="0"><code>What is the weather in Reykjavík?</code></pre>
+        <h3>Inspect</h3><p>Compare the tool trace with the reply. Look for the city input and fixed output. An illustrative reply is “Simulated data: Sunny in Reykjavík, 72°F.” It is not live weather.</p>
+        <details><summary>Hint · Why is Reykjavík sunny?</summary><p>The fixture is a teaching tool, not a forecast service. It returns the same condition for every city.</p></details>
+        <fieldset class="quiz"><legend>Knowledge check: what did you just test?</legend>
+          <label class="option"><input class="correct" type="radio" name="q1"> A simulated, deterministic weather tool</label>
+          <label class="option"><input class="wrong" type="radio" name="q1"> A live weather API</label>
+          <p class="feedback right"><strong>Correct.</strong> The city changes, but the fixture always returns 72°F and Sunny.</p><p class="feedback wrong-note"><strong>Try again.</strong> No live weather service is involved in this fixture.</p>
+        </fieldset>
+        <a class="next" href="#lesson-2">Continue to Lesson 2 →</a>
+      </section>
+
+      <section class="card" id="lesson-2">
+        <span class="number" aria-hidden="true">2</span><p class="eyebrow">Weather · 15 minutes</p><h2>Shape behavior with instructions.</h2>
+        <div class="loop"><span>PREDICT</span><span>CHANGE</span><span>RUN</span><span>INSPECT</span></div>
+        <h3>Predict</h3><p>What should happen when a weather request does not name a city? Decide whether the agent has enough information to call its tool.</p>
+        <h3>Change</h3><p>Follow <a href="02-eve-tutorial.md">the detailed Eve tutorial</a> to edit <code>agent/instructions.md</code>. Add one rule:</p><pre tabindex="0"><code>If a weather request has no city, ask which city the user means before using the tool.</code></pre>
+        <h3>Run and inspect</h3><p>Ask <code>What is the weather in Amsterdam?</code> and inspect the tool input. Then start a <strong>fresh conversation</strong> and run the incomplete prompt below. Check that no tool call appears before the follow-up question.</p><pre tabindex="0"><code>What is the weather?</code></pre>
+        <details><summary>Hint · What should the agent do with the incomplete prompt?</summary><p>It should ask a follow-up such as “Which city would you like the weather for?” The tool needs a city, so calling it now would invent information.</p></details>
+        <fieldset class="quiz"><legend>Which trace best shows your rule worked?</legend>
+          <label class="option"><input class="wrong" type="radio" name="q2"> The agent calls the tool with an invented city</label>
+          <label class="option"><input class="correct" type="radio" name="q2"> The agent asks for a city before any tool call</label>
+          <p class="feedback right"><strong>Correct.</strong> The instruction closes the information gap before the tool boundary.</p><p class="feedback wrong-note"><strong>Try again.</strong> A missing required input should trigger a clarifying question.</p>
+        </fieldset>
+        <label class="notes" for="weather-notes">Your observation <small>Session-only note. It is not saved.</small></label><textarea id="weather-notes" placeholder="What changed in the trace after you changed the instruction?"></textarea>
+        <a class="next" href="#lesson-3">Continue to Lesson 3 →</a>
+      </section>
+
+      <section class="card" id="lesson-3">
+        <span class="number" aria-hidden="true">3</span><p class="eyebrow">Council · 20 minutes</p><h2>One prompt, four independent views.</h2>
+        <div class="loop"><span>PREDICT</span><span>CHANGE</span><span>RUN</span><span>INSPECT</span></div>
+        <p>The Eve council sends the complete prompt once to each of four fixed members. They run independently. Only after all four finish does the judge write a concise answer and score how closely each member agrees with its factual conclusions.</p>
+        <h3>Predict</h3><p>Work out the answer before running the council. Write the expected number of tables and the calculation.</p>
+        <h3>Change and run</h3><p>Open the council template in your prepared workspace and submit this verifiable question:</p><pre tabindex="0"><code>An outdoor workshop has 24 participants. Each table seats 6 people.
+How many tables are needed? Explain the calculation in one sentence.</code></pre>
+        <h3>Inspect</h3><p>Find four separate responses before reading the judge’s summary and four agreement scores. The expected conclusion is four tables because 24 divided by 6 is 4.</p>
+        <details><summary>Explanation · Why keep members independent?</summary><p>Each member receives the same complete prompt without seeing another member’s answer. That preserves distinct first responses before the judge compares them.</p></details>
+        <details><summary>Stretch prompt · Add judgment after the verifiable check</summary><pre tabindex="0"><code>What are the two most important trade-offs when a small team adopts AI agents?</code></pre><p>Predict one point the members may disagree on, then inspect how the judge handles the difference.</p></details>
+        <fieldset class="quiz"><legend>What does an agreement score mean?</legend>
+          <label class="option"><input class="correct" type="radio" name="q3"> How closely a member agrees with the judge summary’s factual conclusions</label>
+          <label class="option"><input class="wrong" type="radio" name="q3"> The probability that the member is correct</label>
+          <p class="feedback right"><strong>Correct.</strong> Agreement is a comparison with the final summary, not a calibrated probability of correctness.</p><p class="feedback wrong-note"><strong>Try again.</strong> A score of 80 is not an 80% chance of truth.</p>
+        </fieldset>
+        <a class="next" href="#lesson-4">Continue to Lesson 4 →</a>
+      </section>
+
+      <section class="card" id="lesson-4">
+        <span class="number" aria-hidden="true">4</span><p class="eyebrow">Claude Agent SDK · Two follow-up sessions</p><h2>Keep the behavior across frameworks.</h2>
+        <div class="loop"><span>PREDICT</span><span>CHANGE</span><span>RUN</span><span>INSPECT</span></div>
+        <p>Use <a href="03-claude-sdk.md">the Claude Agent SDK tutorial</a> to recreate the weather tool, then preserve the council’s four actual providers through a parallel Gateway bridge before a Claude SDK judge evaluates their answers.</p>
+        <div class="columns"><div class="mini"><strong>Eve weather</strong>Instruction + typed tool + trace</div><div class="mini"><strong>SDK weather</strong>System prompt + custom tool + messages</div><div class="mini"><strong>Eve council</strong>Four provider-backed members + judge</div><div class="mini"><strong>SDK council</strong>Four Gateway providers + Claude judge</div></div>
+        <h3>Predict</h3><p>Before running, predict what should remain the same in the tool data and council conclusions, and what will differ in the SDK message trace.</p>
+        <h3>Change, run, inspect</h3><p>Port the weather behavior first. Then add the Gateway bridge and Claude judge. Run the same table question and verify four provider results arrive before judging.</p>
+        <details><summary>Hint · What counts as a faithful port?</summary><p>Preserve the observable behavior and the same four providers. The bridge changes how the calls are orchestrated; it should not quietly replace provider diversity with four roles on one model.</p></details>
+        <fieldset class="quiz"><legend>Are four same-model roles equivalent to four model providers?</legend>
+          <label class="option"><input class="wrong" type="radio" name="q4"> Yes, because both produce four answers</label>
+          <label class="option"><input class="correct" type="radio" name="q4"> No, role diversity is not provider or model diversity</label>
+          <p class="feedback right"><strong>Correct.</strong> Four contexts can create useful role separation, but they do not reproduce diversity across four providers. This port keeps the providers through the Gateway bridge.</p><p class="feedback wrong-note"><strong>Try again.</strong> Output count does not tell you whether the underlying models differ.</p>
+        </fieldset>
+        <a class="next" href="#lesson-5">Take the exit challenge →</a>
+      </section>
+
+      <section class="card" id="lesson-5">
+        <span class="number" aria-hidden="true">5</span><p class="eyebrow">Exit challenge · 10 minutes</p><h2>Change one rule. Prove what changed.</h2>
+        <div class="loop"><span>PREDICT</span><span>CHANGE</span><span>RUN</span><span>INSPECT</span></div>
+        <p>Choose either implementation. Change exactly one behavior rule, then use the trace to show its effect. A small change makes cause and effect easier to see.</p>
+        <pre tabindex="0"><code>Weather option: Reply with Celsius as well as Fahrenheit.
+Council option: Ask the judge to name one unresolved disagreement.</code></pre>
+        <ol><li>Write your predicted trace change before editing.</li><li>Edit one instruction only.</li><li>Run the same prompt as before in your workshop workspace.</li><li>Point to the trace evidence. If nothing changed, revise the rule and retry.</li></ol>
+        <details><summary>Final explanation · What have you built?</summary><p>You have used instructions to shape decisions, a tool to cross a capability boundary, independent agent runs to create multiple views, and a judge to combine them. Those patterns transfer even when frameworks and models change.</p></details>
+        <label class="notes" for="exit-notes">Your claim and evidence <small>Session-only note. It is not saved.</small></label><textarea id="exit-notes" placeholder="I changed… I predicted… The trace showed…"></textarea>
+        <p><strong>Done means:</strong> your rule changed the observed trace or reply, and you can explain why.</p>
+      </section>
+      <footer><p>Need facilitation timing, pair roles, and debrief prompts? Open the <a href="01-facilitator-guide.md">facilitator guide</a>.</p><p>Source templates: <a href="https://eve.dev/templates/weather-agent-fixture">Eve Weather</a> · <a href="https://eve.dev/templates/eve-llm-council-template">Eve LLM Council</a> · <a href="https://github.com/anthropics/claude-agent-sdk-typescript">Claude Agent SDK TypeScript</a></p></footer>
+    </main>
+  </div>
+</body>
+</html>

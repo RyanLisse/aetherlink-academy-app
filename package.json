@@ -19,9 +19,18 @@
     "start": "node scripts/start.mjs",
     "start:legacy": "node scripts/start.mjs",
     "tsc6": "tsc6",
-    "mcp": "node server/mcp.mjs"
+    "mcp": "node server/mcp.mjs",
+    "lint:content:support-1": "node content/scripts/lint-support-1.mjs",
+    "lint:content:support-2": "node content/scripts/lint-support-2.mjs",
+    "lint:content:support-3": "node content/scripts/lint-support-3.mjs",
+    "lint:content:teaching-1": "node content/scripts/lint-teaching-1.mjs",
+    "lint:content:teaching-2": "node content/scripts/lint-teaching-2.mjs",
+    "lint:content:support-4": "node content/scripts/lint-support-4.mjs",
+    "lint:content:support-5": "node content/scripts/lint-support-5.mjs",
+    "lint:content:day-packs": "node content/scripts/lint-day-packs.mjs"
   },
   "dependencies": {
+    "@hocuspocus/provider": "2.15.3",
     "@modelcontextprotocol/client": "2.0.0",
     "@modelcontextprotocol/core": "2.0.0",
     "@modelcontextprotocol/express": "2.0.0",
@@ -35,6 +44,7 @@
     "pg": "8.16.3",
     "react": "19.1.1",
     "react-dom": "19.1.1",
+    "yjs": "13.6.32",
     "zod": "4.6.4"
   },
   "devDependencies": {

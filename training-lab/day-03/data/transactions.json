@@ -1,4 +1,35 @@
 [
-  { "id": "TX-FIC-301", "amountEur": 1200, "region": "NL-TRAIN" },
-  { "id": "TX-FIC-302", "amountEur": 12500, "region": "BE-TRAIN" }
+  {
+    "id": "TX-FIC-301",
+    "amountEur": 1200,
+    "region": "NL-TRAIN",
+    "merchant": "Cafe Example BV",
+    "channel": "pos",
+    "occurredAt": "2026-09-21T09:14:00Z"
+  },
+  {
+    "id": "TX-FIC-302",
+    "amountEur": 12500,
+    "region": "BE-TRAIN",
+    "merchant": "Fictional Wholesale NV",
+    "channel": "ecom",
+    "occurredAt": "2026-09-21T09:22:00Z",
+    "seededDeviation": true
+  },
+  {
+    "id": "TX-FIC-303",
+    "amountEur": 340,
+    "region": "NL-TRAIN",
+    "merchant": "Bookstore Sample",
+    "channel": "pos",
+    "occurredAt": "2026-09-21T10:01:00Z"
+  },
+  {
+    "id": "TX-FIC-304",
+    "amountEur": 2100,
+    "region": "LU-TRAIN",
+    "merchant": "Travel Desk Fiction",
+    "channel": "ecom",
+    "occurredAt": "2026-09-21T10:18:00Z"
+  }
 ]

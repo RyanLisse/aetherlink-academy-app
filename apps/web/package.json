@@ -12,13 +12,16 @@
     "preview": "vite preview --port 5178 --strictPort"
   },
   "dependencies": {
-    "@academy/i18n": "workspace:*",
+    "@academy/actions": "workspace:^",
     "@academy/deck": "workspace:*",
+    "@academy/i18n": "workspace:*",
     "@academy/schema": "workspace:*",
     "react": "19.1.1",
-    "react-dom": "19.1.1"
+    "react-dom": "19.1.1",
+    "webmcp-types": "0.1.9"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@types/node": "24.13.6",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0"

@@ -1,3 +1,7 @@
-# Weather decision skill
+# Weather decision skill (Claude Agent SDK)
 
-Call the local weather tool with a city and date. Keep the returned fixture in the answer and choose `bring umbrella` at 60 percent precipitation or above.
+Same rule as Eve and day-1 n8n:
+
+- Call **Get Weather** (local tool) or **n8n_day1_weather** (MCP stand-in for the day-1 workflow).
+- `precipitationProbability >= 60` → `bring umbrella`.
+- Always return a draft; human gate before any send.

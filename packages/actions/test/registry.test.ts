@@ -44,7 +44,43 @@ describe('registry', () => {
     expect(findAction(registry, 'ping')).toBeUndefined();
   });
 
-  test('the production registry has exactly the three sample actions', () => {
-    expect(registry.map((a) => a.name).sort()).toEqual(['getParticipantCount', 'getScreenState', 'startTimer']);
+  test('the production registry includes the AET-21 samples and AET-26 live actions', () => {
+        expect(registry.map((a) => a.name).sort()).toEqual([
+      'answer_self_check',
+      'cancelSchedule',
+      'detach',
+      'everyoneBackToFollow',
+      'export_debrief',
+      'followAgain',
+      'getParticipantCount',
+      'getScreenState',
+      'get_assignment',
+      'get_connection_state',
+      'get_current_slide',
+      'get_document',
+      'get_lesson',
+      'get_mission',
+      'get_my_progress',
+      'get_screen_state',
+      'gotoSlide',
+      'handoff',
+      'mark_practised',
+      'nextSlide',
+      'openLesson',
+      'open_hint',
+      'pauseUntil',
+      'prevSlide',
+      'releaseLesson',
+      'review_evidence',
+      'scheduleLesson',
+      'search_content',
+      'search_knowledge',
+      'setReveal',
+      'startTimer',
+      'submit_evidence',
+      'suggest_document',
+      'togglePlanB',
+      'unmark_practised',
+    ]);
   });
 });

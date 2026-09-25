@@ -1,0 +1,48 @@
+{
+  "day1": {
+    "title": "Day 1 — Fixture",
+    "slides": [
+      {
+        "title": "Welcome",
+        "kicker": "DAY 1",
+        "subtitle": "Start",
+        "cards": [{"title": "Outcome", "body": "Shared intent"}],
+        "prompt": "Introduce the day.",
+        "notes": "Welkom.",
+        "dark": true,
+        "steps": ["Open", "Frame"],
+        "expected": "Shared outcome",
+        "check": "Everyone can state the outcome",
+        "layout": "cards"
+      },
+      {
+        "title": "Steps",
+        "kicker": "PRACTICE",
+        "subtitle": "Do the work",
+        "cards": [],
+        "prompt": "Run the steps.",
+        "notes": "Coach.",
+        "dark": false,
+        "steps": ["Read", "Write", "Check"],
+        "expected": "A checked change",
+        "check": "Tests green",
+        "layout": "exercise",
+        "timer": 25
+      },
+      {
+        "title": "Compare",
+        "kicker": "COMPARE",
+        "subtitle": "A vs B",
+        "cards": [],
+        "prompt": "Compare both.",
+        "notes": "Discuss.",
+        "dark": false,
+        "steps": ["Name a difference"],
+        "expected": "One observed difference",
+        "check": "Difference is sourced",
+        "layout": "compare",
+        "columns": [{"title": "A", "items": ["one"]}, {"title": "B", "items": ["two"]}]
+      }
+    ]
+  }
+}

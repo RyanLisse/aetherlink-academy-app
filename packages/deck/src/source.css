@@ -68,7 +68,7 @@
 .academy-deck .tools button{font-size:.85rem}
 .academy-deck .presenter-btn{background:linear-gradient(105deg,var(--aether-purple),var(--aether-orange));color:#fff;border-color:transparent;font-weight:700;text-shadow:0 1px 1px rgba(0,0,0,.25)}
 
-.academy-deck #stage{width:min(1280px,92vw);margin:auto;flex:1;padding:clamp(1.2rem,4vh,3rem) 0;display:flex;flex-direction:column;justify-content:center;outline:none;border-radius:22px;transition:box-shadow .25s,border-color .25s}
+.academy-deck #stage{width:min(1280px,92vw);margin:auto;flex:1;padding:clamp(1.2rem,4vh,3rem) 0;display:flex;flex-direction:column;justify-content:center;outline:none;border-radius:22px;transition:box-shadow .25s,border-color .25s;overflow-x:clip}
 .academy-deck .heading{margin-bottom:1.5rem;animation:enter .45s both}
 .academy-deck .heading-top{display:flex;justify-content:space-between;align-items:baseline;gap:1rem;flex-wrap:wrap}
 .academy-deck .eyebrow{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap;margin:0 0 .8rem}
@@ -174,6 +174,9 @@
 .academy-deck .widget-controls{display:flex;gap:.5rem;flex-wrap:wrap}
 .academy-deck .widget-controls button{min-height:40px;padding:.5rem .9rem;border-radius:8px;border:1px solid var(--amber);background:var(--amber);color:var(--ink);font:inherit;font-weight:700;cursor:pointer}
 .academy-deck .widget-controls button.secondary{background:transparent;color:var(--text);border-color:var(--border)}
+.academy-deck .timer-field{display:inline-flex;align-items:center;gap:.4rem;color:var(--muted);font-weight:700}
+.academy-deck .timer-field input{width:4.6rem;min-height:40px;padding:.4rem .5rem;border-radius:8px;border:2px solid var(--amber);background:var(--surface);color:var(--text);font:inherit;font-weight:800;font-size:1.1rem;text-align:center;font-variant-numeric:tabular-nums}
+.academy-deck .timer-field input:disabled{opacity:.55}
 @media(max-width:760px){.academy-deck .timer{grid-template-columns:1fr;justify-items:center}}
 
 /* ==========================================================================
@@ -234,7 +237,7 @@
 .academy-deck .prompt-button{background:var(--cyan);border-color:var(--cyan);color:var(--ink);font-weight:700}
 .academy-deck .arrows{display:flex;gap:.5rem}
 .academy-deck .arrows button{font-size:1.3rem;width:46px;padding:.4rem}
-@media(max-width:760px){.academy-deck .kbd-hint{display:none}.academy-deck .progress{width:min(220px,40vw)}.academy-deck .controls{gap:.6rem .8rem}.academy-deck .position{flex:1;min-width:0;order:1}.academy-deck .arrows{order:2}.academy-deck .actions{order:3;width:100%;flex-wrap:nowrap;overflow-x:auto}}
+@media(max-width:760px){.academy-deck .kbd-hint{display:none}.academy-deck .progress{width:min(220px,40vw);gap:1px}.academy-deck .progress .seg{min-width:0}.academy-deck .controls{gap:.6rem .8rem}.academy-deck .position{flex:1;min-width:0;order:1}.academy-deck .arrows{order:2}.academy-deck .actions{order:3;width:100%;flex-wrap:nowrap;overflow-x:auto}}
 
 .academy-deck .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .academy-deck .skip{position:fixed;top:-100px;left:10px;z-index:20;background:var(--surface);color:var(--text);padding:1rem;border-radius:8px}
@@ -261,7 +264,7 @@
 @media(max-width:760px){
   .academy-deck .toolbar{padding:.9rem 4vw;flex-wrap:nowrap}
   .academy-deck .brand{font-size:.9rem;flex:none}.academy-deck .brand small{white-space:nowrap;margin-top:.2rem}
-  .academy-deck .tools{flex:1;min-width:0;overflow-x:auto;justify-content:flex-start;scrollbar-width:none}.academy-deck .tools::-webkit-scrollbar{display:none}
+  .academy-deck .tools{flex:1;min-width:0;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;scrollbar-width:none}.academy-deck .tools::-webkit-scrollbar{display:none}
   .academy-deck .tools button{flex:none;white-space:nowrap;font-size:.78rem;padding:.55rem .7rem;min-height:40px}
   .academy-deck .cards.three{grid-template-columns:1fr}
   .academy-deck .cards{gap:.7rem}.academy-deck .card{padding:1rem}.academy-deck .card p{font-size:1rem}
@@ -531,7 +534,7 @@
 .academy-deck .spot .card:not(.spot-on){opacity:.4;filter:grayscale(.6)}
 .academy-deck .spot .card.spot-on{border-top-color:var(--aether-orange);transform:scale(1.04);box-shadow:0 0 0 3px color-mix(in srgb,var(--aether-orange) 55%,transparent),0 14px 34px rgba(0,0,0,.4)}
 /* ---- slide 17: row pairs ---- */
-.academy-deck .pairs{display:grid;grid-template-columns:minmax(0,1fr) clamp(40px,6vw,90px) minmax(0,1fr);gap:.7rem 0;align-items:stretch;cursor:pointer}
+.academy-deck .pairs{display:grid;grid-template-columns:minmax(0,1fr) clamp(40px,6vw,90px) minmax(0,1fr);gap:.7rem 0;align-items:stretch;cursor:pointer;overflow-x:clip}
 .academy-deck .pair-head{margin:0 0 .3rem;font-size:clamp(1.2rem,1.8vw,1.6rem);font-weight:900;padding:.2rem 1.1rem;border-bottom:3px solid var(--cyan)}
 .academy-deck .pair-head:nth-child(3){border-bottom-color:var(--aether-orange)}
 .academy-deck .pair-l,.academy-deck .pair-r{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.8rem 1.1rem;font-weight:700;font-size:clamp(1rem,1.35vw,1.2rem);display:flex;align-items:center;transition:opacity .45s,transform .45s}
@@ -707,6 +710,7 @@
 .academy-deck .stamp-box .stamps{display:grid;grid-template-columns:repeat(3,auto);justify-items:center;gap:1rem 1.2rem;margin:0}
 .academy-deck .stamp-box .stamps-label{grid-column:1/-1;margin:0}
 .academy-deck .stamp-box .place-stamps{grid-column:1/-1;height:clamp(140px,20vh,180px)}
+@media(max-width:760px){.academy-deck .has-stamps{grid-template-columns:minmax(0,1fr)}}
 /* assignment: purple -> orange instead of yellow (Cons, 18 sep) */
 .academy-deck .assignment-banner{background:linear-gradient(105deg,var(--aether-purple),var(--aether-orange));color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.25)}
 .academy-deck[data-type=practice] .type-chip{background:linear-gradient(105deg,var(--aether-purple),var(--aether-orange));color:#fff}
@@ -1012,3 +1016,117 @@
 .academy-deck .brand-mark{position:absolute;left:0;top:50%;transform:translateY(-50%);width:46px;height:auto}
 .academy-deck .brand{padding-left:66px}
 .academy-deck .brand-mark{width:54px;filter:drop-shadow(0 0 6px color-mix(in srgb,var(--aether-purple) 55%,transparent)) brightness(1.25)}
+
+
+/* ---- opening slides 1-4 (SoT tip dc7107bc) ---- */
+.academy-deck[data-opener] .slide-count{visibility:visible}
+.academy-deck[data-opener="welcome"] .heading,.academy-deck[data-opener="ask"] .heading{text-align:center;display:flex;flex-direction:column;align-items:center}
+.academy-deck[data-opener="welcome"] .heading-top,.academy-deck[data-opener="ask"] .heading-top{align-self:stretch}
+.academy-deck[data-opener="welcome"] .subtitle:empty,.academy-deck[data-opener="ask"] .subtitle:empty{display:none}
+.academy-deck .opener-logo{display:flex;align-items:center;gap:.6rem;margin:clamp(.5rem,3vh,2rem) 0 .4rem;animation:pop-in .8s cubic-bezier(.2,1.3,.4,1) both}
+.academy-deck .opener-logo img{width:clamp(80px,9vw,130px);height:auto;filter:drop-shadow(0 0 14px color-mix(in srgb,var(--aether-purple,#8b5cf6) 60%,transparent)) brightness(1.25)}
+.academy-deck .opener-word{font-weight:900;letter-spacing:.14em;font-size:clamp(2rem,4.2vw,3.6rem);color:var(--text)}
+.academy-deck .opener-word.accent{margin-left:-.6rem;background:linear-gradient(90deg,var(--cyan),#8b5cf6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.academy-deck[data-opener="welcome"] .heading h1{font-size:clamp(3rem,6.6vw,6rem);line-height:1.05;margin-top:.6rem;background:linear-gradient(90deg,#8b5cf6,#FF7A1A);-webkit-background-clip:text;background-clip:text;color:transparent;animation:pop-in .8s .5s cubic-bezier(.2,1.3,.4,1) both}
+.academy-deck[data-opener="ask"] .heading h1{font-size:clamp(2.6rem,5.4vw,5rem);line-height:1.1;max-width:18ch;margin-top:clamp(1rem,6vh,4rem);animation:pop-in .8s .2s cubic-bezier(.2,1.3,.4,1) both}
+.academy-deck[data-opener="welcome"] .slide-body,.academy-deck[data-opener="ask"] .slide-body{justify-content:center}
+.academy-deck[data-opener="welcome"] .slide-main:empty,.academy-deck[data-opener="ask"] .slide-main:empty{display:none}
+.academy-deck[data-opener="welcome"] .bot,.academy-deck[data-opener="ask"] .bot{margin:0 auto}
+.academy-deck[data-opener="ask"] .bot img{animation:hands-up 1.6s ease-in-out .9s infinite;transform-origin:50% 100%}
+@keyframes hands-up{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px) scale(1.02)}}
+@keyframes pop-in{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
+.academy-deck[data-opener="agree"] .card h3,.academy-deck[data-opener="agree"] .card h2{font-size:clamp(1.4rem,2.2vw,2rem)}
+.academy-deck .team-avatar{display:grid;place-items:center;width:clamp(70px,7vw,104px);aspect-ratio:1;border-radius:50%;margin:0 auto .8rem;font-weight:900;font-size:clamp(1.5rem,2.4vw,2.2rem);color:#fff;background:linear-gradient(135deg,#8b5cf6,#FF7A1A);box-shadow:0 0 0 4px color-mix(in srgb,var(--cyan) 55%,transparent)}
+.academy-deck[data-opener="team"] .card{text-align:center}
+.academy-deck[data-opener="team"] .subtitle{font-size:clamp(1.4rem,2.2vw,1.9rem);font-style:italic}
+.academy-deck[data-opener="welcome"] .bot,.academy-deck[data-opener="ask"] .bot{height:auto;width:auto;flex:none}
+.academy-deck[data-opener="welcome"] .bot img{height:clamp(200px,31vh,300px);width:auto}
+.academy-deck[data-opener="ask"] .bot img{height:clamp(240px,42vh,400px);width:auto}
+.academy-deck[data-opener="welcome"] .opener-logo{margin-top:0}
+.academy-deck[data-opener="welcome"] .heading h1{margin:.2rem 0 0}
+.academy-deck[data-opener="welcome"] .opener-logo img{width:clamp(70px,7.5vw,112px)}
+.academy-deck[data-opener="welcome"] .heading h1{font-size:clamp(2.8rem,6vw,5.4rem)}
+.academy-deck[data-opener="welcome"] .bot img{height:clamp(180px,28vh,280px)}
+.academy-deck[data-opener="ask"] .bot img{height:clamp(220px,38vh,370px)}
+.academy-deck[data-opener="agree"] .card{min-height:0;padding-block:clamp(.7rem,2vh,1.2rem)}
+.academy-deck[data-opener="team"] .card .card-icon,.academy-deck[data-opener="team"] .card [class*="icon"]:not(.team-avatar){display:none}
+.academy-deck[data-opener="team"] .card h3,.academy-deck[data-opener="team"] .card h2{justify-content:center;font-size:clamp(1.2rem,1.8vw,1.6rem);text-align:center;width:100%}
+.academy-deck[data-opener="team"] .card-head{justify-content:center}
+
+/* Day 2 show & tell (slide 46): screenshot in a browser frame beside the story cards */
+.academy-deck .slide-main.with-showcase{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:clamp(1rem,2.5vw,2.2rem);align-items:start}
+.academy-deck .slide-main.with-showcase>.showcase{grid-column:1;grid-row:1 / span 3;margin:0;border-radius:14px;overflow:hidden;border:1px solid color-mix(in srgb,var(--cyan) 45%,transparent);box-shadow:0 18px 50px rgba(0,0,0,.35);animation:pop-in .7s cubic-bezier(.2,1.3,.4,1) both}
+.academy-deck .slide-main.with-showcase>:not(.showcase){grid-column:2}
+.academy-deck .slide-main.with-showcase>.tagline{grid-column:1 / -1}
+.academy-deck .slide-main.with-showcase .cards{grid-template-columns:1fr !important}
+.academy-deck .showcase-bar{display:flex;align-items:center;gap:.8rem;padding:.45rem .8rem;background:#1b1733}
+.academy-deck .showcase-bar .dots{width:44px;height:10px;background:radial-gradient(circle at 5px 5px,#ff5f57 4px,transparent 5px),radial-gradient(circle at 22px 5px,#febc2e 4px,transparent 5px),radial-gradient(circle at 39px 5px,#28c840 4px,transparent 5px)}
+.academy-deck .showcase-url{flex:1;font-size:.85rem;color:#cfc9ff;background:#0f0c22;border-radius:6px;padding:.15rem .6rem}
+.academy-deck .showcase img{display:block;width:100%;height:auto}
+
+/* compact cards (slides 46 + 48) */
+.academy-deck .slide-main.compact-cards .card{padding:clamp(.6rem,1.4vh,1rem) clamp(.9rem,1.4vw,1.3rem);min-height:0}
+.academy-deck .slide-main.compact-cards .card p{font-size:clamp(.92rem,1.1vw,1.05rem);line-height:1.4;margin-top:.35rem}
+.academy-deck .slide-main.compact-cards .cards{gap:clamp(.5rem,1.2vh,.9rem)}
+.academy-deck .slide-main.with-showcase>.tagline{margin-top:.2rem}
+
+/* example avatar gallery beside the steps (slide 48) */
+.academy-deck .thumb-gallery{margin:clamp(.4rem,1.2vh,.9rem) 0}
+.academy-deck .thumb-row{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(.5rem,1vw,1rem);margin-top:.4rem}
+.academy-deck .thumb{margin:0;text-align:center;opacity:0;animation:pop-in .6s cubic-bezier(.2,1.3,.4,1) both;animation-delay:calc(.3s + var(--i, 0)*.18s)}
+.academy-deck .thumb img{display:block;margin:0 auto;height:clamp(60px,8vh,140px);width:auto;aspect-ratio:1;object-fit:cover;border-radius:12px;border:1px solid color-mix(in srgb,var(--cyan) 45%,transparent);box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.academy-deck .thumb figcaption{margin-top:.3rem;font-size:.8rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted,#aab)}
+.academy-deck .exercise-instructions>.timer{margin-top:.4rem;padding-block:clamp(.25rem,.8vh,.9rem)}
+.academy-deck .exercise-instructions>.timer .timer-face{font-size:clamp(2rem,3.4vw,3.2rem)}
+.academy-deck .slide-main.compact-cards>.tagline{margin-top:.2rem}
+.academy-deck .slide-main.compact-cards .cards{gap:clamp(.4rem,1vh,.9rem)}
+
+
+
+
+/* AET-77 ultra-minimal keynote (workshop-5); scoped — Classroom 1 untouched
+ * Density SoT: ryan-w5-minimal-reference.html — eyebrow + one huge sentence + ≤1 chip
+ */
+.academy-deck.keynote #stage{justify-content:center;padding:clamp(2rem,8vh,5.5rem) 0;overflow:visible}
+.academy-deck.keynote .heading{text-align:center;margin:0 auto;max-width:min(56rem,94vw);animation:enter .5s both;display:flex;flex-direction:column;align-items:center;gap:0}
+.academy-deck.keynote .heading-top{justify-content:center;margin-bottom:0;width:100%}
+.academy-deck.keynote .eyebrow{justify-content:center;margin:0 0 clamp(1.2rem,4vh,2.4rem);gap:.9rem}
+.academy-deck.keynote .kicker-text{font-size:.75rem;letter-spacing:.2em;opacity:.75;font-weight:900}
+.academy-deck.keynote .type-chip{opacity:.9;background:#24405e;color:var(--text)}
+.academy-deck.keynote .slide-count{opacity:.7;font-size:.7rem}
+.academy-deck.keynote h1{font-size:clamp(1.85rem,4.8vw,5rem);line-height:.95;letter-spacing:-.03em;font-weight:900;margin:0 auto;max-width:min(48rem,94vw);text-align:center;text-wrap:balance;white-space:normal}
+.academy-deck.keynote[data-type=practice] h1{font-size:clamp(1.75rem,4.2vw,4.2rem);max-width:min(42rem,94vw);line-height:1.02}
+.academy-deck.keynote p.subtitle{display:none}
+.academy-deck.keynote .tagline{display:none}
+.academy-deck.keynote .assignment-banner{display:none}
+.academy-deck.keynote .slide-body,.academy-deck.keynote .keynote-body{justify-items:center;margin-top:clamp(1.2rem,4vh,2.8rem);width:100%}
+.academy-deck.keynote .slide-main,.academy-deck.keynote .keynote-main{width:100%;max-width:960px;margin:0 auto;display:flex;flex-direction:column;align-items:center;gap:clamp(1rem,3vh,2rem)}
+/* Hide card walls on ultra-minimal faces — chips via popOut only */
+.academy-deck.keynote .cards{display:none}
+.academy-deck.keynote .card{display:none}
+.academy-deck.keynote .steps-wrap,.academy-deck.keynote .pillars,.academy-deck.keynote .compare,.academy-deck.keynote .recap-list{display:none}
+.academy-deck.keynote .md-file,.academy-deck.keynote .plugs-viz,.academy-deck.keynote .gate-art,.academy-deck.keynote .loop-art{display:none}
+.academy-deck.keynote .pop-row{justify-content:center;width:100%;margin-top:clamp(.4rem,2vh,1.2rem)}
+.academy-deck.keynote .pop-col{align-items:center;text-align:center;display:flex;flex-direction:column;gap:.7rem}
+.academy-deck.keynote .pop-label{display:none}
+.academy-deck.keynote .pop-chips{justify-content:center}
+.academy-deck.keynote .pop-chip-in{
+  font-size:clamp(1rem,1.6vw,1.35rem);font-weight:700;padding:.55rem 1.1rem .55rem 1.1rem;
+  opacity:1;animation:none;border:2px solid var(--cyan);border-radius:999px;
+  box-shadow:0 0 40px -12px var(--cyan);background:transparent
+}
+.academy-deck.keynote .pop-chip:nth-child(2n) .pop-chip-in{border-color:var(--cyan)}
+.academy-deck.keynote .chip-ico{display:none}
+
+/* Slide-1 line-vs-loop: keynote + showcase = one centered diagram face */
+.academy-deck.keynote .slide-main.with-showcase{display:flex;flex-direction:column;align-items:center;max-width:min(1100px,96vw);gap:0}
+.academy-deck.keynote .slide-main.with-showcase>.showcase{width:100%;margin:0;border-radius:18px;overflow:hidden;border:1px solid color-mix(in srgb,var(--cyan) 35%,transparent);box-shadow:0 18px 50px rgba(0,0,0,.4);animation:pop-in .7s cubic-bezier(.2,1.3,.4,1) both}
+.academy-deck.keynote .slide-main.with-showcase>.showcase .showcase-bar{display:none}
+.academy-deck.keynote .slide-main.with-showcase>.showcase img{display:block;width:100%;height:auto;background:#06111e}
+/* Showcase faces (W5 slide1 diagram · W3 voordoen screenshots): smaller title above image */
+.academy-deck.keynote[data-opener="showcase"] h1{font-size:clamp(1.4rem,2.8vw,2.2rem);max-width:min(36rem,92vw);letter-spacing:-.02em;margin-bottom:clamp(.6rem,2vh,1.2rem)}
+.academy-deck.keynote[data-opener="showcase"] .slide-body{margin-top:0}
+
+.academy-deck.mode-presenter.keynote #stage,.academy-deck.mode-presenter #stage{justify-content:flex-start;padding-top:1.2rem}
+
+.academy-deck.mode-presenter .presenter-tools{display:block;margin-top:1.2rem;max-width:960px;width:100%;margin-left:auto;margin-right:auto}

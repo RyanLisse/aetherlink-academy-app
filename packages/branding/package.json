@@ -1,0 +1,9 @@
+{
+  "name": "@academy/branding",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.js",
+    "./tokens.css": "./src/tokens.css"
+  }
+}
