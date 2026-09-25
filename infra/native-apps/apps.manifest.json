@@ -31,7 +31,17 @@
         "restart-persistence",
         "exact-artifact-identity",
         "resource-observation"
-      ]
+      ],
+      "providers": {
+        "envExample": "infra/native-apps/env/slides.env.example",
+        "requiredEnv": [
+          "DATABASE_URL"
+        ],
+        "connections": [],
+        "open": [
+          "Optional import/export/blob and generation providers need separate acceptance before they are configured."
+        ]
+      }
     },
     {
       "app": "chat",
@@ -51,7 +61,31 @@
         "resource-observation"
       ],
       "openShipProjectId": "proj_BbKf0vUAigrCAUFC",
-      "deploymentId": "dep_ZYFxkzqIYNXASso6"
+      "deploymentId": "dep_ZYFxkzqIYNXASso6",
+      "providers": {
+        "envExample": "infra/native-apps/env/chat.env.example",
+        "requiredEnv": [
+          "DATABASE_URL",
+          "AGENT_CHAT_SHARED_SECRET"
+        ],
+        "connections": [
+          {
+            "capability": "ai-provider",
+            "scope": "per-user",
+            "options": [
+              "participant-owned provider connection"
+            ],
+            "accountOwner": "TBD by Ryan",
+            "retention": "open",
+            "backup": "open",
+            "budget": "TBD by Ryan"
+          }
+        ],
+        "open": [
+          "Better Auth secret env name: confirm against upstream templates/chat.",
+          "AI provider env names: confirm against upstream templates/chat; per-user connections, no shared key."
+        ]
+      }
     },
     {
       "app": "content",
@@ -71,7 +105,18 @@
         "resource-observation"
       ],
       "openShipProjectId": "proj_XwYDrgCmM4umsjpR",
-      "blockedBy": "AET-55"
+      "blockedBy": "AET-55",
+      "providers": {
+        "envExample": "infra/native-apps/env/content.env.example",
+        "requiredEnv": [
+          "DATABASE_URL"
+        ],
+        "connections": [],
+        "open": [
+          "Better Auth secret env name: confirm against upstream templates/content.",
+          "Notion/Builder integrations are optional and stay unconfigured until separately accepted."
+        ]
+      }
     },
     {
       "app": "assets",
@@ -92,7 +137,35 @@
         "exact-artifact-identity",
         "resource-observation"
       ],
-      "openShipProjectId": "proj_7nbNH4EHDwJ2cdnQ"
+      "openShipProjectId": "proj_7nbNH4EHDwJ2cdnQ",
+      "providers": {
+        "envExample": "infra/native-apps/env/assets.env.example",
+        "requiredEnv": [
+          "DATABASE_URL"
+        ],
+        "requiredEnvPrefixes": [
+          "ASSETS_STORAGE_"
+        ],
+        "connections": [
+          {
+            "capability": "object-storage",
+            "scope": "app",
+            "options": [
+              "S3-compatible via ASSETS_STORAGE_*",
+              "Builder storage"
+            ],
+            "accountOwner": "TBD by Ryan",
+            "retention": "open",
+            "backup": "open",
+            "budget": "TBD by Ryan"
+          }
+        ],
+        "open": [
+          "Better Auth secret env name: confirm against upstream templates/assets.",
+          "Exact ASSETS_STORAGE_* keys: confirm against upstream templates/assets.",
+          "Image/video generation providers: not required for upload acceptance; names open."
+        ]
+      }
     },
     {
       "app": "calendar",
@@ -114,7 +187,32 @@
         "resource-observation"
       ],
       "openShipProjectId": "proj_tsETO63FhDWSX3BS",
-      "blockedBy": "AET-55"
+      "blockedBy": "AET-55",
+      "providers": {
+        "envExample": "infra/native-apps/env/calendar.env.example",
+        "requiredEnv": [
+          "DATABASE_URL"
+        ],
+        "connections": [
+          {
+            "capability": "google-oauth",
+            "scope": "app",
+            "options": [
+              "Google Cloud OAuth client (web application)"
+            ],
+            "accountOwner": "TBD by Ryan",
+            "retention": "open",
+            "backup": "open",
+            "budget": "TBD by Ryan",
+            "callbacks": "open"
+          }
+        ],
+        "open": [
+          "Google OAuth client env names and callback paths: confirm against upstream templates/calendar.",
+          "Calendar data scopes are requested only after identity login is accepted.",
+          "Zoom integration is optional and stays unconfigured."
+        ]
+      }
     },
     {
       "app": "clips",
@@ -138,7 +236,50 @@
         "resource-observation"
       ],
       "openShipProjectId": "proj_kfcnKkRuKEi7puw9",
-      "blockedBy": "AET-55"
+      "blockedBy": "AET-55",
+      "providers": {
+        "envExample": "infra/native-apps/env/clips.env.example",
+        "requiredEnv": [
+          "DATABASE_URL"
+        ],
+        "connections": [
+          {
+            "capability": "object-storage",
+            "scope": "app",
+            "options": [
+              "S3-compatible object storage"
+            ],
+            "accountOwner": "TBD by Ryan",
+            "retention": "open",
+            "backup": "open",
+            "budget": "TBD by Ryan"
+          },
+          {
+            "capability": "transcription-provider",
+            "scope": "app",
+            "options": [
+              "open"
+            ],
+            "accountOwner": "TBD by Ryan",
+            "retention": "open",
+            "backup": "open",
+            "budget": "TBD by Ryan"
+          }
+        ],
+        "backgroundWorker": {
+          "enabled": false,
+          "prerequisites": [
+            "single-worker-ownership",
+            "resource-limits",
+            "media-capacity-measured"
+          ]
+        },
+        "open": [
+          "Better Auth secret env name: confirm against upstream templates/clips.",
+          "Media storage and transcription env names: confirm against upstream templates/clips.",
+          "Google/Slack integrations are optional and stay unconfigured."
+        ]
+      }
     }
   ],
   "activeScope": [
