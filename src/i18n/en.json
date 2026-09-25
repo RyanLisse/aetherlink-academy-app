@@ -387,5 +387,13 @@
   "apps.backToAcademy": "Back to Academy",
   "apps.revoke": "Revoke access",
   "apps.published": "Published version (immutable)",
-  "apps.chromeHint": "Chrome/overlay (AET-51) shows Back to Academy without restyling the lesson canvas."
+  "apps.chromeHint": "Chrome/overlay (AET-51) shows Back to Academy without restyling the lesson canvas.",
+  "lab.heading": "Lab",
+  "lab.waiting": "Loading lab…",
+  "lab.progress": "Step {step} of {total}",
+  "lab.saving": "Saving progress…",
+  "lab.done": "Completed · reported by the lab",
+  "lab.preview": "Facilitator preview: completing it here is not recorded.",
+  "lab.error": "The lab reported an error: {message}",
+  "route.labs": "Labs {done}/{total}"
 }
