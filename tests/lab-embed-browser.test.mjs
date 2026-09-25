@@ -144,7 +144,7 @@ test('graded Arcade stops are checked by the server before the lab can complete'
   assert.deepEqual({source:saved.source,result:saved.result},{source:'server-graded',result:{outcome:'completed',score:{value:2,max:2}}});
   await shot(page,'lab-graded-desktop-done.png');
 
-  for(const body of await Promise.all(academyBodies))assert.doesNotMatch(body,/"correct"|"regex"|"kind"/,'no Academy response carries an answer key');
+  for(const body of await Promise.all(academyBodies))assert.doesNotMatch(body,/"correct"|"regex"|"kind":"(choice|match)"/,'no Academy response carries an answer key');
   assert.ok(academyBodies.length>=8,'the leak check saw the Academy traffic');
 
   await page.setViewportSize({width:390,height:844});

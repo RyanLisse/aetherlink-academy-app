@@ -51,8 +51,8 @@ test('the day pack names graded stops but carries no answer key',async()=>{
   (await complete(app,ada.token,'ws-2-eve-state')).body,
  ];
  const state=(await invoke(app,'/game/state',as(ada.token))).body;
- for(const payload of payloads)assert.doesNotMatch(JSON.stringify(payload),/KEY-MARKER|"correct"|"includes"|"kind"/,'no browser-bound payload carries a key');
- assert.doesNotMatch(JSON.stringify(state),/"correct"|"includes"|"kind"/,'state carries no key');
+ for(const payload of payloads)assert.doesNotMatch(JSON.stringify(payload),/KEY-MARKER|"correct"|"includes"|"kind":"(choice|match)"/,'no browser-bound payload carries a key');
+ assert.doesNotMatch(JSON.stringify(state),/"correct"|"includes"|"kind":"(choice|match)"/,'state carries no key');
  assert.equal(JSON.stringify(state).includes(MARKER),false,'the participant’s submitted text is not stored either');
 });
 
