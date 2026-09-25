@@ -15,8 +15,9 @@ export function openQuizAttempt(p,day,now){
  return {attemptId:p.quizAttempt.id,day,expiresAt:p.quizAttempt.expiresAt};
 }
 
-// Every attempt records on its own day (retakes: latest wins). Only an attempt on the room's
-// live day steers the live help route and quiz badge; practising an earlier day leaves them alone.
+// A live-day attempt records as before (latest wins) and steers the live help route and quiz badge.
+// Practice on another day (naslag) keeps that day's best score, so a weaker retake never undoes a
+// quiz pass the certificate check (dayChecks) already counts; the last practice run is kept apart.
 export function submitQuizAttempt(p,day,quiz,body,now,liveDay=day){
  const attemptId=body?.attemptId,answers=body?.answers;
  if(typeof attemptId!=='string'||!answers||typeof answers!=='object'||Array.isArray(answers)||Object.values(answers).some(value=>typeof value!=='string'))fail(400,'Stuur een quizpoging-id en per vraag-id één gekozen optie-id.');
@@ -34,7 +35,9 @@ export function submitQuizAttempt(p,day,quiz,body,now,liveDay=day){
  const result={score,total,results,route,day,note:'Voorlopige hulpkeuze op basis van 3 scenario’s; geen vaardigheidsbewijs of permanent label.'};
  if(day===liveDay){p.route=route;p.quiz={score,at,day};}
  p.progressByDay=p.progressByDay||{};
- p.progressByDay[String(day)]={...(p.progressByDay[String(day)]||{}),quizScore:score,route,quizAt:at};
+ const saved=p.progressByDay[String(day)]||{};
+ const practice=day!==liveDay,keep=practice&&saved.quizScore!=null&&saved.quizScore>=score;
+ p.progressByDay[String(day)]={...saved,...(keep?{}:{quizScore:score,route,quizAt:at}),...(practice?{practiceQuiz:{score,at}}:{})};
  p.quizAttempt={...attempt,submittedAt:now,fingerprint,result};
  return result;
 }

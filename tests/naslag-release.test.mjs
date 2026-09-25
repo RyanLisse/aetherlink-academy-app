@@ -7,6 +7,7 @@ import {createApp} from '../server/app.mjs';
 import {LocalStore} from '../server/local-store.mjs';
 import {getDayPack} from '../server/content.mjs';
 import {releasedDays,recordReach,courseDays} from '../server/release.mjs';
+import {dayChecks} from '../server/progress.mjs';
 
 const DAY=24*60*60*1000;
 const START=Date.parse('2026-10-05T00:00:00Z');
@@ -108,13 +109,17 @@ test('quiz practice on an earlier day records on that day and leaves the live ro
   const result=await g.call('POST','/game/quiz',{token:g.ann.token,body:{day:2,attemptId:start.body.attemptId,answers:key}});
   assert.deepEqual([result.status,result.body.day,result.body.score,result.body.route],[200,2,3,'stretch']);
   const me=(await g.call('GET','/game/state',{token:g.ann.token})).body.me;
-  assert.deepEqual(me.progressByDay['2'],{quizScore:3,route:'stretch',quizAt:me.progressByDay['2'].quizAt});
+  const at=me.progressByDay['2'].quizAt;
+  assert.deepEqual(me.progressByDay['2'],{quizScore:3,route:'stretch',quizAt:at,practiceQuiz:{score:3,at}});
   assert.deepEqual([me.route,me.quiz],['standard',null],'the live day’s help route and quiz badge are untouched');
 
   const retake=await g.call('POST','/game/quiz/start',{token:g.ann.token,body:{day:2}});
   const wrong=Object.fromEntries(Object.keys(key).map(id=>[id,key[id]==='a'?'b':'a']));
   assert.equal((await g.call('POST','/game/quiz',{token:g.ann.token,body:{day:2,attemptId:retake.body.attemptId,answers:wrong}})).body.score,0);
-  assert.equal((await g.call('GET','/game/state',{token:g.ann.token})).body.me.progressByDay['2'].quizScore,0,'a retake replaces the day’s score');
+  const practised=(await g.call('GET','/game/state',{token:g.ann.token})).body.me;
+  assert.deepEqual([practised.progressByDay['2'].quizScore,practised.progressByDay['2'].practiceQuiz.score],[3,0],'a weaker practice retake keeps the day’s best score');
+  const {r,p}=g.instance.store.auth(g.ann.token);
+  assert.deepEqual(dayChecks(r,p,2).find(check=>check.kind==='quiz'),{kind:'quiz',id:'d2-quiz',source:'server-graded',passed:true},'the certificate’s day check still counts the day-2 pass');
 
   const locked=await g.call('POST','/game/quiz/start',{token:g.ann.token,body:{day:6}});
   assert.deepEqual([locked.status,locked.body.error],[403,'Dag 6 is nog niet vrijgegeven.']);
@@ -125,6 +130,31 @@ test('quiz practice on an earlier day records on that day and leaves the live ro
   assert.deepEqual([liveResult.body.day,liveResult.body.route],[5,'stretch']);
   const afterLive=(await g.call('GET','/game/state',{token:g.ann.token})).body.me;
   assert.deepEqual([afterLive.route,afterLive.quiz.day,afterLive.quiz.score],['stretch',5,3]);
+ }finally{await g.close();}
+});
+
+test('with a composed course the release follows course order and an off-course day is 404',async()=>{
+ const g=await gateway();
+ try{
+  const course={name:'Wave (synthetisch)',days:[{day:3},{day:2},{day:5},{day:7}]};
+  const saved=await g.call('POST','/game/control',{token:g.room.token,body:{action:'course',value:course}});
+  assert.equal(saved.body.day,3,'dropping the live day moves the room to the first course day');
+  let state=(await g.call('GET','/game/state',{token:g.ann.token})).body;
+  assert.deepEqual([state.released,state.allReleased],[[3],false]);
+  await g.setDay(5);
+  state=(await g.call('GET','/game/state',{token:g.ann.token})).body;
+  assert.deepEqual(state.released,[3,2,5]);
+  assert.equal((await g.call('GET','/game/day-pack?day=2',{token:g.ann.token})).body.course.position,2);
+  const locked=await g.call('GET','/game/day-pack?day=7',{token:g.ann.token});
+  assert.deepEqual([locked.status,locked.body.error],[403,'Dag 7 is nog niet vrijgegeven.']);
+  const offCourse=await g.call('GET','/game/day-pack?day=1',{token:g.ann.token});
+  assert.deepEqual([offCourse.status,offCourse.body.error],[404,'Dag 1 zit niet in de cursus.']);
+  assert.equal((await g.call('GET','/game/day-pack?day=1',{token:g.room.token})).status,404,'the facilitator cannot open an off-course day either');
+  const route=(await g.call('GET','/game/day-route',{token:g.ann.token})).body;
+  assert.deepEqual(route.days.map(day=>[day.day,day.released]),[[3,true],[2,true],[5,true],[7,false]]);
+  await g.setDay(7);await g.setDay(2);
+  state=(await g.call('GET','/game/state',{token:g.ann.token})).body;
+  assert.deepEqual([state.day,state.released,state.allReleased],[2,[3,2,5,7],true]);
  }finally{await g.close();}
 });
 

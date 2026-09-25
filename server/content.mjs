@@ -1,6 +1,7 @@
 import {fileURLToPath} from 'node:url';
 import {DAY_PACKS} from '../content/days/index.mjs';
 import {assertValidDayPacks} from './day-pack-lint.mjs';
+import {courseOrder} from '../content/days/course.mjs';
 export const lessons = [
  ['L1-INTENT','Een gedeelde north star','Beschrijf het probleem vóór de oplossing. Noteer wie er last van heeft, wat beter moet en welk observeerbaar bewijs telt. De mens bepaalt het doel en de acceptatie.','Maak een opportunity/responsibility-map: huidige taak, gewenste taak, en één beslissing die AI niet zelfstandig neemt.'],
  ['L1-SCOUT','Eerst lezen, dan handelen','Laat Claude Code eerst werkmap, bestanden, doel en ontbrekende informatie onderzoeken. Een README is een claim; controleer die tegen de bestanden en uitvoerbare checks. Vraag om paden en concrete observaties.','Vraag om een read-only repository-verkenning met drie paden, één onzekerheid en een stopregel.'],
@@ -21,6 +22,7 @@ export function searchKnowledge(query=''){const words=query.toLowerCase().trim()
 const dayPacks=Object.fromEntries(DAY_PACKS.map(pack=>[pack.day,pack]));
 export function getDayPack(day){return dayPacks[day]??null;}
 export function listDaySummaries(){return DAY_PACKS.map(({day,title,tag,blurb})=>({day,title,tag,blurb}));}
-export function listRouteDays(){return listDaySummaries().map(summary=>({...summary,hasLesson:true}));}
+export function listRouteDays(course=null){const summaries=Object.fromEntries(listDaySummaries().map(summary=>[summary.day,summary]));return courseOrder(course).map(({position,day,title,date})=>({...summaries[day],title:title??summaries[day].title,position,date,hasLesson:true}));}
+export function courseEntry(course,day){return course?courseOrder(course).find(entry=>entry.day===day)??null:null;}
 export const starterFileNames=['README.md','CLAUDE.md','package.json','status.mjs','status.test.mjs','n8n-repository-review.json','n8n-review-README.md','claude-code-review-README.md','day5-fictional-issue.md','n8n-triage-l1-switch.json','n8n-triage-l2-agent-memory.json','n8n-triage-l3-multi-agent.json','triage-fixtures.json'];
 assertValidDayPacks(DAY_PACKS,{starterDir:fileURLToPath(new URL('../starter/',import.meta.url)),starterFileNames});
