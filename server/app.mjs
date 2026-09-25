@@ -4,7 +4,7 @@ import {dayProgress,debrief,exportDebrief} from './progress.mjs';
 import http from 'node:http';
 import httpProxy from 'http-proxy';
 import {createHash,createHmac,randomBytes,randomUUID,timingSafeEqual} from 'node:crypto';
-import {readFileSync,existsSync,writeFileSync} from 'node:fs';
+import {readFileSync,existsSync,writeFileSync,readdirSync} from 'node:fs';
 import path from 'node:path';
 import {Store,secret,hash,fail} from './store.mjs';
 import {LocalStore} from './local-store.mjs';
@@ -34,9 +34,12 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  const requireFacilitator=async req=>{const key=Buffer.from(hash(req.body?.hostKey||''));if(timingSafeEqual(key,Buffer.from(hash(hostKey))))return null;const identity=await store.facilitator(namedCookie(req,'academy-facilitator'));if(identity)return identity;fail(403,'Ongeldige facilitator-startsleutel.');};
  app.disable('x-powered-by');app.use((req,res,next)=>{res.setHeader('Referrer-Policy','no-referrer');res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('Cache-Control','no-store');const origin=req.headers.origin;if(origin&&origin!==publicUrl.origin&&origin!==`${req.protocol}://${req.headers.host}`)return res.status(403).json({error:'Andere origin niet toegestaan.'});next();});
  proxy.on('error',(_e,_req,res)=>{if(res.writeHead)res.writeHead(502,{'content-type':'application/json'}).end(JSON.stringify({error:'Proof is niet bereikbaar.'}));else res.destroy();});
+ const webDist=path.join(root,'apps/web/dist'),webAssetsDir=path.join(webDist,'assets');
+ // apps/web/public/assets shares the /assets prefix with Proof's editor bundle; only files the web build shipped bypass the Proof session.
+ const webPublicAssets=new Set(existsSync(webAssetsDir)?readdirSync(webAssetsDir,{recursive:true,withFileTypes:true}).filter(e=>e.isFile()).map(e=>'/assets/'+path.relative(webAssetsDir,path.join(e.parentPath,e.name)).split(path.sep).join('/')):[]);
  // Proof retains the single authoritative Yjs document. Only authenticated room paths pass this gateway.
  app.use(async(req,res,next)=>{
-  if(!/^\/(d\/|api\/|documents\/|assets\/|ws\b)/.test(req.path))return next();
+  if(!/^\/(d\/|api\/|documents\/|assets\/|ws\b)/.test(req.path)||webPublicAssets.has(req.path))return next();
   try{const session=await store.auth(cookie(req),'browser');const {r}=session;const slug=req.path.match(/^\/(?:d|documents|api\/documents|api\/agent)\/([^/]+)/)?.[1];
    if(slug&&slug!==r.proof.slug)fail(403,'Dit document hoort bij een andere kamer.');
    const allowed=(['GET','PUT'].includes(req.method)&&req.path===`/api/documents/${r.proof.slug}`)||req.path.startsWith('/assets/')||req.path===`/d/${r.proof.slug}`||req.path==='/api/capabilities'||new RegExp(`^/api/documents/${r.proof.slug}/(open-context|collab-session|collab-refresh|info|presence|marks|content|title)$`).test(req.path);
@@ -202,7 +205,6 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
   return res.sendFile(index);
  });
  // apps/web SPA (Classroom / deck / workshop / lesson / live) — AET-75+ routes live in apps/web, not root dist/
- const webDist=path.join(root,'apps/web/dist');
  const webIndex=path.join(webDist,'index.html');
  const isWebSpaPath=p=>p==='/deck'||p.startsWith('/classroom/')||p.startsWith('/workshop/')||p==='/lesson'||p.startsWith('/lesson/')||p.startsWith('/live/');
  app.use(express.static(webDist,{index:false,fallthrough:true}));
