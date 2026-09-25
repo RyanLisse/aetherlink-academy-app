@@ -17,6 +17,7 @@
     "test:search-db": "ACADEMY_SEARCH_DB_TEST=1 vitest run test/search-db.test.ts",
     "test:notion-db": "ACADEMY_CURRICULUM_DB_TEST=1 vitest run test/notion-import-db.test.ts",
     "test:authoring-db": "ACADEMY_CURRICULUM_DB_TEST=1 vitest run test/authoring-publish-db.test.ts",
+    "test:facilitator-db": "ACADEMY_CURRICULUM_DB_TEST=1 vitest run test/identity/facilitator-sessions-db.test.ts",
     "db:generate": "drizzle-kit generate --config ../../drizzle.config.ts",
     "dev": "node --watch --experimental-strip-types src/main.ts",
     "start": "node dist/main.js",

@@ -43,6 +43,13 @@
       "when": 1790365513202,
       "tag": "0005_authoring_authorship",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790367000174,
+      "tag": "0006_facilitator_sessions",
+      "breakpoints": true
     }
   ]
 }

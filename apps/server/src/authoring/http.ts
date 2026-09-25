@@ -15,6 +15,7 @@ import {
 } from './errors.ts';
 import {CourseNotFound, RevisionNotDraft, RevisionNotFound, type CurriculumRepoShape} from '../db/curriculum-repo.ts';
 import type {FacilitatorAuthShape} from '../identity/facilitator-auth.ts';
+import {FACILITATOR_COOKIE} from '../identity/google-routes.ts';
 import {lessonMarkdown, publishSnapshot} from './publish.ts';
 import type {AuthoringStore, DeckSummary, Lesson} from './store.ts';
 import type {SlidesUpstream, UpstreamSlideInput} from './upstream.ts';
@@ -28,8 +29,6 @@ const MAX_DECK_ID_LENGTH = 200;
 const LESSON_ID_PATTERN = /^[A-Za-z0-9-]{1,80}$/;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const MAX_REVISION_LENGTH = 200;
-/** Same cookie the gateway sets after Google SSO (`server/app.mjs`). */
-export const FACILITATOR_COOKIE = 'academy-facilitator';
 /** Author recorded for revisions published with the shared host key rather than a personal SSO session. */
 export const HOST_KEY_AUTHOR = 'host-key';
 
