@@ -9,12 +9,13 @@ export function dayProgress(room, person, day) {
 export function debrief(room) {
  return {day:room.day,name:room.name,members:room.members.map(person=>({id:person.id,name:person.name,help:person.help,progress:dayProgress(room,person,room.day)})),handoffs:(room.handoffs||[]).filter(item=>Number(item.day)===room.day)};
 }
-export function exportDebrief(room) {
+export function exportDebrief(room,board=null) {
  const lines=['# Squad-overdracht',room.name,'','Dit overzicht toont vastgelegd bewijs, geen certificering of ranglijst.'];
  for(let day=1;day<=DAY_COUNT;day++){
   lines.push('',`## Dag ${day}`);
   for(const person of room.members){const progress=dayProgress(room,person,day);lines.push('',`### ${person.name}`,`Bewijs: ${progress.evidenceCount}; beoordeeld: ${progress.reviewedCount}; geaccepteerd: ${progress.acceptedCount}.`);if(progress.reflection)lines.push('Reflectie:',progress.reflection.learned,'Volgende oefening:',progress.reflection.next);}
   for(const handoff of (room.handoffs||[]).filter(item=>Number(item.day)===day))lines.push('','Besluit:',handoff.decision,'Gecontroleerd:',handoff.checked,'Open:',handoff.open,'Volgende eigenaar:',handoff.next);
  }
+ if(board){lines.push('','## Debriefbord');for(const column of board){lines.push('',`### ${column.title}`);lines.push(...(column.cards.length?column.cards.map(card=>`- ${card}`):['Geen kaarten.']));}}
  return lines.join('\n');
 }

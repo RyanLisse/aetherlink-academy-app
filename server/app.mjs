@@ -1,6 +1,7 @@
 import express from 'express';
 import {agentInstructions} from './agent-setup.mjs';
 import {dayProgress,debrief,exportDebrief} from './progress.mjs';
+import {applyBoardAction,boardMarkdown,boardView,parseBoard,roomDocument} from './debrief-board.mjs';
 import http from 'node:http';
 import httpProxy from 'http-proxy';
 import {createHash,createHmac,randomBytes,randomUUID,timingSafeEqual} from 'node:crypto';
@@ -44,13 +45,14 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  app.use(async(req,res,next)=>{
   if(!/^\/(d\/|api\/|documents\/|assets\/|ws\b)/.test(req.path)||webPublicAssets.has(req.path))return next();
   try{const session=await store.auth(cookie(req),'browser');const {r}=session;const slug=req.path.match(/^\/(?:d|documents|api\/documents|api\/agent)\/([^/]+)/)?.[1];
-   if(slug&&slug!==r.proof.slug)fail(403,'Dit document hoort bij een andere kamer.');
-   const allowed=(['GET','PUT'].includes(req.method)&&req.path===`/api/documents/${r.proof.slug}`)||req.path.startsWith('/assets/')||req.path===`/d/${r.proof.slug}`||req.path==='/api/capabilities'||new RegExp(`^/api/documents/${r.proof.slug}/(open-context|collab-session|collab-refresh|info|presence|marks|content|title)$`).test(req.path);
-   const agentAllowed=new RegExp(`^/api/agent/${r.proof.slug}/(state|events/pending|presence/disconnect|marks/(comment|reply|resolve|unresolve|accept|reject|suggest-insert|suggest-replace|suggest-delete))$`).test(req.path);
+   const doc=roomDocument(r,slug);if(!doc)fail(403,'Dit document hoort bij een andere kamer.');const docSlug=doc.proof.slug;
+   const allowed=(['GET','PUT'].includes(req.method)&&req.path===`/api/documents/${docSlug}`)||req.path.startsWith('/assets/')||req.path===`/d/${docSlug}`||req.path==='/api/capabilities'||new RegExp(`^/api/documents/${docSlug}/(open-context|collab-session|collab-refresh|info|presence|marks|content|title)$`).test(req.path);
+   const agentAllowed=new RegExp(`^/api/agent/${docSlug}/(state|events/pending|presence/disconnect|marks/(comment|reply|resolve|unresolve|accept|reject|suggest-insert|suggest-replace|suggest-delete))$`).test(req.path);
    if(!allowed&&!agentAllowed)fail(403,'Deze Proof-route is niet beschikbaar via de game.');
-   if(new RegExp(`^/api/agent/${r.proof.slug}/marks/(accept|reject)$`).test(req.path))suggestionReviewer(session);
-   if(req.path.startsWith('/d/'))req.url=req.path+'?token='+r.proof.editor;
-   req.headers.authorization=`Bearer ${r.proof.editor}`;req.headers['x-share-token']=r.proof.editor;proxy.web(req,res);
+   if(!doc.writable&&!['GET','HEAD'].includes(req.method)&&req.path!==`/api/documents/${docSlug}/collab-refresh`)fail(403,'Het debriefbord is gesloten; alleen lezen is mogelijk.');
+   if(new RegExp(`^/api/agent/${docSlug}/marks/(accept|reject)$`).test(req.path))suggestionReviewer(session);
+   if(req.path.startsWith('/d/'))req.url=req.path+'?token='+doc.token;
+   req.headers.authorization=`Bearer ${doc.token}`;req.headers['x-share-token']=doc.token;proxy.web(req,res);
   }catch(e){res.status(e.status||500).json({error:e.message});}
  });
  app.use(express.json({limit:'64kb'}));
@@ -84,7 +86,16 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  app.post('/game/lab-complete',wrap(async(req,res)=>{const completion=parseLabCompletion(req.body);if(!completion)fail(400,'Ongeldige labvoltooiing.');res.json(await store.withSession(token(req),'browser',({r,p})=>{if(!p)fail(403,'Alleen deelnemers ronden een lab af.');if(!dayLabs(r.day).some(lab=>lab.id===completion.labId))fail(404,`Lab ${completion.labId} hoort niet bij dag ${r.day}.`);const key=String(r.day);p.progressByDay??={};const day=p.progressByDay[key]||{},existing=day.labs?.[completion.labId];if(existing)return {recorded:false,day:r.day,labId:completion.labId,lab:existing};const lab={source:'lab-reported',result:completion.result,evidence:completion.evidence??null,at:new Date().toISOString()};p.progressByDay[key]={...day,labs:{...day.labs,[completion.labId]:lab}};return {recorded:true,day:r.day,labId:completion.labId,lab};}));}));
  app.post('/game/reflection',wrap(async(req,res)=>res.json(await store.withSession(token(req),'browser',({r,p})=>{if(!p)fail(403,'Alleen deelnemers schrijven een eigen reflectie.');const reflection={learned:text(req.body.learned),next:text(req.body.next),at:new Date().toISOString()};p.progressByDay??={};p.progressByDay[String(r.day)]={...p.progressByDay[String(r.day)],reflection};return reflection;}))));
  app.get('/game/debrief',wrap(async(req,res)=>{const {r,s}=await browser(req);if(s.personId!=='facilitator')fail(403,'Alleen de facilitator bekijkt de debrief.');res.json(debrief(r));}));
- app.get('/game/debrief/export',wrap(async(req,res)=>{const {r,s}=await browser(req);if(s.personId!=='facilitator')fail(403,'Alleen de facilitator exporteert de debrief.');res.type('text/markdown').set('Content-Disposition','attachment; filename="squad-overdracht.md"').send(exportDebrief(r));}));
+ app.get('/game/debrief/export',wrap(async(req,res)=>{const {r,s}=await browser(req);if(s.personId!=='facilitator')fail(403,'Alleen de facilitator exporteert de debrief.');const board=r.board?parseBoard((await proof.state({proof:r.board.proof})).markdown):null;res.type('text/markdown').set('Content-Disposition','attachment; filename="squad-overdracht.md"').send(exportDebrief(r,board));}));
+ // Fencing drops Proof's loaded doc, so wait until its debounced persist has stored every card that is already live.
+ async function settleBoard(p){for(let attempt=0;attempt<25;attempt++){const [live,stored]=await Promise.all([proof.state({proof:p}),proof.stored(p)]);if(JSON.stringify(parseBoard(live.markdown))===JSON.stringify(parseBoard(stored.markdown)))return;await new Promise(resolve=>setTimeout(resolve,200));}fail(503,'Proof slaat het bord nog op. Sluit het bord opnieuw.');}
+ app.post('/game/board',wrap(async(req,res)=>{
+  const {r,s}=await browser(req);if(s.personId!=='facilitator')fail(403,'Alleen de facilitator opent of sluit het debriefbord.');
+  const action=req.body?.action,created=action==='open'&&!r.board?await proof.createBoard(boardMarkdown(),`${r.name} — Debriefbord`):null;
+  const board=await store.withSession(token(req),'browser',({r,s})=>{if(s.personId!=='facilitator')fail(403,'Alleen de facilitator opent of sluit het debriefbord.');return applyBoardAction(r,action,{created,at:new Date().toISOString(),by:s.displayName||'Facilitator'});});
+  if(board.status==='closed'){await settleBoard(board.proof);await proof.fence(board.proof);}
+  res.json(boardView(board));
+ }));
  app.get('/game/document',wrap(async(req,res)=>{const {r}=await browser(req);res.json(await proof.state(r));}));
  const screens=createScreenStore(presence);
  app.post('/game/screen-state',wrap(async(req,res)=>{await screens.save(screenBinding(await browser(req),req.body));res.status(204).end();}));
@@ -229,6 +240,6 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  });
  app.use(express.static(path.join(root,'dist')));app.get('/',(_req,res)=>res.sendFile(path.join(root,'dist/index.html')));app.use((req,res,next)=>{if(req.method==='GET'&&(req.path==='/arcade'||req.path.startsWith('/arcade/')))return res.sendFile(path.join(root,'dist/index.html'));return next();});
  app.use((e,req,res,_next)=>{if(!e.status)console.error('[academy] unhandled',{method:req.method,path:req.path,message:e?.message,stack:e?.stack});return res.status(e.status||500).json({error:e.status?e.message:'Onverwachte serverfout. Probeer opnieuw; je invoer blijft staan.'});});
- const server=http.createServer(app);server.on('upgrade',async(req,socket,head)=>{try{const {r}=await browser(req);const url=new URL(req.url,'http://localhost');if(req.headers.origin&&req.headers.origin!==`http://${req.headers.host}`&&req.headers.origin!==`https://${req.headers.host}`)fail(403,'Origin');if(url.pathname!=='/ws'||url.searchParams.get('slug')!==r.proof.slug)fail(403,'Kamer');proxy.ws(req,socket,head);}catch(e){console.warn('WS denied',new URL(req.url,'http://localhost').pathname,e.message);socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');socket.destroy();}});
+ const server=http.createServer(app);server.on('upgrade',async(req,socket,head)=>{try{const {r}=await browser(req);const url=new URL(req.url,'http://localhost');if(req.headers.origin&&req.headers.origin!==`http://${req.headers.host}`&&req.headers.origin!==`https://${req.headers.host}`)fail(403,'Origin');if(url.pathname!=='/ws'||!url.searchParams.get('slug')||!roomDocument(r,url.searchParams.get('slug')))fail(403,'Kamer');proxy.ws(req,socket,head);}catch(e){console.warn('WS denied',new URL(req.url,'http://localhost').pathname,e.message);socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');socket.destroy();}});
  return {app,server,store,proof,slides,portal};
 }
