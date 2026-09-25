@@ -1,6 +1,6 @@
 import {randomUUID} from 'node:crypto';
 import {Store,hash,fail,writable,MAX_SQUAD_SIZE} from './store.mjs';
-import {INVALID_COHORT_CODE_MESSAGE,COHORT_NO_ROOM_MESSAGE,COHORT_RATE_LIMIT_MESSAGE,attemptKeys,nextAttempt,issueAccessCode,sessionGrant,mergeSeatProgress,seatMember,cohortView,isDueForPurge,anonymizeRoom} from './cohort.mjs';
+import {INVALID_COHORT_CODE_MESSAGE,COHORT_NO_ROOM_MESSAGE,COHORT_RATE_LIMIT_MESSAGE,attemptKeys,nextAttempt,issueAccessCode,sessionGrant,mergeSeatProgress,seatMember,cohortView,isDueForPurge,anonymizeRoom,dueCertificates,memberCertificate} from './cohort.mjs';
 export class LocalStore extends Store {
  constructor(dir,options){super(dir,options);this.queue=Promise.resolve();}
  async locked(fn){
@@ -18,14 +18,27 @@ export class LocalStore extends Store {
  memberOr404(cohort,memberId){const member=cohort.members.find(candidate=>candidate.id===memberId);if(!member)fail(404,'Deelnemer niet gevonden in dit cohort.');return member;}
  issueCode(cohortId,memberId){const {code,codeHash}=issueAccessCode();this.data.accessCodes[codeHash]={cohortId,memberId,createdAt:this.now(),revokedAt:null,lastActivatedAt:null};return code;}
  addMembers(cohort,names){return names.map(name=>{const member={id:randomUUID(),name,createdAt:this.now()};cohort.members.push(member);return {memberId:member.id,name,code:this.issueCode(cohort.id,member.id)};});}
- cohortSnapshot(cohort){return cohortView({cohort,members:cohort.members,codes:this.cohortCodes(cohort.id),rooms:this.cohortRooms(cohort.id),now:this.now()});}
+ cohortCertificates(cohortId){return Object.values(this.data.certificates).filter(certificate=>certificate.cohortId===cohortId);}
+ cohortSnapshot(cohort){return cohortView(this.cohortFacts(cohort));}
  createCohort(input,names,createdBy){return this.locked(()=>{const cohort={id:randomUUID(),...input,currentRoomId:null,createdBy:createdBy||null,createdAt:this.now(),members:[]};this.data.cohorts[cohort.id]=cohort;const codes=this.addMembers(cohort,names);return {cohort:this.cohortSnapshot(cohort),codes};});}
  addCohortMembers(cohortId,names){return this.locked(()=>{const cohort=this.cohortOr404(cohortId);if(names.some(name=>cohort.members.some(member=>member.name.toLowerCase()===name.toLowerCase())))fail(409,'Deze naam staat al in dit cohort.');return {codes:this.addMembers(cohort,names)};});}
  attachCohortRoom(cohortId,roomId){return this.locked(()=>{const cohort=this.cohortOr404(cohortId),room=this.data.rooms[roomId];if(!room)fail(404,'Kamer bestaat niet.');if(room.cohortId&&room.cohortId!==cohortId)fail(409,'Deze kamer hoort al bij een ander cohort.');room.cohortId=cohortId;room.cohortAttachedAt=this.now();room.version++;cohort.currentRoomId=roomId;return this.cohortSnapshot(cohort);});}
  revokeMember(cohort,memberId){this.memberOr404(cohort,memberId);for(const code of Object.values(this.data.accessCodes))if(code.memberId===memberId&&!code.revokedAt)code.revokedAt=this.now();for(const [key,session] of Object.entries(this.data.sessions))if(session.personId===memberId)delete this.data.sessions[key];}
  revokeCohortMember(cohortId,memberId){return this.locked(()=>{const cohort=this.cohortOr404(cohortId);this.revokeMember(cohort,memberId);return this.cohortSnapshot(cohort);});}
  reissueCohortCode(cohortId,memberId){return this.locked(()=>{const cohort=this.cohortOr404(cohortId);this.revokeMember(cohort,memberId);const member=this.memberOr404(cohort,memberId);return {memberId,name:member.name,code:this.issueCode(cohortId,memberId)};});}
- async cohortOverview(){return Object.values(this.data.cohorts).sort((a,b)=>b.createdAt-a.createdAt).map(cohort=>this.cohortSnapshot(cohort));}
+ cohortFacts(cohort){return {cohort,members:cohort.members,codes:this.cohortCodes(cohort.id),rooms:this.cohortRooms(cohort.id),certificates:this.cohortCertificates(cohort.id),now:this.now()};}
+ settleCertificates(cohort){for(const certificate of dueCertificates(this.cohortFacts(cohort)))this.data.certificates[certificate.id]=certificate;}
+ myCertificate(token){return this.locked(()=>{
+  const {r,p}=this.auth(token,'browser');
+  const cohort=p?.cohortMemberId&&this.data.cohorts[r.cohortId];
+  if(!cohort)return null;
+  this.settleCertificates(cohort);
+  const facts=this.cohortFacts(cohort);
+  return {cohortName:cohort.name,days:cohort.days,...memberCertificate({...facts,memberId:p.cohortMemberId,codes:facts.codes.filter(code=>code.memberId===p.cohortMemberId)})};
+ });}
+ revokeCertificate(cohortId,certificateId){return this.locked(()=>{const cohort=this.cohortOr404(cohortId),certificate=this.data.certificates[certificateId];if(!certificate||certificate.cohortId!==cohortId)fail(404,'Certificaat niet gevonden in dit cohort.');certificate.revokedAt??=this.now();return this.cohortSnapshot(cohort);});}
+ async certificate(id){return this.data.certificates[id]||null;}
+ cohortOverview(){return this.locked(()=>Object.values(this.data.cohorts).sort((a,b)=>b.createdAt-a.createdAt).map(cohort=>{this.settleCertificates(cohort);return this.cohortSnapshot(cohort);}));}
  async activateCohortCode(input,{ip}={}){
   const {normalized,codeHash,keys}=attemptKeys(input,ip);
   const allowed=await this.locked(()=>{const now=this.now();let ok=true;for(const [key,limit] of keys){const {record,allowed}=nextAttempt(this.data.attempts[key],now,limit);this.data.attempts[key]=record;ok&&=allowed;}return ok;});
@@ -45,13 +58,14 @@ export class LocalStore extends Store {
  }
  purgeExpiredCohorts({dryRun=true}={}){return this.locked(()=>{
   const now=this.now(),due=Object.values(this.data.cohorts).filter(cohort=>isDueForPurge(cohort,now));
-  const report=due.map(cohort=>({cohortId:cohort.id,members:cohort.members.length,rooms:this.cohortRooms(cohort.id).map(room=>room.id)}));
+  const report=due.map(cohort=>({cohortId:cohort.id,members:cohort.members.length,rooms:this.cohortRooms(cohort.id).map(room=>room.id),certificates:this.cohortCertificates(cohort.id).length}));
   if(dryRun)return {dryRun,purged:report};
   for(const cohort of due){
    const ids=cohort.members.map(member=>member.id),idSet=new Set(ids);
-   for(const room of this.cohortRooms(cohort.id)){anonymizeRoom(room,ids);for(const key of Object.keys(room.requests||{}))if(idSet.has(JSON.parse(key)[0]))delete room.requests[key];}
+   for(const room of this.cohortRooms(cohort.id)){anonymizeRoom(room,ids);room.requests={};}
    for(const [key,session] of Object.entries(this.data.sessions))if(idSet.has(session.personId))delete this.data.sessions[key];
    for(const [key,code] of Object.entries(this.data.accessCodes))if(code.cohortId===cohort.id)delete this.data.accessCodes[key];
+   for(const certificate of this.cohortCertificates(cohort.id))delete this.data.certificates[certificate.id];
    delete this.data.cohorts[cohort.id];
   }
   return {dryRun,purged:report};

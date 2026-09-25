@@ -21,7 +21,8 @@ import {openQuizAttempt,participantDayPack,submitQuizAttempt} from './quiz.mjs';
 import {createGoogleSso,readLoginState,signLoginState} from './google-sso.mjs';
 import {createSlidesService} from './slides/runtime.ts';
 import {createPortal} from './portal/index.mjs';
-import {READ_ONLY_MESSAGE,parseCohortInput,parseMemberNames} from './cohort.mjs';
+import {READ_ONLY_MESSAGE,parseCohortInput,parseMemberNames,normalizeAccessCode,certificateVerifiableUntil} from './cohort.mjs';
+import {CERTIFICATE_CSP,CERTIFICATE_INVALID_MESSAGE,publicVerification,renderCertificatePage,renderVerificationPage} from './certificate.mjs';
 import {parseLabAnswer,parseLabCompletion,parseOriginAllowlist,resolveLabs} from '../packages/lab-embed/src/index.ts';
 import {gradedStopsPassed,parseLabKeys,recordAttempt} from '../packages/lab-embed/src/grading.ts';
 import {labGradingKeys} from './lab-keys.mjs';
@@ -34,6 +35,7 @@ const uuid=v=>{if(typeof v!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0
 // screen-state (presence heartbeat) and chat (FAQ lookup) are reads over POST, so read-only members
 // can keep using the Academy as a reference after the live days.
 const readOnlyExempt=new Set(['/game/logout','/game/resume','/game/join','/game/create','/game/participant/resume','/game/cohort/activate','/game/screen-state','/game/chat']);
+const certificateId=v=>{const normalized=normalizeAccessCode(v);if(!normalized)fail(404,CERTIFICATE_INVALID_MESSAGE);return normalized.match(/.{4}/g).join('-');};
 const bearer=req=>req.headers.authorization?.startsWith('Bearer ')?req.headers.authorization.slice(7):null;
 export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4400',root=process.cwd(),hostKey,publicBaseUrl=process.env.ACADEMY_PUBLIC_URL||`http://127.0.0.1:${process.env.PORT||4317}`,googleClientId=process.env.GOOGLE_CLIENT_ID,googleClientSecret=process.env.GOOGLE_CLIENT_SECRET,facilitatorDomains=process.env.ACADEMY_FACILITATOR_DOMAINS,signingSecret=process.env.PROOF_COLLAB_SIGNING_SECRET,fetchImpl=fetch,slidesService,labOrigins=process.env.ACADEMY_LAB_ORIGINS,labsForDay=day=>getDayPack(day)?.labs,labKeys=labGradingKeys,trustProxy=process.env.ACADEMY_TRUST_PROXY}={}){
  const publicUrl=new URL(publicBaseUrl);if(!['http:','https:'].includes(publicUrl.protocol)||publicUrl.username||publicUrl.password||publicUrl.search||publicUrl.hash||publicUrl.pathname!=='/')throw Error('ACADEMY_PUBLIC_URL moet een HTTP(S)-origin zonder pad of credentials zijn.');
@@ -68,7 +70,7 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
   }catch(e){res.status(e.status||500).json({error:e.message});}
  });
  app.use(express.json({limit:'64kb'}));
- const buckets=new Map();app.use(['/game','/mcp','/auth'],(req,res,next)=>{const k=req.ip;const b=buckets.get(k)||{t:Date.now(),n:0};if(Date.now()-b.t>60000){b.t=Date.now();b.n=0;}b.n++;buckets.set(k,b);if(b.n>1500)return res.status(429).json({error:'Te veel verzoeken. Wacht even.'});next();});
+ const buckets=new Map();app.use(['/game','/mcp','/auth','/verify','/certificate'],(req,res,next)=>{const k=req.ip;const b=buckets.get(k)||{t:Date.now(),n:0};if(Date.now()-b.t>60000){b.t=Date.now();b.n=0;}b.n++;buckets.set(k,b);if(b.n>1500)return res.status(429).json({error:'Te veel verzoeken. Wacht even.'});next();});
  app.use(async(req,res,next)=>{
   const route=req.path.toLowerCase().replace(/\/+$/,'');
   if(['GET','HEAD'].includes(req.method)||!route.startsWith('/game/')||route.startsWith('/game/facilitator/')||readOnlyExempt.has(route)||!token(req))return next();
@@ -96,6 +98,12 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  const closeSockets=personId=>{for(const socket of liveSockets.get(personId)||[])socket.destroy();liveSockets.delete(personId);};
  app.post('/game/facilitator/cohort/revoke',wrap(async(req,res)=>{await requireFacilitator(req);const result=await store.revokeCohortMember(uuid(req.body.cohortId),uuid(req.body.memberId));closeSockets(req.body.memberId);res.json(result);}));
  app.post('/game/facilitator/cohort/reissue',wrap(async(req,res)=>{await requireFacilitator(req);const result=await store.reissueCohortCode(uuid(req.body.cohortId),uuid(req.body.memberId));closeSockets(req.body.memberId);res.json(result);}));
+ app.post('/game/facilitator/cohort/certificate/revoke',wrap(async(req,res)=>{await requireFacilitator(req);res.json(await store.revokeCertificate(uuid(req.body.cohortId),certificateId(req.body.certificateId)));}));
+ const sendCertificate=(res,certificate)=>{if(!certificate||certificate.revokedAt)fail(404,CERTIFICATE_INVALID_MESSAGE);res.type('text/html').set('Content-Security-Policy',CERTIFICATE_CSP).set('X-Robots-Tag','noindex').send(renderCertificatePage(certificate,{verifyUrl:`${publicUrl.origin}/verify/${certificate.id}`,verifiableUntil:certificateVerifiableUntil(certificate)}));};
+ app.post('/game/facilitator/cohort/certificate/view',wrap(async(req,res)=>{await requireFacilitator(req);sendCertificate(res,await store.certificate(certificateId(req.body.certificateId)));}));
+ app.get('/certificate/:id',wrap(async(req,res)=>{const certificate=await store.certificate(certificateId(req.params.id));const facilitator=await store.facilitator(namedCookie(req,'academy-facilitator'));if(!facilitator){const {s}=await store.auth(cookie(req),'browser');if(!certificate||s.personId!==certificate.memberId)fail(404,CERTIFICATE_INVALID_MESSAGE);}sendCertificate(res,certificate);}));
+ app.get('/game/certificate',wrap(async(req,res)=>{const mine=await store.myCertificate(token(req));if(!mine)return res.json({status:'no-cohort'});res.json({...mine,...(mine.id?{certificateUrl:`/certificate/${mine.id}`,verifyUrl:`${publicUrl.origin}/verify/${mine.id}`}:{})});}));
+ app.get('/verify/:id',wrap(async(req,res)=>{const normalized=normalizeAccessCode(req.params.id);const verification=normalized?publicVerification(await store.certificate(normalized.match(/.{4}/g).join('-'))):null;res.status(verification?200:404).type('text/html').set('Content-Security-Policy',CERTIFICATE_CSP).set('X-Robots-Tag','noindex').send(renderVerificationPage(verification));}));
  app.post('/game/facilitator/overview',wrap(async(req,res)=>{await requireFacilitator(req);res.json(await store.overview());}));
  app.post('/game/facilitator/attach',wrap(async(req,res)=>{const identity=await requireFacilitator(req);setSession(res,await store.attachFacilitator(text(req.body.roomId,60),identity?.name));}));
  app.post('/game/logout',wrap(async(req,res)=>{await store.logout(token(req));res.clearCookie('academy',{path:'/'});res.json({ok:true});}));

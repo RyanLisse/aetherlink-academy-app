@@ -96,3 +96,17 @@ CREATE TABLE IF NOT EXISTS access_attempts (
  window_started_at bigint NOT NULL,
  count integer NOT NULL
 );
+CREATE TABLE IF NOT EXISTS cohort_certificates (
+ id text PRIMARY KEY,
+ cohort_id uuid NOT NULL REFERENCES cohorts(id) ON DELETE CASCADE,
+ member_id uuid NOT NULL REFERENCES cohort_members(id) ON DELETE CASCADE,
+ member_name text NOT NULL,
+ cohort_name text NOT NULL,
+ starts_at bigint NOT NULL,
+ ends_at bigint NOT NULL,
+ days integer NOT NULL,
+ issued_at bigint NOT NULL,
+ issued_by jsonb,
+ revoked_at bigint
+);
+CREATE UNIQUE INDEX IF NOT EXISTS cohort_certificates_live ON cohort_certificates(member_id) WHERE revoked_at IS NULL;
