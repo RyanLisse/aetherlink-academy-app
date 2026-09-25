@@ -25,7 +25,11 @@ export function readLoginState(value,secret){
  try{return decoded(payload);}catch{throw Object.assign(failure('state','bad-signature'),{reason:'bad-signature'});}
 }
 
-export function createGoogleSso({clientId,clientSecret,allowedDomains,publicUrl,fetchImpl=fetch}){
+const LOOPBACK_HOSTS=new Set(['127.0.0.1','localhost','[::1]']);
+const endpointAllowed=(endpoint,issuer)=>{try{const url=new URL(endpoint);if(url.protocol==='https:')return true;return issuer!==GOOGLE_ISSUER&&url.protocol==='http:'&&LOOPBACK_HOSTS.has(url.hostname);}catch{return false;}};
+
+/** `issuer` exists for tests that run a loopback OIDC provider; the env wiring never sets it, so production always talks to Google. */
+export function createGoogleSso({clientId,clientSecret,allowedDomains,publicUrl,fetchImpl=fetch,issuer=GOOGLE_ISSUER}){
  clientId=String(clientId||'').trim();
  clientSecret=String(clientSecret||'').trim();
  const domains=(Array.isArray(allowedDomains)?allowedDomains:String(allowedDomains||'').split(',')).map(domain=>domain.trim().toLowerCase()).filter(Boolean);
@@ -39,8 +43,8 @@ export function createGoogleSso({clientId,clientSecret,allowedDomains,publicUrl,
  }
  async function discovery(){
   if(discoveryCache?.expiresAt>Date.now())return discoveryCache.value;
-  const value=await json(`${GOOGLE_ISSUER}/.well-known/openid-configuration`,undefined,'verify','discovery');
-  if(value.issuer!==GOOGLE_ISSUER||![value.authorization_endpoint,value.token_endpoint,value.jwks_uri].every(endpoint=>{try{return new URL(endpoint).protocol==='https:';}catch{return false;}}))throw failure('verify','discovery');
+  const value=await json(`${issuer}/.well-known/openid-configuration`,undefined,'verify','discovery');
+  if(value.issuer!==issuer||![value.authorization_endpoint,value.token_endpoint,value.jwks_uri].every(endpoint=>endpointAllowed(endpoint,issuer)))throw failure('verify','discovery');
   discoveryCache={value,expiresAt:Date.now()+CACHE_TTL};return value;
  }
  async function jwks(force=false){
@@ -59,7 +63,7 @@ export function createGoogleSso({clientId,clientSecret,allowedDomains,publicUrl,
   let valid=false;try{valid=verify('RSA-SHA256',Buffer.from(`${parts[0]}.${parts[1]}`),createPublicKey({key,format:'jwk'}),Buffer.from(parts[2],'base64url'));}catch{}
   if(!valid)throw failure('verify','signature');
   const now=Math.floor(Date.now()/1000);
-  if(!['accounts.google.com',GOOGLE_ISSUER].includes(payload.iss))throw failure('verify','iss');
+  if(payload.iss!==issuer&&!(issuer===GOOGLE_ISSUER&&payload.iss==='accounts.google.com'))throw failure('verify','iss');
   if(!audienceMatches(payload.aud,clientId))throw failure('verify','aud');
   if(!Number.isInteger(payload.exp)||payload.exp<now-CLOCK_SKEW)throw failure('verify','exp');
   if(!Number.isInteger(payload.iat)||payload.iat>now+CLOCK_SKEW||payload.iat>payload.exp)throw failure('verify','iat');
@@ -87,18 +91,31 @@ export function createGoogleSso({clientId,clientSecret,allowedDomains,publicUrl,
   if(!loginState||loginState.expiresAt<Date.now()||typeof query?.state!=='string'||!same(query.state,loginState.state))throw failure('state','mismatch');
   return exchangeAndVerify({code:query?.code,codeVerifier:loginState.codeVerifier,nonce:loginState.nonce});
  }
- return {enabled,startUrl,handleCallback,exchangeAndVerify,verifyIdToken};
+ const loginStateKey=createHmac('sha256',clientSecret).update('academy-login-state').digest();
+ return {enabled,redirectUri,loginStateKey,startUrl,handleCallback,exchangeAndVerify,verifyIdToken};
 }
 
 
-/** Env-gated SSO. Disabled when GOOGLE_CLIENT_ID/SECRET or domains missing (AET-6 ops). */
+const GOOGLE_ENV_KEYS=['GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','ACADEMY_FACILITATOR_DOMAINS'];
+
+/**
+ * Env-gated SSO, all-or-nothing like `server/runtime-config.mjs`: none of the
+ * three keys set means disabled; some but not all set throws so a half-configured
+ * deploy fails at boot instead of silently serving `login_error=disabled`.
+ */
 export function googleSsoFromEnv(env: NodeJS.ProcessEnv = process.env, fetchImpl: typeof fetch = fetch) {
-  const publicUrl = (env.ACADEMY_PUBLIC_URL || env.ACADEMY_PUBLIC_BASE_URL || 'http://127.0.0.1:4318').trim();
+  const configured = GOOGLE_ENV_KEYS.filter((key) => String(env[key] || '').trim());
+  if (configured.length && configured.length !== GOOGLE_ENV_KEYS.length) {
+    throw new Error('Google-login vereist dat GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET en ACADEMY_FACILITATOR_DOMAINS alle drie zijn ingesteld.');
+  }
+  const publicUrl = (env.ACADEMY_PUBLIC_URL || 'http://127.0.0.1:4318').trim();
   return createGoogleSso({
     clientId: env.GOOGLE_CLIENT_ID,
     clientSecret: env.GOOGLE_CLIENT_SECRET,
-    allowedDomains: env.ACADEMY_FACILITATOR_DOMAINS || env.GOOGLE_ALLOWED_DOMAINS,
+    allowedDomains: env.ACADEMY_FACILITATOR_DOMAINS,
     publicUrl,
     fetchImpl,
   });
 }
+
+export type GoogleSso = ReturnType<typeof createGoogleSso>;

@@ -1,7 +1,7 @@
 import {Effect, Layer} from 'effect';
 import {HttpRouter} from 'effect/unstable/http';
 import {CurriculumRepo, CurriculumRepoLive, type CurriculumRepoShape} from '../db/curriculum-repo.ts';
-import {FacilitatorAuth, FacilitatorAuthMemory, type FacilitatorAuthShape} from '../identity/facilitator-auth.ts';
+import {FacilitatorAuth, type FacilitatorAuthShape} from '../identity/facilitator-auth.ts';
 import {PgClientLive} from '../layers/postgres.ts';
 import type {ServerConfig} from '../layers/config.ts';
 import {readAuthoringConfig} from './config.ts';
@@ -30,11 +30,10 @@ export const AuthoringLive = (env: NodeJS.ProcessEnv, services: AuthoringService
 
 /**
  * Server wiring: when authoring is enabled, publish into the curriculum
- * Postgres (`DATABASE_URL`) and accept Google SSO facilitator sessions.
- * The Postgres pool is only built when the flag is on, so a disabled
- * deployment never opens a curriculum connection.
+ * Postgres (`DATABASE_URL`) and accept the Google SSO facilitator sessions
+ * minted by `GoogleSsoRoutes`.
  */
-export const AuthoringFromEnv = (env: NodeJS.ProcessEnv): Layer.Layer<never, never, HttpRouter.HttpRouter | ServerConfig> => {
+export const AuthoringFromEnv = (env: NodeJS.ProcessEnv): Layer.Layer<never, never, HttpRouter.HttpRouter | ServerConfig | FacilitatorAuth> => {
   if (!readAuthoringConfig(env)) return Layer.empty as Layer.Layer<never, never, HttpRouter.HttpRouter>;
   const mounted = Layer.unwrap(
     Effect.gen(function* () {
@@ -43,5 +42,5 @@ export const AuthoringFromEnv = (env: NodeJS.ProcessEnv): Layer.Layer<never, nev
       return AuthoringLive(env, {curriculum, facilitators});
     }),
   );
-  return mounted.pipe(Layer.provide(Layer.mergeAll(CurriculumRepoLive.pipe(Layer.provide(PgClientLive)), FacilitatorAuthMemory())));
+  return mounted.pipe(Layer.provide(CurriculumRepoLive.pipe(Layer.provide(PgClientLive))));
 };

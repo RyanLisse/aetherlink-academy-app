@@ -61,16 +61,16 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   kicker: "Uitleg · shared acceptance",
   type: "concept",
   visual: { keynote: true },
-  notes: "Uitleg — Labels don’t move. Low/Med/High on the same fixture as Workshop 3. Claude must match n8n expected labels — not invent a new product. fixtures/expected-labels.json is SoT (WL-1026→high, WL-1027→low)."
+  notes: "Uitleg — Labels don’t move. Low/Med/High on the same fixture as Workshop 3. Claude must reproduce the n8n labels — not invent a new product. The Academy autograder holds the answer key; never say the labels out loud."
 },
 
 { // 6
   lessonId: "workshop-4",
-  title: "Watch: fixture tickets and expected L/M/H.",
+  title: "Watch: fixture tickets, predict L/M/H.",
   kicker: "Voordoen · SOLO 1",
   type: "concept",
   visual: { keynote: true },
-  notes: "Voordoen — fixture + expected L/M/H. Show fixtures/ticket.json, ticket-followup.json, expected-labels.json. Point at W3 Proof if attendees have it. Room watches."
+  notes: "Voordoen — fixture tickets, predict L/M/H. Show fixtures/ticket.json and ticket-followup.json; let the room predict a label per ticket without revealing the answer. The autograder in the Academy confirms. Point at W3 Proof if attendees have it."
 },
 
 { // 7
@@ -83,7 +83,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   cards: [
     { title: "Level", body: "SOLO 1" }
   ],
-  notes: "Zelf doen — SOLO 1 confirm fixture. Timer: 10 min. Checklist: (1) ≥2 tickets listed (2) expected L/M/H written (3) W3 Proof open if they have it. Gate before first agent."
+  notes: "Zelf doen — SOLO 1 predict and check. Timer: 10 min. Checklist: (1) ≥2 tickets listed (2) predicted L/M/H submitted to the autograder and all correct (3) W3 Proof open if they have it. Gate before first agent."
 },
 
 /* ========== First agent (SOLO 2) ========== */
