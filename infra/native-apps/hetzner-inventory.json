@@ -1,0 +1,98 @@
+{
+  "checkedAt": "2026-09-21T18:57:58.811835+00:00",
+  "servers": [
+    {
+      "name": "aetherlink-academy",
+      "status": "running",
+      "type": "cx33",
+      "location": "nbg1"
+    }
+  ],
+  "candidates": [
+    {
+      "name": "ccx23",
+      "cores": 4,
+      "ramGB": 16,
+      "diskGB": 160,
+      "monthlyNetEUR": "85.9900000000",
+      "locations": [
+        {
+          "name": "fsn1",
+          "available": true
+        },
+        {
+          "name": "nbg1",
+          "available": true
+        },
+        {
+          "name": "hel1",
+          "available": true
+        }
+      ]
+    },
+    {
+      "name": "cpx32",
+      "cores": 4,
+      "ramGB": 8,
+      "diskGB": 160,
+      "monthlyNetEUR": "35.4900000000",
+      "locations": [
+        {
+          "name": "fsn1",
+          "available": true
+        },
+        {
+          "name": "nbg1",
+          "available": true
+        },
+        {
+          "name": "hel1",
+          "available": true
+        }
+      ]
+    },
+    {
+      "name": "cpx42",
+      "cores": 8,
+      "ramGB": 16,
+      "diskGB": 320,
+      "monthlyNetEUR": "69.4900000000",
+      "locations": [
+        {
+          "name": "fsn1",
+          "available": true
+        },
+        {
+          "name": "nbg1",
+          "available": true
+        },
+        {
+          "name": "hel1",
+          "available": true
+        }
+      ]
+    },
+    {
+      "name": "cx43",
+      "cores": 8,
+      "ramGB": 16,
+      "diskGB": 160,
+      "monthlyNetEUR": "15.9900000000",
+      "locations": [
+        {
+          "name": "fsn1",
+          "available": false
+        },
+        {
+          "name": "nbg1",
+          "available": false
+        },
+        {
+          "name": "hel1",
+          "available": false
+        }
+      ]
+    }
+  ],
+  "decision": "No purchase; reduce current-host costs first"
+}

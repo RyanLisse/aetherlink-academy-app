@@ -1,0 +1,33 @@
+name: Native apps capacity audit
+on:
+  push:
+    branches: [poc/agent-native-app-suite]
+    paths: [.github/workflows/native-apps-audit.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: native-apps-capacity-audit
+  cancel-in-progress: false
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Read host capacity without changing services
+        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17
+        with:
+          host: ${{ secrets.ACADEMY_HETZNER_HOST }}
+          username: ${{ secrets.ACADEMY_HETZNER_USER }}
+          key: ${{ secrets.ACADEMY_HETZNER_SSH_KEY }}
+          script_stop: true
+          command_timeout: 2m
+          script: |
+            set -eu
+            date -u
+            nproc
+            free -m
+            df -h /
+            docker stats --no-stream --format '{{.Name}} CPU={{.CPUPerc}} MEM={{.MemUsage}}'
+            docker system df
+            docker ps --format '{{.Names}} {{.Status}}'

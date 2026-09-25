@@ -1,5 +1,12 @@
 {
-  "scope": ["assets", "calendar", "chat", "clips", "content", "slides"],
+  "scope": [
+    "assets",
+    "calendar",
+    "chat",
+    "clips",
+    "content",
+    "slides"
+  ],
   "sourceRepository": "https://github.com/BuilderIO/agent-native",
   "sourceRevision": "adec853eb337cbe0ead48464305d6f30cc07806e",
   "mainAcademyDestination": "OpenShip",
@@ -10,13 +17,141 @@
   "brandingIssue": "AET-51",
   "requiresOpenShipCredential": true,
   "apps": [
-    {"app": "slides", "upstreamPath": "templates/slides", "linearIssue": "AET-25", "rolloutOrder": 0, "status": "deployed-poc", "proposedOrigin": "https://slides-poc.91-99-78-17.sslip.io"},
-    {"app": "chat", "upstreamPath": "templates/chat", "linearIssue": "AET-48", "rolloutOrder": 1, "status": "deployed-provider-not-connected", "proposedOrigin": "https://chat-poc.91-99-78-17.sslip.io", "openShipProjectId": "proj_BbKf0vUAigrCAUFC"},
-    {"app": "content", "upstreamPath": "templates/content", "linearIssue": "AET-50", "rolloutOrder": 2, "status": "deferred-registered-not-deployed", "proposedOrigin": "https://content-poc.91-99-78-17.sslip.io", "blockedBy": "AET-55"},
-    {"app": "assets", "upstreamPath": "templates/assets", "linearIssue": "AET-46", "rolloutOrder": 3, "status": "registered-not-deployed", "proposedOrigin": "https://assets-poc.91-99-78-17.sslip.io", "releaseRequirements": ["object-storage"]},
-    {"app": "calendar", "upstreamPath": "templates/calendar", "linearIssue": "AET-47", "rolloutOrder": 4, "status": "deferred-registered-not-deployed", "proposedOrigin": "https://calendar-poc.91-99-78-17.sslip.io", "releaseRequirements": ["google-oauth"], "blockedBy": "AET-55"},
-    {"app": "clips", "upstreamPath": "templates/clips", "linearIssue": "AET-49", "rolloutOrder": 5, "status": "deferred-registered-not-deployed", "proposedOrigin": "https://clips-poc.91-99-78-17.sslip.io", "releaseRequirements": ["object-storage", "transcription-provider", "media-capacity"], "blockedBy": "AET-55"}
+    {
+      "app": "slides",
+      "upstreamPath": "templates/slides",
+      "linearIssue": "AET-25",
+      "rolloutOrder": 0,
+      "status": "deployed-poc",
+      "proposedProject": "academy-slides-poc",
+      "proposedOrigin": "https://slides-poc.91-99-78-17.sslip.io",
+      "database": "slides_poc",
+      "releaseRequirements": [],
+      "acceptance": [
+        "authenticated-browser-flow",
+        "create-edit-readback",
+        "restart-persistence",
+        "exact-artifact-identity",
+        "resource-observation"
+      ]
+    },
+    {
+      "app": "chat",
+      "upstreamPath": "templates/chat",
+      "linearIssue": "AET-48",
+      "rolloutOrder": 1,
+      "status": "deployed-provider-not-connected",
+      "proposedProject": "academy-chat-poc",
+      "proposedOrigin": "https://chat-poc.91-99-78-17.sslip.io",
+      "database": "academy_chat_poc",
+      "releaseRequirements": [],
+      "acceptance": [
+        "authenticated-browser-flow",
+        "create-edit-readback",
+        "restart-persistence",
+        "exact-artifact-identity",
+        "resource-observation"
+      ],
+      "openShipProjectId": "proj_BbKf0vUAigrCAUFC",
+      "deploymentId": "dep_ZYFxkzqIYNXASso6"
+    },
+    {
+      "app": "content",
+      "upstreamPath": "templates/content",
+      "linearIssue": "AET-50",
+      "rolloutOrder": 2,
+      "status": "deferred-registered-not-deployed",
+      "proposedProject": "academy-content-poc",
+      "proposedOrigin": "https://content-poc.91-99-78-17.sslip.io",
+      "database": "academy_content_poc",
+      "releaseRequirements": [],
+      "acceptance": [
+        "authenticated-browser-flow",
+        "create-edit-readback",
+        "restart-persistence",
+        "exact-artifact-identity",
+        "resource-observation"
+      ],
+      "openShipProjectId": "proj_XwYDrgCmM4umsjpR",
+      "blockedBy": "AET-55"
+    },
+    {
+      "app": "assets",
+      "upstreamPath": "templates/assets",
+      "linearIssue": "AET-46",
+      "rolloutOrder": 3,
+      "status": "registered-not-deployed",
+      "proposedProject": "academy-assets-poc",
+      "proposedOrigin": "https://assets-poc.91-99-78-17.sslip.io",
+      "database": "academy_assets_poc",
+      "releaseRequirements": [
+        "object-storage"
+      ],
+      "acceptance": [
+        "authenticated-browser-flow",
+        "create-edit-readback",
+        "restart-persistence",
+        "exact-artifact-identity",
+        "resource-observation"
+      ],
+      "openShipProjectId": "proj_7nbNH4EHDwJ2cdnQ"
+    },
+    {
+      "app": "calendar",
+      "upstreamPath": "templates/calendar",
+      "linearIssue": "AET-47",
+      "rolloutOrder": 4,
+      "status": "deferred-registered-not-deployed",
+      "proposedProject": "academy-calendar-poc",
+      "proposedOrigin": "https://calendar-poc.91-99-78-17.sslip.io",
+      "database": "academy_calendar_poc",
+      "releaseRequirements": [
+        "google-oauth"
+      ],
+      "acceptance": [
+        "authenticated-browser-flow",
+        "create-edit-readback",
+        "restart-persistence",
+        "exact-artifact-identity",
+        "resource-observation"
+      ],
+      "openShipProjectId": "proj_tsETO63FhDWSX3BS",
+      "blockedBy": "AET-55"
+    },
+    {
+      "app": "clips",
+      "upstreamPath": "templates/clips",
+      "linearIssue": "AET-49",
+      "rolloutOrder": 5,
+      "status": "deferred-registered-not-deployed",
+      "proposedProject": "academy-clips-poc",
+      "proposedOrigin": "https://clips-poc.91-99-78-17.sslip.io",
+      "database": "academy_clips_poc",
+      "releaseRequirements": [
+        "object-storage",
+        "transcription-provider",
+        "media-capacity"
+      ],
+      "acceptance": [
+        "authenticated-browser-flow",
+        "create-edit-readback",
+        "restart-persistence",
+        "exact-artifact-identity",
+        "resource-observation"
+      ],
+      "openShipProjectId": "proj_kfcnKkRuKEi7puw9",
+      "blockedBy": "AET-55"
+    }
   ],
-  "activeScope": ["chat", "assets", "slides"],
-  "deferredScope": ["calendar", "clips", "content"]
+  "activeScope": [
+    "chat",
+    "assets",
+    "slides"
+  ],
+  "deferredScope": [
+    "calendar",
+    "clips",
+    "content"
+  ],
+  "deferredMigrationIssue": "AET-55"
 }

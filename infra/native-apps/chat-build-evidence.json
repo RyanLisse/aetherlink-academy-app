@@ -1,0 +1,20 @@
+{
+  "app": "chat",
+  "deploymentId": "dep_ZYFxkzqIYNXASso6",
+  "sourceRevision": "poc-chat-8714db488536042a",
+  "archiveSha256": "8c38dce8682ed9fb14c28ddddd5770c1d2bcc8c51461d00d624587002ff4f090",
+  "archiveBytes": 484468,
+  "coreVersion": "0.182.1",
+  "status": "deployed-provider-not-connected",
+  "imageId": "sha256:71da7da7378e4e3a96ab9152c5c4e8e13e66e1f24514e343e74eb723b0edaacd",
+  "migration": "passed",
+  "authenticatedBrowser": "passed",
+  "sessionAfterRestart": "passed",
+  "aiResponse": "not-tested-provider-not-connected",
+  "observedIdleMemoryMiB": [
+    126.2,
+    136.6
+  ],
+  "runtimeMemoryLimitMiB": 512,
+  "runtimeCpuLimit": 1
+}

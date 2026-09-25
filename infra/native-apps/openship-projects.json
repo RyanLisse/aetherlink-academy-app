@@ -1,0 +1,27 @@
+[
+  {
+    "app": "assets",
+    "id": "proj_7nbNH4EHDwJ2cdnQ",
+    "status": "registered-not-deployed"
+  },
+  {
+    "app": "calendar",
+    "id": "proj_tsETO63FhDWSX3BS",
+    "status": "registered-not-deployed"
+  },
+  {
+    "app": "chat",
+    "id": "proj_BbKf0vUAigrCAUFC",
+    "status": "registered-not-deployed"
+  },
+  {
+    "app": "clips",
+    "id": "proj_kfcnKkRuKEi7puw9",
+    "status": "registered-not-deployed"
+  },
+  {
+    "app": "content",
+    "id": "proj_XwYDrgCmM4umsjpR",
+    "status": "registered-not-deployed"
+  }
+]

@@ -1,0 +1,217 @@
+diff --git a/server/plugins/auth.ts b/server/plugins/auth.ts
+index 0000000..0000000 100644
+--- a/server/plugins/auth.ts
++++ b/server/plugins/auth.ts
+@@ -6,2 +6,11 @@
+ export default createAuthPlugin({
++  publicPaths: ["/_academy/embed/ticket"],
++  betterAuth: {
++    plugins: [{
++      id: "academy-disable-signup-auto-session",
++      init() {
++        return { options: { emailAndPassword: { enabled: true, autoSignIn: false } } };
++      },
++    }],
++  },
+   workspaceAppPublicPaths: ["/"],
+
+diff --git a/server/routes/_academy/embed/ticket.post.ts b/server/routes/_academy/embed/ticket.post.ts
+new file mode 100644
+index 0000000..0000000
+--- /dev/null
++++ b/server/routes/_academy/embed/ticket.post.ts
+@@ -0,0 +1,194 @@
++import { createHash, createHmac, timingSafeEqual } from "node:crypto";
++
++import {
++  defineEventHandler,
++  getHeader,
++  readRawBody,
++  setResponseStatus,
++} from "h3";
++
++import {
++  buildEmbedStartPath,
++  createEmbedSessionTicket,
++} from "@agent-native/core/server";
++import { getDbExec } from "@agent-native/core/db";
++
++const PATH = "/home?embedded=1";
++const AUDIENCE = "academy-chat";
++const MAX_ASSERTION_AGE_MS = 60_000;
++const CLOCK_SKEW_MS = 5_000;
++const MAX_BODY_BYTES = 16 * 1024;
++const ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_-]{0,127}$/;
++const NONCE_PATTERN = /^[A-Za-z0-9_-]{16,128}$/;
++const CLAIM_KEYS = [
++  "version",
++  "audience",
++  "ownerEmail",
++  "roomId",
++  "participantId",
++  "issuedAt",
++  "expiresAt",
++  "nonce",
++  "targetPath",
++] as const;
++
++type AcademyClaims = {
++  version: 1;
++  audience: typeof AUDIENCE;
++  ownerEmail: string;
++  roomId: string;
++  participantId: string;
++  issuedAt: number;
++  expiresAt: number;
++  nonce: string;
++  targetPath: typeof PATH;
++};
++
++function invalid(event: Parameters<typeof setResponseStatus>[0], status = 401) {
++  setResponseStatus(event, status);
++  return { error: "Invalid Academy embed assertion." };
++}
++
++function sharedSecret(): string | null {
++  const value = process.env.AGENT_CHAT_SHARED_SECRET;
++  if (!value || Buffer.byteLength(value, "utf8") < 32) return null;
++  return value;
++}
++
++function validSignature(value: string | undefined, body: Buffer, secret: string): boolean {
++  const match = /^v1=([0-9a-f]{64})$/i.exec(value ?? "");
++  if (!match) return false;
++  const actual = Buffer.from(match[1], "hex");
++  const expected = createHmac("sha256", secret).update(body).digest();
++  return actual.length === expected.length && timingSafeEqual(actual, expected);
++}
++
++function expectedOwnerEmail(secret: string, roomId: string, participantId: string): string {
++  const digest = createHmac("sha256", secret)
++    .update(`${roomId}:${participantId}`)
++    .digest("hex")
++    .slice(0, 32);
++  return `academy-${digest}@academy.invalid`;
++}
++
++function sameString(left: string, right: string): boolean {
++  const a = Buffer.from(left);
++  const b = Buffer.from(right);
++  return a.length === b.length && timingSafeEqual(a, b);
++}
++
++let nonceTable: Promise<void> | undefined;
++
++function ensureNonceTable(): Promise<void> {
++  nonceTable ??= getDbExec()
++    .execute({
++      sql: "CREATE TABLE IF NOT EXISTS academy_embed_assertion_nonces (nonce_hash text PRIMARY KEY, expires_at bigint NOT NULL)",
++      args: [],
++    })
++    .then(() => undefined);
++  return nonceTable;
++}
++
++async function consumeNonce(nonce: string, expiresAt: number): Promise<boolean> {
++  await ensureNonceTable();
++  const db = getDbExec();
++  await db.execute({
++    sql: "DELETE FROM academy_embed_assertion_nonces WHERE expires_at < ?",
++    args: [Date.now()],
++  });
++  try {
++    await db.execute({
++      sql: "INSERT INTO academy_embed_assertion_nonces (nonce_hash, expires_at) VALUES (?, ?)",
++      args: [createHash("sha256").update(nonce).digest("hex"), expiresAt],
++    });
++    return true;
++  } catch (error) {
++    const code = String((error as { code?: unknown }).code ?? "");
++    const message = error instanceof Error ? error.message : "";
++    if (code === "23505" || /unique|duplicate/i.test(message)) return false;
++    throw error;
++  }
++}
++
++function isClaims(value: unknown): value is AcademyClaims {
++  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
++  const claims = value as Record<string, unknown>;
++  const keys = Object.keys(claims);
++  if (keys.length !== CLAIM_KEYS.length || CLAIM_KEYS.some((key) => !keys.includes(key))) {
++    return false;
++  }
++  return (
++    claims.version === 1 &&
++    claims.audience === AUDIENCE &&
++    typeof claims.ownerEmail === "string" &&
++    typeof claims.roomId === "string" &&
++    ID_PATTERN.test(claims.roomId) &&
++    typeof claims.participantId === "string" &&
++    ID_PATTERN.test(claims.participantId) &&
++    Number.isSafeInteger(claims.issuedAt) &&
++    Number.isSafeInteger(claims.expiresAt) &&
++    typeof claims.nonce === "string" &&
++    NONCE_PATTERN.test(claims.nonce) &&
++    claims.targetPath === PATH
++  );
++}
++
++export default defineEventHandler(async (event) => {
++  const secret = sharedSecret();
++  if (!secret) return invalid(event, 503);
++
++  const declaredLength = Number(getHeader(event, "content-length") ?? "");
++  if (Number.isFinite(declaredLength) && declaredLength > MAX_BODY_BYTES) {
++    return invalid(event, 413);
++  }
++
++  const rawBody = await readRawBody(event, false).catch(() => null);
++  if (!rawBody) return invalid(event, 400);
++  const body = Buffer.isBuffer(rawBody) ? rawBody : Buffer.from(rawBody);
++  if (body.byteLength === 0 || body.byteLength > MAX_BODY_BYTES) {
++    return invalid(event, 400);
++  }
++  if (!validSignature(getHeader(event, "x-academy-signature"), body, secret)) {
++    return invalid(event);
++  }
++
++  let parsed: unknown;
++  try {
++    parsed = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(body));
++  } catch {
++    return invalid(event, 400);
++  }
++  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
++    return invalid(event, 400);
++  }
++  const topLevel = parsed as Record<string, unknown>;
++  if (Object.keys(topLevel).length !== 1 || !Object.hasOwn(topLevel, "claims")) {
++    return invalid(event, 400);
++  }
++  if (!isClaims(topLevel.claims)) return invalid(event, 400);
++  const claims = topLevel.claims;
++  const now = Date.now();
++  if (
++    claims.expiresAt <= claims.issuedAt ||
++    claims.expiresAt - claims.issuedAt > MAX_ASSERTION_AGE_MS ||
++    claims.issuedAt > now + CLOCK_SKEW_MS ||
++    claims.expiresAt < now - CLOCK_SKEW_MS
++  ) {
++    return invalid(event);
++  }
++  if (!sameString(claims.ownerEmail, expectedOwnerEmail(secret, claims.roomId, claims.participantId))) {
++    return invalid(event, 403);
++  }
++
++  try {
++    if (!(await consumeNonce(claims.nonce, claims.expiresAt))) return invalid(event);
++    const ticket = await createEmbedSessionTicket({
++      ownerEmail: claims.ownerEmail,
++      targetPath: PATH,
++      ttlSeconds: 60,
++    });
++    return { startUrl: buildEmbedStartPath(ticket.ticket) };
++  } catch {
++    return invalid(event, 503);
++  }
++});
