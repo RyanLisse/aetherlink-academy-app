@@ -29,7 +29,7 @@ test('completion rule: every cohort day needs its quiz and accepted evidence',()
   ['evidence day given as a string',{evidence:[accepted('1'),accepted('2')]},{eligible:true,daysCompleted:2,reasons:[]}],
   ['cohort still before its last day',{lastDayStarted:false},{eligible:false,daysCompleted:2,reasons:[{code:'cohort-running'}]}],
   ['facilitator revoked access',{accessRevoked:true},{eligible:false,daysCompleted:2,reasons:[{code:'access-revoked'}]}],
-  ['day 6 has no quiz pack but no evidence can be recorded either',{days:6,progressByDay:{1:quiz,2:quiz,3:quiz,4:quiz,5:quiz},evidence:[1,2,3,4,5].map(accepted)},{eligible:false,daysCompleted:5,reasons:[{code:'evidence-missing',day:6}]}],
+  ['day 8 has no day pack, so no quiz row, but evidence is still required',{days:8,progressByDay:{1:quiz,2:quiz,3:quiz,4:quiz,5:quiz,6:quiz,7:quiz},evidence:[1,2,3,4,5,6,7].map(accepted)},{eligible:false,daysCompleted:7,reasons:[{code:'evidence-missing',day:8}]}],
   ['nothing recorded',{progressByDay:{},evidence:[]},{eligible:false,daysCompleted:0,reasons:[{code:'quiz-missing',day:1},{code:'evidence-missing',day:1},{code:'quiz-missing',day:2},{code:'evidence-missing',day:2}]}],
  ];
  for(const [label,override,expected] of table)assert.deepEqual(certificateEligibility({...base,...override}),expected,label);
@@ -61,8 +61,9 @@ const host=body=>({body:{hostKey:'test-host',...body}});
 async function completeDay(call,sessions,day,reviewer='facilitator'){
  const {facilitator,alice}=sessions;
  assert.equal((await call('POST','/game/control',{cookie:facilitator,body:{action:'day',value:day}})).status,200);
- const answers=getDayPack(day).quiz.answers;
- assert.equal((await call('POST','/game/quiz',{cookie:alice,body:{answers}})).body.score,answers.length);
+ const {key}=getDayPack(day).quiz;
+ const {attemptId}=(await call('POST','/game/quiz/start',{cookie:alice,body:{}})).body;
+ assert.equal((await call('POST','/game/quiz',{cookie:alice,body:{attemptId,answers:key}})).body.score,Object.keys(key).length);
  const submitted=await call('POST','/game/evidence',{cookie:alice,body:{requestId:`ev-${day}`,finding:`Dag ${day} bevinding (synthetisch)`,command:'npm test',observed:'groen',limitation:'alleen lokaal'}});
  assert.equal(submitted.body.day,day);
  const reviewed=await call('POST','/game/review',{cookie:sessions[reviewer],body:{requestId:`rv-${day}`,id:submitted.body.id,status:'accepted',note:'Klopt.'}});
