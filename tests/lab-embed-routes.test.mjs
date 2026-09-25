@@ -40,8 +40,8 @@ test('day pack lists only labs whose origin is on the server allowlist',async()=
  const pack=await invoke(app,'/game/day-pack',{cookies:{academy:ada.token}});
  assert.equal(pack.statusCode,200);
  assert.deepEqual(pack.body.labs,[
-  {id:'sample-counter',src:'https://academy.example/arcade-lab/?lesson=sample-counter&embed=1',origin:'https://academy.example',title:'Arcade · click counter',config:{}},
-  {id:'partner-lab',src:'https://labs.example/lab?x=1',origin:'https://labs.example',title:'Partner lab',config:{}},
+  {id:'sample-counter',src:'https://academy.example/arcade-lab/?lesson=sample-counter&embed=1',origin:'https://academy.example',title:'Arcade · click counter',config:{},gradedStops:[]},
+  {id:'partner-lab',src:'https://labs.example/lab?x=1',origin:'https://labs.example',title:'Partner lab',config:{},gradedStops:[]},
  ]);
 });
 

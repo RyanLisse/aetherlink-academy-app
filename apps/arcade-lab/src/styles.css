@@ -82,7 +82,7 @@ main{flex:1;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);min-h
 .trace .empty{color:var(--tr-dim);font-style:italic}
 .illus{font-size:11px;color:var(--warn);padding:6px 12px;border-bottom:1px solid var(--line);background:var(--panel2)}
 
-.checkpoint{position:absolute;inset:0;background:color-mix(in srgb,var(--panel) 92%,transparent);backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;padding:20px;overflow:auto}
+.checkpoint{position:absolute;inset:0;background:color-mix(in srgb,var(--panel) 92%,transparent);backdrop-filter:blur(2px);display:flex;align-items:safe center;justify-content:center;padding:20px;overflow:auto}
 .checkpoint .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px 22px;width:min(520px,100%);box-shadow:0 12px 40px rgba(0,0,0,.18);display:flex;flex-direction:column;gap:12px}
 .checkpoint h3{margin:0;font-size:16px;letter-spacing:-.01em}
 .checkpoint p{margin:0;font-size:14px}

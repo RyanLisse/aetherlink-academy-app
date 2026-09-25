@@ -1,4 +1,4 @@
-import {connectLab, type LabBridge, type MessageHub, type PostTarget} from '@academy/lab-embed';
+import {connectLab, type LabAnswer, type LabBridge, type MessageHub, type PostTarget, type StopId} from '@academy/lab-embed';
 import type {Lesson, Stop} from './schema';
 
 /** Steps are the lesson's checkpoints plus reaching the end with every checkpoint done. */
@@ -15,25 +15,60 @@ export function finishStop(run: LessonRun, stop: Stop): LessonRun {
 
 export const reachEnd = (run: LessonRun): LessonRun => ({...run, ended: true});
 
+/** Arcade stops carry no id, so the contract names them by position: `stop-1` is the lesson's first checkpoint. */
+export const stopIdOf = (run: LessonRun, stop: Stop): StopId => `stop-${run.stops.indexOf(stop) + 1}` as StopId;
+
 export function runProgress(run: LessonRun): {step: number; total: number; complete: boolean} {
   const total = run.stops.length + 1;
   const complete = run.ended && run.finished.size === run.stops.length;
   return {step: run.finished.size + (complete ? 1 : 0), total, complete};
 }
 
-export type ArcadeBridge = {readonly stopDone: (stop: Stop) => void; readonly ended: () => void};
+export type Verdict = {readonly passed: boolean; readonly attempts: number};
+
+export type ArcadeBridge = {
+  readonly stopDone: (stop: Stop) => void;
+  readonly ended: () => void;
+  /** True when the host grades this stop on the server; the lab then must not reveal or decide the answer. */
+  readonly isGraded: (stop: Stop) => boolean;
+  /** One answer per stop is in flight at a time; a second submit returns false until the verdict or `cancel`. */
+  readonly submit: (stop: Stop, answer: LabAnswer, onVerdict: (verdict: Verdict) => void) => boolean;
+  readonly cancel: (stop: Stop) => void;
+};
 
 /** Same-origin only: the Academy gateway serves Arcade Lab under /arcade-lab/. */
 export function connectArcadeBridge(hub: MessageHub, parent: PostTarget, hostOrigin: string, lesson: Lesson): ArcadeBridge {
   let run = startRun(lesson);
   let bridge: LabBridge | null = null;
+  let graded = new Set<StopId>();
+  const waiting = new Map<StopId, (verdict: Verdict) => void>();
   const report = () => {
     const {step, total, complete} = runProgress(run);
     bridge?.progress(step, total);
     if (complete) bridge?.complete({outcome: 'completed'}, `${lesson.id}: ${run.finished.size}/${run.stops.length} checkpoints, end reached`);
   };
-  bridge = connectLab(hub, parent, {allowedHostOrigins: [hostOrigin], onInit: report});
+  bridge = connectLab(hub, parent, {
+    allowedHostOrigins: [hostOrigin],
+    onInit: init => {
+      graded = new Set(init.gradedStops);
+      report();
+    },
+    onVerdict: ({stopId, passed, attempts}) => {
+      const deliver = waiting.get(stopId);
+      if (!deliver) return;
+      waiting.delete(stopId);
+      deliver({passed, attempts});
+    },
+  });
   return {
+    isGraded: stop => graded.has(stopIdOf(run, stop)),
+    submit: (stop, answer, onVerdict) => {
+      const stopId = stopIdOf(run, stop);
+      if (!graded.has(stopId) || waiting.has(stopId) || !bridge?.answer(stopId, answer)) return false;
+      waiting.set(stopId, onVerdict);
+      return true;
+    },
+    cancel: stop => void waiting.delete(stopIdOf(run, stop)),
     stopDone: stop => {
       run = finishStop(run, stop);
       report();

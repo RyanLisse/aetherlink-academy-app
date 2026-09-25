@@ -5,6 +5,7 @@ import {api,authApi,getToken,getParticipantAccess,saveParticipantAccess,forgetPa
 import {AppsLauncher} from './portal/AppsLauncher.jsx';
 import {Knowledge,Coach,Lesson,Solo,Review,Route,Debrief} from './panels';
 import {Decks} from './slides';
+import {Chat} from './chat';
 import {reportScreen,startScreenReporting} from './screen';
 import {I18nProvider,LanguageToggle,useT,useI18n} from './i18n';
 import {classroomEmbedUrl,CLASSROOM_SANDBOX} from './classroom';
@@ -94,6 +95,7 @@ function App(){
           </section>
           <section className="panel contribution"><FileText size={20}/><h2>{t('roster.contribution')}</h2><p>{contribution}</p><small className="muted">{t('roster.modeLabel',{mode:modeLabel})}</small></section>
           <button className="gradient coach-cta" onClick={()=>setView('coach')}><Sparkles size={18}/>{t('roster.askCoach')}<ArrowRight size={17}/></button>
+          {(facilitator||room.chat)&&<Chat room={room} onNavigate={setView}/>}
           {!facilitator&&<button className="help-button" onClick={()=>action(()=>api('help',{}))}><HelpCircle size={16}/>{room.me.help?t('roster.helpOn'):t('roster.helpOff')}</button>}
         </aside>
       </div>
@@ -264,6 +266,7 @@ function FacilitatorControls({room,control,busy,connected,onOpenClassroom}){
       <label>{t('fac.phase')}<select value={room.phase} onChange={e=>control('phase',e.target.value)}>{phases.map(p=><option key={p}>{p}</option>)}</select></label>
       <label>{t('fac.day')}<select value={room.day} onChange={e=>control('day',Number(e.target.value))}>{Array.from({length:7},(_,i)=>i+1).map(n=><option key={n}>{n}</option>)}</select></label>
       <label>{t('fac.format')}<select value={room.mode} onChange={e=>control('mode',e.target.value)}><option value="lesson">{t('fac.format.lesson')}</option><option value="solo">{t('fac.format.solo')}</option><option value="squad">{t('fac.format.squad')}</option><option value="review">{t('fac.format.review')}</option></select></label>
+      <label className="facilitator-toggle"><input type="checkbox" checked={room.chat} disabled={disabled} onChange={e=>control('chat',e.target.checked)}/>{t('fac.chat')}</label>
       <button type="button" className="classroom-open" onClick={onOpenClassroom} aria-label={t('classroom.open')}><Presentation size={16}/>{t('classroom.title')}</button>
     </div>
   </div>;

@@ -76,12 +76,14 @@ test('facilitator creates a Wave cohort, participant activates a personal code i
   assert.match(blocked.body.error,/alleen-lezen/);
   assert.equal((await call('POST','/GAME/Help/',{cookie:readSession,body:{}})).status,403);
   assert.equal((await call('POST','/GAME/mcp-token',{cookie:readSession,body:{}})).status,403);
-  for (const [route,body] of [['/game/lab-complete',{labId:'lab-1'}],['/game/quiz/start',{}],['/game/quiz',{answers:[0,0,0]}],['/game/route',{route:'guided'}],['/game/evidence',{requestId:'r1',finding:'a',command:'b',observed:'c',limitation:'d'}],['/game/review',{id:'evidence-1',status:'accepted',note:'ok',requestId:'r2'}],['/game/board',{action:'open'}]]) {
+  for (const [route,body] of [['/game/lab-complete',{labId:'lab-1'}],['/game/quiz/start',{}],['/game/quiz',{answers:[0,0,0]}],['/game/route',{route:'guided'}],['/game/evidence',{requestId:'r1',finding:'a',command:'b',observed:'c',limitation:'d'}],['/game/review',{id:'evidence-1',status:'accepted',note:'ok',requestId:'r2'}],['/game/board',{action:'open'}],['/game/lab-answer',{labId:'lab-1',stopId:'stop-1',answer:'a'}]]) {
    const result=await call('POST',route,{cookie:readSession,body});
    assert.deepEqual([route,result.status,result.body.error],[route,403,'Je cohorttoegang is alleen-lezen. Je kunt je werk nog bekijken en exporteren.']);
   }
   const heartbeat=await call('POST','/game/screen-state',{cookie:readSession,body:{tabId:'8b0e7a52-8a4c-4c1e-9d59-0f3b2a1c4d5e',view:'squad'}});
   assert.equal(heartbeat.status,204);
+  const chat=await call('POST','/game/chat',{cookie:readSession,body:{q:'Waar vind ik de lessen?'}});
+  assert.equal(chat.status,200);
   assert.equal((await call('POST','/game/reflection',{cookie:readSession,body:{learned:'a',next:'b'}})).status,403);
   assert.equal((await call('PUT','/api/documents/cohort-proof',{cookie:readSession,body:{markdown:'# x'}})).status,403);
   assert.equal((await call('POST','/game/logout',{cookie:readSession,body:{}})).status,200);
