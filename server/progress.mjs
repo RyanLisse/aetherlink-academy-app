@@ -1,3 +1,4 @@
+import {DAY_COUNT} from '../content/days/index.mjs';
 export function dayProgress(room, person, day) {
  const saved=person?.progressByDay?.[String(day)]||{};
  const evidence=(room.evidence||[]).filter(item=>item.personId===person?.id&&Number(item.day)===day);
@@ -10,8 +11,8 @@ export function debrief(room) {
 }
 export function exportDebrief(room,board=null) {
  const lines=['# Squad-overdracht',room.name,'','Dit overzicht toont vastgelegd bewijs, geen certificering of ranglijst.'];
- for(let day=1;day<=5;day++){
-  lines.push('',`## Supportdag ${day}`);
+ for(let day=1;day<=DAY_COUNT;day++){
+  lines.push('',`## Dag ${day}`);
   for(const person of room.members){const progress=dayProgress(room,person,day);lines.push('',`### ${person.name}`,`Bewijs: ${progress.evidenceCount}; beoordeeld: ${progress.reviewedCount}; geaccepteerd: ${progress.acceptedCount}.`);if(progress.reflection)lines.push('Reflectie:',progress.reflection.learned,'Volgende oefening:',progress.reflection.next);}
   for(const handoff of (room.handoffs||[]).filter(item=>Number(item.day)===day))lines.push('','Besluit:',handoff.decision,'Gecontroleerd:',handoff.checked,'Open:',handoff.open,'Volgende eigenaar:',handoff.next);
  }

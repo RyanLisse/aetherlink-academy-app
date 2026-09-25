@@ -72,7 +72,7 @@ jobs:
           tests/room.test.mjs tests/debrief-board.test.mjs tests/board-doc.test.mjs tests/remote-mcp.test.mjs tests/screen-state-mcp.test.mjs tests/proof-stale-retry.test.mjs tests/suggestion-accept-persisted-retry.test.ts tests/runtime-config.test.mjs tests/browser-auth-boundary.test.mjs tests/headless-empty-document.test.ts tests/collab-marks-observer.test.ts tests/anchor-stability.test.ts
           tests/google-sso.test.mjs tests/facilitator-sso-routes.test.mjs
           tests/participant-access.test.mjs tests/participant-access-routes.test.mjs tests/participant-access-ui.test.mjs
-          tests/agent-setup.test.mjs tests/web-public-assets.test.mjs tests/five-day-content.test.mjs tests/day-packs-routes.test.mjs tests/lesson-route-day.test.mjs tests/solo-progress-day.test.mjs tests/learning-progress.test.mjs tests/migrate-v2.test.mjs tests/deployed-smoke.test.mjs tests/lab-embed-routes.test.mjs tests/day-pack-quiz.test.mjs tests/day3-progressive-n8n.test.mjs tests/lab-grading-routes.test.mjs
+          tests/agent-setup.test.mjs tests/web-public-assets.test.mjs tests/seven-day-content.test.mjs tests/n8n-triage-starters.test.mjs tests/day-packs-routes.test.mjs tests/lesson-route-day.test.mjs tests/solo-progress-day.test.mjs tests/learning-progress.test.mjs tests/migrate-v2.test.mjs tests/deployed-smoke.test.mjs tests/lab-embed-routes.test.mjs tests/day-pack-quiz.test.mjs tests/day3-progressive-n8n.test.mjs tests/five-day-content.test.mjs tests/proof-trail.test.mjs tests/lab-grading-routes.test.mjs
       - name: Install Chromium for browser contract tests
         run: pnpm exec playwright install --with-deps chromium
       - name: Run Arcade Lab embed browser test
@@ -91,7 +91,7 @@ jobs:
           tests/postgres-store.test.mjs tests/participant-access.test.mjs tests/facilitator-postgres.test.mjs tests/learning-postgres.test.mjs tests/presence.test.mjs
           tests/proof-postgres.test.mjs tests/proof-postgres-domain.test.mjs
           tests/canonical-postgres.test.ts tests/proof-snapshot.test.ts tests/proof-rest-rewrite.test.ts tests/proof-invalidation-race.test.ts tests/proof-reservation.test.mjs
-          tests/request-retry.test.mjs
+          tests/request-retry.test.mjs tests/proof-trail-postgres.test.mjs
       - name: Run migrate-v2 apply against a throwaway database
         id: migrate
         run: |

@@ -46,7 +46,7 @@ test('server scores option ids against the day 1 key and reports correctness wit
 
 test('participant-visible payloads never carry the answer key',async()=>{
  const {instance,host,participant,as,start,submit}=fixture();
- for(const day of [1,2,3,4,5]){
+ for(const day of [1,2,3,4,5,6,7]){
   await invoke(instance.app,'/game/control',{body:{action:'day',value:day},...as(host.token)});
   const pack=await invoke(instance.app,'/game/day-pack',as(participant.token));
   assert.equal(pack.statusCode,200);
@@ -137,7 +137,7 @@ test('an attempt opened for one day cannot be submitted after the facilitator sw
 
 test('every shipped day pack passes the quiz and asset lint',()=>{
  const starterDir=path.resolve('starter');
- assert.deepEqual(dayPackIssues([1,2,3,4,5].map(getDayPack),{starterDir,starterFileNames}),[]);
+ assert.deepEqual(dayPackIssues([1,2,3,4,5,6,7].map(getDayPack),{starterDir,starterFileNames}),[]);
 });
 
 test('the lint names every broken quiz and asset in a synthetic fixture',()=>{
