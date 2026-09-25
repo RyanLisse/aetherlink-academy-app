@@ -156,7 +156,7 @@ export function ReferenceView({page, navigate, search, anchor = null}: Reference
  * Renders the day through the deck's `reader` mode. Reader articles carry no
  * ids, so anchors are attached here by position (reader order = day order).
  */
-function ReferenceDayReader({day, anchor}: {readonly day: ReferenceDay; readonly anchor: string | null}) {
+export function ReferenceDayReader({day, anchor}: {readonly day: ReferenceDay; readonly anchor: string | null}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [index, setIndex] = useState(0);
 
