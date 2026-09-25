@@ -1,0 +1,15 @@
+{
+  "provenance": {
+    "url": "http://91.99.78.17:4317/game/config",
+    "retrievedAt": "2026-09-25T05:55:42.765Z",
+    "bytes": 53,
+    "sha256": "f8dc372dc0e9b5e71382e38f5546784991bb327e17ebad8336dc925aba71dac2"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": "{\"googleSso\":false,\"portal\":true,\"portalLaunch\":true}"
+  }
+}

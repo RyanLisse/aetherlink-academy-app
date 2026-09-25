@@ -1,0 +1,17 @@
+{
+  "provenance": {
+    "url": "http://91.99.78.17:4317/auth/google/start",
+    "retrievedAt": "2026-09-25T05:55:42.877Z",
+    "bytes": 44,
+    "sha256": "39d24f52dcbec0b23faf3810cc60ffa4ce5a9e9d9970603727f09ea28fb609e4"
+  },
+  "response": {
+    "status": 302,
+    "headers": {
+      "content-type": "text/plain; charset=utf-8",
+      "location": "/?login_error=disabled",
+      "set-cookie": "academy-login=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax"
+    },
+    "body": "Found. Redirecting to /?login_error=disabled"
+  }
+}
