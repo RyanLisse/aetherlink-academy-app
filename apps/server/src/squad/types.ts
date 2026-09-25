@@ -82,9 +82,11 @@ export interface CreateResult {
 export interface JoinResult {
   readonly token: string;
   readonly roomId: string;
-  readonly rejoined?: boolean;
 }
 
-/** KTD12 — display-name rejoin is room-scoped convenience, never cross-room auth. */
+/** KTD12 — a display name identifies nobody; it never authorizes a session, within a room or across rooms. */
 export const KTD12 =
-  'Display-name matching is convenience for rejoin inside one room only; it never authorizes attaching private data across rooms or to a new email identity.';
+  'A display name is never a credential: it never authorizes rejoining a seat, attaching private data across rooms, or binding a new email identity.';
+
+export const DUPLICATE_PARTICIPANT_MESSAGE =
+  'Deze naam is al in gebruik in deze kamer. Gebruik je persoonlijke deelnemerslink om opnieuw in te loggen.';
