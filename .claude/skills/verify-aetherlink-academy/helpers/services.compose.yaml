@@ -1,0 +1,49 @@
+# Disposable TLS Postgres + TLS Redis for one verification run. Started only by
+# start.mjs under a unique project name (academy-verify-<run-id>). Academy's
+# storage layer insists on TLS for both, so start.mjs mints a throwaway
+# self-signed cert per run in the run's scratch dir. Data lives in tmpfs and dies
+# with `down --volumes`. The password is a dev-only placeholder, not a credential.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: academy
+      POSTGRES_PASSWORD: verify-only-placeholder
+      POSTGRES_DB: academy
+    entrypoint: ["sh", "-c"]
+    command:
+      - >-
+        mkdir -p /etc/pgtls && cp /tls/server.crt /tls/server.key /etc/pgtls/ &&
+        chown -R postgres /etc/pgtls && chmod 600 /etc/pgtls/server.key &&
+        exec docker-entrypoint.sh postgres -c ssl=on
+        -c ssl_cert_file=/etc/pgtls/server.crt -c ssl_key_file=/etc/pgtls/server.key
+    volumes:
+      - ${VERIFY_TLS_DIR:?}:/tls:ro
+    ports:
+      - "127.0.0.1:${VERIFY_PG_PORT:?}:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-h", "127.0.0.1", "-U", "academy", "-d", "academy"]
+      interval: 1s
+      timeout: 3s
+      retries: 60
+  redis:
+    image: redis:7-alpine
+    entrypoint: ["sh", "-c"]
+    command:
+      - >-
+        mkdir -p /etc/redistls && cp /tls/server.crt /tls/server.key /etc/redistls/ &&
+        chown -R redis /etc/redistls && chmod 600 /etc/redistls/server.key &&
+        exec docker-entrypoint.sh redis-server --port 0 --tls-port 6379
+        --tls-cert-file /etc/redistls/server.crt --tls-key-file /etc/redistls/server.key
+        --tls-ca-cert-file /etc/redistls/server.crt --tls-auth-clients no --save "" --appendonly no
+    volumes:
+      - ${VERIFY_TLS_DIR:?}:/tls:ro
+    ports:
+      - "127.0.0.1:${VERIFY_REDIS_PORT:?}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "--tls", "--cacert", "/etc/redistls/server.crt", "-h", "127.0.0.1", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 60

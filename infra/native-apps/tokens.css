@@ -1,0 +1,60 @@
+/* Academy chrome tokens — scope under .academy-chrome only (AET-51). */
+.academy-chrome {
+  --academy-bg: #06111e;
+  --academy-surface: #0c1928;
+  --academy-surface-2: #122338;
+  --academy-text: #e9f0fc;
+  --academy-muted: #8291a9;
+  --academy-cyan: #69e2f2;
+  --academy-violet: #b99aff;
+  --academy-border: #1e3350;
+  --academy-focus: #69e2f2;
+  --academy-font: Inter, system-ui, sans-serif;
+  --academy-radius: 8px;
+  color: var(--academy-text);
+  font-family: var(--academy-font);
+}
+.academy-chrome[data-theme="light"] {
+  --academy-bg: #f4f7fb;
+  --academy-surface: #ffffff;
+  --academy-surface-2: #eef3fa;
+  --academy-text: #0b2443;
+  --academy-muted: #5b6b82;
+  --academy-border: #d5deea;
+}
+.academy-chrome :focus-visible {
+  outline: 2px solid var(--academy-focus);
+  outline-offset: 3px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .academy-chrome * {
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+/* Never target iframe/canvas/video globally from this file. */
+.academy-chrome__bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--academy-surface);
+  border-bottom: 1px solid var(--academy-border);
+}
+.academy-chrome__brand {
+  font-weight: 750;
+  letter-spacing: -0.4px;
+}
+.academy-chrome__brand span { color: var(--academy-cyan); font-weight: 550; margin-left: 6px; }
+.academy-chrome__back {
+  margin-left: auto;
+  color: var(--academy-cyan);
+  background: transparent;
+  border: 1px solid var(--academy-border);
+  border-radius: var(--academy-radius);
+  padding: 8px 12px;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 600;
+}
+.academy-chrome__back:hover { border-color: var(--academy-cyan); }

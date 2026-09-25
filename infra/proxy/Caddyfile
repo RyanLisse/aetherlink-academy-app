@@ -1,0 +1,13 @@
+{
+	admin {$ACADEMY_ADMIN:localhost:2019}
+}
+
+# TLS is automatic for the production hostname. The local verifier sets an
+# explicit HTTP listener through ACADEMY_HOST.
+{$ACADEMY_HOST:academy.aetherlink.ai} {
+	bind {$ACADEMY_BIND:0.0.0.0}
+	reverse_proxy {$ACADEMY_UPSTREAM:127.0.0.1:4317} {
+		# Keep event-stream responses and classroom updates flowing immediately.
+		flush_interval -1
+	}
+}

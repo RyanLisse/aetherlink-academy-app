@@ -1,3 +1,6 @@
-id,ledger_eur,psp_eur
-SET-FIC-501,100,100
-SET-FIC-502,240,225
+id,ledger_eur,psp_eur,currency,batch,note
+SET-FIC-501,100.00,100.00,EUR,BATCH-FIC-01,match
+SET-FIC-502,240.00,225.00,EUR,BATCH-FIC-01,mismatch-under
+SET-FIC-503,50.00,50.00,EUR,BATCH-FIC-02,match
+SET-FIC-504,980.00,1000.00,EUR,BATCH-FIC-02,mismatch-over
+SET-FIC-505,12.50,12.50,EUR,BATCH-FIC-03,match

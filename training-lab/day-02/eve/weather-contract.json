@@ -1,0 +1,17 @@
+{
+  "city": "Amsterdam",
+  "date": "2026-09-21",
+  "expectedDecision": "bring umbrella",
+  "precipitationProbabilityThreshold": 60,
+  "fictional": true,
+  "draft_only": true,
+  "human_approval_required": true,
+  "stepNames": [
+    "Webhook",
+    "Weather Input",
+    "Get Weather",
+    "Weather Agent",
+    "IF Decision",
+    "Draft Message"
+  ]
+}

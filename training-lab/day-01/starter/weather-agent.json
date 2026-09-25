@@ -1,0 +1,419 @@
+{
+  "name": "Day 1 \u00b7 Weather Agent (draft only)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "weather-agent",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        0
+      ],
+      "id": "32023e93-f8a3-4d25-aa6a-ce4258bd7f8f",
+      "name": "Webhook",
+      "webhookId": "day01-weather-agent"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "217eda2c-0221-42ac-a5b6-3e4dc7dadbe3",
+              "name": "city",
+              "value": "={{ $json.body.city || $json.city || 'Amsterdam' }}",
+              "type": "string"
+            },
+            {
+              "id": "6d55ac48-dbc1-4f70-9494-12a5c4fd9a29",
+              "name": "date",
+              "value": "={{ $json.body.date || $json.date || '2026-09-21' }}",
+              "type": "string"
+            },
+            {
+              "id": "e3d3deb9-4560-43a0-b02c-5dc5838074da",
+              "name": "weatherBaseUrl",
+              "value": "={{ $json.body.weatherBaseUrl || $json.weatherBaseUrl || 'http://127.0.0.1:48135' }}",
+              "type": "string"
+            },
+            {
+              "id": "b0eabb1f-10b9-48f4-866c-bdfde77ac7d0",
+              "name": "fictional",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "a49f9dc1-de70-4ee2-9842-c424064a1cd2",
+              "name": "draft_only",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -240,
+        0
+      ],
+      "id": "0d97c10d-0c6c-4bda-af9b-ee30b0283909",
+      "name": "Weather Input"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are the Weather Agent for a fictional training lab (Fictional Reconciliation programme).\n\nInput:\n- city: {{ $json.city }}\n- date: {{ $json.date }}\n- weatherBaseUrl: {{ $json.weatherBaseUrl }}\n\nRules:\n1. Call the Get Weather tool exactly once with city and date.\n2. Keep the returned fixture fields in your answer.\n3. Decide bring umbrella when precipitationProbability >= 60, otherwise leave umbrella.\n4. Return ONLY JSON:\n{\n  \"city\": \"...\",\n  \"date\": \"...\",\n  \"temperatureC\": 0,\n  \"condition\": \"...\",\n  \"precipitationProbability\": 0,\n  \"decision\": \"bring umbrella | leave umbrella\",\n  \"draft_message\": \"short draft reminder for a human to review\",\n  \"draft_only\": true,\n  \"human_approval_required\": true\n}\n\nNever send a message. Never invent weather outside the tool result.",
+        "options": {
+          "systemMessage": "Use Get Weather. Draft only. Human approval required. No real sends."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        80,
+        0
+      ],
+      "id": "1c06c950-4887-4895-95fc-72ab2e3d88b8",
+      "name": "Weather Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        40,
+        240
+      ],
+      "id": "13ba4278-46c5-4566-97fe-dd5daf905afa",
+      "name": "OpenAI Chat Model"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Get Weather \u2014 fetch the deterministic training-lab weather fixture for a city and date. Same contract as day-2 Eve/Claude get_weather. Query: city, date. Base URL comes from Weather Input.weatherBaseUrl (default http://127.0.0.1:48135).",
+        "method": "GET",
+        "url": "={{ $('Weather Input').item.json.weatherBaseUrl }}/weather",
+        "sendQuery": true,
+        "parametersQuery": {
+          "values": [
+            {
+              "name": "city",
+              "valueProvider": "fieldValue",
+              "value": "={{ $('Weather Input').item.json.city }}"
+            },
+            {
+              "name": "date",
+              "valueProvider": "fieldValue",
+              "value": "={{ $('Weather Input').item.json.date }}"
+            }
+          ]
+        },
+        "placeholderDefinitions": {
+          "values": []
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolHttpRequest",
+      "typeVersion": 1.1,
+      "position": [
+        280,
+        240
+      ],
+      "id": "dd224c43-9bd8-4e96-9eb8-cb5f5c86d26e",
+      "name": "Get Weather"
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = $json.output || $json;\nlet parsed;\nif (typeof raw === 'string') {\n  const start = raw.indexOf('{');\n  const end = raw.lastIndexOf('}');\n  parsed = JSON.parse(start >= 0 ? raw.slice(start, end + 1) : raw);\n} else {\n  parsed = raw;\n}\nconst decision = String(parsed.decision || '').toLowerCase();\nreturn [{ json: { ...parsed, decision, draft_only: true, human_approval_required: true } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        360,
+        0
+      ],
+      "id": "5d79d5fc-d262-446f-b8c7-444657485379",
+      "name": "Parse Agent Output"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2f8cd604-6914-48b9-be3f-75fac8de7d89",
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "bring umbrella",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        600,
+        0
+      ],
+      "id": "01da6e5c-c429-4dd7-a21b-4578d0d7cd34",
+      "name": "IF Decision"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1dc823f0-608b-49b2-bc16-d92a4da36264",
+              "name": "route",
+              "value": "umbrella_reminder",
+              "type": "string"
+            },
+            {
+              "id": "a5b53b58-74c8-4750-b709-94d57b74448f",
+              "name": "decision",
+              "value": "={{ $json.decision }}",
+              "type": "string"
+            },
+            {
+              "id": "d9003798-f5e1-46a5-9d18-da5cf4629b84",
+              "name": "city",
+              "value": "={{ $json.city }}",
+              "type": "string"
+            },
+            {
+              "id": "41b79d25-9910-44fe-aa4e-b43f0eaca549",
+              "name": "date",
+              "value": "={{ $json.date }}",
+              "type": "string"
+            },
+            {
+              "id": "a33677e2-6471-4e9e-87ec-448dd6e6f75a",
+              "name": "draft_message",
+              "value": "={{ $json.draft_message || ('Draft: bring an umbrella in ' + $json.city + ' on ' + $json.date + '.') }}",
+              "type": "string"
+            },
+            {
+              "id": "9d46ecb0-e005-4fb5-9b20-21101d37e270",
+              "name": "draft_only",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "7ea121e6-dbcc-4f36-b40d-ff2a6da96f62",
+              "name": "human_approval_required",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "5042bae9-711f-470e-a9b3-d455e6802f69",
+              "name": "fictional",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        860,
+        -120
+      ],
+      "id": "55a0192a-2251-4467-8ec7-63bb81326e47",
+      "name": "Draft Message"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "39f87a55-f94b-44d3-a89b-6549bd1f9873",
+              "name": "route",
+              "value": "no_reminder",
+              "type": "string"
+            },
+            {
+              "id": "60ab7374-31bb-4cec-8bcd-1e8df635c37c",
+              "name": "decision",
+              "value": "={{ $json.decision }}",
+              "type": "string"
+            },
+            {
+              "id": "46a33681-d305-43e7-82e3-76e3ba6c04bb",
+              "name": "city",
+              "value": "={{ $json.city }}",
+              "type": "string"
+            },
+            {
+              "id": "75414641-f05b-4b0e-b591-f171a9280400",
+              "name": "date",
+              "value": "={{ $json.date }}",
+              "type": "string"
+            },
+            {
+              "id": "85ca1832-7f5f-461d-8c26-1b86e4f9e1af",
+              "name": "draft_message",
+              "value": "={{ $json.draft_message || ('Draft: no umbrella needed in ' + $json.city + ' on ' + $json.date + '.') }}",
+              "type": "string"
+            },
+            {
+              "id": "a2c5efc7-f03a-4488-9836-2b4bf1d897bb",
+              "name": "draft_only",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "c938d2c8-7b10-4183-9228-72792be38777",
+              "name": "human_approval_required",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "7c335128-37f1-4cda-ad2a-15c5b80639cc",
+              "name": "fictional",
+              "value": true,
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        860,
+        120
+      ],
+      "id": "37f39218-4124-4caa-a44e-d31867215414",
+      "name": "Draft No Reminder"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Weather Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weather Input": {
+      "main": [
+        [
+          {
+            "node": "Weather Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Weather Agent": {
+      "main": [
+        [
+          {
+            "node": "Parse Agent Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Weather Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Weather": {
+      "ai_tool": [
+        [
+          {
+            "node": "Weather Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Agent Output": {
+      "main": [
+        [
+          {
+            "node": "IF Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Decision": {
+      "main": [
+        [
+          {
+            "node": "Draft Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Draft No Reminder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "instanceId": "aetherlink-academy-training-lab-day-01"
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "name": "day-01"
+    },
+    {
+      "name": "weather-agent"
+    },
+    {
+      "name": "draft-only"
+    }
+  ]
+}

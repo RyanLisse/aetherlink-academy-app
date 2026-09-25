@@ -16,6 +16,16 @@ on:
         description: Full deployed source commit SHA
         required: true
         type: string
+      sso:
+        description: Also probe the facilitator Google login start (fails when SSO is not configured)
+        required: false
+        default: false
+        type: boolean
+      public_url:
+        description: Public origin the SSO callback must use (defaults to url)
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: read
@@ -36,6 +46,8 @@ jobs:
         env:
           SMOKE_BASE_URL: ${{ inputs.url }}
           EXPECTED_REVISION: ${{ inputs.revision }}
+          SMOKE_SSO: ${{ inputs.sso && '1' || '' }}
+          SMOKE_PUBLIC_URL: ${{ inputs.public_url }}
         run: node scripts/deployed-smoke.mjs
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: always()

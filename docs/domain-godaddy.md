@@ -1,195 +1,119 @@
-# Domain guide — `academy.aetherlink.ai` (GoDaddy → Hetzner)
+# Domain guide. `academy.aetherlink.ai` to Hetzner
 
-Last updated: 2026-09-16 (Europe/Amsterdam)
+Last updated 2026-09-21 (Europe/Amsterdam).
 
-This guide connects **GoDaddy DNS** for `aetherlink.ai` to the Academy Hetzner VPS and fronts the app as **`https://academy.aetherlink.ai`**.
+This is an operator runbook. It prepares the GoDaddy DNS record and the Hetzner edge. It does not run DNS, SSH, TLS issuance, OAuth changes, or Vercel actions.
 
-It is a **runbook**, not an automated cutover. DNS and registrar steps need a human in GoDaddy. VPS TLS / proxy steps need an operator with SSH to the Academy box.
+## Current evidence
 
-## Current verified state
+The requested production hostname currently returns NXDOMAIN. HTTPS could not be checked because DNS did not resolve. No production cutover is claimed by this change. The local proxy gate is the only completed evidence and runs without secrets or external state.
 
 | Item | Value |
 | --- | --- |
-| Desired hostname | `academy.aetherlink.ai` |
-| Domain | `aetherlink.ai` |
-| DNS nameservers | GoDaddy `ns73.domaincontrol.com` / `ns74.domaincontrol.com` (**VERIFIED**) |
-| Apex `@` A today | `76.76.21.21` (Vercel) — **leave alone** |
-| `www` today | CNAME → `cname.vercel-dns.com.` — **leave alone** |
-| `academy` today | **does not exist** (NXDOMAIN) |
-| Academy VPS | Hetzner CX33 `aetherlink-academy`, IPv4 **`91.99.78.17`**, IPv6 prefix `2a01:4f8:1c16:63d8::/64` |
-| Live app today | Sibling Docker on **`http://91.99.78.17:4317`** (health `/game/health`) |
-| Deploy SoT | `main` → GitHub Actions → `/root/aetherlink-academy/rebuild-from-git.sh` |
-| Openship | Installed on same VPS; edge listens `:80`/`:443` but **does not yet ship Academy** (needed a custom domain) |
-| Vercel Hobby | Paused / blocked — not SoT for Academy |
+| Hostname | `academy.aetherlink.ai` |
+| GoDaddy nameservers | `ns73.domaincontrol.com`, `ns74.domaincontrol.com` |
+| Academy A record | Pending operator action. `91.99.78.17` |
+| Academy upstream | `127.0.0.1:4317` |
+| Public URL after cutover | `https://academy.aetherlink.ai` |
+| Proxy config | [`infra/proxy/Caddyfile`](../infra/proxy/Caddyfile) |
+| Local gate | `node infra/proxy/verify-local.mjs` |
 
-Official GoDaddy A-record help: https://www.godaddy.com/help/add-or-edit-an-a-record-42546
+The Academy code remains `main` in `RyanLisse/aetherlink-academy-app`. The Hetzner sibling Docker path and its GitHub Actions rebuild remain the runtime/deploy SoT. The hostname cutover is separate from the marketing site.
 
----
+The proxy must be the only public ingress. Proof on `:4400`, the app on `:4317`, Postgres, and Redis stay private. The planned Wave 1 runtime ports `:4318` and `:4418` are also internal and must not be opened publicly. Caddy preserves WebSocket upgrades and disables response buffering for SSE with `flush_interval -1`.
 
-## Goal
+## Local verification
 
-1. `academy.aetherlink.ai` resolves to the Academy VPS.
-2. Browsers reach Academy on **HTTPS :443** (not raw `:4317`).
-3. App env / OAuth know the public URL.
-4. Apex and `www` stay on their current (Vercel) setup.
+From the repository root, run:
 
----
+```sh
+node infra/proxy/verify-local.mjs
+```
 
-## Phase 1 — GoDaddy DNS (Ryan / human)
+The script starts a deterministic HTTP, SSE, and WebSocket fixture on `127.0.0.1:48143`, starts Caddy from the checked-in config in a uniquely named disposable `academy-wave-domain-*` container on `127.0.0.1:48142`, asserts the health response, event-stream content type and payload, WebSocket upgrade, and an echoed WebSocket frame. Every network wait has a deadline. Cleanup terminates only the captured container ID created by that run. The verifier sets Caddy `ACADEMY_BIND=127.0.0.1` and `ACADEMY_ADMIN=off`; production keeps the default bind and loopback admin endpoint for normal reloads. It uses Docker host networking so Caddy can reach the loopback fixture; this requires Linux Docker or Docker Desktop with host networking enabled. It proves proxy behavior only. It does not prove the Academy container, TLS, DNS, or production reachability.
 
-Sign in to [GoDaddy Domain Portfolio](https://www.godaddy.com/) → select **`aetherlink.ai`** → **DNS**.
+Run the bounded negative-path check with:
 
-### 1. Add the subdomain A record
+```sh
+node infra/proxy/verify-local-negative.mjs
+```
+
+It occupies `48142` and expects the verifier to fail within thirty seconds, then closes its listener and child process. It does not inspect or remove an existing `academy-wave-domain` container.
+
+## Production preparation
+
+### 1. GoDaddy DNS. Ryan or registrar operator
+
+Add one record in the `aetherlink.ai` GoDaddy DNS zone.
 
 | Field | Value |
 | --- | --- |
-| Type | **A** |
-| Name | **`academy`** (GoDaddy will make `academy.aetherlink.ai`) |
-| Value | **`91.99.78.17`** |
-| TTL | 1 hour (default) or 600s while testing |
+| Type | `A` |
+| Name | `academy` |
+| Value | `91.99.78.17` |
+| TTL | `600` while testing, then the normal policy |
 
-Save. Most changes show within ~1 hour; allow up to 48 hours globally.
+Leave the apex `@`, `www`, MX, TXT, SPF, and DMARC records unchanged. Verify from an external network:
 
-### 2. Optional IPv6
-
-If you want dual-stack and have a specific host address on the VPS (not only the `/64` prefix), add an **AAAA** for Name `academy` with that address. Skip until the IPv6 host address is confirmed on the server.
-
-### 3. Do **not** change
-
-- Apex `@` A → Vercel
-- `www` CNAME → Vercel
-- Existing MX / TXT / SPF / DMARC for mail
-
-### 4. Verify DNS
-
-From any machine:
-
-```bash
-# should return 91.99.78.17
+```sh
 dig +short academy.aetherlink.ai A
-# or
-curl -sS "https://dns.google/resolve?name=academy.aetherlink.ai&type=A"
 ```
 
-Also check GoDaddy’s DNS list shows `academy` → `91.99.78.17`.
+The expected answer is `91.99.78.17`. Do not continue to TLS until this answer is stable from more than one resolver.
 
-**Checkpoint:** DNS only. Hitting `http://academy.aetherlink.ai:4317` may work once DNS propagates; `https://academy.aetherlink.ai` will not until Phase 2.
+### 2. Hetzner edge. Ops operator with SSH
 
----
+1. Inspect the existing Openship edge first. It currently binds `:80` and `:443`; do not start a second listener or install a competing service until the operator has selected one owner for those ports. If Openship can attach this hostname and route the Academy upstream, use that existing edge and record its route. Otherwise use the Caddy config in this repository.
+2. For the Caddy path, install or enable Caddy only after confirming `:80` and `:443` are free or have been deliberately handed over. Copy [`infra/proxy/Caddyfile`](../infra/proxy/Caddyfile) to the service configuration directory and provide `ACADEMY_HOST=academy.aetherlink.ai`, `ACADEMY_UPSTREAM=127.0.0.1:4317`, and `ACADEMY_PUBLIC_URL=https://academy.aetherlink.ai` through the service environment. Use [`infra/proxy/.env.example`](../infra/proxy/.env.example) as the shape only. It contains no credentials.
+3. Validate before reload with `caddy validate --config /etc/caddy/Caddyfile` and inspect the rendered config. Reload with the host's existing service manager, then inspect the certificate and access logs. Caddy will obtain and renew the certificate after DNS and port 80 are reachable.
+4. Bind the Academy gateway to loopback. Close inbound `4317`, `4400`, `4318`, and `4418` in the Hetzner firewall. Allow only `80` and `443` to the selected edge.
+5. Verify the app from outside the VPS:
 
-## Phase 2 — HTTPS on the VPS (operator)
+```sh
+curl -fsS https://academy.aetherlink.ai/game/health
+```
 
-Pick **one** path. Recommended for this host: **Path A** (simple reverse proxy + Let’s Encrypt) while sibling Docker remains deploy SoT. **Path B** uses Openship edge once the domain is attached there.
+The response must be JSON with `ok: true` and `proof: true`. The final gate also needs a browser classroom run with both a WebSocket update and an SSE update. A `200` health response alone is insufficient.
 
-### Shared prerequisites
+### 3. App and Google OAuth configuration
 
-- SSH to the VPS as `root` (or sudo) with the Academy deploy key / ops key.
-- Ports **80** and **443** open in Hetzner firewall / cloud firewall for the public IP.
-- DNS for `academy.aetherlink.ai` already pointing at `91.99.78.17`.
-- Academy container healthy: `curl -sS http://127.0.0.1:4317/game/health` → `{"ok":true,...}`.
-
-### Path A — Caddy (or nginx) reverse proxy → `:4317` (**recommended v1**)
-
-Idea: terminate TLS on the host; proxy to the existing `academy-app` publish on loopback or `127.0.0.1:4317`.
-
-Suggested end state:
-
-1. Change Docker publish from `0.0.0.0:4317` to **`127.0.0.1:4317`** (so the app is not directly public).
-2. Install Caddy (or nginx + certbot).
-3. Site block for `academy.aetherlink.ai` → `reverse_proxy 127.0.0.1:4317`.
-4. Let’s Encrypt HTTP-01 on `:80` (automatic with Caddy).
-
-Minimal Caddyfile sketch (operator fills paths):
+Set `ACADEMY_PUBLIC_URL=https://academy.aetherlink.ai` in the private runtime environment, preserving the existing secret values. Restart through the existing deployment process. In the Google OAuth client, add the authorized JavaScript origin:
 
 ```text
-academy.aetherlink.ai {
-        reverse_proxy 127.0.0.1:4317
-}
+https://academy.aetherlink.ai
 ```
 
-Prove:
+Add this authorized redirect URI:
 
-```bash
-curl -sS https://academy.aetherlink.ai/game/health
-# expect {"ok":true,"proof":true,...}
+```text
+https://academy.aetherlink.ai/auth/google/callback
 ```
 
-Browser: open `https://academy.aetherlink.ai` — EN default + EN|NL toggle.
+Retest facilitator login and the participant MCP setup only after HTTPS is live. Never commit the environment file or OAuth credentials.
 
-### Path B — Openship edge
+## Acceptance and open production action
 
-Openship on this box already binds **`:80`/`:443`**. Once `academy.aetherlink.ai` DNS is live:
+The production acceptance remains open until an operator records all of these results:
 
-1. In Openship, attach the custom domain to the Academy project / service.
-2. Point edge upstream at the Academy container (or stop publishing `:4317` publicly and let edge be the only ingress).
-3. Confirm Openship issues / renews certificates for the hostname.
-4. Only then consider Openship auto-deploy as an alternate to sibling Docker Actions — **do not flip SoT** until health + Actions path are still understood.
+- `dig +short academy.aetherlink.ai A` returns `91.99.78.17` from an external network.
+- `curl -fsS https://academy.aetherlink.ai/game/health` returns `ok: true` and `proof: true`.
+- HTTP redirects to HTTPS, and raw public access to `:4317`, `:4400`, `:4318`, and `:4418` is refused.
+- A real browser classroom run proves WebSocket and SSE updates through the hostname.
+- Google facilitator login and participant MCP connectivity use the hostname.
+- The exact source revision and TLS certificate are recorded in release evidence.
 
-If Openship domain UX still requires Openship Cloud billing, stay on **Path A**.
-
----
-
-## Phase 3 — App config after HTTPS works
-
-On the VPS env file `/root/aetherlink-academy/.env` (mode 600 — **never commit**):
-
-| Variable (names may vary — match repo) | Set to |
-| --- | --- |
-| Public URL / origin | `https://academy.aetherlink.ai` |
-| Any cookie / CSRF / absolute link base | same origin |
-
-Rebuild/restart sibling Docker via the existing script (or wait for next `main` push).
-
-### Google facilitator OAuth (AET-6)
-
-In Google Cloud Console OAuth client for Academy, add authorized origins / redirect URIs for:
-
-- `https://academy.aetherlink.ai`
-- (and keep old IP/port URIs only while still testing)
-
-Then retest facilitator Google login on the hostname, not the raw IP.
-
-### Progress / intent docs
-
-Update `progress.md` when cutover is live (hostname + TLS path chosen). Keep `intent.md` hosting SoT in sync.
-
----
-
-## Phase 4 — Hardening checklist
-
-- [ ] `https://academy.aetherlink.ai/game/health` OK
-- [ ] HTTP → HTTPS redirect works
-- [ ] `:4317` no longer public (`0.0.0.0` → loopback only)
-- [ ] Hetzner firewall: 80/443 open; 4317 closed from internet
-- [ ] OAuth redirects updated
-- [ ] EN|NL toggle still works on the domain
-- [ ] GitHub Actions deploy still healthy after rebuild
-- [ ] Vercel Hobby left paused (no need to revive for Academy)
-
----
+This work does not perform any of those production actions. It does not change DNS, SSH to the VPS, issue a certificate, modify OAuth, or delete Vercel resources.
 
 ## Rollback
 
-1. Remove or change the GoDaddy `academy` A record (or point elsewhere).
-2. Re-publish `0.0.0.0:4317` if needed for emergency IP access.
-3. Disable / stop the reverse proxy or Openship domain route.
-4. Revert `.env` public URL to the IP form only if something hard-depends on it.
+If the operator needs to back out, disable the Caddy site and remove only the `academy` A record. Keep apex, `www`, mail records, and the app data untouched. Restore the previous private runtime URL only if the application requires it during recovery.
 
----
+## Records that stay untouched
 
-## Who does what
+The apex `@` record, `www` CNAME, MX, TXT, SPF, and DMARC records remain with their existing owners. The separate Openship control plane remains installed until an operator has deliberately selected it or Caddy as the sole `:80` and `:443` owner.
 
-| Step | Owner |
-| --- | --- |
-| GoDaddy A record `academy` → `91.99.78.17` | Ryan (registrar) |
-| TLS proxy / Openship domain attach | CoS routes → ops/Herdr on VPS |
-| `.env` public URL + rebuild | ops/Herdr |
-| Google OAuth redirect URIs | Ryan (Google Console) or delegated |
-| Linear tracking | AetherLink workspace project **AetherLink Academy** |
+## Related operator documents
 
-## Related
-
-- Live interim URL: `http://91.99.78.17:4317`
-- Repo: https://github.com/RyanLisse/aetherlink-academy-app
-- Linear project: https://linear.app/aetherlink/project/aetherlink-academy-ecb902a093bd
-- Linear issue: https://linear.app/aetherlink/issue/AET-11/docs-godaddy-domain-guide-for-academyaetherlinkai
+- [Vercel Academy takedown](vercel-academy-takedown.md)
+- [Deployment status](DEPLOYMENT.md)
+- [Release evidence](RELEASE-EVIDENCE.md)

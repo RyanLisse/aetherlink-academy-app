@@ -11,6 +11,23 @@ The new TypeScript 7 / Effect 4 stack runs beside the legacy app. Nothing here r
 
 Passwords must be at least 20 characters and use only letters, digits, `_`, or `-`; this keeps the Compose connection URLs unambiguous. Generate deployment values with `openssl rand -hex 32`.
 
+## First-time bootstrap
+
+If `/root/aetherlink-academy-wave/` does not exist yet (or the rebuild script is missing), run:
+
+```sh
+# on the Hetzner box, or via the GitHub workflow below
+git clone https://github.com/RyanLisse/aetherlink-academy-app.git /tmp/academy-wave-bootstrap
+bash /tmp/academy-wave-bootstrap/infra/deploy/bootstrap-wave-foundation.sh <full-git-sha>
+```
+
+`bootstrap-wave-foundation.sh` installs the rebuild script, clones the repo under
+`$ACADEMY_WAVE_HOME/src`, and creates `.env` with `openssl rand -hex 32` passwords
+only when `.env` is missing. Secrets are never printed.
+
+The **Wave foundation sibling deploy (manual)** workflow now runs bootstrap before
+rebuild, so a cold host no longer fails with "No such file or directory".
+
 ## Operator invocation
 
 ```sh

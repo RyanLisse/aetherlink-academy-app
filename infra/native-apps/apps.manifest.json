@@ -13,6 +13,8 @@
   "productionDomain": "academy.aetherlink.ai",
   "cutoverIssue": "AET-34",
   "suiteIssue": "AET-45",
+  "identityIssue": "AET-53",
+  "brandingIssue": "AET-51",
   "requiresOpenShipCredential": true,
   "apps": [
     {

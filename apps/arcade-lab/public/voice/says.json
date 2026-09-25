@@ -1,0 +1,139 @@
+[
+ {
+  "id": "ws-1-eve-weather",
+  "title": "1 · Eve · Give the weather agent a job",
+  "says": [
+   "Before anyone presses Enter: does a language model know the current weather in Amsterdam?",
+   "**Instructions** are the agent's standing rules. Open agent/instructions.md and replace its contents with seven rules.",
+   "You've changed the standing instructions. You have not yet supplied a tool — so the agent still has no way to get weather.",
+   "Create agent/tools/get_weather.ts. It returns fixed demonstration data, labels itself honestly, and rejects a blank city.",
+   "approval: never() is fine here — this tool only returns fixed data. Never copy that choice to tools that send messages, spend money, or change records.",
+   "A **skill** describes when and how to follow the procedure. Instructions are rules, the skill is the procedure, the tool performs the action. You can point to all three in the editor.",
+   "Start the project, ask the first question, and inspect the tool activity **before** reading the final answer.",
+   "Look for get_weather with city set to Amsterdam, then the result. An answer that claims real current weather fails this exercise even if the number matches.",
+   "Change one rule. Add a length limit, save, then start a **fresh conversation** and repeat the Amsterdam question.",
+   "Check that the new response stays within two sentences and still identifies the data as simulated. Save your before and after responses.",
+   "Now try to break it — three prompts, each in a fresh conversation. First: no city at all.",
+   "No tool call. The agent asked for the missing city instead of silently choosing Amsterdam from an earlier chat.",
+   "Tokyo gets 72 and Sunny too. The **unchanged values are your evidence** that this is a fixture, not a forecast.",
+   "If your agent instead presents the fixture as a real forecast, revise the instructions and rerun. A prompt rule guides model behaviour; it is not a deterministic security boundary."
+  ]
+ },
+ {
+  "id": "ws-2-eve-state",
+  "title": "2 · Eve · How it runs: session, turn, step — and state",
+  "says": [
+   "For this lesson we borrow the official Eve tutorial's **analytics assistant** — it has a run_sql tool over a tiny sample dataset. Same primitives, different domain.",
+   "Three terms describe what happened when you sent one message and got one answer.",
+   "Eve saves each turn's progress at every step. Completed steps never re-run; a step interrupted mid-execution re-runs. A turn waiting on you resumes whenever you answer — even much later.",
+   "You author capabilities — tools, instructions, channels, skills. Eve drives the model-to-tool loop and decides when a turn continues, waits, or ends. **You never write that loop yourself.**",
+   "Re-explaining house definitions every turn is a waste. defineState(name, initial) creates a typed slot that survives step and turn boundaries within a session.",
+   "Two tools: one writes the glossary with update(), one reads it with get().",
+   "Two separate turns in the same session. Watch the definition survive.",
+   "The second turn recalled the definition, wrote matching SQL, and answered. State checkpoints at step boundaries — the same durability, now applied to your own data."
+  ]
+ },
+ {
+  "id": "ws-3-eve-approval",
+  "title": "3 · Eve · Guard the spend: human-in-the-loop approval",
+  "says": [
+   "In lesson 1 the weather tool used approval: never() — fixed data, no risk. Now the opposite case: make the agent **stop and ask** before an expensive query.",
+   "approval runs before execute. Return \"user-approval\" and the turn parks on an approval request; you answer, and the run picks up from that exact step.",
+   "A cheap, illustrative estimator: unfiltered scans are the expensive ones. A real warehouse exposes a dry-run estimate.",
+   "Now gate run_sql on it. One field on the tool — the function receives the tool input, so the decision can be cost-based.",
+   "Cheap queries run straight through. A query estimated above the threshold trips the gate.",
+   "The stream emits input.requested, then session.waiting. How the prompt looks depends on the channel: buttons in the TUI, Block Kit in Slack, a control on the web. Approve it.",
+   "Deny it instead and the tool is skipped, with the model told why. Each session has exactly one active continuation — a stale handle is rejected, so a parked turn can't be resumed twice.",
+   "The same machinery backs the built-in ask_question tool and per-connection approval via approval: once(). Next: the council — many agents, one judge."
+  ]
+ },
+ {
+  "id": "ws-2-eve-council",
+  "title": "4 · Eve · Council: one prompt, four independent views",
+  "says": [
+   "The council is a **separate project**. Copy the template at the pinned revision so you don't run the repository's contributor scripts.",
+   "Use pnpm 12.4.2 — the version the template declares. Link the project to retrieve AI Gateway credentials, then confirm your workshop spending limit before the first question.",
+   "Open agent/subagents/: Claude, Grok, Kimi and OpenAI. Then the coordinator's instructions.",
+   "Call all four once. Send each the same complete question. Wait for all four. Judge on evidence, **not majority vote**. Model IDs are version-specific — record any substitution.",
+   "Observe the four member responses arriving independently — read them **before** the summary.",
+   "The result contract: a summary plus four integer scores from 0 to 100. The instructions ask for ≤75 words; the schema does not enforce that limit.",
+   "The summary identifies missing information rather than inventing a forecast. The council has **no weather or web tool** — a confident answer would not supply that evidence.",
+   "Verify in the run trace that each member received the complete same prompt and none saw another's answer. Count **four** completed members before accepting a result; three is an incomplete run.",
+   "Change the summary limit from 75 to 40 words. Run the table question again in a fresh conversation and count the words.",
+   "Members still get the same question; your change affected the **judge**. If the judge exceeds the limit, you've exposed the difference between an instruction and a code-enforced constraint."
+  ]
+ },
+ {
+  "id": "ws-5-sdk-quickstart",
+  "title": "5 · SDK · Quickstart: an agent that finds and fixes bugs",
+  "says": [
+   "New runtime, same idea. The Claude Agent SDK bundles the Claude Code binary; you write the prompt, the options, and consume the message stream.",
+   "The SDK reads ANTHROPIC_API_KEY from the environment of the process that runs your agent. It does not load .env files.",
+   "First, something for the agent to fix — the quickstart's utils.py, ported to TypeScript. Two bugs: calculateAverage([]) returns NaN (0/0); getUserName(null) throws a TypeError.",
+   "query() is the entry point that creates the agentic loop. It returns an async iterator, so you stream messages as Claude works.",
+   "Three parts: **query** (the loop), **prompt** (what to do — Claude picks the tools), **options** (allowedTools pre-approves Read, Edit, Glob; permissionMode acceptEdits auto-approves file changes).",
+   "Read → analysed → Edit. Claude executed the tools directly instead of asking you to implement them. Open utils.ts in your own run to see the defensive code.",
+   "Change behaviour by changing options: add \"WebSearch\" to allowedTools, set a systemPrompt, or add \"Bash\" and ask it to write unit tests, run them, and fix failures."
+  ]
+ },
+ {
+  "id": "ws-3-sdk-weather",
+  "title": "6 · SDK · The same weather agent, as a custom tool",
+  "says": [
+   "Same behaviour, new runtime. Node 24, and ANTHROPIC_API_KEY injected from **protected secret settings** — never in code, shell history or git.",
+   "The SDK reads the process environment; it does not load .env files itself.",
+   "First the fixture: a pure function everybody can verify. No model, no cost.",
+   "Prove the trust boundary **before** a model ever sees the tool.",
+   "Now the agent. tool() + createSdkMcpServer() is the documented in-process MCP pattern. tools: [] removes every built-in tool, leaving only the weather capability.",
+   "One loop handles every message: print tool_use blocks as they appear, and the result at the end. A non-success result is an error, not an answer.",
+   "Run the supplied-city path. This makes a real Anthropic request.",
+   "Now the missing-city behavioural check.",
+   "No tool call, no tool result. This check still costs one model request."
+  ]
+ },
+ {
+  "id": "ws-7-sdk-hooks",
+  "title": "7 · SDK · Hooks: gate a tool before it runs",
+  "says": [
+   "Eve's approval field parks the turn. The SDK equivalent is a **PreToolUse hook**: your function runs before the tool, and can allow, block, or (with canUseTool) ask a human.",
+   "This is the hello-world demo from claude-agent-sdk-demos. It pins an older SDK (0.1.14) and model \"opus\" — keep your 0.3.278 pin; the hook shape is what matters.",
+   "The hook matches Write|Edit|MultiEdit, reads tool_input.file_path, and blocks any .js/.ts file outside agent/custom_scripts — returning decision: \"block\" with a stopReason the model gets to read.",
+   "Same primitive as Eve lesson 3, different plumbing: Eve parks a durable step; the SDK hook runs inline in your process. Both are **code-enforced**, not prompt-enforced."
+  ]
+ },
+ {
+  "id": "ws-8-sdk-subagents",
+  "title": "8 · SDK · Subagents: a lead that only delegates",
+  "says": [
+   "The Eve council was four members plus a judge. The SDK's multi-agent primitive is **AgentDefinition**: each subagent gets its own prompt, tool allowlist and model. The lead's only tool is Task.",
+   "This is the research-agent demo, ported from Python to TypeScript: agents go in options, and the current SDK exposes delegation as the **Agent** tool (older versions called it Task).",
+   "Note the allowlists: researcher gets WebSearch + Write, data-analyst gets Bash, report-writer only reads and writes files. allowedTools for the lead is just [\"Agent\"].",
+   "Every line came from the message stream: tool_use blocks, and parent_tool_use_id tells you which subagent emitted them. Lesson 7's hooks give you the same view before each call. That trace is your evidence — not the final prose.",
+   "The original demo also loads a pdf skill from .claude/skills via settingSources: [\"project\"] — same idea as Eve's load_skill, an on-demand procedure, different plumbing. Left out here to keep the port minimal."
+  ]
+ },
+ {
+  "id": "ws-4-sdk-council",
+  "title": "9 · Appendix · Four providers via Gateway, Claude as judge",
+  "says": [
+   "The SDK's model option accepts Claude models only. To keep **four real providers**, the host fans out through the AI Gateway — then Claude judges.",
+   "Inject AI_GATEWAY_API_KEY through protected secret settings and confirm the spend limit before any live run.",
+   "Promise.allSettled launches all four before it waits. Every call gets the same trimmed prompt and no member answer. Any failure → \"Council incomplete\", no auto-retry, nonzero exit.",
+   "The judge receives the four completed answers, has tools: [], and a JSON schema for its output. The **host**, not the prompt, enforces the 75-word limit.",
+   "Run only after reviewing cost and data handling: four Gateway requests plus a judge run.",
+   "Read [member answers] first: four keys, each answering the identical question. Only then the judge result — with the shape the schema demands.",
+   "Now an unavailable provider.",
+   "The host does not ask Claude to fill in the missing member. An incomplete council is reported as incomplete — other in-flight requests may still finish and bill."
+  ]
+ },
+ {
+  "id": "sample-counter",
+  "title": "Sample · Build a click counter (HTML/CSS/JS)",
+  "says": [
+   "Let's build a tiny click counter. First the markup: a value and a button.",
+   "Now some styling so it looks like a card.",
+   "And the behaviour: one listener that increments and writes the number back.",
+   "Try clicking the button in the preview. Pause any time and change the code yourself."
+  ]
+ }
+]

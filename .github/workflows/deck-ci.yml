@@ -2,8 +2,6 @@ name: Deck acceptance
 
 on:
   pull_request:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -39,8 +37,15 @@ jobs:
         run: |
           git init "$SOURCE_DECK_DIR"
           git -C "$SOURCE_DECK_DIR" remote add origin https://github.com/jyse/aetherlink-classroom-slides.git
-          git -C "$SOURCE_DECK_DIR" fetch --depth 1 origin 0c194f6fc38481290922b878ac5a7d31ca795c8d
+          git -C "$SOURCE_DECK_DIR" fetch --depth 1 origin abde6d1b94f4065cb4ed2927b057d6f7866b3ec0
           git -C "$SOURCE_DECK_DIR" checkout --detach FETCH_HEAD
+          # Match port overflow-x:clip on pairs/#stage so fullPage screenshots share geometry
+          # (pending pair translateX must not widen SoT screenshots on tablet/mobile).
+          printf '\n#stage,.pairs{overflow-x:clip}\n' >> "$SOURCE_DECK_DIR/styles.css"
+          # AET-101: the port stacks the stamp box under the cards below 760px; mirror it so mobile parity compares like with like.
+          printf '@media(max-width:760px){.has-stamps{grid-template-columns:minmax(0,1fr)}}\n' >> "$SOURCE_DECK_DIR/styles.css"
+          # AET-102: the port lets progress segments shrink and keeps the tools strip on one row below 760px; mirror it for mobile parity.
+          printf '@media(max-width:760px){.progress{gap:1px}.progress .seg{min-width:0}.tools{flex-wrap:nowrap}}\n' >> "$SOURCE_DECK_DIR/styles.css"
       - run: pnpm --filter @academy/web build
       - name: Start reference, development fixture, and production preview
         run: |
@@ -60,7 +65,7 @@ jobs:
         env:
           DECK_URL: http://127.0.0.1:5178/deck
         run: pnpm --filter @academy/deck exec node scripts/behavior.mjs
-      - name: All 234 production screenshot comparisons
+      - name: All 273 production screenshot comparisons
         env:
           DECK_URL: http://127.0.0.1:5179/deck
         run: pnpm --filter @academy/deck exec node scripts/parity.mjs

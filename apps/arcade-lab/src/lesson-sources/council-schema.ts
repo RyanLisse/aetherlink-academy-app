@@ -1,0 +1,2 @@
+/** Verbatim source block from aetherlab monolith (id=src-council-schema). */
+export default "import { z } from \"zod\";\n\n// Output contract as described in the lesson.\n// Open the template's agent/lib/schemas.ts for the source revision.\nexport const CouncilResult = z.object({\n  summary: z.string(),\n  agreementScores: z.object({\n    claude: z.number().int().min(0).max(100),\n    grok: z.number().int().min(0).max(100),\n    kimi: z.number().int().min(0).max(100),\n    openai: z.number().int().min(0).max(100),\n  }),\n});\n" as string;

@@ -1,8 +1,18 @@
 import {useEffect, useState, type ReactNode} from 'react';
 import {LanguageToggle, useI18n} from './i18n.tsx';
 import {Deck, type DeckMode} from '@academy/deck';
+import {LiveClassroom} from './live/LiveClassroom.tsx';
+import {SquadPanel} from './squad/SquadPanel.tsx';
+import {FacilitatorReleasePanel} from './release/FacilitatorReleasePanel.tsx';
+import {EvidencePanel, FacilitatorOverview} from './evidence/index.ts';
 import {sourceSlides} from './deck/slides.js';
+import {workshop5SourceSlides} from './deck/workshop5-slides.js';
+import {workshop3SourceSlides} from './deck/workshop3-slides.js';
+import {workshop4SourceSlides} from './deck/workshop4-slides.js';
+import {workshop6SourceSlides} from './deck/workshop6-slides.js';
+import {workshop7SourceSlides} from './deck/workshop7-slides.js';
 import {normalizeSlides} from './deck/normalize.js';
+import {matchReference, ReferenceView} from './reference/index.ts';
 import './deck/deck.css';
 import {AuthoringPage} from './authoring/AuthoringPage.tsx';
 
@@ -103,7 +113,20 @@ export function Shell({pathname, navigate, connection}: ShellProps) {
           <LanguageToggle />
         </header>
         <section className="panel">
-          {active.id === 'connection' ? <ConnectionPanel state={connection} /> : <Placeholder route={active} />}
+          {active.id === 'connection' ? (
+            <ConnectionPanel state={connection} />
+          ) : active.id === 'squad' ? (
+            <SquadPanel />
+          ) : active.id === 'coach' ? (
+            <>
+              <FacilitatorReleasePanel />
+              <FacilitatorOverview />
+            </>
+          ) : active.id === 'review' || active.id === 'solo' || active.id === 'route' ? (
+            <EvidencePanel />
+          ) : (
+            <Placeholder route={active} />
+          )}
         </section>
         <footer>{t('room.footer')}</footer>
       </main>
@@ -187,9 +210,21 @@ export function usePathname(): [string, (path: string) => void] {
 
 export function AppRoutes({children}: {readonly children?: ReactNode}) {
   const [pathname, navigate] = usePathname();
-  const connection = useConnection(fetchConnection, 5000, pathname !== '/deck' && pathname !== '/authoring');
-  if (pathname === '/deck') return <DeckDemo />;
+  const [referencePath = '', referenceAnchor] = pathname.split('#');
+  const reference = matchReference(referencePath);
+  const deckLike = reference !== null || pathname === '/deck' || isClassroom1Path(pathname) || isClassroom2Path(pathname) || isWorkshop5Path(pathname) || isWorkshop3Path(pathname) || isWorkshop4Path(pathname) || isWorkshop6Path(pathname) || isWorkshop7Path(pathname) || pathname === '/authoring';
+  const connection = useConnection(fetchConnection, 5000, !deckLike);
+  if (reference) return <ReferenceView page={reference} navigate={navigate} anchor={referenceAnchor ?? (window.location.hash.slice(1) || null)} />;
+  if (pathname === '/deck') return <DeckDemo slides={DECK_SLIDES} />;
   if (pathname === '/authoring') return <AuthoringPage />;
+  if (isClassroom1Path(pathname)) return <DeckDemo slides={CLASSROOM_1_SLIDES} />;
+  if (isClassroom2Path(pathname)) return <DeckDemo slides={CLASSROOM_2_SLIDES} />;
+  if (isWorkshop5Path(pathname)) return <DeckDemo slides={WORKSHOP_5_SLIDES} />;
+  if (isWorkshop3Path(pathname)) return <DeckDemo slides={WORKSHOP_3_SLIDES} />;
+  if (isWorkshop4Path(pathname)) return <DeckDemo slides={WORKSHOP_4_SLIDES} />;
+  if (isWorkshop6Path(pathname)) return <DeckDemo slides={WORKSHOP_6_SLIDES} />;
+  if (isWorkshop7Path(pathname)) return <DeckDemo slides={WORKSHOP_7_SLIDES} />;
+  if (pathname.startsWith('/live/')) return <LiveRoute pathname={pathname} />;
   return (
     <>
       <Shell pathname={pathname} navigate={navigate} connection={connection} />
@@ -198,8 +233,60 @@ export function AppRoutes({children}: {readonly children?: ReactNode}) {
   );
 }
 
+/** Facilitator Classroom 1 entry — Teaching Day 1 deck only (not support-day packs). */
+export function isClassroom1Path(pathname: string): boolean {
+  return pathname === '/classroom/1' || pathname === '/lesson/classroom-1';
+}
+
+/** Facilitator Classroom 2 entry — Teaching Day 2 deck only (AET-76). */
+export function isClassroom2Path(pathname: string): boolean {
+  return pathname === '/classroom/2' || pathname === '/lesson/classroom-2';
+}
+
+/** Facilitator Workshop 5 entry — AI-native SDLC deck (AET-77). */
+export function isWorkshop5Path(pathname: string): boolean {
+  return pathname === '/workshop/5' || pathname === '/lesson/workshop-5';
+}
+
+/** Facilitator Workshop 3 entry — n8n ticket priority L1→L3 (AET-79). */
+export function isWorkshop3Path(pathname: string): boolean {
+  return pathname === '/workshop/3' || pathname === '/lesson/workshop-3';
+}
+
+/** Facilitator Workshop 4 entry — n8n → Claude Agent SDK rebuild (AET-80). */
+export function isWorkshop4Path(pathname: string): boolean {
+  return pathname === '/workshop/4' || pathname === '/lesson/workshop-4';
+}
+
+/** Facilitator Workshop 6 entry — eigen opdracht thin slice start (AET-81). */
+export function isWorkshop6Path(pathname: string): boolean {
+  return pathname === '/workshop/6' || pathname === '/lesson/workshop-6';
+}
+
+/** Facilitator Workshop 7 entry — eigen opdracht finish + present (AET-85). */
+export function isWorkshop7Path(pathname: string): boolean {
+  return pathname === '/workshop/7' || pathname === '/lesson/workshop-7';
+}
+
 const DECK_SLIDES = normalizeSlides(sourceSlides);
-function DeckDemo() {
+/** Classroom 1 product route: Teaching Day 1 only (SoT slides before the "TEACHING DAY 2" divider).
+ *  Headroom only (AET-86 backlog — do not build here): Arcade postMessage embed slot,
+ *  typed quiz schema, cohort continuity ≠ room code.
+ */
+const CLASSROOM_1_SLIDES = DECK_SLIDES.filter((slide) => slide.lessonId === 'teaching-day-1');
+/** Classroom 2 product route: Teaching Day 2 only (from the "TEACHING DAY 2" divider on). Feeds Workshop 6–7. */
+const CLASSROOM_2_SLIDES = DECK_SLIDES.filter((slide) => slide.lessonId === 'teaching-day-2');
+/** Workshop 5 product route: AI-native SDLC day pack (AET-77). Separate module — not Classroom cut. */
+const WORKSHOP_5_SLIDES = normalizeSlides(workshop5SourceSlides);
+/** Workshop 3 product route: n8n L1→L3 ticket priority (AET-79). Separate module — not Classroom/W5 cut. */
+const WORKSHOP_3_SLIDES = normalizeSlides(workshop3SourceSlides);
+/** Workshop 4 product route: n8n → Claude Agent SDK SOLO 0→4 (AET-80). Separate module — not Classroom/W5/W3 cut. */
+const WORKSHOP_4_SLIDES = normalizeSlides(workshop4SourceSlides);
+/** Workshop 6 product route: eigen opdracht thin slice (AET-81). Separate module — not Classroom/W5/W3/W4 cut. */
+const WORKSHOP_6_SLIDES = normalizeSlides(workshop6SourceSlides);
+/** Workshop 7 product route: eigen opdracht finish + present (AET-85). Separate module — not Classroom/W5/W3/W4/W6 cut. */
+const WORKSHOP_7_SLIDES = normalizeSlides(workshop7SourceSlides);
+function DeckDemo({slides}: {readonly slides: typeof DECK_SLIDES}) {
   useEffect(() => {
     const surfaces = [document.documentElement, document.body];
     const previous = surfaces.map(({style}) => ({value: style.getPropertyValue('background-color'), priority: style.getPropertyPriority('background-color')}));
@@ -210,9 +297,31 @@ function DeckDemo() {
       else style.removeProperty('background-color');
     });
   }, []);
-  const [index, setIndex] = useState(() => { const value = Number(new URLSearchParams(window.location.search).get('index')); return Number.isInteger(value) && value >= 0 && value < DECK_SLIDES.length ? value : 0; });
+  const [index, setIndex] = useState(() => { const value = Number(new URLSearchParams(window.location.search).get('index')); return Number.isInteger(value) && value >= 0 && value < slides.length ? value : 0; });
   const [revealStep, setRevealStep] = useState(-1);
   const requested = new URLSearchParams(window.location.search).get('mode');
   const mode: DeckMode = requested === 'reader' || requested === 'presenter' || requested === 'follow' ? requested : 'projector';
-  return <Deck slides={DECK_SLIDES} index={index} revealStep={revealStep} mode={mode} presence={<span>Presence slot</span>} onIndexChange={(next) => { setIndex(next); setRevealStep(-1); }} onRevealStepChange={setRevealStep}/>;
+  return <Deck slides={slides} index={index} revealStep={revealStep} mode={mode} presence={<span>Presence slot</span>} onIndexChange={(next) => { setIndex(next); setRevealStep(-1); }} onRevealStepChange={setRevealStep}/>;
+}
+
+function LiveRoute({pathname}: {readonly pathname: string}) {
+  const parts = pathname.split('/').filter(Boolean);
+  // /live/:roomId/:view  view = presenter|follow|projector
+  const roomId = parts[1] ?? 'demo';
+  const view = parts[2] ?? 'follow';
+  const params = new URLSearchParams(window.location.search);
+  const role = view === 'presenter' ? 'facilitator' : 'participant';
+  const mode: DeckMode = view === 'presenter' ? 'presenter' : view === 'projector' ? 'projector' : 'follow';
+  const participantId = params.get('id') ?? (role === 'facilitator' ? 'facilitator-1' : `participant-${Math.random().toString(36).slice(2, 8)}`);
+  const name = params.get('name') ?? (role === 'facilitator' ? 'Facilitator' : participantId);
+  return (
+    <LiveClassroom
+      roomId={roomId}
+      role={role}
+      mode={mode}
+      slides={DECK_SLIDES}
+      participantId={participantId}
+      name={name}
+    />
+  );
 }

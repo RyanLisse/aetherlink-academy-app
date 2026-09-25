@@ -1,0 +1,28 @@
+# One container per participant on the training host.
+# Example:
+#   PARTICIPANT_PORT=18081 SLUG=ari docker compose -p trainee-ari up -d --build
+# Per-participant URL: http://<training-host>:${PARTICIPANT_PORT}/alert?id=TX-FIC-302
+#
+# Teardown note for infra (operator owns namespace + teardown script — not implemented in AET-38):
+#   docker compose -p trainee-${SLUG} down -v
+#   # reclaim published PARTICIPANT_PORT; prune dangling trainee-alert images on a schedule
+services:
+  mock-api:
+    image: node:24-alpine
+    working_dir: /lab
+    volumes:
+      - ../:/lab:ro
+    command: ["node", "mock-api/server.mjs"]
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "48139"
+    # Shared mock is usually run once per classroom; keep here for laptop demos.
+  transaction-alert:
+    build: .
+    ports:
+      - "${PARTICIPANT_PORT:-18080}:8080"
+    environment:
+      PORT: "8080"
+      MOCK_API_URL: "http://mock-api:48139"
+    depends_on:
+      - mock-api

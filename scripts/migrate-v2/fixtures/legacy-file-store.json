@@ -1,0 +1,258 @@
+{
+ "rooms": {
+  "00000000-0000-4000-8000-000000000101": {
+   "id": "00000000-0000-4000-8000-000000000101",
+   "code": "FIXTUREA1",
+   "name": "Fixture-squad FIXTUREA1",
+   "proof": {
+    "slug": "fixture-proof-101",
+    "editor": "fixture-editor"
+   },
+   "createdBy": {
+    "name": "Facilitator X",
+    "email": "facilitator-x@example.invalid",
+    "sub": "fixture-sub"
+   },
+   "createdAt": 1757750400000,
+   "roundSeconds": 1500,
+   "members": [
+    {
+     "id": "member-a1",
+     "name": "Deelnemer A",
+     "help": false,
+     "quiz": null,
+     "route": "standard",
+     "progressByDay": {
+      "2": {
+       "route": "standard",
+       "quizScore": 3,
+       "quizAt": 1757750500000,
+       "evidenceCount": 1
+      }
+     },
+     "lastMcp": null,
+     "access": {
+      "resumeSecretHash": "fixture-placeholder-not-a-real-hash"
+     }
+    },
+    {
+     "id": "member-a2",
+     "name": "deelnemer a ",
+     "help": false,
+     "quiz": null,
+     "route": "standard",
+     "progressByDay": {},
+     "lastMcp": null
+    },
+    {
+     "id": "member-a3",
+     "name": "Deelnemer B",
+     "help": false,
+     "quiz": null,
+     "route": "standard",
+     "progressByDay": {
+      "1": {
+       "route": "support"
+      },
+      "9": {
+       "route": "standard"
+      }
+     },
+     "lastMcp": null
+    },
+    {
+     "id": "member-a4",
+     "name": "Deelnemer C",
+     "help": false,
+     "quiz": null,
+     "route": "standard",
+     "progressByDay": {},
+     "lastMcp": null
+    }
+   ],
+   "driver": 1,
+   "round": 1,
+   "phase": "Plan",
+   "day": 2,
+   "mode": "lesson",
+   "running": false,
+   "remaining": 1500,
+   "deadline": null,
+   "evidence": [
+    {
+     "id": "evidence-a1",
+     "requestId": "req-a1",
+     "personId": "member-a1",
+     "name": "Deelnemer A",
+     "source": "Deelnemer",
+     "finding": "Fictieve bevinding",
+     "day": 2,
+     "at": "2025-09-13T09:00:00.000Z",
+     "status": "pending"
+    },
+    {
+     "id": "evidence-a2",
+     "requestId": "req-a2",
+     "personId": "member-a3",
+     "name": "Deelnemer B",
+     "finding": "Fictieve bevinding op onbekende dag",
+     "day": 9,
+     "at": "2025-09-13T09:05:00.000Z",
+     "status": "pending"
+    }
+   ],
+   "handoffs": [
+    {
+     "id": "handoff-a1",
+     "day": 2,
+     "by": "facilitator",
+     "decision": "Fictief besluit",
+     "checked": "Fictieve check",
+     "open": "Niets",
+     "next": "Deelnemer C",
+     "at": "2025-09-13T10:00:00.000Z"
+    }
+   ],
+   "version": 1,
+   "requests": {
+    "[\"member-a1\",\"evidence\",\"req-a1\"]": {
+     "payloadHash": "fixture",
+     "intent": {},
+     "result": {},
+     "completed": true
+    }
+   }
+  },
+  "00000000-0000-4000-8000-000000000102": {
+   "id": "00000000-0000-4000-8000-000000000102",
+   "code": "FIXTUREB2",
+   "name": "Fixture-squad FIXTUREB2",
+   "proof": {
+    "slug": "fixture-proof-102",
+    "editor": "fixture-editor"
+   },
+   "createdBy": {
+    "name": "Facilitator X",
+    "email": "facilitator-x@example.invalid",
+    "sub": "fixture-sub"
+   },
+   "createdAt": 1757750400000,
+   "roundSeconds": 1500,
+   "members": [
+    {
+     "id": "member-b1",
+     "name": "Deelnemer D",
+     "help": false,
+     "quiz": null,
+     "route": "standard",
+     "progressByDay": {},
+     "lastMcp": null
+    }
+   ],
+   "driver": 0,
+   "round": 1,
+   "phase": "Plan",
+   "day": 7,
+   "mode": "lesson",
+   "running": false,
+   "remaining": 1500,
+   "deadline": null,
+   "evidence": [],
+   "handoffs": [],
+   "version": 1
+  },
+  "00000000-0000-4000-8000-000000000103": {
+   "id": "00000000-0000-4000-8000-000000000103",
+   "code": "FIXTUREC3",
+   "name": "Fixture-squad FIXTUREC3",
+   "members": "not-an-array",
+   "day": 1,
+   "evidence": [],
+   "handoffs": []
+  },
+  "00000000-0000-4000-8000-000000000104": {
+   "id": "00000000-0000-4000-8000-000000000104",
+   "code": "FIXTURED4",
+   "name": "Fixture-squad FIXTURED4",
+   "proof": {
+    "slug": "fixture-proof-104",
+    "editor": "fixture-editor"
+   },
+   "createdBy": {
+    "name": "Facilitator X",
+    "email": "facilitator-x@example.invalid",
+    "sub": "fixture-sub"
+   },
+   "createdAt": 1757750400000,
+   "roundSeconds": 1500,
+   "members": [
+    {
+     "id": "member-d1",
+     "name": "Deelnemer E",
+     "help": false,
+     "quiz": null,
+     "route": "standard",
+     "progressByDay": {},
+     "lastMcp": null,
+     "access": {}
+    },
+    {
+     "id": "member-d2",
+     "name": "Deelnemer F",
+     "help": false,
+     "quiz": null,
+     "route": "standard",
+     "progressByDay": {},
+     "lastMcp": null
+    }
+   ],
+   "driver": 0,
+   "round": 1,
+   "phase": "Plan",
+   "day": 5,
+   "mode": "lesson",
+   "running": false,
+   "remaining": 1500,
+   "deadline": null,
+   "evidence": [],
+   "handoffs": [],
+   "version": 1
+  }
+ },
+ "sessions": {
+  "fixture-session-hash-1": {
+   "roomId": "00000000-0000-4000-8000-000000000101",
+   "personId": "member-a1",
+   "kind": "browser",
+   "expiresAt": 1757793600000
+  },
+  "fixture-session-hash-2": {
+   "roomId": "00000000-0000-4000-8000-000000000101",
+   "personId": "member-a1",
+   "kind": "mcp",
+   "expiresAt": 1757793600000
+  },
+  "fixture-session-hash-3": {
+   "roomId": "00000000-0000-4000-8000-000000000104",
+   "personId": "facilitator",
+   "kind": "browser",
+   "displayName": "Facilitator X",
+   "expiresAt": 1757793600000
+  },
+  "fixture-session-hash-4": {
+   "roomId": "00000000-0000-4000-8000-000000000999",
+   "personId": "member-zz",
+   "kind": "browser",
+   "expiresAt": 1757793600000
+  }
+ },
+ "facilitators": {
+  "fixture-facilitator-hash-1": {
+   "sub": "fixture-sub",
+   "email": "facilitator-x@example.invalid",
+   "name": "Facilitator X",
+   "domain": "example.invalid",
+   "expiresAt": 1757793600000
+  }
+ }
+}

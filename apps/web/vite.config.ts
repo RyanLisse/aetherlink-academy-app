@@ -6,6 +6,7 @@ const proxy = {
   '^/health(\\?.*)?$': {target: apiTarget, changeOrigin: false},
   '^/connection(\\?.*)?$': {target: apiTarget, changeOrigin: false},
   '^/authoring-api(/.*)?$': {target: apiTarget, changeOrigin: false},
+  '^/live': {target: apiTarget, changeOrigin: false, ws: true},
 };
 
 export default defineConfig({

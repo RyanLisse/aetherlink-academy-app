@@ -1,7 +1,7 @@
 import {randomUUID} from 'node:crypto';
 import {PgClient} from '@effect/sql-pg';
 import type {SqlError} from 'effect/unstable/sql/SqlError';
-import {and, eq, sql, type SQLWrapper} from 'drizzle-orm';
+import {and, desc, eq, exists, sql, type SQLWrapper} from 'drizzle-orm';
 import {drizzle} from 'drizzle-orm/node-postgres';
 import {Context, Data, Effect, Layer} from 'effect';
 import {decodeParticipantQuizQuestion, decodeQuizQuestion, decodeSlide, participantSlide, type ParticipantQuizQuestion, type QuizQuestion, type Slide} from '@academy/schema';
@@ -27,6 +27,7 @@ export interface CourseAggregateDraft {
 export interface Revision {
   readonly version: number;
   readonly status: 'draft' | 'published';
+  readonly contentHash: string | null;
   readonly createdAt: Date;
   readonly publishedAt: Date | null;
 }
@@ -105,9 +106,19 @@ const normalizeQuizRow = (row: Record<string, unknown>): Record<string, unknown>
   return normalized;
 };
 
+/** Participants only ever read published revisions; a draft (for example an unreviewed import) stays facilitator-only. */
+const publishedRevision = (courseId: string, version: number) =>
+  exists(
+    db
+      .select({one: sql`1`.as('one')})
+      .from(schema.courseVersions)
+      .where(and(eq(schema.courseVersions.courseId, courseId), eq(schema.courseVersions.version, version), eq(schema.courseVersions.status, 'published'))),
+  );
+
 export interface CurriculumRepoShape {
   readonly currentVersion: (courseId: string) => Effect.Effect<number | null, SqlError | CourseNotFound>;
   readonly listRevisions: (courseId: string) => Effect.Effect<ReadonlyArray<Revision>, SqlError>;
+  readonly writeDraft: (courseId: string, draft: CourseAggregateDraft, contentHash: string) => Effect.Effect<{readonly version: number; readonly unchanged: boolean; readonly contentHash: string}, SqlError | CourseNotFound>;
   readonly publish: (courseId: string, draft: CourseAggregateDraft) => Effect.Effect<{readonly version: number}, SqlError | CourseNotFound>;
   readonly createRoom: (courseId: string) => Effect.Effect<{readonly id: string; readonly pinnedVersion: number}, SqlError | CourseNotFound | RoomCourseUnpublished>;
   readonly readLessonFacilitator: (lessonId: string, courseId: string, version: number) => Effect.Effect<{
@@ -147,6 +158,7 @@ export const CurriculumRepoLive: Layer.Layer<CurriculumRepo, never, PgClient.PgC
           .select({
             version: as(schema.courseVersions.version, 'version'),
             status: as(schema.courseVersions.status, 'status'),
+            contentHash: as(schema.courseVersions.contentHash, 'contentHash'),
             createdAt: as(schema.courseVersions.createdAt, 'createdAt'),
             publishedAt: as(schema.courseVersions.publishedAt, 'publishedAt'),
           })
@@ -156,6 +168,58 @@ export const CurriculumRepoLive: Layer.Layer<CurriculumRepo, never, PgClient.PgC
           .toSQL();
         return yield* run<Revision>(sqlClient, query);
       });
+
+    const writeDraft: CurriculumRepoShape['writeDraft'] = (courseId, draft, contentHash) =>
+      sqlClient.withTransaction(
+        Effect.gen(function* () {
+          const lockQuery = db.select({id: as(schema.courses.id, 'id')}).from(schema.courses).where(eq(schema.courses.id, courseId)).for('update').toSQL();
+          const locked = yield* run<{id: string}>(sqlClient, lockQuery);
+          if (locked.length === 0) return yield* new CourseNotFound({courseId});
+
+          const latestQuery = db
+            .select({
+              version: as(schema.courseVersions.version, 'version'),
+              contentHash: as(schema.courseVersions.contentHash, 'contentHash'),
+              status: as(schema.courseVersions.status, 'status'),
+            })
+            .from(schema.courseVersions)
+            .where(eq(schema.courseVersions.courseId, courseId))
+            .orderBy(desc(schema.courseVersions.version))
+            .toSQL();
+          const [latest] = yield* run<{version: number; contentHash: string | null; status: string}>(sqlClient, latestQuery);
+          if (latest && latest.contentHash === contentHash && latest.status === 'draft') {
+            return {version: latest.version, unchanged: true, contentHash};
+          }
+
+          const nextVersionQuery = db
+            .select({next: sql<number>`coalesce(max(${schema.courseVersions.version}), 0) + 1`.as('next')})
+            .from(schema.courseVersions)
+            .where(eq(schema.courseVersions.courseId, courseId))
+            .toSQL();
+          const [nextRow] = yield* run<{next: number}>(sqlClient, nextVersionQuery);
+          const version = nextRow?.next ?? 1;
+
+          const insertVersion = db.insert(schema.courseVersions).values({courseId, version, status: 'draft', contentHash}).toSQL();
+          yield* run(sqlClient, insertVersion);
+
+          for (const rows of [
+            {table: schema.tracks, values: draft.tracks},
+            {table: schema.days, values: draft.days},
+            {table: schema.lessons, values: draft.lessons},
+            {table: schema.slides, values: draft.slides},
+            {table: schema.assignments, values: draft.assignments},
+            {table: schema.quizQuestions, values: draft.quizQuestions},
+          ] as const) {
+            if (rows.values.length === 0) continue;
+            const stamped = stampVersion(rows.values as ReadonlyArray<{id: string}>, courseId, version);
+            const insert = db.insert(rows.table).values(stamped as never).toSQL();
+            yield* run(sqlClient, insert);
+          }
+
+          // Never publishes: currentVersion pointer stays untouched.
+          return {version, unchanged: false, contentHash};
+        }),
+      );
 
     const publish: CurriculumRepoShape['publish'] = (courseId, draft) =>
       sqlClient.withTransaction(
@@ -246,19 +310,19 @@ export const CurriculumRepoLive: Layer.Layer<CurriculumRepo, never, PgClient.PgC
         const slidesQuery = db
           .select(participantSlideColumns)
           .from(schema.slides)
-          .where(and(eq(schema.slides.lessonId, lessonId), eq(schema.slides.courseId, courseId), eq(schema.slides.version, version)))
+          .where(and(eq(schema.slides.lessonId, lessonId), eq(schema.slides.courseId, courseId), eq(schema.slides.version, version), publishedRevision(courseId, version)))
           .orderBy(schema.slides.ordinal)
           .toSQL();
         const quizQuery = db
           .select(participantQuizColumns)
           .from(schema.quizQuestions)
-          .where(and(eq(schema.quizQuestions.lessonId, lessonId), eq(schema.quizQuestions.courseId, courseId), eq(schema.quizQuestions.version, version)))
+          .where(and(eq(schema.quizQuestions.lessonId, lessonId), eq(schema.quizQuestions.courseId, courseId), eq(schema.quizQuestions.version, version), publishedRevision(courseId, version)))
           .toSQL();
         const slides = (yield* run<Record<string, unknown>>(sqlClient, slidesQuery)).map((row) => participantSlide(decodeSlide(normalizeSlideRow(row))));
         const quizQuestions = (yield* run<Record<string, unknown>>(sqlClient, quizQuery)).map((row) => decodeParticipantQuizQuestion(normalizeQuizRow(row)));
         return {slides, quizQuestions};
       });
 
-    return {currentVersion, listRevisions, publish, createRoom, readLessonFacilitator, readLessonParticipant};
+    return {currentVersion, listRevisions, writeDraft, publish, createRoom, readLessonFacilitator, readLessonParticipant};
   }),
 );

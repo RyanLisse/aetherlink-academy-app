@@ -84,6 +84,7 @@ export * from './course.ts';
 export * from './lesson.ts';
 export * from './assignment.ts';
 export * from './quiz.ts';
+export * from './day-quiz.ts';
 export * from './room.ts';
 export * from './realtime.ts';
 export * from './progress.ts';
