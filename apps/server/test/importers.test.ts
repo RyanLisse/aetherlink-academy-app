@@ -140,10 +140,10 @@ describe('day-decks.json importer', () => {
 });
 
 describe('content.mjs importer', () => {
-  it('imports the five day packs from server/content.mjs (read only)', async () => {
+  it('imports the seven day packs from server/content.mjs (read only)', async () => {
     const imported = await importContentMjs(contentMjsPath);
-    expect(imported.days).toHaveLength(5);
-    expect(imported.days.map((d) => d.day)).toEqual([1, 2, 3, 4, 5]);
+    expect(imported.days.map((d) => d.day)).toEqual([1, 2, 3, 4, 5, 6, 7]);
+    expect(imported.days[2]?.title).toBe('Workshop 3 · Agents in n8n');
     expect(imported.slides.length).toBeGreaterThan(15);
     expect(imported.days[0]?.slides.some((s) => s.type === 'practice')).toBe(true);
   });

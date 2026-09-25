@@ -26,7 +26,8 @@
     "lint:content:teaching-1": "node content/scripts/lint-teaching-1.mjs",
     "lint:content:teaching-2": "node content/scripts/lint-teaching-2.mjs",
     "lint:content:support-4": "node content/scripts/lint-support-4.mjs",
-    "lint:content:support-5": "node content/scripts/lint-support-5.mjs"
+    "lint:content:support-5": "node content/scripts/lint-support-5.mjs",
+    "lint:content:day-packs": "node content/scripts/lint-day-packs.mjs"
   },
   "dependencies": {
     "@hocuspocus/provider": "2.15.3",
