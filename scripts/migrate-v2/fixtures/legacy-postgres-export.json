@@ -1,0 +1,138 @@
+{
+ "format": "academy-v1-postgres-export",
+ "schema": "academy",
+ "tables": {
+  "rooms": [
+   {
+    "id": "00000000-0000-4000-8000-000000000201",
+    "code": "FIXTUREE5",
+    "data": {
+     "id": "00000000-0000-4000-8000-000000000201",
+     "code": "FIXTUREE5",
+     "name": "Fixture-squad FIXTUREE5",
+     "proof": {
+      "slug": "fixture-proof-201",
+      "editor": "fixture-editor"
+     },
+     "createdBy": {
+      "name": "Facilitator X",
+      "email": "facilitator-x@example.invalid",
+      "sub": "fixture-sub"
+     },
+     "createdAt": 1757750400000,
+     "roundSeconds": 1500,
+     "members": [
+      {
+       "id": "member-e1",
+       "name": "Deelnemer G",
+       "help": false,
+       "quiz": null,
+       "route": "standard",
+       "progressByDay": {},
+       "lastMcp": null
+      },
+      {
+       "id": "member-e2",
+       "name": "Deelnemer G",
+       "help": false,
+       "quiz": null,
+       "route": "standard",
+       "progressByDay": {},
+       "lastMcp": null
+      },
+      {
+       "id": "member-e3",
+       "name": "Deelnemer H",
+       "help": false,
+       "quiz": null,
+       "route": "standard",
+       "progressByDay": {},
+       "lastMcp": null
+      }
+     ],
+     "driver": 1,
+     "round": 1,
+     "phase": "Plan",
+     "day": 1,
+     "mode": "lesson",
+     "running": false,
+     "remaining": 1500,
+     "deadline": null,
+     "evidence": [],
+     "handoffs": [],
+     "version": 1
+    }
+   },
+   {
+    "id": "00000000-0000-4000-8000-000000000202",
+    "code": "FIXTUREF6",
+    "data": {
+     "id": "00000000-0000-4000-8000-000000000202",
+     "code": "FIXTUREF6",
+     "name": "Fixture-squad FIXTUREF6",
+     "proof": {
+      "slug": "fixture-proof-202",
+      "editor": "fixture-editor"
+     },
+     "createdBy": {
+      "name": "Facilitator X",
+      "email": "facilitator-x@example.invalid",
+      "sub": "fixture-sub"
+     },
+     "createdAt": 1757750400000,
+     "roundSeconds": 1500,
+     "members": [
+      {
+       "id": "member-f1",
+       "name": "Deelnemer I",
+       "help": false,
+       "quiz": null,
+       "route": "standard",
+       "progressByDay": {},
+       "lastMcp": null
+      }
+     ],
+     "driver": 0,
+     "round": 1,
+     "phase": "Plan",
+     "day": 3,
+     "mode": "lesson",
+     "running": false,
+     "remaining": 1500,
+     "deadline": null,
+     "evidence": [],
+     "handoffs": [],
+     "version": 1
+    }
+   }
+  ],
+  "sessions": [
+   {
+    "room_id": "00000000-0000-4000-8000-000000000201",
+    "kind": "browser"
+   },
+   {
+    "room_id": "00000000-0000-4000-8000-000000000201",
+    "kind": "mcp"
+   },
+   {
+    "room_id": "00000000-0000-4000-8000-000000000202",
+    "kind": "browser"
+   }
+  ],
+  "facilitator_sessions_count": 2,
+  "login_states_count": 1,
+  "requests": [
+   {
+    "room_id": "00000000-0000-4000-8000-000000000201",
+    "kind": "evidence"
+   }
+  ],
+  "decks": [
+   {
+    "id": "00000000-0000-4000-8000-000000000301",
+    "room_id": "00000000-0000-4000-8000-000000000202"
+   }
+  ]
+ }
+}

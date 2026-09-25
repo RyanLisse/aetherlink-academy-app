@@ -20,6 +20,10 @@ Existing WebSockets may stay attached to the old container until they close, so 
 
 If a schema change prevents safe application rollback, pause the release and escalate to the release owner with the exact incompatibility. Do not delete production data or apply a destructive reverse migration automatically.
 
+## Roll back the v2 data cutover
+
+The legacy to v2 room migration has its own rollback in [Migrate legacy Academy rooms to v2](MIGRATION-V2.md#roll-back). It points the proxy back to the legacy upstream, unfreezes the legacy app, and restores the v2 snapshot only when the target must return to its pre-migration state. The migration never deletes source data, and rollback never deletes migrated rows by hand. The cutover and any rollback of it need Ryan's GO.
+
 ## To confirm on the box
 
 `rebuild-from-git.sh` lives on the VPS and is not in this repository, so the following are unverified from here and should be checked by whoever owns the host:
