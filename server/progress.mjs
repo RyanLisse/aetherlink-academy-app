@@ -3,7 +3,7 @@ export function dayProgress(room, person, day) {
  const evidence=(room.evidence||[]).filter(item=>item.personId===person?.id&&Number(item.day)===day);
  const reviewed=evidence.filter(item=>item.review);
  const handoffs=(room.handoffs||[]).filter(item=>Number(item.day)===day);
- return {quizScore:saved.quizScore??null,route:saved.route??null,evidenceCount:evidence.length,hasQuiz:saved.quizScore!=null,hasRoute:Boolean(saved.route),hasEvidence:evidence.length>0,reviewedCount:reviewed.length,acceptedCount:evidence.filter(item=>item.status==='accepted').length,hasReview:reviewed.length>0,hasHandoff:handoffs.length>0,reflection:saved.reflection||null,hasReflection:Boolean(saved.reflection)};
+ return {quizScore:saved.quizScore??null,route:saved.route??null,evidenceCount:evidence.length,hasQuiz:saved.quizScore!=null,hasRoute:Boolean(saved.route),hasEvidence:evidence.length>0,reviewedCount:reviewed.length,acceptedCount:evidence.filter(item=>item.status==='accepted').length,hasReview:reviewed.length>0,hasHandoff:handoffs.length>0,reflection:saved.reflection||null,hasReflection:Boolean(saved.reflection),labs:saved.labs||{},labsCompleted:Object.keys(saved.labs||{}).length};
 }
 export function debrief(room) {
  return {day:room.day,name:room.name,members:room.members.map(person=>({id:person.id,name:person.name,help:person.help,progress:dayProgress(room,person,room.day)})),handoffs:(room.handoffs||[]).filter(item=>Number(item.day)===room.day)};

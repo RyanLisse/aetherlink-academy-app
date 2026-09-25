@@ -40,7 +40,7 @@ type DayPack = {
     readonly workedExample?: string;
   };
   readonly quiz?: {
-    readonly questions?: ReadonlyArray<{readonly question: string; readonly options: ReadonlyArray<string>}>;
+    readonly questions?: ReadonlyArray<{readonly question: string; readonly options: ReadonlyArray<{readonly label: string}>}>;
   };
   readonly mission?: {
     readonly id?: string;
@@ -92,7 +92,7 @@ const packToRawSlides = (pack: DayPack): Record<string, unknown>[] => {
       title: question.question,
       type: 'review',
       layout: 'cards',
-      cards: question.options.map((option, index) => ({title: String.fromCharCode(65 + index), body: option})),
+      cards: question.options.map((option, index) => ({title: String.fromCharCode(65 + index), body: option.label})),
     });
   }
 
