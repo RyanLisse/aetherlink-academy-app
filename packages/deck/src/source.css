@@ -237,7 +237,7 @@
 .academy-deck .prompt-button{background:var(--cyan);border-color:var(--cyan);color:var(--ink);font-weight:700}
 .academy-deck .arrows{display:flex;gap:.5rem}
 .academy-deck .arrows button{font-size:1.3rem;width:46px;padding:.4rem}
-@media(max-width:760px){.academy-deck .kbd-hint{display:none}.academy-deck .progress{width:min(220px,40vw)}.academy-deck .controls{gap:.6rem .8rem}.academy-deck .position{flex:1;min-width:0;order:1}.academy-deck .arrows{order:2}.academy-deck .actions{order:3;width:100%;flex-wrap:nowrap;overflow-x:auto}}
+@media(max-width:760px){.academy-deck .kbd-hint{display:none}.academy-deck .progress{width:min(220px,40vw);gap:1px}.academy-deck .progress .seg{min-width:0}.academy-deck .controls{gap:.6rem .8rem}.academy-deck .position{flex:1;min-width:0;order:1}.academy-deck .arrows{order:2}.academy-deck .actions{order:3;width:100%;flex-wrap:nowrap;overflow-x:auto}}
 
 .academy-deck .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .academy-deck .skip{position:fixed;top:-100px;left:10px;z-index:20;background:var(--surface);color:var(--text);padding:1rem;border-radius:8px}
@@ -264,7 +264,7 @@
 @media(max-width:760px){
   .academy-deck .toolbar{padding:.9rem 4vw;flex-wrap:nowrap}
   .academy-deck .brand{font-size:.9rem;flex:none}.academy-deck .brand small{white-space:nowrap;margin-top:.2rem}
-  .academy-deck .tools{flex:1;min-width:0;overflow-x:auto;justify-content:flex-start;scrollbar-width:none}.academy-deck .tools::-webkit-scrollbar{display:none}
+  .academy-deck .tools{flex:1;min-width:0;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;scrollbar-width:none}.academy-deck .tools::-webkit-scrollbar{display:none}
   .academy-deck .tools button{flex:none;white-space:nowrap;font-size:.78rem;padding:.55rem .7rem;min-height:40px}
   .academy-deck .cards.three{grid-template-columns:1fr}
   .academy-deck .cards{gap:.7rem}.academy-deck .card{padding:1rem}.academy-deck .card p{font-size:1rem}
@@ -710,6 +710,7 @@
 .academy-deck .stamp-box .stamps{display:grid;grid-template-columns:repeat(3,auto);justify-items:center;gap:1rem 1.2rem;margin:0}
 .academy-deck .stamp-box .stamps-label{grid-column:1/-1;margin:0}
 .academy-deck .stamp-box .place-stamps{grid-column:1/-1;height:clamp(140px,20vh,180px)}
+@media(max-width:760px){.academy-deck .has-stamps{grid-template-columns:minmax(0,1fr)}}
 /* assignment: purple -> orange instead of yellow (Cons, 18 sep) */
 .academy-deck .assignment-banner{background:linear-gradient(105deg,var(--aether-purple),var(--aether-orange));color:#fff;text-shadow:0 1px 1px rgba(0,0,0,.25)}
 .academy-deck[data-type=practice] .type-chip{background:linear-gradient(105deg,var(--aether-purple),var(--aether-orange));color:#fff}

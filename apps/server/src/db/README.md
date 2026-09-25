@@ -57,6 +57,7 @@ pnpm --filter @academy/server run db:generate   # regenerate drizzle/*.sql from 
 
 - `readLessonFacilitator` selects plain-text `notes` and the quiz `answer`; `readLessonParticipant` does not select those columns at all. Nullable SQL optionals are omitted before decoding with the shared canonical schemas, while a valid JSON `visual: null` remains present.
 - The participant slide projection strips the top-level `visual.quiz.answer` **in SQL** only when both `visual` and `visual.quiz` are JSON objects. Other valid shapes (scalars, null, arrays, quiz arrays, and unrelated nested answers) pass through unchanged. This mirrors `@academy/schema`'s existing `withoutVisualQuizAnswer` scope.
+- `readLessonParticipant` returns rows only when the requested `(course_id, version)` is `published`; a draft revision (for example an unreviewed Notion import, AET-33) reads as empty for participants.
 - `facilitator_credentials` (ciphertext only, no plaintext column exists) is never selected by any curriculum query in this file.
 
 ## Testing

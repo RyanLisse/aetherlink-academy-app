@@ -1,0 +1,15 @@
+{
+  "provenance": {
+    "url": "http://91.99.78.17:4317/game/health",
+    "retrievedAt": "2026-09-25T05:55:42.704Z",
+    "bytes": 40,
+    "sha256": "8782997da6c7e436e3d253412ce5f2c35305f7237bddc606e3fbd522c5629566"
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": "{\"ok\":true,\"proof\":true,\"revision\":null}"
+  }
+}

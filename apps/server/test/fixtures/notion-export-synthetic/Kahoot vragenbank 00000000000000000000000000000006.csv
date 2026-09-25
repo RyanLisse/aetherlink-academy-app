@@ -1,0 +1,5 @@
+Question - max 120 characters,Answer 1 - max 75 characters,Answer 2 - max 75 characters,Answer 3 - max 75 characters,Answer 4 - max 75 characters,Time limit (sec),Correct answer(s) - choose at least one,Dag,Les
+SYNTHETIC vraag 1?,Optie A,Optie B,Optie C,,20,2,1,
+"SYNTHETIC vraag 2, met komma?",Optie A,Optie B,,,20,1,2,placeholder-les-2b
+SYNTHETIC vraag 3 met twee antwoorden?,Optie A,Optie B,,,20,"1,2",1,
+SYNTHETIC vraag 4 op onbekende dag?,Optie A,Optie B,,,20,1,9,
