@@ -13,6 +13,7 @@ import {
   importDayDecksJson,
   importMarkdown,
   importSlidesJs,
+  importTrainingSiteArchive,
   slidesToAggregate,
 } from '../src/importers/index.ts';
 
@@ -136,6 +137,48 @@ describe('day-decks.json importer', () => {
     expect(imported.decks.map((d) => d.dayKey)).toEqual(['day1', 'day2', 'day3', 'day4', 'day5']);
     expect(imported.slides.length).toBe(124);
     expect(imported.slides.every((slide) => typeof slide.title === 'string')).toBe(true);
+  }, 60_000);
+});
+
+const TRAINING_SITE = {repo: 'RyanLisse/aetherlink-training-site', commit: 'df611554d4e1cc0ab56c8ebc1221edcc7d9ba10b'};
+const TRAINING_SITE_FILES = {
+  'dist/days.js': 'fb37acd3717f930779c3e16f8c67342edd2bcbdb336f9fa70b3c8d237a145def',
+  'dist/squad2.js': 'cc75b0953efcab56f5ab2a1e69b80c278a099911d9e49c6dc98b1d31c7cf0d9d',
+};
+
+const pinnedTrainingSiteCheckout = async (): Promise<string> => {
+  const checkout = path.join(cacheDir(), `training-site-${TRAINING_SITE.commit}`);
+  for (const [repoPath, digest] of Object.entries(TRAINING_SITE_FILES)) {
+    const dest = path.join(checkout, repoPath);
+    if (existsSync(dest) && createHash('sha256').update(readFileSync(dest)).digest('hex') === digest) continue;
+    const response = await fetch(`https://raw.githubusercontent.com/${TRAINING_SITE.repo}/${TRAINING_SITE.commit}/${repoPath}`);
+    if (!response.ok) throw new Error(`failed to fetch ${repoPath}: ${response.status}`);
+    const bytes = Buffer.from(await response.arrayBuffer());
+    expect(createHash('sha256').update(bytes).digest('hex')).toBe(digest);
+    mkdirSync(path.dirname(dest), {recursive: true});
+    writeFileSync(dest, bytes);
+  }
+  return checkout;
+};
+
+describe('training-site archive importer', () => {
+  it('imports all 224 Squad 1/2 slides with per-slide provenance, matching the committed archive', async () => {
+    const archive = importTrainingSiteArchive(await pinnedTrainingSiteCheckout(), TRAINING_SITE);
+    expect(archive.status).toBe('archived');
+    expect(archive.courseVersion).toBe('training-site@df61155');
+    expect(archive.slideCount).toBe(224);
+    expect(archive.decks.map((deck) => `s${deck.squad}d${deck.day}:${deck.slides.length}`)).toEqual([
+      's1d1:23', 's1d2:19', 's1d3:24', 's1d4:25', 's1d5:33', 's2d1:23', 's2d2:18', 's2d3:15', 's2d4:23', 's2d5:21',
+    ]);
+    const first = archive.decks[0]!.slides[0]!;
+    expect(first.slide.title).toBe('Welcome · frame a payment reconciliation change');
+    expect(first.slide.lessonId).toBe('archive-s1-day1');
+    expect(first.source).toEqual({...TRAINING_SITE, path: 'dist/days.js', pointer: 'DAYS.day1.slides[0]'});
+    const squad2 = archive.decks[7]!.slides[4]!;
+    expect([squad2.slide.id, squad2.slide.layout, squad2.slide.type]).toEqual(['archive-s2-day3-5', 'image', 'concept']);
+    expect(squad2.source).toEqual({...TRAINING_SITE, path: 'dist/squad2.js', pointer: 'SQUAD2.day3.slides[4]'});
+    const committed = JSON.parse(readFileSync(path.resolve(here, '../../../content/archive/training-site.json'), 'utf8'));
+    expect(JSON.parse(JSON.stringify(archive))).toEqual(committed);
   }, 60_000);
 });
 

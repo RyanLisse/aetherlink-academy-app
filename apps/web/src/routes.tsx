@@ -13,6 +13,8 @@ import {workshop6SourceSlides} from './deck/workshop6-slides.js';
 import {workshop7SourceSlides} from './deck/workshop7-slides.js';
 import {normalizeSlides} from './deck/normalize.js';
 import {matchReference, ReferenceView} from './reference/index.ts';
+import {matchArchive} from './archive/archive.ts';
+import {ArchiveView} from './archive/ArchiveView.tsx';
 import './deck/deck.css';
 import {AuthoringPage} from './authoring/AuthoringPage.tsx';
 
@@ -212,9 +214,11 @@ export function AppRoutes({children}: {readonly children?: ReactNode}) {
   const [pathname, navigate] = usePathname();
   const [referencePath = '', referenceAnchor] = pathname.split('#');
   const reference = matchReference(referencePath);
-  const deckLike = reference !== null || pathname === '/deck' || isClassroom1Path(pathname) || isClassroom2Path(pathname) || isWorkshop5Path(pathname) || isWorkshop3Path(pathname) || isWorkshop4Path(pathname) || isWorkshop6Path(pathname) || isWorkshop7Path(pathname) || pathname === '/authoring';
+  const archive = matchArchive(referencePath);
+  const deckLike = reference !== null || archive !== null || pathname === '/deck' || isClassroom1Path(pathname) || isClassroom2Path(pathname) || isWorkshop5Path(pathname) || isWorkshop3Path(pathname) || isWorkshop4Path(pathname) || isWorkshop6Path(pathname) || isWorkshop7Path(pathname) || pathname === '/authoring';
   const connection = useConnection(fetchConnection, 5000, !deckLike);
   if (reference) return <ReferenceView page={reference} navigate={navigate} anchor={referenceAnchor ?? (window.location.hash.slice(1) || null)} />;
+  if (archive) return <ArchiveView page={archive} navigate={navigate} anchor={referenceAnchor ?? (window.location.hash.slice(1) || null)} />;
   if (pathname === '/deck') return <DeckDemo slides={DECK_SLIDES} />;
   if (pathname === '/authoring') return <AuthoringPage />;
   if (isClassroom1Path(pathname)) return <DeckDemo slides={CLASSROOM_1_SLIDES} />;

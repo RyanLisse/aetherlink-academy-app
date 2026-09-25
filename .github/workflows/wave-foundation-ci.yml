@@ -75,6 +75,8 @@ jobs:
         run: pnpm --filter @academy/server run test:notion-db
       - name: Authoring publish and pinned-room regression on isolated PostgreSQL
         run: pnpm --filter @academy/server run test:authoring-db
+      - name: Google SSO facilitator sessions on isolated PostgreSQL
+        run: pnpm --filter @academy/server run test:facilitator-db
 
   container:
     runs-on: ubuntu-latest

@@ -26,6 +26,7 @@ import {READ_ONLY_MESSAGE,parseCohortInput,parseMemberNames,normalizeAccessCode,
 import {CERTIFICATE_CSP,CERTIFICATE_INVALID_MESSAGE,publicVerification,renderCertificatePage,renderVerificationPage} from './certificate.mjs';
 import {parseLabAnswer,parseLabCompletion,parseOriginAllowlist,resolveLabs} from '../packages/lab-embed/src/index.ts';
 import {gradedStopsPassed,parseLabKeys,recordAttempt} from '../packages/lab-embed/src/grading.ts';
+import {isLegacySite,resolveLegacyUrl} from '../apps/web/src/redirects/legacy.ts';
 import {labGradingKeys} from './lab-keys.mjs';
 import {createScreenStore,screenBinding,readScreenState} from './screen-state.mjs';
 import {answerQuestion,rankDocuments} from './faq.mjs';
@@ -302,7 +303,12 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  });
  // apps/web SPA (Classroom / deck / workshop / lesson / live) — AET-75+ routes live in apps/web, not root dist/
  const webIndex=path.join(webDist,'index.html');
- const isWebSpaPath=p=>p==='/deck'||p==='/reference'||p.startsWith('/reference/')||p.startsWith('/classroom/')||p.startsWith('/workshop/')||p==='/lesson'||p.startsWith('/lesson/')||p.startsWith('/live/');
+ const isWebSpaPath=p=>p==='/deck'||p==='/reference'||p.startsWith('/reference/')||p==='/archive'||p.startsWith('/archive/')||p.startsWith('/classroom/')||p.startsWith('/workshop/')||p==='/lesson'||p.startsWith('/lesson/')||p.startsWith('/live/');
+ app.get('/legacy-redirect',(req,res)=>{
+  const site=req.query.site;
+  if(!isLegacySite(site))return res.status(400).type('text').send('unknown legacy site');
+  return res.redirect(301,resolveLegacyUrl(site,typeof req.query.from==='string'?req.query.from:'/'));
+ });
  app.use(express.static(webDist,{index:false,fallthrough:true}));
  app.use((req,res,next)=>{
   if(req.method!=='GET'&&req.method!=='HEAD')return next();
