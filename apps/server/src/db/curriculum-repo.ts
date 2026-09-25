@@ -1,7 +1,7 @@
 import {randomUUID} from 'node:crypto';
 import {PgClient} from '@effect/sql-pg';
 import type {SqlError} from 'effect/unstable/sql/SqlError';
-import {and, desc, eq, exists, sql, type SQLWrapper} from 'drizzle-orm';
+import {and, asc, desc, eq, exists, getTableColumns, sql, type SQLWrapper} from 'drizzle-orm';
 import {drizzle} from 'drizzle-orm/node-postgres';
 import {Context, Data, Effect, Layer} from 'effect';
 import {decodeParticipantQuizQuestion, decodeQuizQuestion, decodeSlide, participantSlide, type ParticipantQuizQuestion, type QuizQuestion, type Slide} from '@academy/schema';
@@ -12,6 +12,8 @@ const db = drizzle.mock({schema});
 
 export class CourseNotFound extends Data.TaggedError('CourseNotFound')<{readonly courseId: string}> {}
 export class RoomCourseUnpublished extends Data.TaggedError('RoomCourseUnpublished')<{readonly courseId: string}> {}
+export class RevisionNotFound extends Data.TaggedError('RevisionNotFound')<{readonly courseId: string; readonly version: number}> {}
+export class RevisionNotDraft extends Data.TaggedError('RevisionNotDraft')<{readonly courseId: string; readonly version: number}> {}
 
 type DraftRow<Table extends {$inferInsert: object}> = Omit<Table['$inferInsert'], 'courseId' | 'version'> & {readonly id: string};
 
@@ -28,6 +30,8 @@ export interface Revision {
   readonly version: number;
   readonly status: 'draft' | 'published';
   readonly contentHash: string | null;
+  readonly createdBy: string | null;
+  readonly publishedBy: string | null;
   readonly createdAt: Date;
   readonly publishedAt: Date | null;
 }
@@ -118,8 +122,12 @@ const publishedRevision = (courseId: string, version: number) =>
 export interface CurriculumRepoShape {
   readonly currentVersion: (courseId: string) => Effect.Effect<number | null, SqlError | CourseNotFound>;
   readonly listRevisions: (courseId: string) => Effect.Effect<ReadonlyArray<Revision>, SqlError>;
-  readonly writeDraft: (courseId: string, draft: CourseAggregateDraft, contentHash: string) => Effect.Effect<{readonly version: number; readonly unchanged: boolean; readonly contentHash: string}, SqlError | CourseNotFound>;
-  readonly publish: (courseId: string, draft: CourseAggregateDraft) => Effect.Effect<{readonly version: number}, SqlError | CourseNotFound>;
+  readonly writeDraft: (courseId: string, draft: CourseAggregateDraft, contentHash: string, createdBy?: string) => Effect.Effect<{readonly version: number; readonly unchanged: boolean; readonly contentHash: string}, SqlError | CourseNotFound>;
+  readonly publish: (courseId: string, draft: CourseAggregateDraft, publishedBy?: string) => Effect.Effect<{readonly version: number}, SqlError | CourseNotFound>;
+  /** Flips an existing draft to published and moves the course pointer; never touches rooms (their pin is immutable). */
+  readonly publishDraft: (courseId: string, version: number, publishedBy: string) => Effect.Effect<{readonly version: number; readonly publishedAt: Date}, SqlError | CourseNotFound | RevisionNotFound | RevisionNotDraft>;
+  /** Every content row of one revision, shaped as a draft that `writeDraft` accepts unchanged. */
+  readonly readAggregate: (courseId: string, version: number) => Effect.Effect<CourseAggregateDraft, SqlError | RevisionNotFound>;
   readonly createRoom: (courseId: string) => Effect.Effect<{readonly id: string; readonly pinnedVersion: number}, SqlError | CourseNotFound | RoomCourseUnpublished>;
   readonly readLessonFacilitator: (lessonId: string, courseId: string, version: number) => Effect.Effect<{
     readonly slides: ReadonlyArray<Slide>;
@@ -134,6 +142,22 @@ export interface CurriculumRepoShape {
 export class CurriculumRepo extends Context.Service<CurriculumRepo, CurriculumRepoShape>()('@academy/server/CurriculumRepo') {}
 
 const run = <A extends object>(sqlClient: PgClient.PgClient, query: {sql: string; params: unknown[]}) => sqlClient.unsafe<A>(query.sql, query.params);
+
+type AggregateTable = typeof schema.tracks | typeof schema.days | typeof schema.lessons | typeof schema.slides | typeof schema.assignments | typeof schema.quizQuestions;
+
+/** Keys `stampVersion`/defaults own, plus generated tsvector columns Postgres refuses on insert. */
+const NON_DRAFT_KEYS = new Set(['courseId', 'version', 'createdAt']);
+
+const draftColumns = (table: AggregateTable): Record<string, ReturnType<typeof as>> =>
+  Object.fromEntries(
+    Object.entries(getTableColumns(table))
+      .filter(([key, column]) => !NON_DRAFT_KEYS.has(key) && !column.generated)
+      .map(([key, column]) => [key, as(column, key)]),
+  );
+
+/** A null column and an omitted optional field are the same draft; dropping nulls keeps content hashes stable across a read/write round trip. */
+const dropNulls = (row: Record<string, unknown>): Record<string, unknown> =>
+  Object.fromEntries(Object.entries(row).filter(([, value]) => value !== null));
 
 const stampVersion = <Row extends {id: string}>(rows: ReadonlyArray<Row>, courseId: string, version: number) =>
   rows.map((row) => ({...row, id: row.id, courseId, version}));
@@ -159,6 +183,8 @@ export const CurriculumRepoLive: Layer.Layer<CurriculumRepo, never, PgClient.PgC
             version: as(schema.courseVersions.version, 'version'),
             status: as(schema.courseVersions.status, 'status'),
             contentHash: as(schema.courseVersions.contentHash, 'contentHash'),
+            createdBy: as(schema.courseVersions.createdBy, 'createdBy'),
+            publishedBy: as(schema.courseVersions.publishedBy, 'publishedBy'),
             createdAt: as(schema.courseVersions.createdAt, 'createdAt'),
             publishedAt: as(schema.courseVersions.publishedAt, 'publishedAt'),
           })
@@ -169,7 +195,7 @@ export const CurriculumRepoLive: Layer.Layer<CurriculumRepo, never, PgClient.PgC
         return yield* run<Revision>(sqlClient, query);
       });
 
-    const writeDraft: CurriculumRepoShape['writeDraft'] = (courseId, draft, contentHash) =>
+    const writeDraft: CurriculumRepoShape['writeDraft'] = (courseId, draft, contentHash, createdBy) =>
       sqlClient.withTransaction(
         Effect.gen(function* () {
           const lockQuery = db.select({id: as(schema.courses.id, 'id')}).from(schema.courses).where(eq(schema.courses.id, courseId)).for('update').toSQL();
@@ -199,7 +225,7 @@ export const CurriculumRepoLive: Layer.Layer<CurriculumRepo, never, PgClient.PgC
           const [nextRow] = yield* run<{next: number}>(sqlClient, nextVersionQuery);
           const version = nextRow?.next ?? 1;
 
-          const insertVersion = db.insert(schema.courseVersions).values({courseId, version, status: 'draft', contentHash}).toSQL();
+          const insertVersion = db.insert(schema.courseVersions).values({courseId, version, status: 'draft', contentHash, createdBy: createdBy ?? null}).toSQL();
           yield* run(sqlClient, insertVersion);
 
           for (const rows of [
@@ -221,7 +247,7 @@ export const CurriculumRepoLive: Layer.Layer<CurriculumRepo, never, PgClient.PgC
         }),
       );
 
-    const publish: CurriculumRepoShape['publish'] = (courseId, draft) =>
+    const publish: CurriculumRepoShape['publish'] = (courseId, draft, publishedBy) =>
       sqlClient.withTransaction(
         Effect.gen(function* () {
           const lockQuery = db.select({id: as(schema.courses.id, 'id')}).from(schema.courses).where(eq(schema.courses.id, courseId)).for('update').toSQL();
@@ -236,7 +262,7 @@ export const CurriculumRepoLive: Layer.Layer<CurriculumRepo, never, PgClient.PgC
           const [nextRow] = yield* run<{next: number}>(sqlClient, nextVersionQuery);
           const version = nextRow?.next ?? 1;
 
-          const insertVersion = db.insert(schema.courseVersions).values({courseId, version, status: 'draft'}).toSQL();
+          const insertVersion = db.insert(schema.courseVersions).values({courseId, version, status: 'draft', createdBy: publishedBy ?? null}).toSQL();
           yield* run(sqlClient, insertVersion);
 
           for (const rows of [
@@ -255,7 +281,7 @@ export const CurriculumRepoLive: Layer.Layer<CurriculumRepo, never, PgClient.PgC
 
           const publishVersion = db
             .update(schema.courseVersions)
-            .set({status: 'published', publishedAt: new Date()})
+            .set({status: 'published', publishedAt: new Date(), publishedBy: publishedBy ?? null})
             .where(and(eq(schema.courseVersions.courseId, courseId), eq(schema.courseVersions.version, version)))
             .toSQL();
           yield* run(sqlClient, publishVersion);
@@ -266,6 +292,64 @@ export const CurriculumRepoLive: Layer.Layer<CurriculumRepo, never, PgClient.PgC
           return {version};
         }),
       );
+
+    const publishDraft: CurriculumRepoShape['publishDraft'] = (courseId, version, publishedBy) =>
+      sqlClient.withTransaction(
+        Effect.gen(function* () {
+          const lockQuery = db.select({id: as(schema.courses.id, 'id')}).from(schema.courses).where(eq(schema.courses.id, courseId)).for('update').toSQL();
+          const locked = yield* run<{id: string}>(sqlClient, lockQuery);
+          if (locked.length === 0) return yield* new CourseNotFound({courseId});
+
+          const statusQuery = db
+            .select({status: as(schema.courseVersions.status, 'status')})
+            .from(schema.courseVersions)
+            .where(and(eq(schema.courseVersions.courseId, courseId), eq(schema.courseVersions.version, version)))
+            .for('update')
+            .toSQL();
+          const [row] = yield* run<{status: string}>(sqlClient, statusQuery);
+          if (!row) return yield* new RevisionNotFound({courseId, version});
+          if (row.status !== 'draft') return yield* new RevisionNotDraft({courseId, version});
+
+          const publishedAt = new Date();
+          const publishVersion = db
+            .update(schema.courseVersions)
+            .set({status: 'published', publishedAt, publishedBy})
+            .where(and(eq(schema.courseVersions.courseId, courseId), eq(schema.courseVersions.version, version)))
+            .toSQL();
+          yield* run(sqlClient, publishVersion);
+
+          const movePointer = db.update(schema.courses).set({currentVersion: version}).where(eq(schema.courses.id, courseId)).toSQL();
+          yield* run(sqlClient, movePointer);
+          return {version, publishedAt};
+        }),
+      );
+
+    const readAggregate: CurriculumRepoShape['readAggregate'] = (courseId, version) =>
+      Effect.gen(function* () {
+        const versionQuery = db
+          .select({version: as(schema.courseVersions.version, 'version')})
+          .from(schema.courseVersions)
+          .where(and(eq(schema.courseVersions.courseId, courseId), eq(schema.courseVersions.version, version)))
+          .toSQL();
+        if ((yield* run<{version: number}>(sqlClient, versionQuery)).length === 0) return yield* new RevisionNotFound({courseId, version});
+        const readTable = <Table extends AggregateTable>(table: Table) => {
+          const query = db
+            .select(draftColumns(table))
+            .from(table as never)
+            .where(and(eq(table.courseId, courseId), eq(table.version, version)))
+            .orderBy(asc(table.id))
+            .toSQL();
+          return run<Record<string, unknown>>(sqlClient, query).pipe(Effect.map((rows) => rows.map(dropNulls)));
+        };
+        return {
+          tracks: (yield* readTable(schema.tracks)) as unknown as CourseAggregateDraft['tracks'],
+          days: (yield* readTable(schema.days)) as unknown as CourseAggregateDraft['days'],
+          lessons: (yield* readTable(schema.lessons)) as unknown as CourseAggregateDraft['lessons'],
+          slides: (yield* readTable(schema.slides)) as unknown as CourseAggregateDraft['slides'],
+          assignments: (yield* readTable(schema.assignments)) as unknown as CourseAggregateDraft['assignments'],
+          quizQuestions: (yield* readTable(schema.quizQuestions)) as unknown as CourseAggregateDraft['quizQuestions'],
+        };
+      });
 
     const createRoom: CurriculumRepoShape['createRoom'] = (courseId) =>
       sqlClient.withTransaction(
@@ -323,6 +407,6 @@ export const CurriculumRepoLive: Layer.Layer<CurriculumRepo, never, PgClient.PgC
         return {slides, quizQuestions};
       });
 
-    return {currentVersion, listRevisions, writeDraft, publish, createRoom, readLessonFacilitator, readLessonParticipant};
+    return {currentVersion, listRevisions, writeDraft, publish, publishDraft, readAggregate, createRoom, readLessonFacilitator, readLessonParticipant};
   }),
 );

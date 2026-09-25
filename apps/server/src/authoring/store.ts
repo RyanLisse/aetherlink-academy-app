@@ -202,6 +202,22 @@ export class AuthoringStore {
   }
 
   /**
+   * Full content of one stored snapshot: the named revision, or the latest one
+   * when `revision` is omitted. `lesson: null` means the lesson doesn't exist;
+   * `snapshot: null` means it has no (matching) snapshot.
+   */
+  getSnapshot(id: string, revision?: string): Promise<{lesson: Lesson; snapshot: SnapshotRecord | null} | null> {
+    return this.mutex.run(async () => {
+      const store = await this.load();
+      const record = store.lessons[id];
+      if (!record) return null;
+      const history = record.snapshotHistory;
+      const snapshot = revision === undefined ? history.at(-1) : history.findLast((entry) => entry.revision === revision);
+      return {lesson: toPublicLesson(record), snapshot: snapshot ?? null};
+    });
+  }
+
+  /**
    * Returns `null` when the lesson doesn't exist. Otherwise creates the deck
    * upstream only if the lesson doesn't already have one; a lesson that
    * already has a deck returns it unchanged (`created: false`), never

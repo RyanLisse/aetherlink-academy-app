@@ -38,6 +38,9 @@ export const courseVersions = curriculum.table(
     version: integer('version').notNull(),
     status: text('status', {enum: ['draft', 'published']}).notNull().default('draft'),
     contentHash: text('content_hash'),
+    /** Server-resolved facilitator identity (SSO email, or `host-key`); null for importer-written revisions. */
+    createdBy: text('created_by'),
+    publishedBy: text('published_by'),
     publishedAt: timestamp('published_at', {withTimezone: true}),
     createdAt: createdAt(),
   },

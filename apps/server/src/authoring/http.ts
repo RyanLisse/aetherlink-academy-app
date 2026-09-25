@@ -13,6 +13,9 @@ import {
   UpstreamUnavailable,
   UpstreamUncertain,
 } from './errors.ts';
+import {CourseNotFound, RevisionNotDraft, RevisionNotFound, type CurriculumRepoShape} from '../db/curriculum-repo.ts';
+import type {FacilitatorAuthShape} from '../identity/facilitator-auth.ts';
+import {lessonMarkdown, publishSnapshot} from './publish.ts';
 import type {AuthoringStore, DeckSummary, Lesson} from './store.ts';
 import type {SlidesUpstream, UpstreamSlideInput} from './upstream.ts';
 
@@ -23,11 +26,27 @@ const MAX_OUTLINE_ITEM_LENGTH = 500;
 const MAX_REQUEST_BODY_LENGTH = 512_000;
 const MAX_DECK_ID_LENGTH = 200;
 const LESSON_ID_PATTERN = /^[A-Za-z0-9-]{1,80}$/;
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const MAX_REVISION_LENGTH = 200;
+/** Same cookie the gateway sets after Google SSO (`server/app.mjs`). */
+export const FACILITATOR_COOKIE = 'academy-facilitator';
+/** Author recorded for revisions published with the shared host key rather than a personal SSO session. */
+export const HOST_KEY_AUTHOR = 'host-key';
 
 export interface AuthoringDeps {
   readonly config: AuthoringConfig;
   readonly store: AuthoringStore;
   readonly upstream: SlidesUpstream;
+  /** Absent: publish, revision list and export answer 503 instead of pretending to publish. */
+  readonly curriculum?: CurriculumRepoShape;
+  /** Absent: only the host key authorizes. */
+  readonly facilitators?: Pick<FacilitatorAuthShape, 'current'>;
+}
+
+/** Who is calling, resolved server-side. `via` matters for CSRF: a cookie rides along cross-site, a bearer header never does. */
+interface Facilitator {
+  readonly author: string;
+  readonly via: 'host-key' | 'sso-bearer' | 'sso-cookie';
 }
 
 /** Constant-time regardless of input length: both sides are hashed to a fixed 32 bytes first. */
@@ -40,6 +59,20 @@ const timingSafeEqualStrings = (a: string, b: string): boolean => {
 const extractBearerToken = (header: string | undefined): string | null => {
   if (!header) return null;
   return /^Bearer (.+)$/.exec(header)?.[1] ?? null;
+};
+
+const readCookie = (header: string | undefined, name: string): string | null => {
+  if (!header) return null;
+  for (const part of header.split(';')) {
+    const index = part.indexOf('=');
+    if (index < 0 || part.slice(0, index).trim() !== name) continue;
+    try {
+      return decodeURIComponent(part.slice(index + 1).trim()) || null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
 };
 
 const HTML_ESCAPES: Record<string, string> = {'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'};
@@ -67,6 +100,10 @@ const errorResponse = (status: number, message: string) => jsonResponse(status, 
 const mapAuthoringError = (error: unknown) => {
   if (error instanceof AuthoringUnauthorized) return errorResponse(401, error.message);
   if (error instanceof AuthoringNotFound) return errorResponse(404, error.message);
+  if (error instanceof CourseNotFound) return errorResponse(404, `Course ${error.courseId} was not found.`);
+  if (error instanceof RevisionNotFound) return errorResponse(404, `Course ${error.courseId} has no revision ${error.version}.`);
+  if (error instanceof RevisionNotDraft) return errorResponse(409, `Course ${error.courseId} revision ${error.version} is already published.`);
+  if (error instanceof CurriculumUnavailable) return errorResponse(503, error.message);
   if (error instanceof AuthoringInvalid) return errorResponse(400, error.message);
   if (error instanceof AuthoringConflict) return errorResponse(409, error.message);
   if (error instanceof DeckCreationBlocked) return errorResponse(409, error.message);
@@ -135,6 +172,13 @@ const validateLessonInput = (body: unknown) =>
     };
   });
 
+class CurriculumUnavailable extends Error {}
+
+const validateUuid = (value: unknown, field: string) =>
+  typeof value === 'string' && UUID_PATTERN.test(value)
+    ? Effect.succeed(value.toLowerCase())
+    : Effect.fail(new AuthoringInvalid({message: `${field} must be a UUID.`}));
+
 const validateLessonId = (id: string) =>
   LESSON_ID_PATTERN.test(id) ? Effect.succeed(id) : Effect.fail(new AuthoringInvalid({message: 'Malformed lesson id.'}));
 
@@ -146,14 +190,40 @@ const toDeckSummary = (deck: {id: string; url: string; title: string; slideCount
   revision: deck.revision,
 });
 
-export const createAuthoringHandler = ({config, store, upstream}: AuthoringDeps) => {
-  const requireAuth = (request: HttpServerRequest.HttpServerRequest) =>
+export const createAuthoringHandler = ({config, store, upstream, curriculum, facilitators}: AuthoringDeps) => {
+  /**
+   * Facilitator-only, fail closed: the shared host key, or a live Google SSO
+   * facilitator session (bearer or the gateway's cookie). Anything else —
+   * participant browser/MCP tokens included — is 401. The author is always
+   * derived here, never from the request body.
+   */
+  const requireFacilitator = (request: HttpServerRequest.HttpServerRequest) =>
     Effect.gen(function* () {
-      const token = extractBearerToken(request.headers['authorization']);
-      if (!token || !timingSafeEqualStrings(token, config.apiKey)) {
-        return yield* Effect.fail(new AuthoringUnauthorized({message: 'Missing or invalid Authorization bearer token.'}));
+      const bearer = extractBearerToken(request.headers['authorization']);
+      if (bearer && timingSafeEqualStrings(bearer, config.apiKey)) return {author: HOST_KEY_AUTHOR, via: 'host-key'} satisfies Facilitator;
+      if (facilitators) {
+        if (bearer) {
+          const session = yield* facilitators.current(bearer);
+          if (session) return {author: session.email, via: 'sso-bearer'} satisfies Facilitator;
+        }
+        const cookie = readCookie(request.headers['cookie'], FACILITATOR_COOKIE);
+        if (cookie) {
+          const session = yield* facilitators.current(cookie);
+          if (session) return {author: session.email, via: 'sso-cookie'} satisfies Facilitator;
+        }
       }
+      return yield* Effect.fail(new AuthoringUnauthorized({message: 'Facilitator authorization required.'}));
     });
+
+  /** A cross-site form can carry the cookie but cannot set a JSON content type without a CORS preflight. */
+  const requireJsonForCookieWrites = (request: HttpServerRequest.HttpServerRequest, facilitator: Facilitator) =>
+    facilitator.via === 'sso-cookie' && request.method !== 'GET' && !(request.headers['content-type'] ?? '').toLowerCase().startsWith('application/json')
+      ? Effect.fail(new AuthoringUnauthorized({message: 'Cookie-authorized writes must send Content-Type: application/json.'}))
+      : Effect.void;
+
+  const requireCurriculum = curriculum
+    ? Effect.succeed(curriculum)
+    : Effect.fail(new CurriculumUnavailable('Curriculum store is not configured; publishing is unavailable.'));
 
   const listLessons = Effect.gen(function* () {
     const lessons = yield* Effect.tryPromise({try: () => store.listLessons(), catch: (error) => error});
@@ -248,9 +318,74 @@ export const createAuthoringHandler = ({config, store, upstream}: AuthoringDeps)
       return yield* jsonResponse(200, {lesson: result.lesson});
     });
 
+  const publishLesson = (lessonId: string, request: HttpServerRequest.HttpServerRequest, facilitator: Facilitator) =>
+    Effect.gen(function* () {
+      const id = yield* validateLessonId(lessonId);
+      const repo = yield* requireCurriculum;
+      const body = yield* readJsonBody(request);
+      if (!body || typeof body !== 'object' || Array.isArray(body)) {
+        return yield* Effect.fail(new AuthoringInvalid({message: 'Request body must be a JSON object.'}));
+      }
+      const record = body as Record<string, unknown>;
+      const courseId = yield* validateUuid(record.courseId, 'courseId');
+      const curriculumLessonId = yield* validateUuid(record.curriculumLessonId, 'curriculumLessonId');
+      const revision = record.snapshotRevision;
+      if (revision !== undefined && (typeof revision !== 'string' || !revision || revision.length > MAX_REVISION_LENGTH)) {
+        return yield* Effect.fail(new AuthoringInvalid({message: `snapshotRevision must be a non-empty string up to ${MAX_REVISION_LENGTH} characters.`}));
+      }
+      const found = yield* Effect.tryPromise({try: () => store.getSnapshot(id, revision as string | undefined), catch: (error) => error});
+      if (!found) return yield* Effect.fail(new AuthoringNotFound({message: `Lesson ${id} was not found.`}));
+      if (!found.snapshot) {
+        return yield* Effect.fail(new AuthoringConflict({
+          message: revision === undefined ? `Lesson ${id} has no snapshot yet; save one first.` : `Lesson ${id} has no snapshot with revision ${revision}.`,
+        }));
+      }
+      const result = yield* publishSnapshot(repo, {courseId, curriculumLessonId, snapshot: found.snapshot, author: facilitator.author});
+      return yield* jsonResponse(result.unchanged ? 200 : 201, {publication: {...result, courseId, curriculumLessonId, snapshotRevision: found.snapshot.revision}});
+    });
+
+  const listRevisions = (courseIdValue: string) =>
+    Effect.gen(function* () {
+      const courseId = yield* validateUuid(courseIdValue, 'courseId');
+      const repo = yield* requireCurriculum;
+      const currentVersion = yield* repo.currentVersion(courseId);
+      const revisions = yield* repo.listRevisions(courseId);
+      return yield* jsonResponse(200, {
+        courseId,
+        currentVersion,
+        revisions: revisions.map((revision) => ({
+          version: revision.version,
+          status: revision.status,
+          createdBy: revision.createdBy,
+          publishedBy: revision.publishedBy,
+          createdAt: new Date(revision.createdAt).toISOString(),
+          publishedAt: revision.publishedAt ? new Date(revision.publishedAt).toISOString() : null,
+        })),
+      });
+    });
+
+  const exportMarkdown = (courseIdValue: string, versionValue: string, lessonIdValue: string) =>
+    Effect.gen(function* () {
+      const courseId = yield* validateUuid(courseIdValue, 'courseId');
+      const lessonId = yield* validateUuid(lessonIdValue, 'lessonId');
+      const version = Number(versionValue);
+      if (!Number.isSafeInteger(version) || version < 1) return yield* Effect.fail(new AuthoringInvalid({message: 'version must be a positive integer.'}));
+      const repo = yield* requireCurriculum;
+      const lesson = yield* repo.readLessonFacilitator(lessonId, courseId, version);
+      if (lesson.slides.length === 0 && lesson.quizQuestions.length === 0) {
+        return yield* Effect.fail(new AuthoringNotFound({message: `Lesson ${lessonId} has no content in course ${courseId} revision ${version}.`}));
+      }
+      return HttpServerResponse.text(lessonMarkdown({courseId, version, lessonId}, lesson), {
+        status: 200,
+        contentType: 'text/markdown; charset=utf-8',
+        headers: {'content-disposition': `attachment; filename="lesson-${lessonId}-v${version}.md"`},
+      });
+    });
+
   return (request: HttpServerRequest.HttpServerRequest) =>
     Effect.gen(function* () {
-      yield* requireAuth(request);
+      const facilitator = yield* requireFacilitator(request);
+      yield* requireJsonForCookieWrites(request, facilitator);
       const url = new URL(request.url, 'http://authoring.local');
       const pathname = url.pathname;
       if (request.method === 'GET' && pathname === '/authoring-api/lessons') return yield* listLessons;
@@ -263,6 +398,14 @@ export const createAuthoringHandler = ({config, store, upstream}: AuthoringDeps)
       if (request.method === 'POST' && snapshotMatch) return yield* snapshotDeck(decodeURIComponent(snapshotMatch[1]!));
       const reconcileMatch = /^\/authoring-api\/lessons\/([^/]+)\/reconcile$/.exec(pathname);
       if (request.method === 'POST' && reconcileMatch) return yield* reconcileDeck(decodeURIComponent(reconcileMatch[1]!), request);
+      const publishMatch = /^\/authoring-api\/lessons\/([^/]+)\/publish$/.exec(pathname);
+      if (request.method === 'POST' && publishMatch) return yield* publishLesson(decodeURIComponent(publishMatch[1]!), request, facilitator);
+      const revisionsMatch = /^\/authoring-api\/courses\/([^/]+)\/revisions$/.exec(pathname);
+      if (request.method === 'GET' && revisionsMatch) return yield* listRevisions(decodeURIComponent(revisionsMatch[1]!));
+      const markdownMatch = /^\/authoring-api\/courses\/([^/]+)\/revisions\/([^/]+)\/lessons\/([^/]+)\/markdown$/.exec(pathname);
+      if (request.method === 'GET' && markdownMatch) {
+        return yield* exportMarkdown(decodeURIComponent(markdownMatch[1]!), decodeURIComponent(markdownMatch[2]!), decodeURIComponent(markdownMatch[3]!));
+      }
       return yield* errorResponse(404, 'Not found.');
     }).pipe(Effect.matchEffect({onFailure: mapAuthoringError, onSuccess: Effect.succeed}));
 };

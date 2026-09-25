@@ -23,6 +23,45 @@ slides are deterministic templates of the operator's lesson text.
 - This is a separate PoC environment. The production Academy container and its
   PostgreSQL/Redis stores are not modified.
 
+## Publishing to the curriculum (AET-25)
+
+- **Who.** Every `/authoring-api/*` route requires a facilitator: the host key
+  (`Authorization: Bearer $ACADEMY_AUTHORING_KEY`, recorded as author
+  `host-key`) or a live Google SSO facilitator session (bearer, or the
+  gateway's `academy-facilitator` cookie; recorded as the session email).
+  Participant browser/MCP tokens and squad-room tokens get 401. Cookie-authorized
+  writes must send `Content-Type: application/json`. Flag off: every route 404s.
+- **Publish.** `POST /authoring-api/lessons/:id/publish` with
+  `{courseId, curriculumLessonId, snapshotRevision?}` takes the stored snapshot
+  (latest, or the named one), clones the course's current published revision,
+  replaces that lesson's slides, writes a content-hashed draft
+  (`CurriculumRepo.writeDraft`) and publishes it (`publishDraft`) with
+  `created_by`/`published_by` (migration `0005`). An identical snapshot is a
+  no-op (200, `unchanged: true`). Slides whose ids an assignment anchors to may
+  not disappear (409). Rooms are never touched: their pin is DB-immutable.
+- **Content model.** Each Slides page becomes one curriculum slide: `title`
+  from its first heading (else first text line), `type` `context` then
+  `concept`, the upstream HTML kept verbatim in
+  `visual = {kind: 'agent-native-slides/html', upstreamSlideId, deckRevision, html}`,
+  upstream notes as facilitator-only `notes`. The lesson row's own metadata is
+  unchanged.
+- **Revisions / export.** `GET /authoring-api/courses/:courseId/revisions`
+  lists version, status, author and time. `GET .../revisions/:v/lessons/:lessonId/markdown`
+  exports one lesson of one revision as Markdown (structured fields; the HTML of
+  authored slides as plain text; notes and quiz answers included, so it is
+  facilitator-only).
+- **Wiring.** `AppLive` mounts this with `CurriculumRepoLive` on `DATABASE_URL`
+  (schema must be migrated with `apps/server` migrations 0000–0005) and
+  in-memory `FacilitatorAuth`. Tests use a fetch double for Slides; the real
+  endpoints are `/_agent-native/actions/create-deck` and `get-deck?compact=false`.
+- **Open.** `apps/server` is not deployed in production (the legacy gateway
+  is), so this reaches production only once `apps/server` (or this route) is
+  deployed via OpenShip against the curriculum database. `apps/server` mounts
+  no Google SSO login routes and its `FacilitatorAuth` is in-memory, so SSO
+  sessions from the gateway are not shared yet; today only the host key works
+  end to end. No participant renderer draws the authored HTML visual yet
+  (participants see the derived title), and that renderer must sanitize it.
+
 ## Deployed layout
 
 OpenShip 0.7.2 manages two Docker projects on the existing Hetzner host:
