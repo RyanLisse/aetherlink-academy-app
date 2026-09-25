@@ -1,7 +1,7 @@
 import express from 'express';
 import {agentInstructions} from './agent-setup.mjs';
 import {dayProgress,debrief,exportDebrief} from './progress.mjs';
-import {findTask,taskStatus,taskTrail,reviewQueue,transition,reviewEvent} from './proof-trail.mjs';
+import {findTask,taskStatus,taskTrail,reviewQueue,peerQueue,transition,reviewEvent,reviewerRole,authorizeTaskReview} from './proof-trail.mjs';
 import http from 'node:http';
 import httpProxy from 'http-proxy';
 import {createHash,createHmac,randomBytes,randomUUID,timingSafeEqual} from 'node:crypto';
@@ -105,15 +105,16 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  }
  app.post('/game/evidence',wrap(async(req,res)=>{await browser(req);res.json(await evidence(token(req),req.body));}));
  app.get('/game/tasks',wrap(async(req,res)=>{const {r,p}=await browser(req);if(!p)fail(403,'Alleen deelnemers hebben een eigen opdrachtenlijst.');res.json({day:r.day,tasks:taskTrail(r,p.id,r.day)});}));
+ app.get('/game/tasks/peer',wrap(async(req,res)=>{const {r,p}=await browser(req);if(!p)fail(403,'Alleen deelnemers beoordelen elkaars opdrachten.');res.json(peerQueue(r,p.id));}));
  app.get('/game/tasks/queue',wrap(async(req,res)=>{const {r,s}=await browser(req);if(s.personId!=='facilitator')fail(403,'Alleen de facilitator ziet de beoordelingswachtrij.');res.json(reviewQueue(r));}));
  app.post('/game/review',wrap(async(req,res)=>{
   const {r,s,p}=await browser(req);
   if(!['accepted','needs-work'].includes(req.body.status))fail(400,'Ongeldige beoordeling.');
   const fields={id:text(req.body.id,100),status:req.body.status,note:text(req.body.note)},key=text(req.body.requestId,100),fingerprint=hash(JSON.stringify(fields));
   const sso=s.personId==='facilitator'?await store.facilitator(namedCookie(req,'academy-facilitator')):null;
-  const reviewedBy={role:s.personId==='facilitator'?'facilitator':'driver',name:sso?.name||p?.name||s.displayName||'Facilitator',email:sso?.email||null};
-  const canReview=(context,e)=>{if(!e.taskId)return;if(context.s.personId!=='facilitator')fail(403,'Alleen de facilitator beoordeelt opdrachten.');transition(taskStatus(context.r,e.personId,e.taskId,e.day),reviewEvent(fields.status));};
-  const saved=await store.reserveRequest(token(req),'review',key,fingerprint,{value:{...fields,by:s.personId,reviewer:reviewedBy,at:new Date().toISOString()},actor:`human:${s.personId}`,quote:await commentQuote(r)},context=>{reviewer(context);const e=context.r.evidence.find(e=>e.id===fields.id);if(!e)fail(404,'Bewijs niet gevonden.');if(e.personId===context.s.personId)fail(403,'Laat een andere deelnemer jouw bewijs beoordelen.');canReview(context,e);});if(saved.completed)return res.json(saved.result);
+  const reviewedBy={role:reviewerRole(s),name:sso?.name||p?.name||s.displayName||'Facilitator',email:sso?.email||null};
+  const canReview=(context,e)=>{if(!e.taskId)return;authorizeTaskReview(context);transition(taskStatus(context.r,e.personId,e.taskId,e.day),reviewEvent(fields.status));};
+  const saved=await store.reserveRequest(token(req),'review',key,fingerprint,{value:{...fields,by:s.personId,reviewer:reviewedBy,at:new Date().toISOString()},actor:`human:${s.personId}`,quote:await commentQuote(r)},context=>{const e=context.r.evidence.find(e=>e.id===fields.id);if(!e?.taskId)reviewer(context);if(!e)fail(404,'Bewijs niet gevonden.');if(e.personId===context.s.personId)fail(403,'Laat een andere deelnemer jouw bewijs beoordelen.');canReview(context,e);});if(saved.completed)return res.json(saved.result);
   const {value:intent,actor,quote}=saved.intent;await proof.comment(r,actor,`Review bewijs ${intent.id}: ${intent.status}\n${intent.note}`,quote,`review:${s.personId}:${key}`);
   res.json(await store.completeRequest(token(req),'review',key,fingerprint,context=>{const target=context.r.evidence.find(x=>x.id===intent.id);if(!target)fail(404,'Bewijs niet gevonden.');canReview(context,target);target.status=intent.status;target.review={by:intent.by,reviewer:intent.reviewer,note:intent.note,at:intent.at};return target;}));
  }));

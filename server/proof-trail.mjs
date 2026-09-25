@@ -45,10 +45,24 @@ export function taskTrail(room,personId,day){
 }
 export const awaitingReview=room=>(room.evidence||[]).filter(e=>e.taskId&&!e.review);
 
+// Who closed a submission. AET-103 adds 'auto-graded' here; views read the role, never branch on the session.
+export const REVIEWER_ROLES=Object.freeze(['peer','facilitator']);
+export const reviewerRole=session=>session.personId==='facilitator'?'facilitator':'peer';
+
+// The facilitator is only present in the live classroom, so any other participant in the room may review task evidence.
+// Self-review is rejected by the caller for all evidence.
+export function authorizeTaskReview({s,p}){
+ if(s.personId!=='facilitator'&&!p)fail(403,'Alleen deelnemers of de facilitator beoordelen opdrachten.');
+}
+
+const queueItem=(room,e)=>({evidenceId:e.id,taskId:e.taskId,taskTitle:dayTasks(e.day).find(t=>t.id===e.taskId)?.title||e.taskId,day:e.day,personId:e.personId,name:e.name,at:e.at,attempt:submissionsFor(room,e.personId,e.taskId,e.day).indexOf(e)+1,finding:e.finding,command:e.command,observed:e.observed,limitation:e.limitation});
+
 export function reviewQueue(room){
  return {
   day:room.day,
-  queue:awaitingReview(room).map(e=>({evidenceId:e.id,taskId:e.taskId,taskTitle:dayTasks(e.day).find(t=>t.id===e.taskId)?.title||e.taskId,day:e.day,personId:e.personId,name:e.name,at:e.at,attempt:submissionsFor(room,e.personId,e.taskId,e.day).indexOf(e)+1,finding:e.finding,command:e.command,observed:e.observed,limitation:e.limitation})),
+  queue:awaitingReview(room).map(e=>queueItem(room,e)),
   members:room.members.map(m=>({id:m.id,name:m.name,tasks:taskTrail(room,m.id,room.day).map(({id,title,status})=>({id,title,status}))}))
  };
 }
+
+export const peerQueue=(room,personId)=>({day:room.day,queue:awaitingReview(room).filter(e=>e.personId!==personId&&Number(e.day)===Number(room.day)).map(e=>queueItem(room,e))});

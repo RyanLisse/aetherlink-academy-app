@@ -389,7 +389,7 @@
   "apps.published": "Gepubliceerde versie (onwijzigbaar)",
   "apps.chromeHint": "Chrome/overlay (AET-51) toont Terug naar Academy zonder lescanvas-CSS.",
   "tasks.title": "Opdrachten vandaag",
-  "tasks.lede": "Dien per opdracht bewijs in. De facilitator beoordeelt het en je ziet de feedback hier.",
+  "tasks.lede": "Dien per opdracht bewijs in. Een andere deelnemer of de facilitator beoordeelt het en je ziet de feedback hier.",
   "tasks.empty": "Nog geen opdrachten voor deze dag.",
   "tasks.status.open": "Open",
   "tasks.status.submitted": "Ingediend",
@@ -407,6 +407,8 @@
   "queue.approve": "Goedkeuren",
   "queue.requestChanges": "Aanpassing vragen",
   "queue.statusTitle": "Status per deelnemer (dag {day})",
+  "peer.lede": "Ingediende opdrachten van andere deelnemers in jouw kamer, voor vandaag. Je besluit komt als Proof-commentaar bij het bewijs.",
+  "peer.title": "Te beoordelen ({count})",
   "review.taskLabel": "Opdracht {task}",
   "overview.awaitingReview": "Wacht op beoordeling: {count}"
 }

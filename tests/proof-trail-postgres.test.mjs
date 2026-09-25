@@ -29,6 +29,8 @@ test('Proof trail transitions hold across two instances sharing Postgres',{skip:
   };
   const host=await one.create('Trail',{slug:'trail'},{email:'fac@example.test',name:'Fac Ilitator'});
   const learner=await one.join(host.code,'Bo');
+  const ada=await two.join(host.code,'Ada');
+  const cy=await one.join(host.code,'Cy');
   const sso=`academy-facilitator=${await two.facilitatorLogin({sub:'g-1',email:'fac@example.test',name:'Fac Ilitator',domain:'example.test'})}`;
   const evidence=requestId=>({requestId,finding:'README wijkt af',command:'node --test',observed:'1 failing',limitation:'Lokaal',taskId:'ATLAS-REVIEW-01'});
 
@@ -50,8 +52,13 @@ test('Proof trail transitions hold across two instances sharing Postgres',{skip:
 
   const second=await call(0,'evidence',learner.token,{body:evidence('again')});
   assert.equal(second.status,200);
-  assert.equal((await call(1,'review',host.token,{body:{id:second.body.id,status:'accepted',note:'Goed.',requestId:'r-2'}})).status,200);
-  assert.equal((await call(0,'tasks',learner.token)).body.tasks[0].status,'approved');
+  assert.deepEqual((await call(1,'tasks/peer',cy.token)).body.queue.map(q=>[q.name,q.attempt]),[['Bo',2]]);
+  const peers=await Promise.all([call(0,'review',ada.token,{body:{id:second.body.id,status:'accepted',note:'Goed.',requestId:'p-ada'}}),call(1,'review',cy.token,{body:{id:second.body.id,status:'accepted',note:'Goed.',requestId:'p-cy'}})]);
+  assert.deepEqual(peers.map(r=>r.status).sort(),[200,409]);
+  assert.equal(peers.find(r=>r.status===200).body.review.reviewer.role,'peer');
+  assert.equal((await call(0,'review',learner.token,{body:{id:second.body.id,status:'accepted',note:'Zelf',requestId:'self'}})).status,403);
+  const done=(await call(0,'tasks',learner.token)).body.tasks[0];
+  assert.deepEqual([done.status,done.submissions.length],['approved',2]);
   assert.equal((await two.overview())[0].awaitingReview,0);
  }finally{await Promise.all(servers.map(close));await pool.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);await pool.end();}
 });

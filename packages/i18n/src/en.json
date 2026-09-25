@@ -389,7 +389,7 @@
   "apps.published": "Published version (immutable)",
   "apps.chromeHint": "Chrome/overlay (AET-51) shows Back to Academy without restyling the lesson canvas.",
   "tasks.title": "Today's tasks",
-  "tasks.lede": "Submit evidence per task. The facilitator reviews it and you see the feedback here.",
+  "tasks.lede": "Submit evidence per task. Another participant or the facilitator reviews it and you see the feedback here.",
   "tasks.empty": "No tasks for this day yet.",
   "tasks.status.open": "Open",
   "tasks.status.submitted": "Submitted",
@@ -407,6 +407,8 @@
   "queue.approve": "Approve",
   "queue.requestChanges": "Request changes",
   "queue.statusTitle": "Status per participant (day {day})",
+  "peer.lede": "Submitted tasks from other participants in your room, for today. Your decision is added to the evidence as a Proof comment.",
+  "peer.title": "To review ({count})",
   "review.taskLabel": "Task {task}",
   "overview.awaitingReview": "Awaiting review: {count}"
 }
