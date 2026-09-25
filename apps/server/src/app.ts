@@ -3,6 +3,8 @@ import {HttpApiBuilder} from 'effect/unstable/httpapi';
 import {AuthoringFromEnv} from './authoring/index.ts';
 import {AcademyApi, SystemGroupLive} from './http/health.ts';
 import {StaticWebLive} from './http/static.ts';
+import {FacilitatorAuthFromEnv} from './identity/facilitator-auth.ts';
+import {GoogleSsoRoutes} from './identity/google-routes.ts';
 import {ServerConfig, ServerConfigLive} from './layers/config.ts';
 import {Connectivity, ConnectivityLive} from './layers/connectivity.ts';
 import {Postgres, PostgresFromConfig} from './layers/postgres.ts';
@@ -19,5 +21,9 @@ export const ServicesLive: Layer.Layer<Connectivity | Postgres | Redis | ProofBr
 
 export const AppLive = (env: NodeJS.ProcessEnv = process.env) => {
   const webDist = env.ACADEMY_WEB_DIST?.trim() || null;
-  return Layer.mergeAll(routes(webDist), AuthoringFromEnv(env)).pipe(Layer.provide(ServicesLive), Layer.provide(ServerConfigLive(env)));
+  return Layer.mergeAll(routes(webDist), GoogleSsoRoutes, AuthoringFromEnv(env)).pipe(
+    Layer.provide(FacilitatorAuthFromEnv(env)),
+    Layer.provide(ServicesLive),
+    Layer.provide(ServerConfigLive(env)),
+  );
 };
