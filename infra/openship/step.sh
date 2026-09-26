@@ -25,7 +25,7 @@ plan() {
     if command -v "$tool" >/dev/null; then echo "  $tool: present"; else echo "  $tool: MISSING (deploy needs it)"; fi
   done
   say "Academy and OpenShip containers"
-  docker ps -a --format '  {{.Names}}  {{.Status}}  {{.Ports}}' | grep -E '  (academy-|openship-)' || true
+  docker ps -a --format '  {{.Names}} | compose={{.Label "com.docker.compose.project"}}/{{.Label "com.docker.compose.service"}} | {{.Image}} | {{.Status}} | {{.Ports}}' || true
   say "Listeners on 80, 443, 4000, 4317, 4318, 4327"
   ss -ltnH 2>/dev/null | awk '{print $4}' | grep -E ':(80|443|4000|4317|4318|4327)$' | sed 's/^/  /' || true
   say "Legacy health"
