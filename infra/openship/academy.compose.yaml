@@ -6,10 +6,16 @@
 # certificates are generated on the host by infra/deploy/init-tls.sh into
 # /root/aetherlink-academy-openship/tls and bind-mounted read-only.
 # Secrets are OpenShip project env vars (upserted by step.sh), never values in
-# this file. OpenShip expands same-key ${NAME} only — not nested ${OTHER:?…}
-# inside DATABASE_URL/REDIS_URL — so those URLs are fully resolved in project
-# env and referenced here as ${DATABASE_URL} / ${REDIS_URL}. Prefer no bash
-# :? / :- in any interpolateable value (same class as the ports ParseAddr bug).
+# this file. OpenShip does NOT interpolate dollar-brace refs inside compose
+# environment values for this stack — putting DATABASE_URL (or REDIS_URL /
+# SOURCE_REVISION) on the app service with a dollar-brace same-key ref writes
+# that literal into the container and shadows the resolved project-env secret
+# (verified 2026-09-26, dep_DReiQCX0cz2xmlpk → ERR_INVALID_URL). Therefore
+# those three keys are omitted from the app environment entirely so project
+# env can inject the resolved values. Postgres/redis keep same-key
+# ${POSTGRES_PASSWORD} / ${REDIS_PASSWORD} (self-consistent literals still
+# auth). Prefer no bash :? / :- in any compose value (same class as the ports
+# ParseAddr bug). See infra/openship/RESEARCH.md.
 services:
   app:
     build:
@@ -24,10 +30,7 @@ services:
       PORT: "4317"
       PROOF_PORT: "4400"
       ACADEMY_DATA: /data
-      DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: ${REDIS_URL}
       NODE_EXTRA_CA_CERTS: /tls/ca.crt
-      SOURCE_REVISION: ${SOURCE_REVISION}
     # Hardcoded loopback sibling bind. OpenShip's compose interpolator + Docker
     # PortBindings must not see bash `${VAR:-host:port}` here: a colon inside the
     # default truncates HostIp and Docker ParseAddr fails

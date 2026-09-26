@@ -93,19 +93,23 @@ for Academy deploy.
 - Named volumes become `openship-<slug>-<name>`; bind mounts pass through unchanged
   (`G/packages/adapters/src/runtime/volume-namespace.ts`). The kit bind-mounts
   `/root/aetherlink-academy-openship/tls` read-only.
-- No connection string is injected for a hand-made Postgres service. OpenShip's compose
-  interpolator expands **same-key** `${NAME}` when the compose env key matches a project
-  env key (e.g. `POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}`), but does **not** expand nested
-  `${POSTGRES_PASSWORD:?…}` / `${VAR:-default}` inside a *different* key. Verified
-  2026-09-26: deploy left the app with a literal
-  `postgresql://academy:${POSTGRES_PASSWORD:?…}@postgres:5432/academy` → `ERR_INVALID_URL`.
-  Therefore `step.sh deploy` upserts fully resolved `DATABASE_URL` and `REDIS_URL` (isSecret)
-  from the minted passwords, and compose/services reference them as `${DATABASE_URL}` /
-  `${REDIS_URL}` / `${SOURCE_REVISION}` only. Prefer **no** bash `:?` / `:-` in any
-  interpolateable OpenShip compose value (same class as the ports `ParseAddr` bug).
-  Compose interpolation from project env is how the parser is fed
-  (`G/apps/api/src/lib/compose-parser.ts`, `ComposeParseOptions.env`). `deploy` checks the
-  env names inside the running app container and fails when any is missing.
+- No connection string is injected for a hand-made Postgres service. OpenShip does **not**
+  interpolate `${VAR}` inside compose/service `environment` values for this stack: a compose
+  entry `DATABASE_URL: ${DATABASE_URL}` writes the literal 15-character string
+  `${DATABASE_URL}` into the container and **shadows** the resolved project-env secret for
+  the same key. Verified 2026-09-26 on deploy `dep_DReiQCX0cz2xmlpk` (after #123 same-key
+  refs): container `DATABASE_URL` was exactly `${DATABASE_URL}` → app `ERR_INVALID_URL`.
+  Nested `${POSTGRES_PASSWORD:?…}` inside another key also stays literal (earlier crash).
+  Therefore `step.sh deploy` upserts fully resolved `DATABASE_URL` and `REDIS_URL`
+  (isSecret) plus `SOURCE_REVISION` into **project** env, and the kit **omits** those three
+  keys from the app `environment` block in compose/services entirely so project env can
+  inject them. Postgres/redis may keep same-key `${POSTGRES_PASSWORD}` /
+  `${REDIS_PASSWORD}` (self-consistent literals still auth; healthchecks matched). Prefer
+  **no** bash `:?` / `:-` in any OpenShip compose value (same class as the ports
+  `ParseAddr` bug). Compose parser options still exist
+  (`G/apps/api/src/lib/compose-parser.ts`, `ComposeParseOptions.env`) but must not be relied
+  on for app URL secrets. `deploy` checks the env names inside the running app container
+  and fails when any is missing.
 - OpenShip can back up Postgres with `pg_dump -Fc` and restore with `pg_restore --clean`
   (`G/packages/adapters/src/backup/producers/pg-dump.ts`). The kit does its own dump so the
   backup exists before OpenShip touches anything.

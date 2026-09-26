@@ -609,7 +609,7 @@ describe('docker jq file args stay under /tmp', () => {
   });
 });
 
-describe('OpenShip same-key env interpolation (DATABASE_URL / REDIS_URL)', () => {
+describe('OpenShip app env: omit DATABASE_URL (no compose shadow)', () => {
   const kit = new URL('../infra/openship/', import.meta.url);
   const compose = readFileSync(new URL('academy.compose.yaml', kit), 'utf8');
   const {services} = JSON.parse(readFileSync(new URL('academy.services.json', kit), 'utf8'));
@@ -619,38 +619,39 @@ describe('OpenShip same-key env interpolation (DATABASE_URL / REDIS_URL)', () =>
   const runbook = readFileSync(path.join(root, 'docs/runbooks/single-academy-openship.md'), 'utf8');
   const app = services.find((service) => service.name === 'app');
 
-  test('app env uses same-key ${DATABASE_URL}/${REDIS_URL}/${SOURCE_REVISION} only', () => {
-    assert.equal(app.environment.DATABASE_URL, '${DATABASE_URL}');
-    assert.equal(app.environment.REDIS_URL, '${REDIS_URL}');
-    assert.equal(app.environment.SOURCE_REVISION, '${SOURCE_REVISION}');
-    assert.match(compose, /^\s+DATABASE_URL:\s+\$\{DATABASE_URL\}$/m);
-    assert.match(compose, /^\s+REDIS_URL:\s+\$\{REDIS_URL\}$/m);
-    assert.match(compose, /^\s+SOURCE_REVISION:\s+\$\{SOURCE_REVISION\}$/m);
-  });
-
-  test('no nested ${POSTGRES_PASSWORD / ${REDIS_PASSWORD inside DATABASE_URL or REDIS_URL', () => {
-    assert.doesNotMatch(app.environment.DATABASE_URL, /POSTGRES_PASSWORD|REDIS_PASSWORD/);
-    assert.doesNotMatch(app.environment.REDIS_URL, /POSTGRES_PASSWORD|REDIS_PASSWORD/);
-    assert.doesNotMatch(compose, /DATABASE_URL:.*POSTGRES_PASSWORD/);
-    assert.doesNotMatch(compose, /REDIS_URL:.*REDIS_PASSWORD/);
-    for (const service of services) {
-      for (const [key, value] of Object.entries(service.environment ?? {})) {
-        if (key === 'DATABASE_URL' || key === 'REDIS_URL') {
-          assert.doesNotMatch(value, /\$\{POSTGRES_PASSWORD|\$\{REDIS_PASSWORD/);
-        }
-      }
+  test('app environment omits DATABASE_URL, REDIS_URL, and SOURCE_REVISION', () => {
+    assert.equal(Object.hasOwn(app.environment, 'DATABASE_URL'), false);
+    assert.equal(Object.hasOwn(app.environment, 'REDIS_URL'), false);
+    assert.equal(Object.hasOwn(app.environment, 'SOURCE_REVISION'), false);
+    // Executable app env lines only (comments may mention the pitfall).
+    const appBlock = compose.split(/\n {2}[a-z]/)[1] || '';
+    const envKeyLines = appBlock.split('\n').filter((line) => /^\s+[A-Z_]+:\s+/.test(line));
+    for (const line of envKeyLines) {
+      assert.doesNotMatch(line, /^\s+(DATABASE_URL|REDIS_URL|SOURCE_REVISION):/, line);
+    }
+    // Keep other non-secret app env.
+    for (const key of ['ACADEMY_STORAGE', 'HOST', 'PORT', 'PROOF_PORT', 'ACADEMY_DATA', 'NODE_EXTRA_CA_CERTS']) {
+      assert.ok(Object.hasOwn(app.environment, key), key);
     }
   });
 
-  test('no bash :- or :? in app interpolateable env fields', () => {
+  test('kit compose must not contain the string ${DATABASE_URL} anywhere', () => {
+    assert.equal(compose.includes('${DATABASE_URL}'), false);
+    assert.doesNotMatch(compose, /\$\{DATABASE_URL\}/);
+    assert.doesNotMatch(compose, /\$\{REDIS_URL\}/);
+    assert.doesNotMatch(compose, /\$\{SOURCE_REVISION\}/);
+    assert.doesNotMatch(JSON.stringify(services), /\$\{DATABASE_URL\}/);
+    assert.doesNotMatch(JSON.stringify(services), /\$\{REDIS_URL\}/);
+    assert.doesNotMatch(JSON.stringify(services), /\$\{SOURCE_REVISION\}/);
+  });
+
+  test('no bash :- or :? in remaining app interpolateable env fields', () => {
     for (const [key, value] of Object.entries(app.environment)) {
       if (!String(value).includes('${')) continue;
       assert.doesNotMatch(String(value), /:-|:\?/, `${key}=${value}`);
     }
-    // Executable environment lines under app: (stop at next top-level service key)
     const appBlock = compose.split(/\n {2}[a-z]/)[1] || '';
     const envLines = appBlock.split('\n').filter((line) => /^\s+[A-Z_]+:\s+.*\$\{/.test(line));
-    assert.ok(envLines.length >= 3, 'expected interpolateable app env lines');
     for (const line of envLines) {
       assert.doesNotMatch(line, /:-|:\?/, line);
     }
@@ -673,7 +674,7 @@ describe('OpenShip same-key env interpolation (DATABASE_URL / REDIS_URL)', () =>
     assert.match(step, /printf 'DATABASE_URL=postgresql:\/\/academy:%s@postgres:5432\/academy\\n'/);
     assert.match(step, /printf 'REDIS_URL=rediss:\/\/%s@redis:6379\\n'|printf 'REDIS_URL=rediss:\/\/:%s@redis:6379\\n'/);
     assert.match(step, /SOURCE_REVISION=%s/);
-    assert.match(step, /same-key|does NOT nest|ERR_INVALID_URL/);
+    assert.match(step, /omit|shadow|ERR_INVALID_URL/);
     // Keys must be isSecret (not in the non-secret allowlist)
     assert.match(step, /IN\("ACADEMY_PORT_BIND", "SOURCE_REVISION"\)/);
     assert.doesNotMatch(step, /IN\([^)]*DATABASE_URL/);
@@ -685,11 +686,13 @@ describe('OpenShip same-key env interpolation (DATABASE_URL / REDIS_URL)', () =>
     assert.match(lib, /fully resolved secrets upserted by step\.sh|upserted by step\.sh deploy/);
   });
 
-  test('RESEARCH and runbook document OpenShip same-key interpolation limit', () => {
-    assert.match(research, /same-key/);
+  test('RESEARCH and runbook document no compose interpolation / project-env shadow', () => {
+    assert.match(research, /does \*\*not\*\*[\s\S]{0,80}interpolate|does not interpolate/i);
+    assert.match(research, /shadow/i);
     assert.match(research, /ERR_INVALID_URL/);
-    assert.match(research, /does \*\*not\*\* expand nested|does not expand nested/i);
-    assert.match(runbook, /same-key/);
+    assert.match(research, /omit/i);
+    assert.match(runbook, /omit/i);
+    assert.match(runbook, /shadow/i);
     assert.match(runbook, /ERR_INVALID_URL|DATABASE_URL.*REDIS_URL/);
   });
 });

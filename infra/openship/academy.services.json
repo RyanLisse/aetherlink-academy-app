@@ -11,10 +11,7 @@
         "PORT": "4317",
         "PROOF_PORT": "4400",
         "ACADEMY_DATA": "/data",
-        "DATABASE_URL": "${DATABASE_URL}",
-        "REDIS_URL": "${REDIS_URL}",
-        "NODE_EXTRA_CA_CERTS": "/tls/ca.crt",
-        "SOURCE_REVISION": "${SOURCE_REVISION}"
+        "NODE_EXTRA_CA_CERTS": "/tls/ca.crt"
       },
       "ports": [
         "127.0.0.1:4327:4317"
