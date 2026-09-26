@@ -18,6 +18,8 @@ export async function startLegacyFixture({port=0}={}){
   const clock={now:FIXED_NOW};
   const store=new LocalStore(dir,{now:()=>clock.now});
   const app=createApp({dir,repository:store,root,hostKey:HOST_KEY,proofBase:'http://127.0.0.1:9',publicBaseUrl:'http://127.0.0.1:4317',slidesService:{run:async()=>null}});
+  const sockets=new Set();
+  app.server.on('connection',socket=>{sockets.add(socket);socket.on('close',()=>sockets.delete(socket));});
   await new Promise(resolve=>app.server.listen(port,'127.0.0.1',resolve));
   const base=`http://127.0.0.1:${app.server.address().port}`;
   const post=async(route,body)=>{const response=await fetch(base+route,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});const json=await response.json();if(!response.ok)throw Error(`${route}: ${json.error}`);return json;};
@@ -41,6 +43,8 @@ export async function startLegacyFixture({port=0}={}){
     cohortCodes:cohort.codes.map(entry=>entry.code),
     // Moves the server past the 90-day write window so a cohort code opens read-only.
     enterReadOnlyWindow:()=>{clock.now=cohort.cohort.startsAt+91*DAY;},
-    close:async()=>{await new Promise(resolve=>app.server.close(resolve));rmSync(dir,{recursive:true,force:true});},
+    // server.close waits for every open socket, and a room page keeps keep-alive and upgraded
+    // (WebSocket) sockets open, so teardown could hang past the test timeout. Destroy them.
+    close:async()=>{const closed=new Promise(resolve=>app.server.close(resolve));for(const socket of sockets)socket.destroy();await closed;rmSync(dir,{recursive:true,force:true});},
   };
 }
