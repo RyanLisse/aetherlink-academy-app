@@ -117,10 +117,12 @@ deploy() {
   fi
   # Re-apply readiness from academy.project.json every deploy so a prior
   # readiness.port:4317 on the existing project cannot keep probing postgres/redis.
-  jq -s '.[0] + {readiness: .[1].readiness}' "$OPENSHIP_TMP/endpoints.json" "$KIT_DIR/academy.project.json" > "$OPENSHIP_TMP/project.patch.json"
+  # Copy into OPENSHIP_TMP first: docker jq only mounts /tmp (see lib.sh).
+  cp "$KIT_DIR/academy.project.json" "$OPENSHIP_TMP/academy.project.json"
+  jq -s '.[0] + {readiness: .[1].readiness}' "$OPENSHIP_TMP/endpoints.json" "$OPENSHIP_TMP/academy.project.json" > "$OPENSHIP_TMP/project.patch.json"
   api PATCH "/projects/$id" "$OPENSHIP_TMP/project.patch.json" >/dev/null
   if [[ -n "$domain" ]]; then echo "  public endpoint: https://$domain -> :4317 (OpenShip edge, Let's Encrypt)"; else echo "  public endpoints: none (served on the published port $(port_bind))"; fi
-  echo "  readiness: $(jq -c '.readiness' "$KIT_DIR/academy.project.json")"
+  echo "  readiness: $(jq -c '.readiness' "$OPENSHIP_TMP/academy.project.json")"
   printf '{"enabled":false}' > "$OPENSHIP_TMP/auto.json"
   api POST "/projects/$id/auto-deploy" "$OPENSHIP_TMP/auto.json" >/dev/null
   echo "  auto-deploy: off (deploys happen only from this workflow)"
