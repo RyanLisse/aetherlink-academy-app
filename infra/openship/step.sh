@@ -96,14 +96,14 @@ deploy() {
     [[ -n "$id" ]] || die "project create returned no id"
   fi
   echo "  project: $id"
-  # Self-hosted OpenShip cannot route the default free .opsh.io domain (preflight
-  # CLOUD_REQUIRED_MANAGED_PROJECT_DOMAIN). Give the project its real domain instead;
-  # missing DNS is only a preflight warning, and the app is served on its published port.
-  jq -n --arg d "$ACADEMY_DOMAIN" '{customDomain: $d, domainType: "custom"}' > "$OPENSHIP_TMP/domain.json"
-  api PATCH "/projects/$id" "$OPENSHIP_TMP/domain.json" >/dev/null
-  echo "  domain: $ACADEMY_DOMAIN (custom; goes live once DNS points here)"
-  say "Services (routing fields only)"
-  api GET "/projects/$id/services" | jq -r '[.. | objects | select(has("exposed") or has("domainType"))] | .[] | "  \(.name // .serviceName // "?") exposed=\(.exposed) domainType=\(.domainType) domain=\(.domain) customDomain=\(.customDomain)"' || true
+  # Self-hosted OpenShip cannot route the free .opsh.io endpoint that project create stores
+  # (preflight CLOUD_REQUIRED_MANAGED_PROJECT_DOMAIN reads the stored publicEndpoints). Clear
+  # them: the app is served by its compose-published port, which OpenShip leaves alone. A routed
+  # endpoint would also be rewritten to loopback (loopback-publish.ts), hiding :4317 at cutover.
+  # The academy.aetherlink.ai route is added together with DNS (AET-42), when TLS can issue.
+  printf '{"publicEndpoints":[]}' > "$OPENSHIP_TMP/endpoints.json"
+  api PATCH "/projects/$id" "$OPENSHIP_TMP/endpoints.json" >/dev/null
+  echo "  public endpoints: none (served on the published port $(port_bind))"
   printf '{"enabled":false}' > "$OPENSHIP_TMP/auto.json"
   api POST "/projects/$id/auto-deploy" "$OPENSHIP_TMP/auto.json" >/dev/null
   echo "  auto-deploy: off (deploys happen only from this workflow)"
