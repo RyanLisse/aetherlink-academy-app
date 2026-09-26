@@ -103,13 +103,24 @@ for Academy deploy.
   Therefore `step.sh deploy` upserts fully resolved `DATABASE_URL` and `REDIS_URL`
   (isSecret) plus `SOURCE_REVISION` into **project** env, and the kit **omits** those three
   keys from the app `environment` block in compose/services entirely so project env can
-  inject them. Postgres/redis may keep same-key `${POSTGRES_PASSWORD}` /
-  `${REDIS_PASSWORD}` (self-consistent literals still auth; healthchecks matched). Prefer
-  **no** bash `:?` / `:-` in any OpenShip compose value (same class as the ports
-  `ParseAddr` bug). Compose parser options still exist
+  inject them. Postgres may keep same-key `${POSTGRES_PASSWORD}` (self-consistent literals
+  still auth; healthchecks matched). Prefer **no** bash `:?` / `:-` in any OpenShip compose
+  value (same class as the ports `ParseAddr` bug). Compose parser options still exist
   (`G/apps/api/src/lib/compose-parser.ts`, `ComposeParseOptions.env`) but must not be relied
   on for app URL secrets. `deploy` checks the env names inside the running app container
   and fails when any is missing.
+- **Redis `--requirepass` must not use `${REDIS_PASSWORD}` in `command` / `commandArgv`.**
+  OpenShip does **not** expand dollar-brace refs inside compose `command` / persisted
+  `commandArgv` the way same-key **environment** templates can. Verified 2026-09-26 on
+  Academy sibling staging: redis started with literal
+  `${REDIS_PASSWORD:?set by step.sh deploy}` (40 chars) as requirepass → app ioredis
+  `WRONGPASS` / "Connection is closed". The kit therefore runs redis via
+  `sh -c 'exec redis-server … --requirepass "$REDIS_PASSWORD"'` and sets redis service
+  environment `REDIS_PASSWORD: ${REDIS_PASSWORD}` + `REDISCLI_AUTH: ${REDIS_PASSWORD}`
+  (same-key env; shell expands at process start). Never put `:?` / `:-` on the redis
+  command again. Do **not** rely on embedding the resolved password in the service
+  record's `commandArgv` from the kit (ops may PATCH live as a hotfix; kit stays
+  template-free in argv).
 - OpenShip can back up Postgres with `pg_dump -Fc` and restore with `pg_restore --clean`
   (`G/packages/adapters/src/backup/producers/pg-dump.ts`). The kit does its own dump so the
   backup exists before OpenShip touches anything.

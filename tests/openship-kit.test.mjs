@@ -661,13 +661,33 @@ describe('OpenShip app env: omit DATABASE_URL (no compose shadow)', () => {
     const postgres = services.find((service) => service.name === 'postgres');
     const redis = services.find((service) => service.name === 'redis');
     assert.equal(postgres.environment.POSTGRES_PASSWORD, '${POSTGRES_PASSWORD}');
+    assert.equal(redis.environment.REDIS_PASSWORD, '${REDIS_PASSWORD}');
     assert.equal(redis.environment.REDISCLI_AUTH, '${REDIS_PASSWORD}');
-    assert.ok(redis.commandArgv.includes('${REDIS_PASSWORD}'));
     assert.ok(redis.commandArgv.every((arg) => !/:\?|:-/.test(arg)));
     assert.match(compose, /POSTGRES_PASSWORD:\s+\$\{POSTGRES_PASSWORD\}$/m);
+    assert.match(compose, /REDIS_PASSWORD:\s+\$\{REDIS_PASSWORD\}$/m);
     assert.match(compose, /REDISCLI_AUTH:\s+\$\{REDIS_PASSWORD\}$/m);
     assert.doesNotMatch(compose, /POSTGRES_PASSWORD:\s+\$\{POSTGRES_PASSWORD:[?-]/);
     assert.doesNotMatch(compose, /REDIS_PASSWORD:[?-]/);
+  });
+
+  test('redis requirepass via sh -c shell "$REDIS_PASSWORD" (not ${…} in commandArgv)', () => {
+    const redis = services.find((service) => service.name === 'redis');
+    assert.equal(redis.commandArgv[0], 'sh');
+    assert.equal(redis.commandArgv[1], '-c');
+    assert.match(redis.commandArgv[2], /exec redis-server/);
+    assert.match(redis.commandArgv[2], /--requirepass "\$REDIS_PASSWORD"/);
+    assert.ok(!redis.commandArgv.includes('${REDIS_PASSWORD}'));
+    assert.ok(redis.commandArgv.every((arg) => !/\$\{REDIS_PASSWORD/.test(arg)));
+    assert.ok(redis.commandArgv.every((arg) => !/:\?|:-/.test(arg)));
+    // Compose must use sh -c + shell expansion, never a dollar-brace requirepass argv slot.
+    assert.match(compose, /command:\s*\n\s+- sh\s*\n\s+- -c/m);
+    assert.match(compose, /--requirepass "\$REDIS_PASSWORD"/);
+    assert.doesNotMatch(compose, /--requirepass\s*\n\s+- \$\{REDIS_PASSWORD/);
+    assert.doesNotMatch(compose, /--requirepass:\s*\$\{REDIS_PASSWORD/);
+    assert.match(research, /requirepass|WRONGPASS/);
+    assert.match(research, /sh -c/);
+    assert.match(runbook, /requirepass|WRONGPASS/);
   });
 
   test('step.sh upserts resolved DATABASE_URL and REDIS_URL (and SOURCE_REVISION)', () => {
