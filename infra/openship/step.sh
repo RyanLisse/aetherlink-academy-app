@@ -123,7 +123,7 @@ deploy() {
   say "Deploying $SOURCE_SHA"
   jq -n --arg p "$id" --arg c "$SOURCE_SHA" '{projectId: $p, branch: "main", commitSha: $c, environment: "production"}' > "$OPENSHIP_TMP/deploy.json"
   local deployment status="" deadline=$((SECONDS + 35 * 60))
-  deployment="$(api POST /deployments "$OPENSHIP_TMP/deploy.json" | jq -r '.deploymentId // .id // .data.id // .deployment.id // empty')"
+  deployment="$(api POST /deployments "$OPENSHIP_TMP/deploy.json" | jq -r '.data.deployment_id // .data.deployment.id // .deploymentId // .id // .data.id // .deployment.id // empty')"
   [[ -n "$deployment" ]] || die "deploy request returned no deployment id"
   echo "  deployment: $deployment"
   while (( SECONDS < deadline )); do
