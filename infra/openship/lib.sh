@@ -77,7 +77,15 @@ api() {
   # since the caller's pipe would otherwise swallow the only explanation.
   local out status=0
   out="$(curl "${args[@]}" "$OPENSHIP_API/api$path")" || status=$?
-  if (( status != 0 )); then echo "openship-kit: $method $path failed (curl $status): ${out:0:1500}" >&2; return "$status"; fi
+  if (( status != 0 )); then
+    echo "openship-kit: $method $path failed (curl $status): ${out:0:1500}" >&2
+    # Scoped PATs need github_repository:owner/repo:read for POST /deployments
+    # (assertGitHubRepoAccess). Surface the fix next to the raw body.
+    if [[ "$out" == *'"code":"GITHUB_ACCESS_DENIED"'* || "$out" == *'"code": "GITHUB_ACCESS_DENIED"'* ]]; then
+      echo "openship-kit: hint: recreate OPENSHIP_TOKEN with --grant 'github_repository:RyanLisse/aetherlink-academy-app:read' (plus project:*:create); see docs/runbooks/single-academy-openship.md" >&2
+    fi
+    return "$status"
+  fi
   printf '%s' "$out"
 }
 

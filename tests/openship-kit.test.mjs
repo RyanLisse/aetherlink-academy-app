@@ -271,3 +271,33 @@ describe('deploy does not call /services/sync', () => {
     assert.match(step, /zero services after deploy/);
   });
 });
+
+describe('deploy requires github_repository grant on scoped PAT', () => {
+  const lib = readFileSync(path.join(root, 'infra/openship/lib.sh'), 'utf8');
+  const research = readFileSync(path.join(root, 'infra/openship/RESEARCH.md'), 'utf8');
+  const runbook = readFileSync(path.join(root, 'docs/runbooks/single-academy-openship.md'), 'utf8');
+  const step = readFileSync(path.join(root, 'infra/openship/step.sh'), 'utf8');
+
+  test('runbook mints OPENSHIP_TOKEN with github_repository grant', () => {
+    assert.match(runbook, /github_repository:RyanLisse\/aetherlink-academy-app:read/);
+    assert.match(runbook, /project:\*:create/);
+    assert.match(runbook, /GITHUB_ACCESS_DENIED/);
+    assert.match(runbook, /assertGitHubRepoAccess/);
+  });
+
+  test('RESEARCH.md documents assertGitHubRepoAccess for POST \/deployments', () => {
+    assert.match(research, /assertGitHubRepoAccess/);
+    assert.match(research, /GITHUB_ACCESS_DENIED/);
+    assert.match(research, /github_repository/);
+  });
+
+  test('lib.sh prints recreate hint on GITHUB_ACCESS_DENIED', () => {
+    assert.match(lib, /GITHUB_ACCESS_DENIED/);
+    assert.match(lib, /github_repository:RyanLisse\/aetherlink-academy-app:read/);
+  });
+
+  test('step.sh notes the GitHub access gate before POST \/deployments', () => {
+    assert.match(step, /assertGitHubRepoAccess/);
+    assert.match(step, /GITHUB_ACCESS_DENIED/);
+  });
+});
