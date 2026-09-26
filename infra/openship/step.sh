@@ -174,8 +174,8 @@ domain() {
   write_marker "$DOMAIN_FILE" "domain=$d"
   STAGING_URL=http://127.0.0.1:4317 deploy
   say "Waiting for https://$d (certificate issuance)"
-  local i
-  for i in $(seq 1 30); do
+  local _
+  for _ in $(seq 1 30); do
     if curl -fsS --max-time 10 "https://$d/game/health" | jq -e '.ok == true' >/dev/null 2>&1; then say "https://$d is live"; return 0; fi
     sleep 10
   done
