@@ -96,6 +96,14 @@ deploy() {
     [[ -n "$id" ]] || die "project create returned no id"
   fi
   echo "  project: $id"
+  # Self-hosted OpenShip cannot route the free .opsh.io endpoint that project create stores
+  # (preflight CLOUD_REQUIRED_MANAGED_PROJECT_DOMAIN reads the stored publicEndpoints). Clear
+  # them: the app is served by its compose-published port, which OpenShip leaves alone. A routed
+  # endpoint would also be rewritten to loopback (loopback-publish.ts), hiding :4317 at cutover.
+  # The academy.aetherlink.ai route is added together with DNS (AET-42), when TLS can issue.
+  printf '{"publicEndpoints":[]}' > "$OPENSHIP_TMP/endpoints.json"
+  api PATCH "/projects/$id" "$OPENSHIP_TMP/endpoints.json" >/dev/null
+  echo "  public endpoints: none (served on the published port $(port_bind))"
   printf '{"enabled":false}' > "$OPENSHIP_TMP/auto.json"
   api POST "/projects/$id/auto-deploy" "$OPENSHIP_TMP/auto.json" >/dev/null
   echo "  auto-deploy: off (deploys happen only from this workflow)"
@@ -115,7 +123,7 @@ deploy() {
   say "Deploying $SOURCE_SHA"
   jq -n --arg p "$id" --arg c "$SOURCE_SHA" '{projectId: $p, branch: "main", commitSha: $c, environment: "production"}' > "$OPENSHIP_TMP/deploy.json"
   local deployment status="" deadline=$((SECONDS + 35 * 60))
-  deployment="$(api POST /deployments "$OPENSHIP_TMP/deploy.json" | jq -r '.deploymentId // .id // .data.id // .deployment.id // empty')"
+  deployment="$(api POST /deployments "$OPENSHIP_TMP/deploy.json" | jq -r '.data.deployment_id // .data.deployment.id // .deploymentId // .id // .data.id // .deployment.id // empty')"
   [[ -n "$deployment" ]] || die "deploy request returned no deployment id"
   echo "  deployment: $deployment"
   while (( SECONDS < deadline )); do
