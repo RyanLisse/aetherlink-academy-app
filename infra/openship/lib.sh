@@ -73,7 +73,12 @@ api() {
   local method="$1" path="$2" body="${3:-}"
   local args=(-sS --fail-with-body -X "$method" -H @"$OPENSHIP_TMP/auth.header" -H 'Accept: application/json')
   if [[ -n "$body" ]]; then args+=(-H 'Content-Type: application/json' --data-binary @"$body"); fi
-  curl "${args[@]}" "$OPENSHIP_API/api$path"
+  # On failure OpenShip answers {error, code} (e.g. "Pre-deploy checks failed: ..."); show it,
+  # since the caller's pipe would otherwise swallow the only explanation.
+  local out status=0
+  out="$(curl "${args[@]}" "$OPENSHIP_API/api$path")" || status=$?
+  if (( status != 0 )); then echo "openship-kit: $method $path failed (curl $status): ${out:0:1500}" >&2; return "$status"; fi
+  printf '%s' "$out"
 }
 
 # Prints the project id for the Academy slug, or nothing.
