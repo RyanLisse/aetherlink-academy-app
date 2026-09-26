@@ -105,8 +105,10 @@ Compose services (app, postgres, redis) are persisted by OpenShip from `composeP
 deploy-request time — the kit does not call `POST /services/sync` (that endpoint 404s for a
 `project:*:create` PAT; see `infra/openship/RESEARCH.md`). Compose publishes the app as
 hardcoded `127.0.0.1:4327:4317` (never bash `${ACADEMY_PORT_BIND:-…}` in `ports:` — that
-breaks Docker ParseAddr). The new Academy answers on `127.0.0.1:4327` only, with an empty
-database. Legacy keeps serving 4317.
+breaks Docker ParseAddr) and builds with repo-root context `.` (not `../..`). The new Academy
+answers on `127.0.0.1:4327` only, with an empty database. Legacy keeps serving 4317.
+If OpenShip shows service drift after compose port/build edits and the sync API is unavailable
+to the PAT, clear it on the host with `openship services drift accept|keep` before re-dispatch.
 
 The step fails if the deployment does not reach `ready`, if an expected env name is missing in
 the app container, or if `http://127.0.0.1:4327/game/health` is not ok at the deployed revision.
@@ -186,10 +188,9 @@ Undo: none for the containers. The data is in the kept dump. Restore it with
 
 ## Open before running
 
-- The items marked unverified in `infra/openship/RESEARCH.md`: the `../..` build context from
-  `infra/openship/`, project env reaching compose interpolation, readiness on a services project,
-  the Proof WebSocket under
-  the edge's 60 s read timeout.
+- The items marked unverified in `infra/openship/RESEARCH.md`: project env reaching compose
+  interpolation, readiness on a services project, the Proof WebSocket under the edge's 60 s
+  read timeout. Build context is settled: compose/services use repo-root `.` (not `../..`).
 - Container names `openship-academy-app` and `openship-academy-postgres`
   follow the naming in the source. If `deploy` reports another name, set `TARGET_APP_CONTAINER`
   and `TARGET_PG_CONTAINER` on the host.

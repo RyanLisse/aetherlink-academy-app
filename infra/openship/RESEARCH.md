@@ -80,11 +80,13 @@ for Academy deploy.
   Images are free-form, so `postgres:16` and `redis:7-alpine` run as-is. The app catalog only
   offers Valkey 8.1 for Redis and no plain Postgres (`G/packages/core/src/apps/catalog/`).
 - A project whose create body has `composePath` becomes a compose/services deploy
-  (`G/apps/api/src/modules/projects/project-crud.service.ts`). The compose directory anchors
-  relative `build:` contexts (`G/apps/api/src/modules/deployments/prepare.service.ts`); the
-  build refuses a context that escapes the repository (`G/packages/adapters/src/runtime/cloud.ts`).
-  **Unverified:** that `context: ../..` from `infra/openship/` is accepted by the self-hosted
-  Docker runtime. If `deploy` fails on it, move the compose file to the repository root.
+  (`G/apps/api/src/modules/projects/project-crud.service.ts`). Relative `build:` contexts are
+  resolved against the **linked repository root**, not the compose file directory
+  (`G/apps/api/src/modules/deployments/prepare.service.ts`); the build refuses a context that
+  escapes the repository (`G/packages/adapters/src/runtime/cloud.ts`). Academy therefore uses
+  `context: .` (and `"build": "."` in `academy.services.json`). `context: ../..` from
+  `infra/openship/` previously showed as drift and could fail with "path escapes the linked
+  repository".
 - Containers are named `openship-<slug>-<service>` on a per-project bridge network
   `openship-<slug>`, with the service name as hostname (`G/packages/adapters/src/runtime/docker.ts`).
   That is why the kit's TLS certificates (SANs `postgres`, `redis`) keep working.
@@ -142,6 +144,11 @@ for Academy deploy.
   Cutover to `0.0.0.0:4317` needs a compose publish change (separate from this sibling bind).
   **Unverified:** how a later edge domain route rewrites a routed compose port
   (`G/apps/api/src/lib/loopback-publish.ts` rewrites routed ports to loopback).
+- After compose `ports:` / `build:` edits land in git, OpenShip may still treat the previous
+  service-record values as **edited** (kit no longer POSTs `/services/sync`; a create-only PAT
+  cannot call that endpoint). If the UI shows drift and the sync API is unavailable to the PAT,
+  clear it on the host with `openship services drift accept|keep` (e.g.
+  `openship services drift keep app -p academy`) before re-dispatching deploy.
 
 ## Deploys, health, rollback
 

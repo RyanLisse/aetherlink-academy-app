@@ -262,6 +262,14 @@ describe('compose ports and project readiness (OpenShip sibling)', () => {
     assert.ok(portLines.every((line) => !line.includes('${') && !line.includes(':-')));
   });
 
+  test('app build context is repo-root . (not ../..)', () => {
+    const app = services.find((service) => service.name === 'app');
+    assert.equal(app.build, '.');
+    assert.match(compose, /build:\n(?:\s+#.*\n)*\s+context:\s+\.\n\s+dockerfile:\s+Dockerfile/);
+    assert.doesNotMatch(compose, /context:\s+\.\.\/\.\./);
+    assert.doesNotMatch(JSON.stringify(services), /"build":"\.\.\/\.\."/);
+  });
+
   test('project readiness probes /game/health without forcing port 4317 on every service', () => {
     assert.equal(project.readiness?.enabled, true);
     assert.equal(project.readiness?.path, '/game/health');
@@ -600,3 +608,20 @@ describe('docker jq file args stay under /tmp', () => {
     assert.ok(copyAt < mergeAt, 'copy happens before jq -s');
   });
 });
+
+describe('compose build context and service drift', () => {
+  const research = readFileSync(path.join(root, 'infra/openship/RESEARCH.md'), 'utf8');
+  const runbook = readFileSync(path.join(root, 'docs/runbooks/single-academy-openship.md'), 'utf8');
+
+  test('RESEARCH.md documents repo-root build context .', () => {
+    assert.match(research, /context: \./);
+    assert.match(research, /path escapes the linked repository|escapes the repository/);
+    assert.doesNotMatch(research, /Unverified:.*context: \.\.\/\.\./);
+  });
+
+  test('docs note openship services drift accept|keep when sync unavailable', () => {
+    assert.match(research, /openship services drift (accept|keep)/);
+    assert.match(runbook, /openship services drift (accept|keep)/);
+  });
+});
+

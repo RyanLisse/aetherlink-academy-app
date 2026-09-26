@@ -3,7 +3,7 @@
     {
       "name": "app",
       "kind": "compose",
-      "build": "../..",
+      "build": ".",
       "dockerfile": "Dockerfile",
       "environment": {
         "ACADEMY_STORAGE": "postgres",
