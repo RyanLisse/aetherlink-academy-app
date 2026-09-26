@@ -91,6 +91,12 @@ Operator steps (not done by this change):
 3. Classroom slides: if any copy is hosted, replace its `index.html` and `presenter.html` with `<out>/classroom-slides/*`. Otherwise nothing to deploy; the table still documents the mapping.
 4. Verify: open `https://aetherlink-training.ryanlisse.chatgpt.site/?squad=1&day=3#5` and expect `https://academy.aetherlink.ai/archive/squad-1/day-3#slide-archive-s1-day3-5`.
 
+## Operator runbooks
+
+- [Deploy apps/server next to the gateway](runbooks/apps-server-deploy.md): sibling Compose on :4318, env list, Drizzle migrations, rollback, access for automated deploys.
+- [Google OAuth for facilitators](runbooks/google-oauth.md): OAuth client, redirect URIs, env for both servers, `login_error` codes.
+- [SMTP for email login](runbooks/smtp-email-login.md): sending setup that leaves the `aetherlink.ai` mail records intact, env, handshake check.
+
 ## Decisions
 
 - [ChatGPT sign-in as a second chat runner](decisions/chatgpt-runner-terms.md): not built; terms do not clearly allow it.
