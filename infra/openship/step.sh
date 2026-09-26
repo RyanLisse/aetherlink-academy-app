@@ -133,7 +133,13 @@ deploy() {
     grep -E '^[A-Za-z_][A-Za-z0-9_]*=' "$LEGACY_HOME/.env" | grep -Ev "^(${COMPOSE_OWNED_ENV})="
     # ACADEMY_PORT_BIND is IP-only documentation for the sibling bind; compose
     # ports are hardcoded to 127.0.0.1:4327:4317 (no bash :- interpolation).
-    printf 'POSTGRES_PASSWORD=%s\nREDIS_PASSWORD=%s\nACADEMY_PORT_BIND=127.0.0.1\nSOURCE_REVISION=%s\n' "$pg_password" "$redis_password" "$SOURCE_SHA"
+    # DATABASE_URL / REDIS_URL must be fully resolved here: OpenShip expands
+    # same-key ${NAME} in compose but does NOT nest ${POSTGRES_PASSWORD:?…}
+    # inside another key (ERR_INVALID_URL with a literal ${…} string).
+    printf 'POSTGRES_PASSWORD=%s\nREDIS_PASSWORD=%s\n' "$pg_password" "$redis_password"
+    printf 'DATABASE_URL=postgresql://academy:%s@postgres:5432/academy\n' "$pg_password"
+    printf 'REDIS_URL=rediss://:%s@redis:6379\n' "$redis_password"
+    printf 'ACADEMY_PORT_BIND=127.0.0.1\nSOURCE_REVISION=%s\n' "$SOURCE_SHA"
     if [[ -n "$domain" ]]; then printf 'ACADEMY_PUBLIC_URL=https://%s\n' "$domain"; fi
   } | jq -Rn '{environment: "production", deletes: [], upserts: [inputs
       | (index("=")) as $i
