@@ -80,3 +80,14 @@ E-mail is nooit verplicht: cohortcode plus HttpOnly-sessie blijft de standaardto
 - Niet ingesteld, onbekend of onvolledig: alle `/game/email/*`-routes geven 404 en de UI toont de optie niet.
 
 Codes zijn 10 minuten geldig, staan gehasht in `email_challenges`, hebben maximaal 5 pogingen en 60 seconden resend-cooldown. Verzenden is begrensd op 5 per adres per uur en 20 per IP per 15 minuten (`access_attempts`). Het login-antwoord is identiek voor bekende en onbekende adressen. Geverifieerde adressen staan in `participant_emails`, niet in de kamerdata, dus nooit in MCP, chat of de view van andere deelnemers. `scripts/cohort-retention.mjs --apply` verwijdert ze met het cohort.
+
+## Leercoach op gratis OpenRouter-modellen (optioneel, AET-31)
+
+De chat blijft een deterministische FAQ. Met een OpenRouter-sleutel beantwoordt een gratis model de uitlegvragen die de FAQ anders naar de eigen Claude doorverwijst, uitsluitend vanuit de passages die de FAQ server-side ophaalt uit vrijgegeven dagen. Diepere hulp blijft de eigen Claude via MCP.
+
+- `OPENROUTER_API_KEY`: niet ingesteld betekent geen coach; de chat werkt precies zoals zonder deze functie.
+- `ACADEMY_COACH_MODEL`: standaard `google/gemma-4-31b-it:free` (gekozen uit `https://openrouter.ai/api/v1/models` op 2026-09-26). Een id zonder `:free` weigert de start.
+- `ACADEMY_COACH_DAILY_CAP` (standaard 40 per deelnemer) en `ACADEMY_COACH_PLATFORM_DAILY_CAP` (standaard 50, het gratis OpenRouter-limiet zonder credits). Tellers staan per Europe/Amsterdam-datum in `access_attempts` (`coach:*`), dus gedeeld over instances.
+- `ACADEMY_COACH_TIMEOUT_MS` (standaard 15000). Bij time-out, 429, 5xx of een antwoord zonder geldige bronverwijzing krijgt de deelnemer het gewone FAQ-antwoord met de reden.
+
+Naar het model gaan alleen de opgehaalde lespassages met hun id en de vraag, met namen uit de kamer, e-mailadressen en kamer- en cohortcodes vervangen. Elke request vraagt `provider.data_collection=deny`. Controleer na het instellen met `node --import ./vendor/proof-sdk/node_modules/tsx/dist/loader.mjs scripts/coach-smoke.mjs` (kost één request van het dagbudget). Een 404 "No endpoints found matching your data policy" betekent dat dit model geen provider heeft die dat respecteert: kies dan een ander `:free`-model.

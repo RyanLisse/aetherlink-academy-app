@@ -1,6 +1,7 @@
 import {randomUUID} from 'node:crypto';
 import {Store,hash,fail,writable,MAX_SQUAD_SIZE} from './store.mjs';
 import {INVALID_COHORT_CODE_MESSAGE,COHORT_NO_ROOM_MESSAGE,COHORT_RATE_LIMIT_MESSAGE,attemptKeys,nextAttempt,issueAccessCode,sessionGrant,mergeSeatProgress,seatMember,cohortView,isDueForPurge,anonymizeRoom,dueCertificates,memberCertificate} from './cohort.mjs';
+import {COACH_RETENTION_MS} from './coach.mjs';
 import {EMAIL_CODE_INVALID_MESSAGE,EMAIL_PARTICIPANT_ONLY_MESSAGE,EMAIL_RATE_LIMIT_MESSAGE,challengeKey,checkChallenge,emailAttemptKeys,issueChallenge} from './email-login.mjs';
 export class LocalStore extends Store {
  constructor(dir,options){super(dir,options);this.data.emails??={};this.data.emailChallenges??={};this.queue=Promise.resolve();}
@@ -40,6 +41,8 @@ export class LocalStore extends Store {
  revokeCertificate(cohortId,certificateId){return this.locked(()=>{const cohort=this.cohortOr404(cohortId),certificate=this.data.certificates[certificateId];if(!certificate||certificate.cohortId!==cohortId)fail(404,'Certificaat niet gevonden in dit cohort.');certificate.revokedAt??=this.now();return this.cohortSnapshot(cohort);});}
  async certificate(id){return this.data.certificates[id]||null;}
  cohortOverview(){return this.locked(()=>Object.values(this.data.cohorts).sort((a,b)=>b.createdAt-a.createdAt).map(cohort=>{this.settleCertificates(cohort);return this.cohortSnapshot(cohort);}));}
+ // Daily coach counters: all keys move together, and only when every one is under its cap.
+ coachQuota(keys,{consume=false}={}){return this.locked(()=>{const now=this.now();for(const [key,record] of Object.entries(this.data.attempts))if(key.startsWith('coach:')&&now-record.windowStartedAt>COACH_RETENTION_MS)delete this.data.attempts[key];const counts=keys.map(([key])=>this.data.attempts[key]?.count||0),allowed=keys.every(([,max],i)=>counts[i]<max);if(!consume||!allowed)return {allowed,counts};keys.forEach(([key],i)=>{this.data.attempts[key]={windowStartedAt:this.data.attempts[key]?.windowStartedAt??now,count:counts[i]+1};});return {allowed,counts:counts.map(c=>c+1)};});}
  consumeAttempts(keys){const now=this.now();let ok=true;for(const [key,limit] of keys){const {record,allowed}=nextAttempt(this.data.attempts[key],now,limit);this.data.attempts[key]=record;ok&&=allowed;}return ok;}
  seatCohortSession(cohort,member,now){
   const grant=sessionGrant(cohort,now),room=this.data.rooms[cohort.currentRoomId];

@@ -3,6 +3,7 @@ import {readFile} from 'node:fs/promises';
 import {awaitingReview} from './proof-trail.mjs';
 import {hash, secret, fail, writable, Store, MAX_SQUAD_SIZE, COHORT_ROOM_JOIN_MESSAGE, DUPLICATE_PARTICIPANT_MESSAGE, INVALID_PARTICIPANT_ACCESS_MESSAGE, COHORT_SEAT_ACCESS_MESSAGE} from './store.mjs';
 import {INVALID_COHORT_CODE_MESSAGE,COHORT_NO_ROOM_MESSAGE,COHORT_RATE_LIMIT_MESSAGE,RATE_LIMITS,attemptKeys,issueAccessCode,sessionGrant,mergeSeatProgress,seatMember,cohortView,cohortWindow,anonymizeRoom,dueCertificates,memberCertificate} from './cohort.mjs';
+import {COACH_RETENTION_MS} from './coach.mjs';
 import {EMAIL_CODE_INVALID_MESSAGE,EMAIL_PARTICIPANT_ONLY_MESSAGE,EMAIL_RATE_LIMITS,EMAIL_RATE_LIMIT_MESSAGE,challengeKey,checkChallenge,emailAttemptKeys,issueChallenge} from './email-login.mjs';
 
 export class PostgresStore {
@@ -326,9 +327,26 @@ export class PostgresStore {
    return cohorts;
   });
  }
+ // Daily coach counters share access_attempts (the Amsterdam date is in the key). Rows are
+ // created first and then locked in key order, so concurrent instances serialise on them.
+ async coachQuota(keys,{consume=false}={}) {
+  const names=keys.map(([key])=>key);
+  const read=async client=>{const {rows}=await client.query(`SELECT key,count FROM access_attempts WHERE key=ANY($1::text[]) ORDER BY key${consume?' FOR UPDATE':''}`,[names]);const byKey=new Map(rows.map(row=>[row.key,row.count]));return keys.map(([key])=>byKey.get(key)||0);};
+  if(!consume){const counts=await this.transaction(read);return {allowed:keys.every(([,max],i)=>counts[i]<max),counts};}
+  return this.transaction(async client=>{
+   const now=this.now();
+   await client.query("DELETE FROM access_attempts WHERE key LIKE 'coach:%' AND window_started_at<$1",[now-COACH_RETENTION_MS]);
+   await client.query('INSERT INTO access_attempts(key,window_started_at,count) SELECT unnest($1::text[]),$2,0 ORDER BY 1 ON CONFLICT (key) DO NOTHING',[names,now]);
+   const counts=await read(client);
+   const allowed=keys.every(([,max],i)=>counts[i]<max);
+   if(!allowed)return {allowed,counts};
+   await client.query('UPDATE access_attempts SET count=count+1 WHERE key=ANY($1::text[])',[names]);
+   return {allowed,counts:counts.map(c=>c+1)};
+  });
+ }
  async consumeAttempts(client,keys) {
   const now=this.now();
-  await client.query('DELETE FROM access_attempts WHERE window_started_at<$1',[now-Math.max(...[...Object.values(RATE_LIMITS),...Object.values(EMAIL_RATE_LIMITS)].map(limit=>limit.windowMs))]);
+  await client.query("DELETE FROM access_attempts WHERE window_started_at<$1 AND key NOT LIKE 'coach:%'",[now-Math.max(...[...Object.values(RATE_LIMITS),...Object.values(EMAIL_RATE_LIMITS)].map(limit=>limit.windowMs))]);
   let ok=true;
   for(const [key,{max,windowMs}] of keys){
    const result=await client.query(`INSERT INTO access_attempts(key,window_started_at,count) VALUES ($1,$2,1)
