@@ -100,11 +100,13 @@ reuse on 409 CONFLICT — never delete the existing project), turns auto-deploy 
 Postgres and Redis passwords into `/root/aetherlink-academy-openship/secrets.env` (0600) and TLS
 material into `/root/aetherlink-academy-openship/tls`, copies the legacy env, and deploys the
 commit. The project body is a services project (`composePath: infra/openship/academy.compose.yaml`,
-readiness gate on `/game/health`).
+readiness gate on `/game/health`, no project `readiness.port` so only the app is probed).
 Compose services (app, postgres, redis) are persisted by OpenShip from `composePath` at
 deploy-request time — the kit does not call `POST /services/sync` (that endpoint 404s for a
-`project:*:create` PAT; see `infra/openship/RESEARCH.md`). The new Academy answers on
-`127.0.0.1:4327` only, with an empty database. Legacy keeps serving 4317.
+`project:*:create` PAT; see `infra/openship/RESEARCH.md`). Compose publishes the app as
+hardcoded `127.0.0.1:4327:4317` (never bash `${ACADEMY_PORT_BIND:-…}` in `ports:` — that
+breaks Docker ParseAddr). The new Academy answers on `127.0.0.1:4327` only, with an empty
+database. Legacy keeps serving 4317.
 
 The step fails if the deployment does not reach `ready`, if an expected env name is missing in
 the app container, or if `http://127.0.0.1:4327/game/health` is not ok at the deployed revision.
@@ -150,9 +152,11 @@ Undo: as step 4.
 
 ### 6. cutover (maintenance ends)
 
-Refuses unless verify passed and `academy-app` is stopped. Sets `ACADEMY_PORT_BIND=0.0.0.0:4317`,
-redeploys, and checks health on `127.0.0.1:4317`. `ACADEMY_PUBLIC_URL` keeps the legacy value,
-so links and the Proof WebSocket origin do not change. Afterwards run `verify` once more: after
+Refuses unless verify passed and `academy-app` is stopped. Redeploys and checks health on
+`127.0.0.1:4317`. Sibling staging compose is currently hardcoded to `127.0.0.1:4327:4317`;
+cutover therefore needs a follow-up compose publish change to `0.0.0.0:4317:4317` (do not put
+bash `${…:-…}` defaults in `ports:`). `ACADEMY_PUBLIC_URL` keeps the legacy value, so links
+and the Proof WebSocket origin do not change. Afterwards run `verify` once more: after
 cutover it accepts row counts that grew, never shrank.
 
 Undo: from here on the new database takes writes. To go back, stop the OpenShip app, dump

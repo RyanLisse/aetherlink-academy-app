@@ -17,7 +17,7 @@
         "SOURCE_REVISION": "${SOURCE_REVISION:-unknown}"
       },
       "ports": [
-        "${ACADEMY_PORT_BIND:-127.0.0.1:4327}:4317"
+        "127.0.0.1:4327:4317"
       ],
       "volumes": [
         "data:/data",

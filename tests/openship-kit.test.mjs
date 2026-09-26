@@ -244,6 +244,51 @@ test('academy.services.json mirrors academy.compose.yaml (reference fixture)', (
   assert.ok(services.every((service) => service.exposed === false), 'no service asks for a free .opsh.io domain');
 });
 
+describe('compose ports and project readiness (OpenShip sibling)', () => {
+  const kit = new URL('../infra/openship/', import.meta.url);
+  const compose = readFileSync(new URL('academy.compose.yaml', kit), 'utf8');
+  const project = JSON.parse(readFileSync(new URL('academy.project.json', kit), 'utf8'));
+  const {services} = JSON.parse(readFileSync(new URL('academy.services.json', kit), 'utf8'));
+  const research = readFileSync(new URL('RESEARCH.md', kit), 'utf8');
+  const step = readFileSync(path.join(root, 'infra/openship/step.sh'), 'utf8');
+
+  test('app ports are hardcoded 127.0.0.1:4327:4317 (no bash :- in ports)', () => {
+    const app = services.find((service) => service.name === 'app');
+    assert.deepEqual(app.ports, ['127.0.0.1:4327:4317']);
+    assert.match(compose, /ports:\n\s+-\s+"127\.0\.0\.1:4327:4317"/);
+    // Executable ports lines only — comments may mention the ParseAddr pitfall.
+    const portLines = compose.split('\n').filter((line) => /^\s+-\s+"/.test(line) && line.includes(':'));
+    assert.deepEqual(portLines.map((line) => line.trim()), ['- "127.0.0.1:4327:4317"']);
+    assert.ok(portLines.every((line) => !line.includes('${') && !line.includes(':-')));
+  });
+
+  test('project readiness probes /game/health without forcing port 4317 on every service', () => {
+    assert.equal(project.readiness?.enabled, true);
+    assert.equal(project.readiness?.path, '/game/health');
+    assert.equal(project.readiness?.onFailure, 'fail');
+    assert.equal(Object.hasOwn(project.readiness, 'port'), false);
+  });
+
+  test('step.sh upserts ACADEMY_PORT_BIND as IP-only 127.0.0.1', () => {
+    assert.match(step, /ACADEMY_PORT_BIND=127\.0\.0\.1/);
+    assert.doesNotMatch(step, /ACADEMY_PORT_BIND=%s.*port_bind|port_bind.*"\$\(port_bind\)".*ACADEMY_PORT_BIND/);
+    assert.doesNotMatch(step, /printf '[^']*ACADEMY_PORT_BIND=%s/);
+  });
+
+  test('deploy PATCHes project readiness from academy.project.json (clears stale port)', () => {
+    assert.match(step, /academy\.project\.json/);
+    assert.match(step, /readiness: \.\[1\]\.readiness|readiness: \.\[1\]\.readiness/);
+    assert.match(step, /project\.patch\.json/);
+  });
+
+  test('RESEARCH.md documents ParseAddr ports pitfall and per-service readiness', () => {
+    assert.match(research, /ParseAddr/);
+    assert.match(research, /127\.0\.0\.1:4327:4317/);
+    assert.match(research, /each.*compose service|each\*\* compose service/i);
+    assert.match(research, /readiness\.port/);
+  });
+});
+
 describe('deploy does not call /services/sync', () => {
   const step = readFileSync(path.join(root, 'infra/openship/step.sh'), 'utf8');
   const research = readFileSync(path.join(root, 'infra/openship/RESEARCH.md'), 'utf8');
