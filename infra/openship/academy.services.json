@@ -59,27 +59,12 @@
       "kind": "compose",
       "image": "redis:7-alpine",
       "commandArgv": [
-        "redis-server",
-        "--save",
-        "",
-        "--appendonly",
-        "no",
-        "--port",
-        "0",
-        "--tls-port",
-        "6379",
-        "--tls-cert-file",
-        "/tls/redis.crt",
-        "--tls-key-file",
-        "/tls/redis.key",
-        "--tls-ca-cert-file",
-        "/tls/ca.crt",
-        "--tls-auth-clients",
-        "no",
-        "--requirepass",
-        "${REDIS_PASSWORD}"
+        "sh",
+        "-c",
+        "exec redis-server --save \"\" --appendonly no --port 0 --tls-port 6379 --tls-cert-file /tls/redis.crt --tls-key-file /tls/redis.key --tls-ca-cert-file /tls/ca.crt --tls-auth-clients no --requirepass \"$REDIS_PASSWORD\""
       ],
       "environment": {
+        "REDIS_PASSWORD": "${REDIS_PASSWORD}",
         "REDISCLI_AUTH": "${REDIS_PASSWORD}"
       },
       "volumes": [

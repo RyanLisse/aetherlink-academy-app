@@ -12,10 +12,13 @@
 # that literal into the container and shadows the resolved project-env secret
 # (verified 2026-09-26, dep_DReiQCX0cz2xmlpk → ERR_INVALID_URL). Therefore
 # those three keys are omitted from the app environment entirely so project
-# env can inject the resolved values. Postgres/redis keep same-key
-# ${POSTGRES_PASSWORD} / ${REDIS_PASSWORD} (self-consistent literals still
-# auth). Prefer no bash :? / :- in any compose value (same class as the ports
-# ParseAddr bug). See infra/openship/RESEARCH.md.
+# env can inject the resolved values. Postgres keeps same-key
+# ${POSTGRES_PASSWORD}. Redis must NOT put ${REDIS_PASSWORD} (or :? / :-) in
+# command/commandArgv — OpenShip does not reliably expand those argv slots
+# (verified 2026-09-26 → literal requirepass / WRONGPASS). Redis uses
+# `sh -c` + shell "$REDIS_PASSWORD" with same-key env REDIS_PASSWORD +
+# REDISCLI_AUTH. Prefer no bash :? / :- in any compose value (same class as
+# the ports ParseAddr bug). See infra/openship/RESEARCH.md.
 services:
   app:
     build:
@@ -74,27 +77,15 @@ services:
 
   redis:
     image: redis:7-alpine
+    # OpenShip does not expand ${REDIS_PASSWORD} in command/commandArgv (literal
+    # requirepass → WRONGPASS). Shell expands "$REDIS_PASSWORD" from same-key
+    # service env (environment templates re-resolve; never :? / :- here).
     command:
-      - redis-server
-      - --save
-      - ""
-      - --appendonly
-      - "no"
-      - --port
-      - "0"
-      - --tls-port
-      - "6379"
-      - --tls-cert-file
-      - /tls/redis.crt
-      - --tls-key-file
-      - /tls/redis.key
-      - --tls-ca-cert-file
-      - /tls/ca.crt
-      - --tls-auth-clients
-      - "no"
-      - --requirepass
-      - ${REDIS_PASSWORD}
+      - sh
+      - -c
+      - 'exec redis-server --save "" --appendonly no --port 0 --tls-port 6379 --tls-cert-file /tls/redis.crt --tls-key-file /tls/redis.key --tls-ca-cert-file /tls/ca.crt --tls-auth-clients no --requirepass "$REDIS_PASSWORD"'
     environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
       REDISCLI_AUTH: ${REDIS_PASSWORD}
     volumes:
       - /root/aetherlink-academy-openship/tls:/tls:ro

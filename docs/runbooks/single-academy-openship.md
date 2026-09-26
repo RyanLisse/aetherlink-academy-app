@@ -110,7 +110,10 @@ interpolate `${VAR}` in compose environment values — putting `DATABASE_URL: ${
 on the app service shadows project env with the literal string and crash-loops
 (`ERR_INVALID_URL`, verified on `dep_DReiQCX0cz2xmlpk`). The kit therefore **omits**
 `DATABASE_URL` / `REDIS_URL` / `SOURCE_REVISION` from the app environment in compose/services
-entirely so project env injects the resolved values. The project body is a services project
+entirely so project env injects the resolved values. Redis `--requirepass` uses
+`sh -c` + shell `"$REDIS_PASSWORD"` with same-key redis env (`REDIS_PASSWORD` /
+`REDISCLI_AUTH`) — never `${REDIS_PASSWORD}` (or `:?` / `:-`) in `command` /
+`commandArgv` (literal requirepass → `WRONGPASS`). The project body is a services project
 (`composePath: infra/openship/academy.compose.yaml`, readiness gate on `/game/health`, no
 project `readiness.port` so only the app is probed). Compose services (app, postgres, redis)
 are persisted by OpenShip from `composePath` at deploy-request time — the kit does not call
