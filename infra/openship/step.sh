@@ -131,11 +131,11 @@ deploy() {
   jq -r '.upserts[].key' "$OPENSHIP_TMP/env.json" | sed 's/^/  /'
   api PATCH "/projects/$id/env" "$OPENSHIP_TMP/env.json" >/dev/null
 
-  # OpenShip only deploys the services recorded in its service table; the dashboard fills it
-  # from the compose file, the API needs it spelled out. Without it the repo was built as a
-  # single app and crash-looped. academy.services.json mirrors academy.compose.yaml.
-  say "Syncing services (app, postgres, redis)"
-  api POST "/projects/$id/services/sync" "$KIT_DIR/academy.services.json" | jq -r '.services // [] | .[] | "  \(.name)"' || die "service sync failed"
+  # OpenShip 0.7.2 persists compose services from composePath at deploy-request time
+  # (build.service.ts → syncFromCompose). Do NOT call POST /projects/:id/services/sync:
+  # that route is tagged project:service:write + collection:true, which asserts
+  # {service,"*",write}. A runbook PAT with only project:*:create cannot satisfy service "*",
+  # so the call 404s NotFoundError("service","*"). Deploy-time compose sync is enough.
   say "Deploying $SOURCE_SHA"
   jq -n --arg p "$id" --arg c "$SOURCE_SHA" '{projectId: $p, branch: "main", commitSha: $c, environment: "production"}' > "$OPENSHIP_TMP/deploy.json"
   local deployment status="" deadline=$((SECONDS + 35 * 60))
@@ -151,6 +151,16 @@ deploy() {
     sleep 10
   done
   [[ "$status" == ready ]] || die "deployment $deployment did not become ready (last status: ${status:-unknown})"
+
+  # Confirm deploy-time compose sync left service rows (app/postgres/redis).
+  say "Project services"
+  if api GET "/projects/$id/services" > "$OPENSHIP_TMP/services.json" 2>"$OPENSHIP_TMP/services.err"; then
+    jq -r '.services // [] | .[] | "  \(.name)"' "$OPENSHIP_TMP/services.json"
+    count="$(jq -r '.services // [] | length' "$OPENSHIP_TMP/services.json")"
+    [[ "$count" -gt 0 ]] || die "project $id is services-type but has zero services after deploy; composePath sync did not persist rows"
+  else
+    echo "  warning: could not list services ($(tr '\n' ' ' < "$OPENSHIP_TMP/services.err")); continuing with container health checks" >&2
+  fi
 
   say "Runtime checks"
   container_running "$TARGET_APP" || die "$TARGET_APP is not running; check the OpenShip container names"

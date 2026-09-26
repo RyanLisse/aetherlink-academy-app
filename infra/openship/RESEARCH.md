@@ -28,13 +28,24 @@ marked **unverified** and the kit checks it at run time instead of assuming it.
 | Turn off auto-deploy | `POST /projects/:id/auto-deploy {enabled:false}` | `project` write |
 | Set env | `PATCH /projects/:id/env {environment, upserts[{key,value,isSecret}], deletes}` | `project` write |
 | Deploy a commit | `POST /deployments {projectId, branch, commitSha, environment}` | `deployment` write + write on the project |
+| List services | `GET /projects/:id/services` | `project` read (nested list) |
+| Sync services | `POST /projects/:id/services/sync` | **unusable** with runbook PAT — see below |
 | Status, logs | `GET /deployments/:id`, `GET /deployments/:id/logs?tail=` | `deployment` read |
 | Rollback | `POST /deployments/:id/rollback` | `deployment` write |
 
-Routes: `G/apps/api/src/modules/projects/project.routes.ts`, `.../deployments/deployment.routes.ts`.
+Routes: `G/apps/api/src/modules/projects/project.routes.ts`, `.../deployments/deployment.routes.ts`,
+`.../services/service.routes.ts`.
 Bodies: `.../projects/project.schema.ts` (`CreateProjectBody`), `.../deployments/deployment.schema.ts`.
 Deployment status values: `queued | building | deploying | ready | failed | cancelled`
 (`G/packages/core/src/types.ts`).
+
+`POST /projects/:id/services/sync` is tagged `project:service:write` with `collection: true`, which
+asserts `{service,"*",write}` (`G/apps/api/src/lib/route-permission.ts`). A runbook PAT granted only
+`project:*:create` cannot satisfy service `*`, so the call returns 404
+`NotFoundError("service","*")`. The kit does **not** call that endpoint. OpenShip 0.7.2 already
+persists compose services from the project's `composePath` at deploy-request time
+(`G/apps/api/src/modules/deployments/build.service.ts` → `syncFromCompose`), which is enough for a
+`projectType: services` project.
 
 ## Tokens
 

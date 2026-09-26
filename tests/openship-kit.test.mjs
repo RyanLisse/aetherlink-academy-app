@@ -230,7 +230,7 @@ describe('decommission.sh', () => {
   });
 });
 
-test('the services sync body mirrors academy.compose.yaml', () => {
+test('academy.services.json mirrors academy.compose.yaml (reference fixture)', () => {
   const kit = new URL('../infra/openship/', import.meta.url);
   const compose = readFileSync(new URL('academy.compose.yaml', kit), 'utf8');
   const {services} = JSON.parse(readFileSync(new URL('academy.services.json', kit), 'utf8'));
@@ -242,4 +242,32 @@ test('the services sync body mirrors academy.compose.yaml', () => {
   ].filter(Boolean).filter((needle) => !compose.includes(needle)).map((needle) => `${service.name}: ${needle}`));
   assert.deepEqual(drift, []);
   assert.ok(services.every((service) => service.exposed === false), 'no service asks for a free .opsh.io domain');
+});
+
+describe('deploy does not call /services/sync', () => {
+  const step = readFileSync(path.join(root, 'infra/openship/step.sh'), 'utf8');
+  const research = readFileSync(path.join(root, 'infra/openship/RESEARCH.md'), 'utf8');
+
+  test('step.sh never POSTs /services/sync (project:*:create PAT cannot assert service *)', () => {
+    // OpenShip 0.7.2 tags POST /projects/:id/services/sync as project:service:write +
+    // collection:true → permission.assert({service,"*",write}). A runbook PAT with only
+    // project:*:create 404s NotFoundError("service","*"). Deploy-time composePath sync
+    // (build.service.ts) persists the rows instead. Comments may mention the pitfall;
+    // executable api calls must not.
+    assert.doesNotMatch(step, /^\s*api\s+POST\s+"[^"]*services\/sync/m);
+    assert.doesNotMatch(step, /^\s*say\s+"Syncing services/m);
+    assert.match(step, /composePath/);
+    assert.match(step, /service "\*"/);
+  });
+
+  test('RESEARCH.md documents the /services/sync permission pitfall', () => {
+    assert.match(research, /services\/sync/);
+    assert.match(research, /service.*"\*".*write|\{service,"\*",write\}/);
+    assert.match(research, /does \*\*not\*\* call that endpoint|does not call that endpoint/i);
+  });
+
+  test('after ready, deploy lists services and dies on an empty services-type project', () => {
+    assert.match(step, /GET "\/projects\/\$id\/services"/);
+    assert.match(step, /zero services after deploy/);
+  });
 });
