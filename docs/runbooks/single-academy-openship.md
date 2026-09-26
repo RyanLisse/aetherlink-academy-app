@@ -77,8 +77,11 @@ Creates the project from `infra/openship/academy.project.json` (services project
 `composePath: infra/openship/academy.compose.yaml`, readiness gate on `/game/health`), turns
 auto-deploy off, generates Postgres and Redis passwords into
 `/root/aetherlink-academy-openship/secrets.env` (0600) and TLS material into
-`/root/aetherlink-academy-openship/tls`, copies the legacy env, and deploys the commit. The new
-Academy answers on `127.0.0.1:4327` only, with an empty database. Legacy keeps serving 4317.
+`/root/aetherlink-academy-openship/tls`, copies the legacy env, and deploys the commit.
+Compose services (app, postgres, redis) are persisted by OpenShip from `composePath` at
+deploy-request time — the kit does not call `POST /services/sync` (that endpoint 404s for a
+`project:*:create` PAT; see `infra/openship/RESEARCH.md`). The new Academy answers on
+`127.0.0.1:4327` only, with an empty database. Legacy keeps serving 4317.
 
 The step fails if the deployment does not reach `ready`, if an expected env name is missing in
 the app container, or if `http://127.0.0.1:4327/game/health` is not ok at the deployed revision.
