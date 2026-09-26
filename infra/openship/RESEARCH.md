@@ -27,7 +27,7 @@ marked **unverified** and the kit checks it at run time instead of assuming it.
 | Create project | `POST /projects` | `project:*` create |
 | Turn off auto-deploy | `POST /projects/:id/auto-deploy {enabled:false}` | `project` write |
 | Set env | `PATCH /projects/:id/env {environment, upserts[{key,value,isSecret}], deletes}` | `project` write |
-| Deploy a commit | `POST /deployments {projectId, branch, commitSha, environment}` | `deployment` write + write on the project |
+| Deploy a commit | `POST /deployments {projectId, branch, commitSha, environment}` | project write **and** `github_repository:owner/repo:read` (scoped PAT) |
 | List services | `GET /projects/:id/services` | `project` read (nested list) |
 | Sync services | `POST /projects/:id/services/sync` | **unusable** with runbook PAT — see below |
 | Status, logs | `GET /deployments/:id`, `GET /deployments/:id/logs?tail=` | `deployment` read |
@@ -46,6 +46,15 @@ asserts `{service,"*",write}` (`G/apps/api/src/lib/route-permission.ts`). A runb
 persists compose services from the project's `composePath` at deploy-request time
 (`G/apps/api/src/modules/deployments/build.service.ts` → `syncFromCompose`), which is enough for a
 `projectType: services` project.
+
+`POST /deployments` also calls `assertGitHubRepoAccess` on the project's `gitOwner`/`gitRepo`
+(`G/apps/api/src/modules/github/github-access.ts`, from `build.service.ts`). Scoped PATs never get
+the org-owner auto-allow — only an explicit `github_repository` (or `github_installation` /
+`github`) grant with `read` (or stronger) passes. Without it the API returns 403
+`GITHUB_ACCESS_DENIED`. That gate is **OpenShip authorization**, separate from GitHub App install /
+clone credentials. A **public** GitHub repo clones anonymously (preflight skips App/clone-token
+demands); the App (`installUrl` openship-io, `requiresCloud: true` on self-hosted) is not required
+for Academy deploy.
 
 ## Tokens
 
@@ -124,7 +133,7 @@ persists compose services from the project's `composePath` at deploy-request tim
 - Git-push auto-deploy runs through the GitHub App or a webhook, only for projects with
   `autoDeploy` on. Linking a repo turns it on (`project-crud.service.ts`), so `deploy` turns it
   off explicitly. Deploys then come only from `openship-academy.yml`.
-  **Unverified:** that a public repository deploys without a GitHub App installation.
+  A public GitHub repo clones anonymously (preflight `isPublicRepo`); no GitHub App install is required for Academy. Scoped PAT still needs `github_repository:…:read` for `assertGitHubRepoAccess`.
 - The readiness gate is off by default. The project body turns it on for `/game/health`
   with `onFailure: "fail"`, so a failing deploy keeps the previous one serving
   (`G/packages/core/src/types.ts`). **Unverified:** whether a services project applies the

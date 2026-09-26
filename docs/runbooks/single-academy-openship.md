@@ -26,19 +26,32 @@ Background and sources: `infra/openship/RESEARCH.md`.
    (Settings, Tokens) or with the CLI, logged in as an OpenShip admin:
 
    ```sh
-   openship token create academy-github-actions --grant 'project:*:create' --expires 30
+   openship token create academy-github-actions \
+     --grant 'project:*:create' \
+     --grant 'github_repository:RyanLisse/aetherlink-academy-app:read' \
+     --expires 30
    ```
 
-   The one grant needed is `project:*:create`. It lets the token create a project and list the
-   projects it created, and on create OpenShip records `read,write,admin` on that new project
-   for the token (`apps/api/src/modules/projects/project.controller.ts`). Deployment routes
-   check write on the owning project, so no separate `deployment` grant is needed. No
-   `--read-only`, because `deploy` writes. The kit finds the project by listing, and a
-   restricted token only lists what it created, so let the kit create `aetherlink-academy`
-   (`plan` reports it absent today). Do not create it from the dashboard. No `settings`, `server`,
-   `terminal`, `domain` or organisation-level grants are needed. Rotate it after the decommission step.
-   Paste it into GitHub (Settings, Secrets and variables, Actions, `OPENSHIP_TOKEN`). The kit
-   refuses any value that does not start with `opsh_pat_`.
+   Two grants are required:
+
+   - `project:*:create` — create a project and list the projects it created. On create OpenShip
+     also records `read,write,admin` on that new project for the token
+     (`apps/api/src/modules/projects/project.controller.ts`). Deployment routes check write on
+     the owning project, so no separate `deployment` grant is needed.
+   - `github_repository:RyanLisse/aetherlink-academy-app:read` — OpenShip 0.7.2 gates
+     `POST /deployments` with `assertGitHubRepoAccess` (`apps/api/src/modules/github/github-access.ts`).
+     A **scoped** PAT never inherits the org-owner's automatic GitHub access; without this grant
+     deploy returns 403 `GITHUB_ACCESS_DENIED` ("You don't have access to
+     RyanLisse/aetherlink-academy-app…"). `read` is enough for the gate; the Academy repo is
+     public, so clone needs no GitHub App / clone token.
+
+   No `--read-only`, because `deploy` writes. Do **not** use `--full-access` for Actions — prefer
+   the two grants above. The kit finds the project by listing, and a restricted token only lists
+   what it created, so let the kit create the project (`plan` reports it absent today). Do not
+   create it from the dashboard. No `settings`, `server`, `terminal`, `domain` or organisation-level
+   grants are needed. Rotate it after the decommission step. Paste it into GitHub (Settings,
+   Secrets and variables, Actions, `OPENSHIP_TOKEN`). The kit refuses any value that does not
+   start with `opsh_pat_`.
 2. The existing secrets `ACADEMY_HETZNER_HOST`, `ACADEMY_HETZNER_USER` and
    `ACADEMY_HETZNER_SSH_KEY` stay as they are.
 3. `jq` on the host (`apt-get install -y jq`) if `plan` reports it missing.
@@ -161,7 +174,7 @@ Undo: none for the containers. The data is in the kept dump. Restore it with
 
 - The items marked unverified in `infra/openship/RESEARCH.md`: the `../..` build context from
   `infra/openship/`, project env reaching compose interpolation, readiness on a services project,
-  a public repository deploying without a GitHub App installation, and the Proof WebSocket under
+  the Proof WebSocket under
   the edge's 60 s read timeout.
 - Container names `openship-academy-app` and `openship-academy-postgres`
   follow the naming in the source. If `deploy` reports another name, set `TARGET_APP_CONTAINER`

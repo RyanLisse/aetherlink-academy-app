@@ -136,6 +136,10 @@ deploy() {
   # that route is tagged project:service:write + collection:true, which asserts
   # {service,"*",write}. A runbook PAT with only project:*:create cannot satisfy service "*",
   # so the call 404s NotFoundError("service","*"). Deploy-time compose sync is enough.
+  #
+  # POST /deployments also assertGitHubRepoAccess(gitOwner, gitRepo). Scoped PATs need an
+  # explicit github_repository:RyanLisse/aetherlink-academy-app:read grant or they 403
+  # GITHUB_ACCESS_DENIED (lib.sh prints the recreate hint). Public repo → no App/clone token.
   say "Deploying $SOURCE_SHA"
   jq -n --arg p "$id" --arg c "$SOURCE_SHA" '{projectId: $p, branch: "main", commitSha: $c, environment: "production"}' > "$OPENSHIP_TMP/deploy.json"
   local deployment status="" deadline=$((SECONDS + 35 * 60))
