@@ -87,6 +87,9 @@ deploy() {
   redis_password="$(marker_value "$secrets" REDIS_PASSWORD)"
   say "TLS material in $KIT_HOME/tls"
   POSTGRES_PASSWORD="$pg_password" REDIS_PASSWORD="$redis_password" bash "$REPO_DIR/infra/deploy/init-tls.sh" "$KIT_HOME/tls"
+  # init-tls.sh runs under umask 077, so the directory is root-only and uid 999 (postgres,
+  # redis) cannot enter the /tls bind mount at all. Keys stay 0600 and owned by 999.
+  chmod 755 "$KIT_HOME/tls"
 
   local id
   id="$(project_id)"

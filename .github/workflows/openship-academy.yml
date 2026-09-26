@@ -81,12 +81,27 @@ jobs:
             fi
           done
 
+      # appleboy/ssh-action `envs:` puts values into the remote `bash -c export ...` command
+      # line, readable in the host process list. Hand the token over stdin instead
+      # (printf is a builtin, so it is in no argv on the runner either).
+      - name: Hand the OpenShip token to the host over stdin
+        env:
+          HOST: ${{ secrets.ACADEMY_HETZNER_HOST }}
+          SSH_USER: ${{ secrets.ACADEMY_HETZNER_USER }}
+          SSH_KEY: ${{ secrets.ACADEMY_HETZNER_SSH_KEY }}
+          OPENSHIP_TOKEN: ${{ secrets.OPENSHIP_TOKEN }}
+        run: |
+          install -m 700 -d ~/.ssh
+          (umask 077; printf '%s\n' "$SSH_KEY" > ~/.ssh/academy)
+          printf '%s' "$OPENSHIP_TOKEN" | ssh -i ~/.ssh/academy -o BatchMode=yes -o StrictHostKeyChecking=accept-new "$SSH_USER@$HOST" \
+            'umask 077; mkdir -p /root/aetherlink-academy-openship && cat > /root/aetherlink-academy-openship/.token'
+          rm -f ~/.ssh/academy
+
       - name: Run the step on the host
         uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0
         env:
           STEP: ${{ inputs.step }}
           SHA: ${{ steps.commit.outputs.sha }}
-          OPENSHIP_TOKEN: ${{ secrets.OPENSHIP_TOKEN }}
           ACADEMY_DOMAIN: ${{ inputs.domain }}
         with:
           host: ${{ secrets.ACADEMY_HETZNER_HOST }}
@@ -94,7 +109,7 @@ jobs:
           key: ${{ secrets.ACADEMY_HETZNER_SSH_KEY }}
           script_stop: true
           command_timeout: 40m
-          envs: STEP,SHA,OPENSHIP_TOKEN,ACADEMY_DOMAIN
+          envs: STEP,SHA,ACADEMY_DOMAIN
           script: |
             set -Eeuo pipefail
             KIT_HOME=/root/aetherlink-academy-openship
@@ -105,4 +120,7 @@ jobs:
             fi
             git -C "$KIT_HOME/src" fetch --prune origin "$SHA"
             git -C "$KIT_HOME/src" checkout --detach --force "$SHA"
+            OPENSHIP_TOKEN="$(cat "$KIT_HOME/.token")"
+            rm -f "$KIT_HOME/.token"
+            export OPENSHIP_TOKEN
             SOURCE_SHA="$SHA" ACADEMY_DOMAIN="$ACADEMY_DOMAIN" bash "$KIT_HOME/src/infra/openship/step.sh" "$STEP"

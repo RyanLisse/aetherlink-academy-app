@@ -51,8 +51,13 @@ describe('openship-academy workflow', () => {
     const uses = workflow.match(/secrets\.OPENSHIP_TOKEN/g) || [];
     assert.equal(uses.length, 1, 'token is read in exactly one env mapping');
     assert.match(workflow, /^\s+OPENSHIP_TOKEN: \$\{\{ secrets\.OPENSHIP_TOKEN \}\}$/m);
+    // The one real leak we had: appleboy `envs:` puts values into the remote `bash -c export`
+    // command line, readable in the host process list.
+    for (const line of workflow.split('\n').filter((l) => /^\s*envs:/.test(l))) assert.doesNotMatch(line, /OPENSHIP_TOKEN/, line);
+    // Allowed: piping it into ssh's stdin, and reading it back from the 0600 file on the host.
+    const allowed = [/^\s*printf '%s' "\$OPENSHIP_TOKEN" \| ssh /, /^\s*OPENSHIP_TOKEN="\$\(cat "\$KIT_HOME\/\.token"\)"$/];
     for (const line of workflow.split('\n')) {
-      if (/\b(echo|printf|cat)\b/.test(line)) assert.doesNotMatch(line, /OPENSHIP_TOKEN/, line);
+      if (/\b(echo|printf|cat)\b/.test(line) && /OPENSHIP_TOKEN/.test(line)) assert.ok(allowed.some((re) => re.test(line)), line);
     }
     assert.doesNotMatch(workflow, /set -[a-zA-Z]*x/);
     assert.doesNotMatch(workflow, /debug:\s*true/);
