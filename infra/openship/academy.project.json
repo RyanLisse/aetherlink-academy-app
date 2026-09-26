@@ -11,7 +11,6 @@
   "readiness": {
     "enabled": true,
     "path": "/game/health",
-    "port": 4317,
     "timeoutSeconds": 180,
     "stabilization": true,
     "stabilizationSeconds": 15,

@@ -15,6 +15,10 @@ legacy_env_names() {
   grep -E '^[A-Za-z_][A-Za-z0-9_]*=' "$LEGACY_HOME/.env" | cut -d= -f1 | grep -Ev "^(${COMPOSE_OWNED_ENV})$" | sort -u
 }
 
+# Staging publish is hardcoded in academy.compose.yaml as 127.0.0.1:4327:4317
+# (no ${ACADEMY_PORT_BIND:-…} in ports — OpenShip/Docker ParseAddr breaks on
+# bash defaults with colons). This helper is display/STAGING_URL only until a
+# cutover PR changes the compose publish to 0.0.0.0:4317.
 port_bind() {
   if [[ -f "$STATE" && "$(marker_value "$STATE" phase)" == cutover ]]; then echo 0.0.0.0:4317; else echo 127.0.0.1:4327; fi
 }
@@ -111,8 +115,12 @@ deploy() {
   else
     printf '{"publicEndpoints":[]}' > "$OPENSHIP_TMP/endpoints.json"
   fi
-  api PATCH "/projects/$id" "$OPENSHIP_TMP/endpoints.json" >/dev/null
+  # Re-apply readiness from academy.project.json every deploy so a prior
+  # readiness.port:4317 on the existing project cannot keep probing postgres/redis.
+  jq -s '.[0] + {readiness: .[1].readiness}' "$OPENSHIP_TMP/endpoints.json" "$KIT_DIR/academy.project.json" > "$OPENSHIP_TMP/project.patch.json"
+  api PATCH "/projects/$id" "$OPENSHIP_TMP/project.patch.json" >/dev/null
   if [[ -n "$domain" ]]; then echo "  public endpoint: https://$domain -> :4317 (OpenShip edge, Let's Encrypt)"; else echo "  public endpoints: none (served on the published port $(port_bind))"; fi
+  echo "  readiness: $(jq -c '.readiness' "$KIT_DIR/academy.project.json")"
   printf '{"enabled":false}' > "$OPENSHIP_TMP/auto.json"
   api POST "/projects/$id/auto-deploy" "$OPENSHIP_TMP/auto.json" >/dev/null
   echo "  auto-deploy: off (deploys happen only from this workflow)"
@@ -121,7 +129,9 @@ deploy() {
   [[ -f "$LEGACY_HOME/.env" ]] || die "legacy env file $LEGACY_HOME/.env is missing"
   {
     grep -E '^[A-Za-z_][A-Za-z0-9_]*=' "$LEGACY_HOME/.env" | grep -Ev "^(${COMPOSE_OWNED_ENV})="
-    printf 'POSTGRES_PASSWORD=%s\nREDIS_PASSWORD=%s\nACADEMY_PORT_BIND=%s\nSOURCE_REVISION=%s\n' "$pg_password" "$redis_password" "$(port_bind)" "$SOURCE_SHA"
+    # ACADEMY_PORT_BIND is IP-only documentation for the sibling bind; compose
+    # ports are hardcoded to 127.0.0.1:4327:4317 (no bash :- interpolation).
+    printf 'POSTGRES_PASSWORD=%s\nREDIS_PASSWORD=%s\nACADEMY_PORT_BIND=127.0.0.1\nSOURCE_REVISION=%s\n' "$pg_password" "$redis_password" "$SOURCE_SHA"
     if [[ -n "$domain" ]]; then printf 'ACADEMY_PUBLIC_URL=https://%s\n' "$domain"; fi
   } | jq -Rn '{environment: "production", deletes: [], upserts: [inputs
       | (index("=")) as $i

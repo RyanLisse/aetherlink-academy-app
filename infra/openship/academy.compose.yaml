@@ -22,8 +22,12 @@ services:
       REDIS_URL: rediss://:${REDIS_PASSWORD:?set by step.sh deploy}@redis:6379
       NODE_EXTRA_CA_CERTS: /tls/ca.crt
       SOURCE_REVISION: ${SOURCE_REVISION:-unknown}
+    # Hardcoded loopback sibling bind. OpenShip's compose interpolator + Docker
+    # PortBindings must not see bash `${VAR:-host:port}` here: a colon inside the
+    # default truncates HostIp and Docker ParseAddr fails
+    # (ParseAddr("${ACADEMY_PORT_BIND:-127.0.0.1")…). Keep off live :4317.
     ports:
-      - "${ACADEMY_PORT_BIND:-127.0.0.1:4327}:4317"
+      - "127.0.0.1:4327:4317"
     volumes:
       - data:/data
       - /root/aetherlink-academy-openship/tls:/tls:ro
