@@ -28,9 +28,9 @@ describe('openship-academy workflow', () => {
     assert.deepEqual(triggers, ['workflow_dispatch']);
   });
 
-  test('offers exactly the six ordered steps', () => {
+  test('offers exactly the seven ordered steps', () => {
     const options = topLevelBlock('on').match(/options:\n((?:\s+- .+\n?)+)/)[1].split('\n').map((line) => line.trim().replace(/^- /, '')).filter(Boolean);
-    assert.deepEqual(options, ['plan', 'deploy', 'migrate-data', 'verify', 'cutover', 'decommission']);
+    assert.deepEqual(options, ['plan', 'deploy', 'migrate-data', 'verify', 'cutover', 'decommission', 'domain']);
   });
 
   test('destructive steps demand the typed phrase before any host access', () => {
@@ -223,4 +223,18 @@ describe('decommission.sh', () => {
     const result = run(['--yes'], {...docker, ...fixture()});
     assert.equal(result.status, 2);
   });
+});
+
+test('the services sync body mirrors academy.compose.yaml', () => {
+  const kit = new URL('../infra/openship/', import.meta.url);
+  const compose = readFileSync(new URL('academy.compose.yaml', kit), 'utf8');
+  const {services} = JSON.parse(readFileSync(new URL('academy.services.json', kit), 'utf8'));
+  assert.deepEqual(services.map((service) => service.name), ['app', 'postgres', 'redis']);
+  const drift = services.flatMap((service) => [
+    `  ${service.name}:`, service.image && `image: ${service.image}`,
+    ...(service.ports ?? []).map((port) => `"${port}"`), ...(service.volumes ?? []).map((volume) => `- ${volume}`),
+    ...(service.dependsOn ?? []).map((dep) => `- ${dep}`), ...Object.values(service.environment ?? {}),
+  ].filter(Boolean).filter((needle) => !compose.includes(needle)).map((needle) => `${service.name}: ${needle}`));
+  assert.deepEqual(drift, []);
+  assert.ok(services.every((service) => service.exposed === false), 'no service asks for a free .opsh.io domain');
 });

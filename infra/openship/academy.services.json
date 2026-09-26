@@ -1,0 +1,95 @@
+{
+  "services": [
+    {
+      "name": "app",
+      "kind": "compose",
+      "build": "../..",
+      "dockerfile": "Dockerfile",
+      "environment": {
+        "ACADEMY_STORAGE": "postgres",
+        "HOST": "0.0.0.0",
+        "PORT": "4317",
+        "PROOF_PORT": "4400",
+        "ACADEMY_DATA": "/data",
+        "DATABASE_URL": "postgresql://academy:${POSTGRES_PASSWORD:?set by step.sh deploy}@postgres:5432/academy",
+        "REDIS_URL": "rediss://:${REDIS_PASSWORD:?set by step.sh deploy}@redis:6379",
+        "NODE_EXTRA_CA_CERTS": "/tls/ca.crt",
+        "SOURCE_REVISION": "${SOURCE_REVISION:-unknown}"
+      },
+      "ports": [
+        "${ACADEMY_PORT_BIND:-127.0.0.1:4327}:4317"
+      ],
+      "volumes": [
+        "data:/data",
+        "/root/aetherlink-academy-openship/tls:/tls:ro"
+      ],
+      "dependsOn": [
+        "postgres",
+        "redis"
+      ],
+      "restart": "unless-stopped",
+      "exposed": false
+    },
+    {
+      "name": "postgres",
+      "kind": "compose",
+      "image": "postgres:16",
+      "environment": {
+        "POSTGRES_USER": "academy",
+        "POSTGRES_PASSWORD": "${POSTGRES_PASSWORD:?set by step.sh deploy}",
+        "POSTGRES_DB": "academy"
+      },
+      "commandArgv": [
+        "postgres",
+        "-c",
+        "ssl=on",
+        "-c",
+        "ssl_cert_file=/tls/postgres.crt",
+        "-c",
+        "ssl_key_file=/tls/postgres.key",
+        "-c",
+        "hba_file=/tls/pg_hba.conf"
+      ],
+      "volumes": [
+        "pgdata:/var/lib/postgresql/data",
+        "/root/aetherlink-academy-openship/tls:/tls:ro"
+      ],
+      "restart": "unless-stopped",
+      "exposed": false
+    },
+    {
+      "name": "redis",
+      "kind": "compose",
+      "image": "redis:7-alpine",
+      "commandArgv": [
+        "redis-server",
+        "--save",
+        "",
+        "--appendonly",
+        "no",
+        "--port",
+        "0",
+        "--tls-port",
+        "6379",
+        "--tls-cert-file",
+        "/tls/redis.crt",
+        "--tls-key-file",
+        "/tls/redis.key",
+        "--tls-ca-cert-file",
+        "/tls/ca.crt",
+        "--tls-auth-clients",
+        "no",
+        "--requirepass",
+        "${REDIS_PASSWORD:?set by step.sh deploy}"
+      ],
+      "environment": {
+        "REDISCLI_AUTH": "${REDIS_PASSWORD:?set by step.sh deploy}"
+      },
+      "volumes": [
+        "/root/aetherlink-academy-openship/tls:/tls:ro"
+      ],
+      "restart": "unless-stopped",
+      "exposed": false
+    }
+  ]
+}

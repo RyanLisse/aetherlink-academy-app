@@ -16,8 +16,14 @@ on:
           - verify
           - cutover
           - decommission
+          - domain
       confirm:
         description: For migrate-data, cutover and decommission type academy-openship-<step>
+        required: false
+        default: ""
+        type: string
+      domain:
+        description: For the domain step, the hostname to attach (e.g. academy.91-99-78-17.sslip.io)
         required: false
         default: ""
         type: string
@@ -48,7 +54,7 @@ jobs:
           case "$STEP" in
             migrate-data|cutover|decommission)
               [[ "$CONFIRM" == "academy-openship-$STEP" ]] || { echo "type academy-openship-$STEP in confirm to run $STEP"; exit 1; } ;;
-            plan|deploy|verify) ;;
+            plan|deploy|verify|domain) ;;
             *) echo "unknown step $STEP"; exit 1 ;;
           esac
 
@@ -81,13 +87,14 @@ jobs:
           STEP: ${{ inputs.step }}
           SHA: ${{ steps.commit.outputs.sha }}
           OPENSHIP_TOKEN: ${{ secrets.OPENSHIP_TOKEN }}
+          ACADEMY_DOMAIN: ${{ inputs.domain }}
         with:
           host: ${{ secrets.ACADEMY_HETZNER_HOST }}
           username: ${{ secrets.ACADEMY_HETZNER_USER }}
           key: ${{ secrets.ACADEMY_HETZNER_SSH_KEY }}
           script_stop: true
           command_timeout: 40m
-          envs: STEP,SHA,OPENSHIP_TOKEN
+          envs: STEP,SHA,OPENSHIP_TOKEN,ACADEMY_DOMAIN
           script: |
             set -Eeuo pipefail
             KIT_HOME=/root/aetherlink-academy-openship
@@ -98,4 +105,4 @@ jobs:
             fi
             git -C "$KIT_HOME/src" fetch --prune origin "$SHA"
             git -C "$KIT_HOME/src" checkout --detach --force "$SHA"
-            SOURCE_SHA="$SHA" bash "$KIT_HOME/src/infra/openship/step.sh" "$STEP"
+            SOURCE_SHA="$SHA" ACADEMY_DOMAIN="$ACADEMY_DOMAIN" bash "$KIT_HOME/src/infra/openship/step.sh" "$STEP"
