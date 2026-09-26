@@ -29,6 +29,33 @@ need() {
   for tool in "$@"; do command -v "$tool" >/dev/null || die "missing host tool: $tool"; done
 }
 
+# The Academy host has no jq and we do not install packages on it; fall back to the
+# official image. File arguments live under /tmp (mktemp), mounted read-only.
+JQ_IMAGE=ghcr.io/jqlang/jq:1.7.1
+if ! command -v jq >/dev/null 2>&1 && command -v docker >/dev/null 2>&1; then
+  jq() { docker run --rm -i -v /tmp:/tmp:ro "$JQ_IMAGE" "$@"; }
+fi
+
+# Frees space before a build without touching anything in use: unused aetherlink-academy*
+# image tags (every legacy deploy left one behind) and build cache older than a day.
+# Containers, volumes and images a container uses are never removed.
+MIN_FREE_KB=$((4 * 1024 * 1024))
+free_kb() { df -Pk / | awk 'NR==2 {print $4}'; }
+free_disk() {
+  say "Disk before: $(df -h / | awk 'NR==2 {print $4" free, "$5" used"}')"
+  local in_use image
+  in_use="$(docker ps -a --format '{{.Image}}' | sort -u)"
+  while read -r image; do
+    [[ -z "$image" ]] && continue
+    grep -qxF "$image" <<<"$in_use" && continue
+    docker image rm "$image" >/dev/null 2>&1 && echo "  removed unused image $image"
+  done < <(docker images --format '{{.Repository}}:{{.Tag}}' | grep -E '^aetherlink-academy(-wave)?:' | grep -v ':latest$')
+  docker image prune -f >/dev/null
+  docker builder prune -af --filter until=24h >/dev/null 2>&1 || true
+  say "Disk after: $(df -h / | awk 'NR==2 {print $4" free, "$5" used"}')"
+  (( $(free_kb) >= MIN_FREE_KB )) || die "less than 4 GB free on / after pruning; refusing to build"
+}
+
 # The token only ever lives in a 0600 header file inside a 0700 temp dir, so
 # it never appears in argv (ps, /proc) or in the log.
 openship_session() {
