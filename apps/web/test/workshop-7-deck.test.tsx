@@ -144,7 +144,7 @@ describe('AET-85 workshop 7 ultra-minimal eigen-opdracht finish+present deck', (
     expect(workshop3SourceSlides.every((s) => s.lessonId === 'workshop-3')).toBe(true);
     expect(workshop4SourceSlides.length).toBe(16);
     expect(workshop4SourceSlides.every((s) => s.lessonId === 'workshop-4')).toBe(true);
-    expect(workshop5SourceSlides.length).toBe(33);
+    expect(workshop5SourceSlides.length).toBe(48);
     expect(workshop5SourceSlides.every((s) => s.lessonId === 'workshop-5')).toBe(true);
     expect(workshop6SourceSlides.length).toBe(14);
     expect(workshop6SourceSlides.every((s) => s.lessonId === 'workshop-6')).toBe(true);
