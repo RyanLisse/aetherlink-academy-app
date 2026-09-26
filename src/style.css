@@ -95,6 +95,8 @@
 .chat-turn{display:grid;gap:8px}.chat-question{margin:0;font-weight:600}
 .chat-hit,.chat-handoff{border:1px solid var(--border);border-radius:7px;padding:10px;background:var(--surface2);display:grid;gap:6px;font-size:12.5px}.chat-hit p,.chat-handoff p{margin:0}
 .chat-open{justify-self:start;font-size:10px;font-weight:700;color:var(--violet);border:1px solid currentColor;border-radius:4px;padding:1px 4px}
+.chat-coach{border:1px solid var(--cyan);border-radius:7px;padding:10px;background:var(--surface2);display:grid;gap:6px;font-size:12.5px}.chat-coach p{margin:0;white-space:pre-line}.chat-coach strong{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--cyan)}.chat-coach .chat-link{max-width:100%;overflow-wrap:anywhere;text-align:left}
+.chat-notice{margin:0;font-size:12px;color:var(--violet)}.chat-quota{font-size:11.5px;margin:8px 0 0}
 .chat-handoff blockquote{margin:0;padding:8px;border-left:3px solid var(--cyan);background:var(--input);font-size:12px}
 .chat-links{display:flex;flex-wrap:wrap;gap:6px}.chat-link{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:5px 8px;border:1px solid var(--border);border-radius:6px;color:var(--cyan);background:transparent;text-decoration:none;min-height:32px}
 .chat-form label{display:block;font-size:12px;font-weight:600;margin-bottom:6px}.chat-row{display:flex;gap:6px}.chat-row input{flex:1;padding:9px 10px}.chat-row button{border:1px solid var(--border);background:var(--surface2);min-width:40px}
