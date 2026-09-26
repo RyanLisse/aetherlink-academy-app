@@ -277,7 +277,9 @@ describe('compose ports and project readiness (OpenShip sibling)', () => {
 
   test('deploy PATCHes project readiness from academy.project.json (clears stale port)', () => {
     assert.match(step, /academy\.project\.json/);
-    assert.match(step, /readiness: \.\[1\]\.readiness|readiness: \.\[1\]\.readiness/);
+    assert.match(step, /cp "\$KIT_DIR\/academy\.project\.json" "\$OPENSHIP_TMP\/academy\.project\.json"/);
+    assert.match(step, /readiness: \.\[1\]\.readiness/);
+    assert.match(step, /"\$OPENSHIP_TMP\/endpoints\.json" "\$OPENSHIP_TMP\/academy\.project\.json"/);
     assert.match(step, /project\.patch\.json/);
   });
 
@@ -527,5 +529,74 @@ echo "unexpected: $*" >&2; exit 99
     assert.match(result.stderr, /409 CONFLICT/);
     assert.match(result.stderr, /project:proj_PTFOnZxLMEKU4ys9:read,write,admin/);
     assert.match(result.stderr, /Do not delete/);
+  });
+});
+
+describe('docker jq file args stay under /tmp', () => {
+  // lib.sh wraps jq as `docker run -v /tmp:/tmp:ro` when host jq is missing.
+  // Any path argument outside /tmp is invisible inside the container (run 36265252960).
+  const kitDir = path.join(root, 'infra/openship');
+  const scripts = ['lib.sh', 'step.sh', 'verify.sh', 'migrate-data.sh', 'decommission.sh']
+    .map((name) => ({name, text: readFileSync(path.join(kitDir, name), 'utf8')}));
+
+  test('lib.sh docker jq mounts only /tmp', () => {
+    const lib = scripts.find((s) => s.name === 'lib.sh').text;
+    assert.match(lib, /jq\(\) \{ docker run --rm -i -v \/tmp:\/tmp:ro "\$JQ_IMAGE" "\$@"; \}/);
+    assert.match(lib, /File arguments live under \/tmp/);
+  });
+
+  test('no jq invocation passes KIT_DIR/REPO_DIR/LEGACY_HOME path args', () => {
+    // curl --data-binary @"$KIT_DIR/..." is fine (host curl). Only jq argv paths matter.
+    const bad = [];
+    for (const {name, text} of scripts) {
+      for (const line of text.split('\n')) {
+        if (!/\bjq\b/.test(line)) continue;
+        // Skip comments and the need/tool presence checks.
+        const trimmed = line.trim();
+        if (trimmed.startsWith('#')) continue;
+        if (/\bneed\b|command -v|for tool in/.test(line)) continue;
+        if (/\$KIT_DIR|\$REPO_DIR|\$LEGACY_HOME|\$BACKUP_DIR|\$KIT_HOME/.test(line)) {
+          bad.push(`${name}: ${trimmed}`);
+        }
+      }
+    }
+    assert.deepEqual(bad, [], bad.join('\n'));
+  });
+
+  test('every jq file-path argument is $OPENSHIP_TMP/... or $body (mktemp)', () => {
+    // Collect "$VAR/..." and bare "$body" args that are jq inputs (not redirections / curl URLs).
+    const pathArg = /(?:^|[\s])("\$[A-Za-z_][A-Za-z0-9_]*\/[^"]+"|"\$body")/g;
+    const allowed = (arg) => arg === '"$body"' || arg.startsWith('"$OPENSHIP_TMP/');
+    const bad = [];
+    for (const {name, text} of scripts) {
+      for (const line of text.split('\n')) {
+        const jqIdx = line.search(/\bjq\b/);
+        if (jqIdx === -1) continue;
+        const trimmed = line.trim();
+        if (trimmed.startsWith('#')) continue;
+        if (/\bneed\b|command -v|for tool in/.test(line)) continue;
+        // Only args after the jq token (ignore curl URL on the left of a pipe).
+        const afterJq = line.slice(jqIdx);
+        const cmd = afterJq.split(/\s*(?:\|\||&&|[>|])/ )[0];
+        let m;
+        pathArg.lastIndex = 0;
+        while ((m = pathArg.exec(cmd)) !== null) {
+          const arg = m[1];
+          if (!allowed(arg)) bad.push(`${name}: ${arg} in: ${trimmed}`);
+        }
+      }
+    }
+    assert.deepEqual(bad, [], bad.join('\n'));
+  });
+
+  test('step.sh copies academy.project.json into OPENSHIP_TMP before jq -s readiness merge', () => {
+    const step = scripts.find((s) => s.name === 'step.sh').text;
+    const copyAt = step.indexOf('cp "$KIT_DIR/academy.project.json" "$OPENSHIP_TMP/academy.project.json"');
+    const mergeAt = step.indexOf(
+      `jq -s '.[0] + {readiness: .[1].readiness}' "$OPENSHIP_TMP/endpoints.json" "$OPENSHIP_TMP/academy.project.json"`,
+    );
+    assert.ok(copyAt !== -1, 'copies academy.project.json into OPENSHIP_TMP');
+    assert.ok(mergeAt !== -1, 'jq -s uses OPENSHIP_TMP paths only');
+    assert.ok(copyAt < mergeAt, 'copy happens before jq -s');
   });
 });
