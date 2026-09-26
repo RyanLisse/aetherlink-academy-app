@@ -100,18 +100,21 @@ reuse on 409 CONFLICT — never delete the existing project), turns auto-deploy 
 Postgres and Redis passwords into `/root/aetherlink-academy-openship/secrets.env` (0600) and TLS
 material into `/root/aetherlink-academy-openship/tls`, copies the legacy env (excluding
 compose-owned names), upserts fully resolved `DATABASE_URL` / `REDIS_URL` / `SOURCE_REVISION`
-from those passwords (OpenShip expands same-key `${NAME}` only — nested
-`${POSTGRES_PASSWORD:?…}` inside `DATABASE_URL` stays literal and crash-loops the app with
-`ERR_INVALID_URL`), and deploys the commit. The project body is a services project
+into **project** env from those passwords, and deploys the commit. OpenShip does **not**
+interpolate `${VAR}` in compose environment values — putting `DATABASE_URL: ${DATABASE_URL}`
+on the app service shadows project env with the literal string and crash-loops
+(`ERR_INVALID_URL`, verified on `dep_DReiQCX0cz2xmlpk`). The kit therefore **omits**
+`DATABASE_URL` / `REDIS_URL` / `SOURCE_REVISION` from the app environment in compose/services
+entirely so project env injects the resolved values. The project body is a services project
 (`composePath: infra/openship/academy.compose.yaml`, readiness gate on `/game/health`, no
 project `readiness.port` so only the app is probed). Compose services (app, postgres, redis)
 are persisted by OpenShip from `composePath` at deploy-request time — the kit does not call
 `POST /services/sync` (that endpoint 404s for a `project:*:create` PAT; see
 `infra/openship/RESEARCH.md`). Compose publishes the app as hardcoded `127.0.0.1:4327:4317`
 (never bash `${ACADEMY_PORT_BIND:-…}` in `ports:` — that breaks Docker ParseAddr), builds with
-repo-root context `.` (not `../..`), and references app env as same-key
-`${DATABASE_URL}` / `${REDIS_URL}` / `${SOURCE_REVISION}` only (no `:?` / `:-`). The new
-Academy answers on `127.0.0.1:4327` only, with an empty database. Legacy keeps serving 4317.
+repo-root context `.` (not `../..`), and keeps other non-secret app env (`HOST`, `PORT`, …)
+only. The new Academy answers on `127.0.0.1:4327` only, with an empty database. Legacy keeps
+serving 4317.
 If OpenShip shows service drift after compose port/build edits and the sync API is unavailable
 to the PAT, clear it on the host with `openship services drift accept|keep` before re-dispatch.
 
@@ -195,9 +198,9 @@ Undo: none for the containers. The data is in the kept dump. Restore it with
 
 - The items marked unverified in `infra/openship/RESEARCH.md`: readiness on a services
   project, the Proof WebSocket under the edge's 60 s read timeout. Build context is settled:
-  compose/services use repo-root `.` (not `../..`). Same-key env interpolation is settled:
-  `DATABASE_URL`/`REDIS_URL` are upserted resolved; do not nest `${POSTGRES_PASSWORD}` inside
-  them in compose.
+  compose/services use repo-root `.` (not `../..`). App URL env is settled: upsert
+  `DATABASE_URL`/`REDIS_URL`/`SOURCE_REVISION` into project env only; **omit** them from
+  compose app environment (compose values are not interpolated and shadow project env).
 - Container names `openship-academy-app` and `openship-academy-postgres`
   follow the naming in the source. If `deploy` reports another name, set `TARGET_APP_CONTAINER`
   and `TARGET_PG_CONTAINER` on the host.

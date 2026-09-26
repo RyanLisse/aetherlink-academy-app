@@ -14,10 +14,11 @@ TARGET_APP="${TARGET_APP_CONTAINER:-openship-$OPENSHIP_SLUG-app}"
 TARGET_PG="${TARGET_PG_CONTAINER:-openship-$OPENSHIP_SLUG-postgres}"
 STAGING_URL="${STAGING_URL:-http://127.0.0.1:4327}"
 # Env names owned by compose / step.sh upserts — never copied from legacy .env.
-# DATABASE_URL and REDIS_URL are fully resolved secrets upserted by step.sh
-# deploy (OpenShip same-key interpolation cannot nest ${POSTGRES_PASSWORD} inside
-# them). POSTGRES_PASSWORD / REDIS_PASSWORD / SOURCE_REVISION / ACADEMY_PORT_BIND
-# are also kit-owned. Everything else in the legacy .env is copied.
+# DATABASE_URL / REDIS_URL / SOURCE_REVISION are fully resolved secrets upserted by step.sh
+# into project env only (compose must omit them on the app service — a literal
+# dollar-brace same-key ref in compose shadows project env). POSTGRES_PASSWORD /
+# REDIS_PASSWORD / ACADEMY_PORT_BIND are also kit-owned. Everything else in the
+# legacy .env is copied.
 COMPOSE_OWNED_ENV='DATABASE_URL|REDIS_URL|NODE_EXTRA_CA_CERTS|HOST|PORT|PROOF_PORT|ACADEMY_DATA|ACADEMY_STORAGE|SOURCE_REVISION|POSTGRES_PASSWORD|REDIS_PASSWORD|ACADEMY_PORT_BIND'
 
 die() { echo "openship-kit: $*" >&2; exit 1; }

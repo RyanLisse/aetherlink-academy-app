@@ -133,9 +133,12 @@ deploy() {
     grep -E '^[A-Za-z_][A-Za-z0-9_]*=' "$LEGACY_HOME/.env" | grep -Ev "^(${COMPOSE_OWNED_ENV})="
     # ACADEMY_PORT_BIND is IP-only documentation for the sibling bind; compose
     # ports are hardcoded to 127.0.0.1:4327:4317 (no bash :- interpolation).
-    # DATABASE_URL / REDIS_URL must be fully resolved here: OpenShip expands
-    # same-key ${NAME} in compose but does NOT nest ${POSTGRES_PASSWORD:?…}
-    # inside another key (ERR_INVALID_URL with a literal ${…} string).
+    # DATABASE_URL / REDIS_URL / SOURCE_REVISION must be fully resolved here and
+    # live only in project env. Compose must NOT set those keys on the app
+    # service: OpenShip does not interpolate ${VAR} in compose environment
+    # values, so DATABASE_URL: ${DATABASE_URL} shadows project env with the
+    # literal 15-char string and crash-loops (ERR_INVALID_URL). Omit from
+    # academy.compose.yaml / academy.services.json app environment.
     printf 'POSTGRES_PASSWORD=%s\nREDIS_PASSWORD=%s\n' "$pg_password" "$redis_password"
     printf 'DATABASE_URL=postgresql://academy:%s@postgres:5432/academy\n' "$pg_password"
     printf 'REDIS_URL=rediss://:%s@redis:6379\n' "$redis_password"
