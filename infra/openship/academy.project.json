@@ -1,6 +1,6 @@
 {
-  "name": "aetherlink-academy",
-  "slug": "aetherlink-academy",
+  "name": "academy",
+  "slug": "academy",
   "gitProvider": "github",
   "gitOwner": "RyanLisse",
   "gitRepo": "aetherlink-academy-app",
