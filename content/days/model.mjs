@@ -15,7 +15,7 @@ export const openMaterial=(kind,label,open)=>({kind,label,href:null,open});
 export const question=(text,options,answer,ref)=>({question:text,options,answer,...(ref?{slide:ref}:{source:'authored-adaptation'})});
 
 export const SOURCE='Afgeleid van het lesplan (Linear, SoT) en de dagdeck; iedere stap verwijst naar zijn dia.';
-export const DEEP_HELP='Diepere hulp, zoals uitleg van een concept of feedback op je eigen werk, vraag je aan je eigen Claude via MCP. Verbind Claude Code via “Mijn leercoach”; Claude leest dan met get_screen_state en get_mission wat jij nu ziet. De Academy start zelf geen model.';
+export const DEEP_HELP='Diepere hulp, zoals uitleg van een concept of feedback op je eigen werk, vraag je aan je eigen Claude via MCP. Verbind Claude Code via “Mijn leercoach”; Claude leest dan met get_screen_state en get_mission wat jij nu ziet. De chat in de Academy beantwoordt korte vragen over de lesstof met een verwijzing naar de bron; voor meedenken over je eigen werk gebruik je je eigen Claude.';
 export const DEFAULT_STOP='Stop bij geheimen, ontbrekende toegang, productiesystemen of een resultaat dat je niet werkelijk hebt uitgevoerd. Markeer het als OPEN; verzin geen uitvoer.';
 
 const OPTION_IDS='abcdefgh';
