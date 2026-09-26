@@ -128,6 +128,11 @@ deploy() {
   jq -r '.upserts[].key' "$OPENSHIP_TMP/env.json" | sed 's/^/  /'
   api PATCH "/projects/$id/env" "$OPENSHIP_TMP/env.json" >/dev/null
 
+  # OpenShip only deploys the services recorded in its service table; the dashboard fills it
+  # from the compose file, the API needs it spelled out. Without it the repo was built as a
+  # single app and crash-looped. academy.services.json mirrors academy.compose.yaml.
+  say "Syncing services (app, postgres, redis)"
+  api POST "/projects/$id/services/sync" "$KIT_DIR/academy.services.json" | jq -r '.services // [] | .[] | "  \(.name)"' || die "service sync failed"
   say "Deploying $SOURCE_SHA"
   jq -n --arg p "$id" --arg c "$SOURCE_SHA" '{projectId: $p, branch: "main", commitSha: $c, environment: "production"}' > "$OPENSHIP_TMP/deploy.json"
   local deployment status="" deadline=$((SECONDS + 35 * 60))

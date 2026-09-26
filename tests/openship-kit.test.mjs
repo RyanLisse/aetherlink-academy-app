@@ -224,3 +224,17 @@ describe('decommission.sh', () => {
     assert.equal(result.status, 2);
   });
 });
+
+test('the services sync body mirrors academy.compose.yaml', () => {
+  const kit = new URL('../infra/openship/', import.meta.url);
+  const compose = readFileSync(new URL('academy.compose.yaml', kit), 'utf8');
+  const {services} = JSON.parse(readFileSync(new URL('academy.services.json', kit), 'utf8'));
+  assert.deepEqual(services.map((service) => service.name), ['app', 'postgres', 'redis']);
+  const drift = services.flatMap((service) => [
+    `  ${service.name}:`, service.image && `image: ${service.image}`,
+    ...(service.ports ?? []).map((port) => `"${port}"`), ...(service.volumes ?? []).map((volume) => `- ${volume}`),
+    ...(service.dependsOn ?? []).map((dep) => `- ${dep}`), ...Object.values(service.environment ?? {}),
+  ].filter(Boolean).filter((needle) => !compose.includes(needle)).map((needle) => `${service.name}: ${needle}`));
+  assert.deepEqual(drift, []);
+  assert.ok(services.every((service) => service.exposed === false), 'no service asks for a free .opsh.io domain');
+});
