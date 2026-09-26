@@ -1,0 +1,20 @@
+{
+  "name": "aetherlink-academy",
+  "slug": "aetherlink-academy",
+  "gitProvider": "github",
+  "gitOwner": "RyanLisse",
+  "gitRepo": "aetherlink-academy-app",
+  "gitBranch": "main",
+  "projectType": "services",
+  "composePath": "infra/openship/academy.compose.yaml",
+  "rollbackWindow": 5,
+  "readiness": {
+    "enabled": true,
+    "path": "/game/health",
+    "port": 4317,
+    "timeoutSeconds": 180,
+    "stabilization": true,
+    "stabilizationSeconds": 15,
+    "onFailure": "fail"
+  }
+}

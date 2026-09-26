@@ -1,0 +1,117 @@
+diff --git a/.github/workflows/deploy-hetzner.yml b/.github/workflows/deploy-hetzner.yml
+deleted file mode 100644
+index ba01ad5fc224..000000000000
+--- a/.github/workflows/deploy-hetzner.yml
++++ /dev/null
+@@ -1,34 +0,0 @@
+-# Deploy tip of main to Hetzner Academy VPS (sibling Docker).
+-# Rebuilds academy-app only — never wipes academy-postgres / academy-redis.
+-name: Deploy Hetzner Academy
+-
+-on:
+-  push:
+-    branches: [main]
+-  workflow_dispatch:
+-
+-permissions:
+-  contents: read
+-
+-concurrency:
+-  group: deploy-hetzner-academy
+-  cancel-in-progress: false
+-
+-jobs:
+-  deploy:
+-    name: Rebuild academy-app on Hetzner
+-    runs-on: ubuntu-latest
+-    timeout-minutes: 20
+-    steps:
+-      - name: Deploy via SSH rebuild script
+-        # Pin appleboy/ssh-action@v1.2.0 (zizmor: unpinned-uses)
+-        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0
+-        with:
+-          host: ${{ secrets.ACADEMY_HETZNER_HOST }}
+-          username: ${{ secrets.ACADEMY_HETZNER_USER }}
+-          key: ${{ secrets.ACADEMY_HETZNER_SSH_KEY }}
+-          script_stop: true
+-          command_timeout: 18m
+-          script: |
+-            set -Eeuo pipefail
+-            /root/aetherlink-academy/rebuild-from-git.sh "${{ github.sha }}"
+diff --git a/.github/workflows/wave-foundation-deploy.yml b/.github/workflows/wave-foundation-deploy.yml
+deleted file mode 100644
+index 5ba53c49ea74..000000000000
+--- a/.github/workflows/wave-foundation-deploy.yml
++++ /dev/null
+@@ -1,59 +0,0 @@
+-# Manual sibling deploy of the wave foundation stack. Never triggered by push.
+-name: Wave foundation sibling deploy (manual)
+-
+-on:
+-  workflow_dispatch:
+-    inputs:
+-      sha:
+-        description: Full 40-character git SHA to deploy beside the legacy app
+-        required: true
+-        type: string
+-      confirm:
+-        description: Type deploy-sibling to confirm an operator-initiated deploy
+-        required: true
+-        type: string
+-
+-permissions:
+-  contents: read
+-
+-concurrency:
+-  group: wave-foundation-deploy
+-  cancel-in-progress: false
+-
+-jobs:
+-  deploy:
+-    runs-on: ubuntu-latest
+-    timeout-minutes: 45
+-    steps:
+-      - name: Validate inputs
+-        env:
+-          SHA: ${{ inputs.sha }}
+-          CONFIRM: ${{ inputs.confirm }}
+-        run: |
+-          [[ "$CONFIRM" == "deploy-sibling" ]] || { echo "confirmation phrase missing"; exit 1; }
+-          [[ "$SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "sha must be a full 40-char hex sha"; exit 1; }
+-      - name: Bootstrap + rebuild academy-wave on the host
+-        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0
+-        with:
+-          host: ${{ secrets.ACADEMY_HETZNER_HOST }}
+-          username: ${{ secrets.ACADEMY_HETZNER_USER }}
+-          key: ${{ secrets.ACADEMY_HETZNER_SSH_KEY }}
+-          script_stop: true
+-          command_timeout: 40m
+-          envs: SHA
+-          script: |
+-            set -Eeuo pipefail
+-            WAVE_HOME=/root/aetherlink-academy-wave
+-            REPO=https://github.com/RyanLisse/aetherlink-academy-app.git
+-            mkdir -p "$WAVE_HOME"
+-            if [[ ! -d "$WAVE_HOME/src/.git" ]]; then
+-              git clone --recurse-submodules "$REPO" "$WAVE_HOME/src"
+-            fi
+-            git -C "$WAVE_HOME/src" fetch --all --tags --prune
+-            git -C "$WAVE_HOME/src" checkout --detach "$SHA"
+-            git -C "$WAVE_HOME/src" submodule update --init --recursive
+-            # Prefer bootstrap from the checked-out SHA (self-updates the host scripts).
+-            bash "$WAVE_HOME/src/infra/deploy/bootstrap-wave-foundation.sh" "$SHA"
+-            /root/aetherlink-academy-wave/rebuild-wave-foundation.sh "$SHA"
+-        env:
+-          SHA: ${{ inputs.sha }}
+diff --git a/docs/runbooks/apps-server-deploy.md b/docs/runbooks/apps-server-deploy.md
+index 0959089de7cb..d6abab76070d 100644
+--- a/docs/runbooks/apps-server-deploy.md
++++ b/docs/runbooks/apps-server-deploy.md
+@@ -1,6 +1,6 @@
+ # Runbook: deploy apps/server next to the legacy gateway
+ 
+-Status: prepared 2026-09-26. Nothing in this runbook has been run against production yet.
++Status: superseded 2026-09-26. Ryan decided on a single Academy deployed through OpenShip, and `apps/server` is dropped for now. The `wave-foundation-deploy.yml` workflow this runbook calls has been removed. See `docs/runbooks/single-academy-openship.md`.
+ 
+ For: the operator who puts `apps/server` (Effect + Drizzle, AET-45 to AET-55, AET-25) on the Hetzner host `aetherlink-academy` (91.99.78.17) for the first time.
+ 
