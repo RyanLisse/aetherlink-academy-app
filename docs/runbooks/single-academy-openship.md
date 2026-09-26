@@ -130,7 +130,7 @@ so links and the Proof WebSocket origin do not change. Afterwards run `verify` o
 cutover it accepts row counts that grew, never shrank.
 
 Undo: from here on the new database takes writes. To go back, stop the OpenShip app, dump
-`openship-aetherlink-academy-postgres`, restore that into `academy-postgres`, then start
+`openship-academy-postgres`, restore that into `academy-postgres`, then start
 `academy-app`. Without that, writes made after cutover are lost.
 
 The domain `academy.aetherlink.ai` is a separate follow-up (AET-42). Once its A record points
@@ -160,6 +160,6 @@ Undo: none for the containers. The data is in the kept dump. Restore it with
   `infra/openship/`, project env reaching compose interpolation, readiness on a services project,
   a public repository deploying without a GitHub App installation, and the Proof WebSocket under
   the edge's 60 s read timeout.
-- Container names `openship-aetherlink-academy-app` and `openship-aetherlink-academy-postgres`
+- Container names `openship-academy-app` and `openship-academy-postgres`
   follow the naming in the source. If `deploy` reports another name, set `TARGET_APP_CONTAINER`
   and `TARGET_PG_CONTAINER` on the host.

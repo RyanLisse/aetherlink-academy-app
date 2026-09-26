@@ -71,7 +71,7 @@ describe('lib.sh OpenShip API session', () => {
     writeFileSync(path.join(bin, 'curl'), `#!/usr/bin/env bash
 printf '%s\\n' "$*" > "${bin}/argv.log"
 for arg in "$@"; do [[ "$arg" == @*auth.header ]] && cat "\${arg#@}" > "${bin}/header.log"; done
-echo '[{"id":"proj_1","slug":"aetherlink-academy"}]'
+echo '[{"id":"proj_1","slug":"academy"}]'
 `);
     chmodSync(path.join(bin, 'curl'), 0o755);
     const result = spawnSync('bash', ['-c', `source "${root}/infra/openship/lib.sh"; openship_session; [[ -z "\${OPENSHIP_TOKEN:-}" ]] || exit 9; project_id`], {
