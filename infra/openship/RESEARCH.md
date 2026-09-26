@@ -184,3 +184,43 @@ for Academy deploy.
 - **Every project env var is also passed as a Docker build arg**
   (`G/packages/adapters/src/runtime/docker-build-args.ts`). The root `Dockerfile` declares no
   `ARG`, so the values are not written into image layers, but they do reach the build step.
+
+## Postgres/Redis password reuse (28P01)
+
+Verified 2026-09-26 on Academy sibling staging: a redeploy that `openssl rand` minted a
+new `POSTGRES_PASSWORD` into `secrets.env` and upserted a new `DATABASE_URL` while the
+named volume `openship-academy-pgdata` still authenticated with the older password caused
+`28P01 password authentication failed` on hostssl/scram. Local `psql` inside the postgres
+container is misleading (socket/`trust` ≠ hostssl scram). Redis was unaffected when its
+URL matched the container.
+
+`step.sh deploy` therefore resolves passwords via `ensure_db_passwords` **after**
+`ensure_project_id` and **before** any mint:
+
+1. Reuse `$KIT_HOME/secrets.env` when both keys are present.
+2. Else if `GET /projects/:id/env` already lists `POSTGRES_PASSWORD` and `REDIS_PASSWORD`
+   (secret **values** are always `ENV_MASK` / `••••••••` — keys only), recover plaintext
+   from the running `openship-<slug>-postgres` / `-redis` container env into `secrets.env`.
+3. Else if those keys exist (or the `openship-<slug>-pgdata` volume exists) and
+   `OPENSHIP_ROTATE_PASSWORDS` is unset: **refuse** remint.
+4. Else mint with `openssl rand -hex 24`.
+
+`OPENSHIP_ROTATE_PASSWORDS=1` allows remint; the operator must `ALTER USER` on the volume
+to match before the app can auth.
+
+### Deployment reject vs volumes
+
+`rejectDeployment` tears down that deployment's runtime resources (containers/routes) via
+`executeCleanup` but does **not** delete named volumes or the deployment row
+(`G/apps/api/src/modules/deployments/deployment.service.ts`). After a reject, `secrets.env`
+and project-env password keys are what keep the next deploy aligned with retained pgdata.
+
+### Masked service/project env — never echo-PATCH
+
+`GET /projects/:id/env` and service GETs mask secret values. Compose-service `environment`
+is blanket-masked (`G/apps/api/src/lib/secret-env.ts`, #336). A PATCH that writes the mask
+sentinel (`••••••••`) back as the value corrupts the secret (unmask-merge only helps when
+the client sends the sentinel **and** the server still has the stored plaintext for that
+key — a full replace of service `environment` from a masked GET writes bullets). The kit
+only PATCHes project env via merge upserts with known plaintext from `secrets.env`; it
+never PATCHes service `environment` from a masked GET.
