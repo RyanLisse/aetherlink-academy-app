@@ -41,6 +41,8 @@ plan() {
   fi
   say "Backup disk"
   df -h "$(dirname "$BACKUP_DIR")" | sed 's/^/  /'
+  say "Docker disk usage (deploy prunes unused aetherlink-academy* images and old build cache)"
+  docker system df | sed 's/^/  /'
   say "Legacy env names that deploy copies into OpenShip (values are never printed)"
   legacy_env_names | sed 's/^/  /'
   say "OpenShip project $OPENSHIP_SLUG"
@@ -69,6 +71,7 @@ EOF
 
 deploy() {
   need docker curl jq openssl git
+  free_disk
   openship_session
   mkdir -p "$KIT_HOME"
   chmod 700 "$KIT_HOME"
