@@ -1,0 +1,97 @@
+# The one Academy, deployed by OpenShip as a services project
+# (composePath = infra/openship/academy.compose.yaml, see academy.project.json).
+# OpenShip names the containers openship-<slug>-<service> and puts them on the
+# project network openship-<slug>, where the app reaches postgres and redis by
+# service name. The app keeps TLS to both, as in production today: the
+# certificates are generated on the host by infra/deploy/init-tls.sh into
+# /root/aetherlink-academy-openship/tls and bind-mounted read-only.
+# Secrets (POSTGRES_PASSWORD, REDIS_PASSWORD and the app env copied from the
+# legacy .env) are OpenShip project env vars, never values in this file.
+services:
+  app:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+    environment:
+      ACADEMY_STORAGE: postgres
+      HOST: 0.0.0.0
+      PORT: "4317"
+      PROOF_PORT: "4400"
+      ACADEMY_DATA: /data
+      DATABASE_URL: postgresql://academy:${POSTGRES_PASSWORD:?set by step.sh deploy}@postgres:5432/academy
+      REDIS_URL: rediss://:${REDIS_PASSWORD:?set by step.sh deploy}@redis:6379
+      NODE_EXTRA_CA_CERTS: /tls/ca.crt
+      SOURCE_REVISION: ${SOURCE_REVISION:-unknown}
+    ports:
+      - "${ACADEMY_PORT_BIND:-127.0.0.1:4327}:4317"
+    volumes:
+      - data:/data
+      - /root/aetherlink-academy-openship/tls:/tls:ro
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    stop_grace_period: 30s
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: academy
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set by step.sh deploy}
+      POSTGRES_DB: academy
+    command:
+      - postgres
+      - -c
+      - ssl=on
+      - -c
+      - ssl_cert_file=/tls/postgres.crt
+      - -c
+      - ssl_key_file=/tls/postgres.key
+      - -c
+      - hba_file=/tls/pg_hba.conf
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - /root/aetherlink-academy-openship/tls:/tls:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U academy -d academy"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command:
+      - redis-server
+      - --save
+      - ""
+      - --appendonly
+      - "no"
+      - --port
+      - "0"
+      - --tls-port
+      - "6379"
+      - --tls-cert-file
+      - /tls/redis.crt
+      - --tls-key-file
+      - /tls/redis.key
+      - --tls-ca-cert-file
+      - /tls/ca.crt
+      - --tls-auth-clients
+      - "no"
+      - --requirepass
+      - ${REDIS_PASSWORD:?set by step.sh deploy}
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?set by step.sh deploy}
+    volumes:
+      - /root/aetherlink-academy-openship/tls:/tls:ro
+    healthcheck:
+      test: ["CMD", "redis-cli", "--tls", "--cacert", "/tls/ca.crt", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  data:
+  pgdata:

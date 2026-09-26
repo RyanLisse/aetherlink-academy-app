@@ -1,0 +1,101 @@
+# Operator-driven move of the single Academy onto OpenShip. Never triggered by
+# push. Run the steps in order; see docs/runbooks/single-academy-openship.md.
+name: Academy on OpenShip (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      step:
+        description: Which migration step to run on the host
+        required: true
+        type: choice
+        options:
+          - plan
+          - deploy
+          - migrate-data
+          - verify
+          - cutover
+          - decommission
+      confirm:
+        description: For migrate-data, cutover and decommission type academy-openship-<step>
+        required: false
+        default: ""
+        type: string
+      sha:
+        description: Full 40-character commit to deploy and to take the kit from (default is the workflow commit)
+        required: false
+        default: ""
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: openship-academy
+  cancel-in-progress: false
+
+jobs:
+  step:
+    name: Run ${{ inputs.step }} on the Academy host
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Require confirmation phrase
+        env:
+          STEP: ${{ inputs.step }}
+          CONFIRM: ${{ inputs.confirm }}
+        run: |
+          case "$STEP" in
+            migrate-data|cutover|decommission)
+              [[ "$CONFIRM" == "academy-openship-$STEP" ]] || { echo "type academy-openship-$STEP in confirm to run $STEP"; exit 1; } ;;
+            plan|deploy|verify) ;;
+            *) echo "unknown step $STEP"; exit 1 ;;
+          esac
+
+      - name: Resolve commit
+        id: commit
+        env:
+          INPUT_SHA: ${{ inputs.sha }}
+          WORKFLOW_SHA: ${{ github.sha }}
+        run: |
+          sha="${INPUT_SHA:-$WORKFLOW_SHA}"
+          [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || { echo "sha must be a full 40-character hex commit"; exit 1; }
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Legacy push deploys must be gone from main
+        if: inputs.step == 'migrate-data' || inputs.step == 'cutover' || inputs.step == 'decommission'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          for file in deploy-hetzner.yml wave-foundation-deploy.yml; do
+            if gh api "repos/$REPO/contents/.github/workflows/$file?ref=main" --silent 2>/dev/null; then
+              echo "$file still exists on main. Merge the change in infra/openship/cutover/disable-legacy-deploys.patch first."
+              exit 1
+            fi
+          done
+
+      - name: Run the step on the host
+        uses: appleboy/ssh-action@7eaf76671a0d7eec5d98ee897acda4f968735a17 # v1.2.0
+        env:
+          STEP: ${{ inputs.step }}
+          SHA: ${{ steps.commit.outputs.sha }}
+          OPENSHIP_TOKEN: ${{ secrets.OPENSHIP_TOKEN }}
+        with:
+          host: ${{ secrets.ACADEMY_HETZNER_HOST }}
+          username: ${{ secrets.ACADEMY_HETZNER_USER }}
+          key: ${{ secrets.ACADEMY_HETZNER_SSH_KEY }}
+          script_stop: true
+          command_timeout: 40m
+          envs: STEP,SHA,OPENSHIP_TOKEN
+          script: |
+            set -Eeuo pipefail
+            KIT_HOME=/root/aetherlink-academy-openship
+            mkdir -p "$KIT_HOME"
+            chmod 700 "$KIT_HOME"
+            if [[ ! -d "$KIT_HOME/src/.git" ]]; then
+              git clone --no-checkout https://github.com/RyanLisse/aetherlink-academy-app.git "$KIT_HOME/src"
+            fi
+            git -C "$KIT_HOME/src" fetch --prune origin "$SHA"
+            git -C "$KIT_HOME/src" checkout --detach --force "$SHA"
+            SOURCE_SHA="$SHA" bash "$KIT_HOME/src/infra/openship/step.sh" "$STEP"
