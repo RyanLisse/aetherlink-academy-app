@@ -96,11 +96,16 @@ Check that the disk has at least three times the database size free.
 
 Ensures the OpenShip project (lookup slug/name `academy` / known id
 `proj_PTFOnZxLMEKU4ys9`, create from `infra/openship/academy.project.json` only when missing,
-reuse on 409 CONFLICT — never delete the existing project), turns auto-deploy off, generates
-Postgres and Redis passwords into `/root/aetherlink-academy-openship/secrets.env` (0600) and TLS
+reuse on 409 CONFLICT — never delete the existing project), turns auto-deploy off, **reuses**
+Postgres/Redis passwords from `/root/aetherlink-academy-openship/secrets.env` (0600) when
+present (or recovers them from running containers when project env already has the keys —
+never `openssl rand` a new pair against an existing `openship-*-pgdata` volume; set
+`OPENSHIP_ROTATE_PASSWORDS=1` only for an intentional rotate + `ALTER USER`), generates TLS
 material into `/root/aetherlink-academy-openship/tls`, copies the legacy env (excluding
 compose-owned names), upserts fully resolved `DATABASE_URL` / `REDIS_URL` / `SOURCE_REVISION`
-into **project** env from those passwords, and deploys the commit. OpenShip does **not**
+into **project** env from those passwords, and deploys the commit. OpenShip `deployment reject`
+removes stack containers (volumes retained). List/get project and service env values are
+masked (`••••••••`) — never PATCH service `environment` from a masked GET. OpenShip does **not**
 interpolate `${VAR}` in compose environment values — putting `DATABASE_URL: ${DATABASE_URL}`
 on the app service shadows project env with the literal string and crash-loops
 (`ERR_INVALID_URL`, verified on `dep_DReiQCX0cz2xmlpk`). The kit therefore **omits**

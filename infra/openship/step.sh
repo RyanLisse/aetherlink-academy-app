@@ -64,7 +64,7 @@ plan() {
   cat <<EOF
 == What each step would do
   deploy        create or update project $OPENSHIP_SLUG, turn auto-deploy off, copy the env names above,
-                generate Postgres/Redis passwords and TLS under $KIT_HOME, deploy $SOURCE_SHA,
+                reuse or mint Postgres/Redis passwords and TLS under $KIT_HOME, deploy $SOURCE_SHA,
                 serve it on $(port_bind) and check $STAGING_URL/game/health
   migrate-data  stop $LEGACY_APP (maintenance starts), pg_dump $LEGACY_PG to $BACKUP_DIR,
                 restore into $TARGET_PG, compare row counts, copy $LEGACY_HOME/data into $TARGET_APP
@@ -81,28 +81,28 @@ deploy() {
   mkdir -p "$KIT_HOME"
   chmod 700 "$KIT_HOME"
 
+  # Lookup-before-create (and 409 → reuse): a rotated scoped PAT only lists
+  # projects it created, so GET /projects may miss academy even though the name
+  # exists org-wide. ensure_project_id lists, tries state/known id, creates only
+  # when missing, and on CONFLICT reuses the existing project the token can read.
+  # Resolve the project BEFORE minting passwords so we can reuse project-env /
+  # container passwords against an existing openship-*-pgdata volume (28P01).
+  local id
+  id="$(ensure_project_id)"
+  [[ -n "$id" ]] || die "could not resolve OpenShip project $OPENSHIP_SLUG"
+  echo "  project: $id"
+
   local secrets="$KIT_HOME/secrets.env"
-  if [[ ! -f "$secrets" ]]; then
-    say "Generating Postgres and Redis passwords into $secrets"
-    write_marker "$secrets" "POSTGRES_PASSWORD=$(openssl rand -hex 24)" "REDIS_PASSWORD=$(openssl rand -hex 24)"
-  fi
+  ensure_db_passwords "$id"
   local pg_password redis_password
   pg_password="$(marker_value "$secrets" POSTGRES_PASSWORD)"
   redis_password="$(marker_value "$secrets" REDIS_PASSWORD)"
+  [[ -n "$pg_password" && -n "$redis_password" ]] || die "secrets.env missing POSTGRES_PASSWORD or REDIS_PASSWORD after ensure_db_passwords"
   say "TLS material in $KIT_HOME/tls"
   POSTGRES_PASSWORD="$pg_password" REDIS_PASSWORD="$redis_password" bash "$REPO_DIR/infra/deploy/init-tls.sh" "$KIT_HOME/tls"
   # init-tls.sh runs under umask 077, so the directory is root-only and uid 999 (postgres,
   # redis) cannot enter the /tls bind mount at all. Keys stay 0600 and owned by 999.
   chmod 755 "$KIT_HOME/tls"
-
-  # Lookup-before-create (and 409 → reuse): a rotated scoped PAT only lists
-  # projects it created, so GET /projects may miss academy even though the name
-  # exists org-wide. ensure_project_id lists, tries state/known id, creates only
-  # when missing, and on CONFLICT reuses the existing project the token can read.
-  local id
-  id="$(ensure_project_id)"
-  [[ -n "$id" ]] || die "could not resolve OpenShip project $OPENSHIP_SLUG"
-  echo "  project: $id"
   # Self-hosted OpenShip cannot route the free .opsh.io endpoint that project create stores
   # (preflight CLOUD_REQUIRED_MANAGED_PROJECT_DOMAIN reads the stored publicEndpoints). Clear
   # them: the app is served by its compose-published port, which OpenShip leaves alone. A routed

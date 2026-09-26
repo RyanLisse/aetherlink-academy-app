@@ -713,3 +713,209 @@ describe('compose build context and service drift', () => {
   });
 });
 
+
+describe('deploy reuses Postgres/Redis passwords (no remint against pgdata)', () => {
+  const lib = readFileSync(path.join(root, 'infra/openship/lib.sh'), 'utf8');
+  const step = readFileSync(path.join(root, 'infra/openship/step.sh'), 'utf8');
+  const research = readFileSync(path.join(root, 'infra/openship/RESEARCH.md'), 'utf8');
+  const runbook = readFileSync(path.join(root, 'docs/runbooks/single-academy-openship.md'), 'utf8');
+  const token = 'opsh_pat_synthetic0123456789';
+
+  test('step.sh calls ensure_db_passwords after ensure_project_id (before openssl mint path)', () => {
+    assert.match(step, /ensure_db_passwords/);
+    const ensureProjectAt = step.indexOf('id="$(ensure_project_id)"');
+    const ensurePwAt = step.indexOf('ensure_db_passwords "$id"');
+    assert.ok(ensureProjectAt !== -1 && ensurePwAt !== -1);
+    assert.ok(ensureProjectAt < ensurePwAt, 'project id before password resolve');
+    // No bare openssl-rand mint in step.sh deploy — mint lives in ensure_db_passwords.
+    assert.doesNotMatch(step, /openssl rand -hex 24/);
+  });
+
+  test('lib.sh ensure_db_passwords reuses secrets.env, recovers from containers, refuses remint', () => {
+    assert.match(lib, /ensure_db_passwords/);
+    assert.match(lib, /Reusing Postgres\/Redis passwords from/);
+    assert.match(lib, /Recovered passwords from running postgres\/redis containers/);
+    assert.match(lib, /OPENSHIP_ROTATE_PASSWORDS/);
+    assert.match(lib, /already has POSTGRES_PASSWORD/);
+    assert.match(lib, /Never PATCH service environment from a masked GET/);
+    assert.match(lib, /pgdata_volume_exists|openship-%s-pgdata/);
+    assert.match(lib, /openssl rand -hex 24/);
+  });
+
+  test('RESEARCH and runbook document reuse, reject, and masked GET', () => {
+    assert.match(research, /28P01/);
+    assert.match(research, /ensure_db_passwords/);
+    assert.match(research, /OPENSHIP_ROTATE_PASSWORDS/);
+    assert.match(research, /rejectDeployment|deployment reject/i);
+    assert.match(research, /masked GET|never PATCH service/i);
+    assert.match(runbook, /OPENSHIP_ROTATE_PASSWORDS/);
+    assert.match(runbook, /deployment reject|masked/i);
+  });
+
+  test('app compose/services still omit DATABASE_URL, REDIS_URL, SOURCE_REVISION', () => {
+    const kit = new URL('../infra/openship/', import.meta.url);
+    const compose = readFileSync(new URL('academy.compose.yaml', kit), 'utf8');
+    const {services} = JSON.parse(readFileSync(new URL('academy.services.json', kit), 'utf8'));
+    const app = services.find((service) => service.name === 'app');
+    assert.equal(Object.hasOwn(app.environment, 'DATABASE_URL'), false);
+    assert.equal(Object.hasOwn(app.environment, 'REDIS_URL'), false);
+    assert.equal(Object.hasOwn(app.environment, 'SOURCE_REVISION'), false);
+    assert.equal(compose.includes('${DATABASE_URL}'), false);
+  });
+
+  const runEnsurePw = ({secretsContent = null, envJson, dockerInspect = {}, rotate = false, volumeExists = false}) => {
+    const bin = mkdtempSync(path.join(scratch, 'curl-pw-'));
+    const kitHome = mkdtempSync(path.join(scratch, 'kit-pw-'));
+    if (secretsContent !== null) {
+      writeFileSync(path.join(kitHome, 'secrets.env'), secretsContent);
+    }
+    const inspectLog = path.join(bin, 'inspect.log');
+    writeFileSync(inspectLog, '');
+    const pgEnv = dockerInspect.postgres || '';
+    const redisEnv = dockerInspect.redis || '';
+    writeFileSync(path.join(bin, 'docker'), `#!/usr/bin/env bash
+printf '%s\\n' "$*" >> "${inspectLog}"
+if [[ "$1" == volume && "$2" == inspect ]]; then
+  ${volumeExists ? 'exit 0' : 'exit 1'}
+fi
+if [[ "$*" == *"--type"*"container"* ]]; then
+  # existence check (no format) or env format
+  name="\${@: -1}"
+  case "$name" in
+    openship-academy-postgres|openship-academy-redis) ;;
+    *) exit 1 ;;
+  esac
+  if [[ "$*" == *Config.Env* ]]; then
+    case "$name" in
+      openship-academy-postgres)
+        cat <<'DOCKEREOF'
+${pgEnv}
+DOCKEREOF
+        ;;
+      openship-academy-redis)
+        cat <<'DOCKEREOF'
+${redisEnv}
+DOCKEREOF
+        ;;
+    esac
+  fi
+  exit 0
+fi
+exit 0
+`);
+    chmodSync(path.join(bin, 'docker'), 0o755);
+    const envBodyPath = path.join(bin, 'env.json');
+    writeFileSync(envBodyPath, JSON.stringify(envJson));
+    writeFileSync(path.join(bin, 'curl'), `#!/usr/bin/env bash
+set -e
+out=""; code_mode=0; args=("$@")
+for i in "\${!args[@]}"; do
+  [[ "\${args[\$i]}" == "-w" ]] && code_mode=1
+  [[ "\${args[\$i]}" == "-o" ]] && out="\${args[\$((i+1))]}"
+done
+if [[ "$*" == *"/api/projects/"*"/env"* ]]; then
+  body="$(cat "${envBodyPath}")"
+  [[ -n "$out" ]] && printf '%s' "$body" > "$out" || printf '%s' "$body"
+  [[ "$code_mode" == 1 ]] && printf 200
+  exit 0
+fi
+echo "unexpected curl: $*" >&2
+exit 99
+`);
+    chmodSync(path.join(bin, 'curl'), 0o755);
+    const env = {
+      ...process.env,
+      PATH: `${bin}:${process.env.PATH}`,
+      OPENSHIP_TOKEN: token,
+      KIT_HOME: kitHome,
+    };
+    if (rotate) env.OPENSHIP_ROTATE_PASSWORDS = '1';
+    else delete env.OPENSHIP_ROTATE_PASSWORDS;
+    const result = spawnSync(
+      'bash',
+      ['-c', `source "${root}/infra/openship/lib.sh"; openship_session; ensure_db_passwords proj_PTFOnZxLMEKU4ys9; echo DONE_KEYS; test -f "$KIT_HOME/secrets.env" && cut -d= -f1 "$KIT_HOME/secrets.env"`],
+      {encoding: 'utf8', env},
+    );
+    const secretsPath = path.join(kitHome, 'secrets.env');
+    const secrets = existsSync(secretsPath) ? readFileSync(secretsPath, 'utf8') : '';
+    return {result, secrets, kitHome};
+  };
+
+  test('reuses existing secrets.env without minting', () => {
+    const {result, secrets} = runEnsurePw({
+      secretsContent: 'POSTGRES_PASSWORD=existingpgpassword012345\nREDIS_PASSWORD=existingredispassword01234\n',
+      envJson: {data: []},
+    });
+    assert.equal(result.status, 0, result.stderr + result.stdout);
+    assert.match(result.stderr + result.stdout, /Reusing Postgres\/Redis passwords/);
+    assert.match(secrets, /^POSTGRES_PASSWORD=existingpgpassword012345$/m);
+    assert.match(secrets, /^REDIS_PASSWORD=existingredispassword01234$/m);
+    assert.doesNotMatch(result.stderr + result.stdout, /Generating Postgres/);
+  });
+
+  test('when project has password keys and containers yield plaintext, recovers into secrets.env', () => {
+    const {result, secrets} = runEnsurePw({
+      secretsContent: null,
+      envJson: {
+        data: [
+          {key: 'POSTGRES_PASSWORD', value: '••••••••', isSecret: true},
+          {key: 'REDIS_PASSWORD', value: '••••••••', isSecret: true},
+          {key: 'DATABASE_URL', value: '••••••••', isSecret: true},
+        ],
+      },
+      dockerInspect: {
+        postgres: 'POSTGRES_USER=academy\nPOSTGRES_PASSWORD=fromcontainergpass01234567\nPOSTGRES_DB=academy',
+        redis: 'REDISCLI_AUTH=fromcontainerredispass0123456',
+      },
+    });
+    assert.equal(result.status, 0, result.stderr + result.stdout);
+    assert.match(result.stderr + result.stdout, /Recovered passwords from running/);
+    assert.match(secrets, /^POSTGRES_PASSWORD=fromcontainergpass01234567$/m);
+    assert.match(secrets, /^REDIS_PASSWORD=fromcontainerredispass0123456$/m);
+    assert.doesNotMatch(result.stderr + result.stdout, /Generating Postgres/);
+    // Never print password values in output
+    assert.doesNotMatch(result.stderr + result.stdout, /fromcontainergpass/);
+    assert.doesNotMatch(result.stderr + result.stdout, /fromcontainerredis/);
+  });
+
+  test('refuses remint when project has password keys, no secrets.env, containers empty', () => {
+    const {result, secrets} = runEnsurePw({
+      secretsContent: null,
+      envJson: {
+        data: [
+          {key: 'POSTGRES_PASSWORD', value: '••••••••', isSecret: true},
+          {key: 'REDIS_PASSWORD', value: '••••••••', isSecret: true},
+        ],
+      },
+      dockerInspect: {},
+    });
+    assert.equal(result.status, 1, result.stdout);
+    assert.match(result.stderr, /already has POSTGRES_PASSWORD/);
+    assert.match(result.stderr, /OPENSHIP_ROTATE_PASSWORDS=1/);
+    assert.match(result.stderr, /masked GET/);
+    assert.equal(secrets, '');
+  });
+
+  test('refuses remint when pgdata volume exists and project env has no password keys', () => {
+    const {result} = runEnsurePw({
+      secretsContent: null,
+      envJson: {data: [{key: 'SOURCE_REVISION', value: 'abc', isSecret: false}]},
+      volumeExists: true,
+    });
+    assert.equal(result.status, 1, result.stdout);
+    assert.match(result.stderr, /openship-academy-pgdata/);
+    assert.match(result.stderr, /Refusing to openssl-rand/);
+  });
+
+  test('mints when no secrets, no project password keys, no volume', () => {
+    const {result, secrets} = runEnsurePw({
+      secretsContent: null,
+      envJson: {data: []},
+      volumeExists: false,
+    });
+    assert.equal(result.status, 0, result.stderr + result.stdout);
+    assert.match(result.stderr + result.stdout, /Generating Postgres and Redis passwords/);
+    assert.match(secrets, /^POSTGRES_PASSWORD=[a-f0-9]{48}$/m);
+    assert.match(secrets, /^REDIS_PASSWORD=[a-f0-9]{48}$/m);
+  });
+});

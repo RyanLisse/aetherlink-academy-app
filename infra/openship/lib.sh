@@ -12,6 +12,7 @@ LEGACY_APP=academy-app
 LEGACY_PG=academy-postgres
 TARGET_APP="${TARGET_APP_CONTAINER:-openship-$OPENSHIP_SLUG-app}"
 TARGET_PG="${TARGET_PG_CONTAINER:-openship-$OPENSHIP_SLUG-postgres}"
+TARGET_REDIS="${TARGET_REDIS_CONTAINER:-openship-$OPENSHIP_SLUG-redis}"
 STAGING_URL="${STAGING_URL:-http://127.0.0.1:4327}"
 # Env names owned by compose / step.sh upserts — never copied from legacy .env.
 # DATABASE_URL / REDIS_URL / SOURCE_REVISION are fully resolved secrets upserted by step.sh
@@ -222,3 +223,91 @@ write_marker() {
 }
 
 marker_value() { grep -E "^$2=" "$1" | head -n1 | cut -d= -f2-; }
+
+# Docker named volume for the kit's Postgres data (OpenShip namespaces as
+# openship-<slug>-<compose-volume-name>). Presence means a prior deploy already
+# initialized Postgres with whatever POSTGRES_PASSWORD was in force then.
+pgdata_volume_name() { printf 'openship-%s-pgdata' "$OPENSHIP_SLUG"; }
+pgdata_volume_exists() { docker volume inspect "$(pgdata_volume_name)" >/dev/null 2>&1; }
+
+# Print the value of KEY inside a container's Config.Env, or nothing.
+# Values are never logged by callers; only used to rebuild secrets.env.
+container_env_value() {
+  local container="$1" key="$2" line
+  container_exists "$container" || return 1
+  line="$(docker inspect --type container --format '{{range .Config.Env}}{{println .}}{{end}}' "$container" \
+    | grep -E "^${key}=" | head -n1 || true)"
+  [[ -n "$line" ]] || return 1
+  printf '%s' "${line#*=}"
+}
+
+# True if GET /projects/:id/env lists KEY (secret VALUES are always masked as
+# ENV_MASK / "••••••••" — never treat the masked value as a real password, and
+# never PATCH service environment from a masked GET).
+project_env_has_key() {
+  local id="$1" key="$2"
+  [[ -f "$OPENSHIP_TMP/project.env.json" ]] || return 1
+  jq -e --arg k "$key" '[.data // [] | .[].key] | index($k) != null' "$OPENSHIP_TMP/project.env.json" >/dev/null
+}
+
+# Fetch production project env into OPENSHIP_TMP/project.env.json (keys + masked secrets).
+fetch_project_env() {
+  local id="$1"
+  api GET "/projects/$id/env?environment=production" > "$OPENSHIP_TMP/project.env.json"
+}
+
+# Resolve POSTGRES_PASSWORD / REDIS_PASSWORD for deploy without drifting from an
+# existing openship-*-pgdata volume.
+#
+# Order:
+#   1. secrets.env on the host (kit plaintext source of truth)
+#   2. else if project env already has both password keys: recover plaintext from
+#      running postgres/redis containers into secrets.env (reuse — do not remint)
+#   3. else if project has the keys (or pgdata volume exists) and
+#      OPENSHIP_ROTATE_PASSWORDS is unset: refuse remint
+#   4. else mint into secrets.env
+#
+# Writes secrets.env. Does not print password values. Call after openship_session
+# and ensure_project_id (needs OPENSHIP_TMP + project id for the env GET).
+ensure_db_passwords() {
+  local id="$1"
+  local secrets="$KIT_HOME/secrets.env"
+  local pg_password="" redis_password=""
+  local project_has_passwords=0 volume_present=0
+
+  if [[ -f "$secrets" ]]; then
+    pg_password="$(marker_value "$secrets" POSTGRES_PASSWORD || true)"
+    redis_password="$(marker_value "$secrets" REDIS_PASSWORD || true)"
+    if [[ -n "$pg_password" && -n "$redis_password" ]]; then
+      say "Reusing Postgres/Redis passwords from $secrets"
+      return 0
+    fi
+  fi
+
+  fetch_project_env "$id" || die "could not list project env for $id"
+  if project_env_has_key "$id" POSTGRES_PASSWORD && project_env_has_key "$id" REDIS_PASSWORD; then
+    project_has_passwords=1
+  fi
+  pgdata_volume_exists && volume_present=1
+
+  if (( project_has_passwords )); then
+    say "Project env already has POSTGRES_PASSWORD and REDIS_PASSWORD (values masked); reusing"
+    pg_password="$(container_env_value "$TARGET_PG" POSTGRES_PASSWORD || true)"
+    redis_password="$(container_env_value "$TARGET_REDIS" REDISCLI_AUTH || true)"
+    if [[ -n "$pg_password" && -n "$redis_password" ]]; then
+      say "Recovered passwords from running postgres/redis containers into $secrets"
+      write_marker "$secrets" "POSTGRES_PASSWORD=$pg_password" "REDIS_PASSWORD=$redis_password"
+      return 0
+    fi
+    if [[ "${OPENSHIP_ROTATE_PASSWORDS:-}" == 1 ]]; then
+      say "OPENSHIP_ROTATE_PASSWORDS=1: reminting (existing pgdata will need ALTER USER to match)"
+    else
+      die "project $id already has POSTGRES_PASSWORD/REDIS_PASSWORD but $secrets is missing and running containers did not yield plaintext. Restore $secrets from backup, or set OPENSHIP_ROTATE_PASSWORDS=1 to remint (breaks auth against existing $(pgdata_volume_name) until ALTER USER). Never PATCH service environment from a masked GET."
+    fi
+  elif (( volume_present )) && [[ "${OPENSHIP_ROTATE_PASSWORDS:-}" != 1 ]]; then
+    die "volume $(pgdata_volume_name) exists but project env has no POSTGRES_PASSWORD/REDIS_PASSWORD and $secrets is missing. Restore $secrets or set OPENSHIP_ROTATE_PASSWORDS=1 (then ALTER USER on the volume). Refusing to openssl-rand against existing pgdata."
+  fi
+
+  say "Generating Postgres and Redis passwords into $secrets"
+  write_marker "$secrets" "POSTGRES_PASSWORD=$(openssl rand -hex 24)" "REDIS_PASSWORD=$(openssl rand -hex 24)"
+}
