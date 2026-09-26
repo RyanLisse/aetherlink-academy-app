@@ -50,8 +50,8 @@ plan() {
   if [[ -n "${OPENSHIP_TOKEN:-}" ]]; then
     openship_session
     local id
-    id="$(project_id)"
-    if [[ -n "$id" ]]; then echo "  exists: $id"; else echo "  absent: deploy creates it from infra/openship/academy.project.json"; fi
+    id="$(resolve_existing_project_id)"
+    if [[ -n "$id" ]]; then echo "  exists: $id"; else echo "  absent (or invisible to this token): deploy creates or reuses on 409"; fi
   else
     echo "  OPENSHIP_TOKEN not set, skipped"
   fi
@@ -91,14 +91,13 @@ deploy() {
   # redis) cannot enter the /tls bind mount at all. Keys stay 0600 and owned by 999.
   chmod 755 "$KIT_HOME/tls"
 
+  # Lookup-before-create (and 409 → reuse): a rotated scoped PAT only lists
+  # projects it created, so GET /projects may miss academy even though the name
+  # exists org-wide. ensure_project_id lists, tries state/known id, creates only
+  # when missing, and on CONFLICT reuses the existing project the token can read.
   local id
-  id="$(project_id)"
-  if [[ -z "$id" ]]; then
-    say "Creating OpenShip project $OPENSHIP_SLUG"
-    api POST /projects "$KIT_DIR/academy.project.json" > "$OPENSHIP_TMP/created.json"
-    id="$(jq -r '[.. | objects | select((.id? | type) == "string") | .id] | first // empty' "$OPENSHIP_TMP/created.json")"
-    [[ -n "$id" ]] || die "project create returned no id"
-  fi
+  id="$(ensure_project_id)"
+  [[ -n "$id" ]] || die "could not resolve OpenShip project $OPENSHIP_SLUG"
   echo "  project: $id"
   # Self-hosted OpenShip cannot route the free .opsh.io endpoint that project create stores
   # (preflight CLOUD_REQUIRED_MANAGED_PROJECT_DOMAIN reads the stored publicEndpoints). Clear

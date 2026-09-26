@@ -23,8 +23,9 @@ marked **unverified** and the kit checks it at run time instead of assuming it.
 
 | Operation | Endpoint (under `/api`) | Token grant |
 | --- | --- | --- |
-| List projects | `GET /projects` | `project` read (list) |
-| Create project | `POST /projects` | `project:*` create |
+| List projects | `GET /projects?perPage=100` | `project` read (list); scoped PAT filters to granted ids only |
+| Create project | `POST /projects` | `project:*` create; kit treats 409 CONFLICT as reuse |
+| Get project | `GET /projects/:id` | `project` read on that id (kit fallback after list miss / 409) |
 | Turn off auto-deploy | `POST /projects/:id/auto-deploy {enabled:false}` | `project` write |
 | Set env | `PATCH /projects/:id/env {environment, upserts[{key,value,isSecret}], deletes}` | `project` write |
 | Deploy a commit | `POST /deployments {projectId, branch, commitSha, environment}` | project write **and** `github_repository:owner/repo:read` (scoped PAT) |
@@ -46,6 +47,14 @@ asserts `{service,"*",write}` (`G/apps/api/src/lib/route-permission.ts`). A runb
 persists compose services from the project's `composePath` at deploy-request time
 (`G/apps/api/src/modules/deployments/build.service.ts` → `syncFromCompose`), which is enough for a
 `projectType: services` project.
+
+Scoped PATs filter `GET /projects` to ids in `personal_access_token_grant` for that
+token (`project.controller.ts` `scopedProjectIds`). A create-only token that did **not** create
+the existing `academy` project (`proj_PTFOnZxLMEKU4ys9`) sees an empty list, then `POST /projects`
+returns 409 `CONFLICT` (`Project "academy" already exists`). The kit **ensures** the project:
+list by slug or name, fall back to `OPENSHIP_PROJECT_ID` / `state.env` / the known Academy id,
+create only when missing, and on 409 re-resolve and reuse. After PAT rotation, mint with
+`--grant 'project:proj_PTFOnZxLMEKU4ys9:read,write,admin'` — do **not** delete the project.
 
 `POST /deployments` also calls `assertGitHubRepoAccess` on the project's `gitOwner`/`gitRepo`
 (`G/apps/api/src/modules/github/github-access.ts`, from `build.service.ts`). Scoped PATs never get
