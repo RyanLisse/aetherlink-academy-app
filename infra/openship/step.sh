@@ -7,6 +7,7 @@ umask 077
 # shellcheck source=/dev/null
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 STATE="$KIT_HOME/state.env"
+DOMAIN_FILE="$KIT_HOME/domain.env"
 SOURCE_SHA="${SOURCE_SHA:-$(git -C "$REPO_DIR" rev-parse HEAD)}"
 
 legacy_env_names() {
@@ -101,9 +102,15 @@ deploy() {
   # them: the app is served by its compose-published port, which OpenShip leaves alone. A routed
   # endpoint would also be rewritten to loopback (loopback-publish.ts), hiding :4317 at cutover.
   # The academy.aetherlink.ai route is added together with DNS (AET-42), when TLS can issue.
-  printf '{"publicEndpoints":[]}' > "$OPENSHIP_TMP/endpoints.json"
+  local domain=""
+  [[ -f "$DOMAIN_FILE" ]] && domain="$(marker_value "$DOMAIN_FILE" domain)"
+  if [[ -n "$domain" ]]; then
+    jq -n --arg d "$domain" '{publicEndpoints: [{port: 4317, customDomain: $d, domainType: "custom"}]}' > "$OPENSHIP_TMP/endpoints.json"
+  else
+    printf '{"publicEndpoints":[]}' > "$OPENSHIP_TMP/endpoints.json"
+  fi
   api PATCH "/projects/$id" "$OPENSHIP_TMP/endpoints.json" >/dev/null
-  echo "  public endpoints: none (served on the published port $(port_bind))"
+  if [[ -n "$domain" ]]; then echo "  public endpoint: https://$domain -> :4317 (OpenShip edge, Let's Encrypt)"; else echo "  public endpoints: none (served on the published port $(port_bind))"; fi
   printf '{"enabled":false}' > "$OPENSHIP_TMP/auto.json"
   api POST "/projects/$id/auto-deploy" "$OPENSHIP_TMP/auto.json" >/dev/null
   echo "  auto-deploy: off (deploys happen only from this workflow)"
@@ -113,6 +120,7 @@ deploy() {
   {
     grep -E '^[A-Za-z_][A-Za-z0-9_]*=' "$LEGACY_HOME/.env" | grep -Ev "^(${COMPOSE_OWNED_ENV})="
     printf 'POSTGRES_PASSWORD=%s\nREDIS_PASSWORD=%s\nACADEMY_PORT_BIND=%s\nSOURCE_REVISION=%s\n' "$pg_password" "$redis_password" "$(port_bind)" "$SOURCE_SHA"
+    if [[ -n "$domain" ]]; then printf 'ACADEMY_PUBLIC_URL=https://%s\n' "$domain"; fi
   } | jq -Rn '{environment: "production", deletes: [], upserts: [inputs
       | (index("=")) as $i
       | {key: .[:$i], value: (.[$i+1:] | if test("^\".*\"$") or test("^'"'"'.*'"'"'$") then .[1:-1] else . end)}
@@ -157,12 +165,30 @@ cutover() {
   say "Cutover done. The Academy is served by OpenShip on :4317."
 }
 
+# Attaches a public hostname through the OpenShip edge (TLS via Let's Encrypt) after cutover.
+# ACADEMY_DOMAIN must already resolve to this host; sslip.io names do so without DNS changes.
+domain() {
+  [[ "$(marker_value "$STATE" phase)" == cutover ]] || die "run cutover first"
+  local d="${ACADEMY_DOMAIN:-}"
+  [[ "$d" =~ ^[a-z0-9]([a-z0-9.-]*[a-z0-9])?$ ]] || die "set a valid ACADEMY_DOMAIN (got '${d}')"
+  write_marker "$DOMAIN_FILE" "domain=$d"
+  STAGING_URL=http://127.0.0.1:4317 deploy
+  say "Waiting for https://$d (certificate issuance)"
+  local i
+  for i in $(seq 1 30); do
+    if curl -fsS --max-time 10 "https://$d/game/health" | jq -e '.ok == true' >/dev/null 2>&1; then say "https://$d is live"; return 0; fi
+    sleep 10
+  done
+  die "https://$d did not answer within 5 minutes; check the edge and certificate in OpenShip"
+}
+
 case "${1:-}" in
   plan) plan ;;
   deploy) deploy ;;
   migrate-data) bash "$KIT_DIR/migrate-data.sh" ;;
   verify) bash "$KIT_DIR/verify.sh" ;;
   cutover) cutover ;;
+  domain) domain ;;
   decommission)
     [[ -f "$STATE" && "$(marker_value "$STATE" phase)" == cutover ]] || die "decommission runs only after cutover"
     bash "$KIT_DIR/decommission.sh" --execute ;;

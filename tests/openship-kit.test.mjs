@@ -28,9 +28,9 @@ describe('openship-academy workflow', () => {
     assert.deepEqual(triggers, ['workflow_dispatch']);
   });
 
-  test('offers exactly the six ordered steps', () => {
+  test('offers exactly the seven ordered steps', () => {
     const options = topLevelBlock('on').match(/options:\n((?:\s+- .+\n?)+)/)[1].split('\n').map((line) => line.trim().replace(/^- /, '')).filter(Boolean);
-    assert.deepEqual(options, ['plan', 'deploy', 'migrate-data', 'verify', 'cutover', 'decommission']);
+    assert.deepEqual(options, ['plan', 'deploy', 'migrate-data', 'verify', 'cutover', 'decommission', 'domain']);
   });
 
   test('destructive steps demand the typed phrase before any host access', () => {
