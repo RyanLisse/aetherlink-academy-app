@@ -10,7 +10,10 @@
 services:
   app:
     build:
-      context: ../..
+      # Repo-root context. OpenShip resolves build against the linked repository
+      # root (not the compose file dir); `../..` drifted and previously escaped
+      # the repo. Live working service record uses `.`.
+      context: .
       dockerfile: Dockerfile
     environment:
       ACADEMY_STORAGE: postgres
