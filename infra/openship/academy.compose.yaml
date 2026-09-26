@@ -5,8 +5,11 @@
 # service name. The app keeps TLS to both, as in production today: the
 # certificates are generated on the host by infra/deploy/init-tls.sh into
 # /root/aetherlink-academy-openship/tls and bind-mounted read-only.
-# Secrets (POSTGRES_PASSWORD, REDIS_PASSWORD and the app env copied from the
-# legacy .env) are OpenShip project env vars, never values in this file.
+# Secrets are OpenShip project env vars (upserted by step.sh), never values in
+# this file. OpenShip expands same-key ${NAME} only — not nested ${OTHER:?…}
+# inside DATABASE_URL/REDIS_URL — so those URLs are fully resolved in project
+# env and referenced here as ${DATABASE_URL} / ${REDIS_URL}. Prefer no bash
+# :? / :- in any interpolateable value (same class as the ports ParseAddr bug).
 services:
   app:
     build:
@@ -21,10 +24,10 @@ services:
       PORT: "4317"
       PROOF_PORT: "4400"
       ACADEMY_DATA: /data
-      DATABASE_URL: postgresql://academy:${POSTGRES_PASSWORD:?set by step.sh deploy}@postgres:5432/academy
-      REDIS_URL: rediss://:${REDIS_PASSWORD:?set by step.sh deploy}@redis:6379
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
       NODE_EXTRA_CA_CERTS: /tls/ca.crt
-      SOURCE_REVISION: ${SOURCE_REVISION:-unknown}
+      SOURCE_REVISION: ${SOURCE_REVISION}
     # Hardcoded loopback sibling bind. OpenShip's compose interpolator + Docker
     # PortBindings must not see bash `${VAR:-host:port}` here: a colon inside the
     # default truncates HostIp and Docker ParseAddr fails
@@ -44,7 +47,7 @@ services:
     image: postgres:16
     environment:
       POSTGRES_USER: academy
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set by step.sh deploy}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: academy
     command:
       - postgres
@@ -87,9 +90,9 @@ services:
       - --tls-auth-clients
       - "no"
       - --requirepass
-      - ${REDIS_PASSWORD:?set by step.sh deploy}
+      - ${REDIS_PASSWORD}
     environment:
-      REDISCLI_AUTH: ${REDIS_PASSWORD:?set by step.sh deploy}
+      REDISCLI_AUTH: ${REDIS_PASSWORD}
     volumes:
       - /root/aetherlink-academy-openship/tls:/tls:ro
     healthcheck:

@@ -93,12 +93,19 @@ for Academy deploy.
 - Named volumes become `openship-<slug>-<name>`; bind mounts pass through unchanged
   (`G/packages/adapters/src/runtime/volume-namespace.ts`). The kit bind-mounts
   `/root/aetherlink-academy-openship/tls` read-only.
-- No connection string is injected for a hand-made Postgres service. The compose file builds
-  `DATABASE_URL` and `REDIS_URL` from `POSTGRES_PASSWORD` and `REDIS_PASSWORD`, which are
-  project env vars. Compose interpolation from project env is how the parser is fed
-  (`G/apps/api/src/lib/compose-parser.ts`, `ComposeParseOptions.env`). **Unverified:** that
-  saved project env reaches that interpolation on a git deploy. `deploy` checks the env names
-  inside the running app container and fails when any is missing.
+- No connection string is injected for a hand-made Postgres service. OpenShip's compose
+  interpolator expands **same-key** `${NAME}` when the compose env key matches a project
+  env key (e.g. `POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}`), but does **not** expand nested
+  `${POSTGRES_PASSWORD:?…}` / `${VAR:-default}` inside a *different* key. Verified
+  2026-09-26: deploy left the app with a literal
+  `postgresql://academy:${POSTGRES_PASSWORD:?…}@postgres:5432/academy` → `ERR_INVALID_URL`.
+  Therefore `step.sh deploy` upserts fully resolved `DATABASE_URL` and `REDIS_URL` (isSecret)
+  from the minted passwords, and compose/services reference them as `${DATABASE_URL}` /
+  `${REDIS_URL}` / `${SOURCE_REVISION}` only. Prefer **no** bash `:?` / `:-` in any
+  interpolateable OpenShip compose value (same class as the ports `ParseAddr` bug).
+  Compose interpolation from project env is how the parser is fed
+  (`G/apps/api/src/lib/compose-parser.ts`, `ComposeParseOptions.env`). `deploy` checks the
+  env names inside the running app container and fails when any is missing.
 - OpenShip can back up Postgres with `pg_dump -Fc` and restore with `pg_restore --clean`
   (`G/packages/adapters/src/backup/producers/pg-dump.ts`). The kit does its own dump so the
   backup exists before OpenShip touches anything.
