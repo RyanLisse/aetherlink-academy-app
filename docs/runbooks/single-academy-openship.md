@@ -28,16 +28,24 @@ Background and sources: `infra/openship/RESEARCH.md`.
    ```sh
    openship token create academy-github-actions \
      --grant 'project:*:create' \
+     --grant 'project:proj_PTFOnZxLMEKU4ys9:read,write,admin' \
      --grant 'github_repository:RyanLisse/aetherlink-academy-app:read' \
      --expires 30
    ```
 
-   Two grants are required:
+   Three grants are required (the middle one once the Academy project already exists):
 
    - `project:*:create` — create a project and list the projects it created. On create OpenShip
      also records `read,write,admin` on that new project for the token
      (`apps/api/src/modules/projects/project.controller.ts`). Deployment routes check write on
      the owning project, so no separate `deployment` grant is needed.
+   - `project:proj_PTFOnZxLMEKU4ys9:read,write,admin` — **required after the first successful
+     create / after any PAT rotation.** A scoped token only lists projects it was granted;
+     create-only does not see a project minted by a previous token. Without this grant,
+     `GET /projects` looks empty, `POST /projects` returns 409 `CONFLICT`
+     (`Project "academy" already exists`), and deploy cannot continue. **Do not delete** the
+     existing OpenShip project to work around a rotation — grant this id instead. Override the
+     id with `OPENSHIP_PROJECT_ID` if it ever changes.
    - `github_repository:RyanLisse/aetherlink-academy-app:read` — OpenShip 0.7.2 gates
      `POST /deployments` with `assertGitHubRepoAccess` (`apps/api/src/modules/github/github-access.ts`).
      A **scoped** PAT never inherits the org-owner's automatic GitHub access; without this grant
@@ -46,12 +54,12 @@ Background and sources: `infra/openship/RESEARCH.md`.
      public, so clone needs no GitHub App / clone token.
 
    No `--read-only`, because `deploy` writes. Do **not** use `--full-access` for Actions — prefer
-   the two grants above. The kit finds the project by listing, and a restricted token only lists
-   what it created, so let the kit create the project (`plan` reports it absent today). Do not
-   create it from the dashboard. No `settings`, `server`, `terminal`, `domain` or organisation-level
-   grants are needed. Rotate it after the decommission step. Paste it into GitHub (Settings,
-   Secrets and variables, Actions, `OPENSHIP_TOKEN`). The kit refuses any value that does not
-   start with `opsh_pat_`.
+   the grants above. The kit **ensures** the project: lookup by slug/name (and known id
+   `proj_PTFOnZxLMEKU4ys9`), create only when missing, and on 409 CONFLICT reuse the existing
+   project. Do not create a duplicate from the dashboard. No `settings`, `server`, `terminal`,
+   `domain` or organisation-level grants are needed. Rotate it after the decommission step.
+   Paste it into GitHub (Settings, Secrets and variables, Actions, `OPENSHIP_TOKEN`). The kit
+   refuses any value that does not start with `opsh_pat_`.
 2. The existing secrets `ACADEMY_HETZNER_HOST`, `ACADEMY_HETZNER_USER` and
    `ACADEMY_HETZNER_SSH_KEY` stay as they are.
 3. `jq` on the host (`apt-get install -y jq`) if `plan` reports it missing.
@@ -86,11 +94,13 @@ Check that the disk has at least three times the database size free.
 
 ### 2. deploy
 
-Creates the project from `infra/openship/academy.project.json` (services project,
-`composePath: infra/openship/academy.compose.yaml`, readiness gate on `/game/health`), turns
-auto-deploy off, generates Postgres and Redis passwords into
-`/root/aetherlink-academy-openship/secrets.env` (0600) and TLS material into
-`/root/aetherlink-academy-openship/tls`, copies the legacy env, and deploys the commit.
+Ensures the OpenShip project (lookup slug/name `academy` / known id
+`proj_PTFOnZxLMEKU4ys9`, create from `infra/openship/academy.project.json` only when missing,
+reuse on 409 CONFLICT — never delete the existing project), turns auto-deploy off, generates
+Postgres and Redis passwords into `/root/aetherlink-academy-openship/secrets.env` (0600) and TLS
+material into `/root/aetherlink-academy-openship/tls`, copies the legacy env, and deploys the
+commit. The project body is a services project (`composePath: infra/openship/academy.compose.yaml`,
+readiness gate on `/game/health`).
 Compose services (app, postgres, redis) are persisted by OpenShip from `composePath` at
 deploy-request time — the kit does not call `POST /services/sync` (that endpoint 404s for a
 `project:*:create` PAT; see `infra/openship/RESEARCH.md`). The new Academy answers on

@@ -89,9 +89,92 @@ api() {
   printf '%s' "$out"
 }
 
-# Prints the project id for the Academy slug, or nothing.
+# api_code METHOD PATH OUT_FILE [BODY_FILE]
+# Writes the response body to OUT_FILE and prints the HTTP status code on stdout.
+# Does not treat 4xx/5xx as failure (unlike api); used for create-or-reuse.
+api_code() {
+  local method="$1" path="$2" out="$3" body="${4:-}"
+  local args=(-sS -o "$out" -w "%{http_code}" -X "$method" -H @"$OPENSHIP_TMP/auth.header" -H "Accept: application/json")
+  if [[ -n "$body" ]]; then args+=(-H "Content-Type: application/json" --data-binary @"$body"); fi
+  curl "${args[@]}" "$OPENSHIP_API/api$path"
+}
+
+# Prints the project id for OPENSHIP_SLUG (match slug or name), or nothing.
+# Scoped PATs only see projects they were granted; create-only lists what they created.
+# perPage=100 avoids missing the row on an unscoped token with many projects.
 project_id() {
-  api GET /projects | jq -r --arg slug "$OPENSHIP_SLUG" '[.. | objects | select(.slug? == $slug and (.id? | type) == "string") | .id] | first // empty'
+  api GET "/projects?perPage=100" | jq -r --arg s "$OPENSHIP_SLUG" '
+    [.. | objects
+     | select(((.slug? == $s) or (.name? == $s)) and ((.id? | type) == "string"))
+     | .id] | first // empty'
+}
+
+# Academy host project id once created. Used as lookup/409 fallback when the
+# slug is "academy". Override with OPENSHIP_PROJECT_ID. Do not delete this project.
+academy_known_project_id() {
+  if [[ -n "${OPENSHIP_PROJECT_ID:-}" ]]; then
+    printf "%s" "$OPENSHIP_PROJECT_ID"
+  elif [[ "$OPENSHIP_SLUG" == academy ]]; then
+    printf "%s" "proj_PTFOnZxLMEKU4ys9"
+  fi
+}
+
+# True if GET /projects/:id succeeds for this token (has read on that id).
+project_readable() {
+  local id="$1" code
+  [[ -n "$id" ]] || return 1
+  code="$(api_code GET "/projects/$id" "$OPENSHIP_TMP/project.get.json")"
+  [[ "$code" == 200 ]]
+}
+
+# Resolve an existing project the token can use: list → state.env → known id.
+# Prints the id or nothing. Does not create.
+resolve_existing_project_id() {
+  local id state="$KIT_HOME/state.env"
+  id="$(project_id)"
+  if [[ -n "$id" ]]; then printf "%s" "$id"; return 0; fi
+  if [[ -f "$state" ]]; then
+    id="$(marker_value "$state" project_id || true)"
+    if [[ -n "$id" ]] && project_readable "$id"; then printf "%s" "$id"; return 0; fi
+  fi
+  id="$(academy_known_project_id)"
+  if [[ -n "$id" ]] && project_readable "$id"; then printf "%s" "$id"; return 0; fi
+  return 0
+}
+
+# Create the project when missing; on 409 CONFLICT reuse the existing one.
+# Prints the project id on stdout. Progress messages go to stderr via say.
+ensure_project_id() {
+  local id http known
+  id="$(resolve_existing_project_id)"
+  if [[ -n "$id" ]]; then
+    printf "%s" "$id"
+    return 0
+  fi
+
+  say "Creating OpenShip project $OPENSHIP_SLUG" >&2
+  http="$(api_code POST /projects "$OPENSHIP_TMP/created.json" "$KIT_DIR/academy.project.json")"
+  case "$http" in
+    200|201)
+      id="$(jq -r '[.. | objects | select((.id? | type) == "string" and (.id | startswith("proj_"))) | .id] | first // empty' "$OPENSHIP_TMP/created.json")"
+      [[ -n "$id" ]] || die "project create returned no id (HTTP $http)"
+      printf "%s" "$id"
+      return 0
+      ;;
+    409)
+      say "Project $OPENSHIP_SLUG already exists (409); reusing" >&2
+      id="$(resolve_existing_project_id)"
+      if [[ -n "$id" ]]; then
+        printf "%s" "$id"
+        return 0
+      fi
+      known="$(academy_known_project_id)"
+      die "POST /projects 409 CONFLICT for \"$OPENSHIP_SLUG\" but this token cannot read the existing project${known:+ ($known)}. Scoped PATs only list projects they created; after rotating OPENSHIP_TOKEN grant the existing id: --grant 'project:${known:-proj_…}:read,write,admin' (plus project:*:create and github_repository:RyanLisse/aetherlink-academy-app:read). See docs/runbooks/single-academy-openship.md. Do not delete the OpenShip project."
+      ;;
+    *)
+      die "POST /projects failed (HTTP $http): $(head -c 1500 "$OPENSHIP_TMP/created.json" 2>/dev/null || true)"
+      ;;
+  esac
 }
 
 container_exists() { docker inspect --type container "$1" >/dev/null 2>&1; }

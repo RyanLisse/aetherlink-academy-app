@@ -87,7 +87,7 @@ echo '[{"id":"proj_1","slug":"academy"}]'
     assert.equal(result.status, 0, result.stderr);
     assert.equal(result.stdout, 'proj_1\n');
     assert.equal(header, `Authorization: Bearer ${token}\n`);
-    assert.ok(argv.includes('http://127.0.0.1:4000/api/projects'), argv);
+    assert.ok(argv.includes('http://127.0.0.1:4000/api/projects?perPage=100'), argv);
     assert.equal(argv.includes(token), false);
   });
 
@@ -281,6 +281,7 @@ describe('deploy requires github_repository grant on scoped PAT', () => {
   test('runbook mints OPENSHIP_TOKEN with github_repository grant', () => {
     assert.match(runbook, /github_repository:RyanLisse\/aetherlink-academy-app:read/);
     assert.match(runbook, /project:\*:create/);
+    assert.match(runbook, /project:proj_PTFOnZxLMEKU4ys9:read,write,admin/);
     assert.match(runbook, /GITHUB_ACCESS_DENIED/);
     assert.match(runbook, /assertGitHubRepoAccess/);
   });
@@ -299,5 +300,187 @@ describe('deploy requires github_repository grant on scoped PAT', () => {
   test('step.sh notes the GitHub access gate before POST \/deployments', () => {
     assert.match(step, /assertGitHubRepoAccess/);
     assert.match(step, /GITHUB_ACCESS_DENIED/);
+  });
+});
+
+
+describe('deploy ensures / reuses existing OpenShip project', () => {
+  const lib = readFileSync(path.join(root, 'infra/openship/lib.sh'), 'utf8');
+  const step = readFileSync(path.join(root, 'infra/openship/step.sh'), 'utf8');
+  const research = readFileSync(path.join(root, 'infra/openship/RESEARCH.md'), 'utf8');
+  const runbook = readFileSync(path.join(root, 'docs/runbooks/single-academy-openship.md'), 'utf8');
+  const token = 'opsh_pat_synthetic0123456789';
+
+  test('step.sh deploy calls ensure_project_id (no bare api POST /projects)', () => {
+    assert.match(step, /ensure_project_id/);
+    assert.doesNotMatch(step, /^\s*api\s+POST\s+\/projects\b/m);
+  });
+
+  test('lib.sh matches by slug or name, knows Academy id, and has api_code', () => {
+    assert.match(lib, /\.slug\? == \$s\) or \(\.name\? == \$s\)/);
+    assert.match(lib, /proj_PTFOnZxLMEKU4ys9/);
+    assert.match(lib, /api_code/);
+    assert.match(lib, /ensure_project_id/);
+    assert.match(lib, /409/);
+  });
+
+  test('RESEARCH and runbook document 409 reuse and do-not-delete', () => {
+    assert.match(research, /409 CONFLICT/);
+    assert.match(research, /scopedProjectIds|filters to granted/i);
+    assert.match(runbook, /409 CONFLICT/);
+    assert.match(runbook, /Do not delete|do \*\*not\*\* delete/i);
+    assert.match(runbook, /proj_PTFOnZxLMEKU4ys9/);
+  });
+
+  const runEnsure = (curlBody) => {
+    const bin = mkdtempSync(path.join(scratch, 'curl-ensure-'));
+    const kitHome = mkdtempSync(path.join(scratch, 'kit-'));
+    writeFileSync(path.join(bin, 'curl'), `#!/usr/bin/env bash
+set -e
+printf '%s\\n' "$*" >> "${bin}/argv.log"
+${curlBody}
+`);
+    chmodSync(path.join(bin, 'curl'), 0o755);
+    return spawnSync(
+      'bash',
+      ['-c', `source "${root}/infra/openship/lib.sh"; openship_session; ensure_project_id`],
+      {
+        encoding: 'utf8',
+        env: {...process.env, PATH: `${bin}:${process.env.PATH}`, OPENSHIP_TOKEN: token, KIT_HOME: kitHome},
+      },
+    );
+  };
+
+  test('ensure reuses when GET list already has academy (never POSTs create)', () => {
+    const result = runEnsure(`
+if [[ "$*" == *"-w"*"%{http_code}"* ]]; then
+  for a in "$@"; do [[ "$a" == "-o" ]] && next_o=1 && continue; [[ -n "\${next_o:-}" ]] && echo '{}' > "$a" && next_o=; done
+  printf 500
+  exit 0
+fi
+if [[ "$*" == *"/api/projects?perPage=100"* ]]; then
+  echo '{"data":[{"id":"proj_PTFOnZxLMEKU4ys9","slug":"academy","name":"academy"}]}'
+  exit 0
+fi
+echo "unexpected: $*" >&2
+exit 99
+`);
+    assert.equal(result.status, 0, result.stderr + result.stdout);
+    assert.equal(result.stdout, 'proj_PTFOnZxLMEKU4ys9');
+    assert.doesNotMatch(result.stderr + result.stdout, /Creating OpenShip project/);
+  });
+
+  test('ensure creates when list is empty and POST returns 201', () => {
+    const result = runEnsure(`
+out=""; code_mode=0; args=("$@")
+for i in "\${!args[@]}"; do
+  [[ "\${args[\$i]}" == "-w" ]] && code_mode=1
+  [[ "\${args[\$i]}" == "-o" ]] && out="\${args[\$((i+1))]}"
+done
+if [[ "$*" == *"/api/projects?perPage=100"* ]]; then
+  echo '{"data":[],"total":0}'; exit 0
+fi
+if [[ "$*" == *"-X"*"POST"* && "$*" == *"/api/projects"* && "$*" != *"/api/projects/"* ]]; then
+  body='{"data":{"id":"proj_NEWcreated01","slug":"academy","name":"academy"}}'
+  [[ -n "$out" ]] && printf '%s' "$body" > "$out" || printf '%s' "$body"
+  [[ "$code_mode" == 1 ]] && printf 201
+  exit 0
+fi
+if [[ "$*" == *"/api/projects/proj_"* ]]; then
+  [[ -n "$out" ]] && echo '{"error":"not found"}' > "$out"
+  [[ "$code_mode" == 1 ]] && printf 404 || exit 22
+  exit 0
+fi
+echo "unexpected: $*" >&2; exit 99
+`);
+    assert.equal(result.status, 0, result.stderr + result.stdout);
+    assert.equal(result.stdout, 'proj_NEWcreated01');
+    assert.match(result.stderr, /Creating OpenShip project academy/);
+  });
+
+  test('ensure reuses known Academy id via GET when list is empty (no create)', () => {
+    const result = runEnsure(`
+out=""; code_mode=0; args=("$@")
+for i in "\${!args[@]}"; do
+  [[ "\${args[\$i]}" == "-w" ]] && code_mode=1
+  [[ "\${args[\$i]}" == "-o" ]] && out="\${args[\$((i+1))]}"
+done
+if [[ "$*" == *"/api/projects?perPage=100"* ]]; then
+  echo '{"data":[],"total":0}'; exit 0
+fi
+if [[ "$*" == *"/api/projects/proj_PTFOnZxLMEKU4ys9"* ]]; then
+  body='{"data":{"id":"proj_PTFOnZxLMEKU4ys9","slug":"academy","name":"academy"}}'
+  [[ -n "$out" ]] && printf '%s' "$body" > "$out" || printf '%s' "$body"
+  [[ "$code_mode" == 1 ]] && printf 200
+  exit 0
+fi
+echo "unexpected: $*" >&2; exit 99
+`);
+    assert.equal(result.status, 0, result.stderr + result.stdout);
+    assert.equal(result.stdout, 'proj_PTFOnZxLMEKU4ys9');
+    assert.doesNotMatch(result.stderr, /Creating OpenShip project/);
+  });
+
+  test('ensure on 409 reuses when known id is readable after conflict', () => {
+    const result = runEnsure(`
+STATE_FILE="$(dirname "$(command -v curl)")/post.flag"
+out=""; code_mode=0; args=("$@")
+for i in "\${!args[@]}"; do
+  [[ "\${args[\$i]}" == "-w" ]] && code_mode=1
+  [[ "\${args[\$i]}" == "-o" ]] && out="\${args[\$((i+1))]}"
+done
+if [[ "$*" == *"/api/projects?perPage=100"* ]]; then
+  echo '{"data":[],"total":0}'; exit 0
+fi
+if [[ "$*" == *"-X"*"POST"* && "$*" == *"/api/projects"* && "$*" != *"/api/projects/"* ]]; then
+  touch "$STATE_FILE"
+  [[ -n "$out" ]] && printf '%s' '{"error":"Project \\"academy\\" already exists","code":"CONFLICT"}' > "$out"
+  [[ "$code_mode" == 1 ]] && printf 409 || exit 22
+  exit 0
+fi
+if [[ "$*" == *"/api/projects/proj_PTFOnZxLMEKU4ys9"* ]]; then
+  if [[ -f "$STATE_FILE" ]]; then
+    body='{"data":{"id":"proj_PTFOnZxLMEKU4ys9","slug":"academy","name":"academy"}}'
+    [[ -n "$out" ]] && printf '%s' "$body" > "$out" || printf '%s' "$body"
+    [[ "$code_mode" == 1 ]] && printf 200
+  else
+    [[ -n "$out" ]] && echo '{"error":"not found"}' > "$out"
+    [[ "$code_mode" == 1 ]] && printf 404 || exit 22
+  fi
+  exit 0
+fi
+echo "unexpected: $*" >&2; exit 99
+`);
+    assert.equal(result.status, 0, result.stderr + result.stdout);
+    assert.equal(result.stdout, 'proj_PTFOnZxLMEKU4ys9');
+    assert.match(result.stderr, /409|already exists/);
+  });
+
+  test('ensure on 409 without read access dies with grant hint (does not delete)', () => {
+    const result = runEnsure(`
+out=""; code_mode=0; args=("$@")
+for i in "\${!args[@]}"; do
+  [[ "\${args[\$i]}" == "-w" ]] && code_mode=1
+  [[ "\${args[\$i]}" == "-o" ]] && out="\${args[\$((i+1))]}"
+done
+if [[ "$*" == *"/api/projects?perPage=100"* ]]; then
+  echo '{"data":[],"total":0}'; exit 0
+fi
+if [[ "$*" == *"-X"*"POST"* && "$*" == *"/api/projects"* && "$*" != *"/api/projects/"* ]]; then
+  [[ -n "$out" ]] && printf '%s' '{"error":"Project \\"academy\\" already exists","code":"CONFLICT"}' > "$out"
+  [[ "$code_mode" == 1 ]] && printf 409 || exit 22
+  exit 0
+fi
+if [[ "$*" == *"/api/projects/proj_PTFOnZxLMEKU4ys9"* ]]; then
+  [[ -n "$out" ]] && echo '{"error":"not found"}' > "$out"
+  [[ "$code_mode" == 1 ]] && printf 404 || exit 22
+  exit 0
+fi
+echo "unexpected: $*" >&2; exit 99
+`);
+    assert.equal(result.status, 1, result.stdout);
+    assert.match(result.stderr, /409 CONFLICT/);
+    assert.match(result.stderr, /project:proj_PTFOnZxLMEKU4ys9:read,write,admin/);
+    assert.match(result.stderr, /Do not delete/);
   });
 });
