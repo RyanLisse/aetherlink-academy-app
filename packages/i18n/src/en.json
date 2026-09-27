@@ -705,5 +705,20 @@
   "debrief.quizNotStarted": "Not started",
   "debrief.quizInProgress": "In progress",
   "debrief.quizCompleted": "Completed",
-  "debrief.quizExpired": "Expired"
+  "debrief.quizExpired": "Expired",
+  "lab.readyToPlay": "Ready to play",
+  "lab.play": "Enter lab",
+  "lab.playHint": "Open the Arcade Lab here in the room. Your progress is saved when you finish.",
+  "lab.playHintFacilitator": "Preview the lab in-room. Completing it here is not recorded for participants.",
+  "lab.retry": "Try again",
+  "lab.timeout": "The lab did not respond in time. Check the connection, then try again.",
+  "lab.loadFailed": "The lab could not be loaded.",
+  "lab.emptyFacilitator": "No Arcade Lab is open for this day. Choose a lesson in the teach bar, then turn Open on so learners can play.",
+  "lab.emptyLearner": "No lab is open for this day yet. Wait for the facilitator, or continue with the lesson.",
+  "fac.lab": "Arcade Lab",
+  "fac.labNone": "No lab assigned",
+  "fac.labOpen": "Open for learners",
+  "fac.labOpenHint": "Open · {title}",
+  "fac.labClosedHint": "Assigned (closed) · {title}",
+  "fac.labCatalogFailed": "Lab catalog unavailable: {message}"
 }

@@ -19,7 +19,18 @@ labs: [
 | `title` | Shown above the frame and used as the iframe `title` for screen readers. |
 | `config` | Optional flat object of strings, numbers and booleans, passed to the lab in `init`. |
 
-No production pack declares labs yet. Which day hosts which Arcade lesson is a content decision that is still open.
+Production packs may still declare no labs. Facilitators can assign any Arcade lesson from the teach-bar catalog for the current room day (open/close). Pack `labs` remain supported and take precedence on id collision.
+
+
+## Teacher config chrome (room assign)
+
+Facilitators assign an Arcade lesson from the catalog in the teach bar — label + open/close — without pasting a URL.
+
+1. Teach bar → **Arcade Lab** select (catalog from `GET /game/lab-catalog`).
+2. **Open for learners** toggles whether the assignment appears in `/game/day-pack` for that room day.
+3. Control action: `POST /game/control` with `{action:'lab', value:{lessonId, open?, day?, title?}}`. `lessonId: null` clears the day.
+4. Room field `labByDay[day] = {id, title, open}` (same JSON room blob as classroom overlay; no schema migration).
+5. Open room labs merge after pack `labs` in `resolveLabs` (pack wins on id collision). Closed or unknown ids never reach learners.
 
 ## Origin allowlist
 
@@ -54,6 +65,14 @@ The host's handshake works like this:
 4. The host drops a `complete` or `answer` whose `labId` is not the lab it embedded, and an `answer` for a stop outside `gradedStops`.
 
 On the lab side, Arcade Lab accepts `init` only from its own origin. `apps/arcade-lab/src/embed-bridge.ts` counts each finished checkpoint as one step, and reaching the end with every checkpoint finished as the last step. Seeking past a checkpoint does not count it.
+
+
+## Student play surface and empty / error
+
+- Learners see **Enter lab** before the iframe mounts (`LabEmbed` play gate). Facilitator preview uses the same control.
+- After play, the host waits for lab `ready` (and also answers iframe `load` with `init`). If neither arrives within ~12s, the host shows a timeout with **Try again**.
+- Lab-reported `error`, answer/save failures, and load failures show human copy plus retry.
+- When no lab is open for the day: facilitators see assign-hint empty copy; learners see wait copy when an assignment exists but is closed.
 
 ## Recording completion
 
