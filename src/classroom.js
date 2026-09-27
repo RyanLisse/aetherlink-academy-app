@@ -1,26 +1,28 @@
-/** Wave daily deck — Google Slides embed (LIS-54 v1). Free browse; day is chrome hint only. */
-export const CLASSROOM_DECK_ID = '1DZ9-9XynhHBj62e-_r9wAy3MQHOni85VCGnW6kgh8bI';
+/**
+ * Facilitator Classroom overlay — same-origin Academy deck (AET-105 Slice A).
+ * room.day → /classroom/{n} or /workshop/{n} (aligned with apps/web REFERENCE_DAYS).
+ * Former Google Slides embed removed; Cons/Jessy packs stay content SoT via those routes.
+ */
 
-export const SLIDES_EMBED_URL =
-  `https://docs.google.com/presentation/d/${CLASSROOM_DECK_ID}/embed?start=false&loop=false&delayms=60000`;
+/** Day → Academy SPA path used by Open Classroom. Unknown/missing → Classroom 1. */
+export function classroomPathForDay(day) {
+  const n = Number(day);
+  if (n === 1) return '/classroom/1';
+  if (n === 2) return '/classroom/2';
+  if (Number.isInteger(n) && n >= 3 && n <= 7) return `/workshop/${n}`;
+  return '/classroom/1';
+}
 
+/** iframe src for the overlay — same-origin path (no Google). */
 export function classroomEmbedUrl(day) {
-  const url = new URL(SLIDES_EMBED_URL);
-  // day is chrome-only; keep URL free-browse (no slide lock)
-  if (day != null) url.searchParams.set('rm', 'minimal');
-  return url.toString();
+  return classroomPathForDay(day);
 }
 
 /**
- * Sandbox tokens for the embed. The deck is cross-origin (docs.google.com),
- * so allow-same-origin only hands Google back its own origin — it grants the
- * frame nothing over this page, and the usual allow-scripts+allow-same-origin
- * escape only applies to a same-origin frame, which could rewrite this very
- * attribute. Scripts + same-origin are what the Slides viewer needs to render;
- * popups (and escaping the sandbox) keep links inside a slide clickable;
- * presentation covers the Presentation API behind the fullscreen teach flow.
- * Deliberately withheld: top-navigation (a deck must never navigate the
- * facilitator out of the room), forms, downloads, modals, pointer-lock.
+ * Sandbox for the Academy deck iframe (first-party /classroom|/workshop SPA).
+ * Scripts + same-origin: our own deck needs both to render.
+ * Deliberately withheld: top-navigation (must never bounce the facilitator out
+ * of the room), forms, downloads, modals, pointer-lock.
  */
 export const CLASSROOM_SANDBOX =
   'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation';
