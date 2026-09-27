@@ -18,6 +18,10 @@ test('one-click setup binds the agent to its participant and squad, never facili
  const mission=await call(app,'/game/mcp/:tool',access,{tool:'get_mission'});
  assert.equal(mission.body.session.participantId,setup.body.participantId);assert.equal(mission.body.session.roomId,setup.body.roomId);
  assert.match(setup.body.instructions,/--scope local/);assert.ok(!setup.body.instructions.includes(alice.token));
+ assert.match(setup.body.instructions,/create_deck/);
+ assert.match(setup.body.instructions,/Classroom-overlay|Classroom overlay/);
+ assert.match(setup.body.instructions,/geen CLASSROOM_DECK_ID|no CLASSROOM_DECK_ID/);
+ assert.doesNotMatch(setup.body.instructions,/docs\.google\.com\/presentation/);
  assert.ok(setup.body.expiresAt>Date.now());
  const other=await call(app,'/game/agent-setup',bob.token);assert.notEqual(other.body.participantId,setup.body.participantId);
  assert.equal(store.auth(access,'mcp').p.name,'Alice');

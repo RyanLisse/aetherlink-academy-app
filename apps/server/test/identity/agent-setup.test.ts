@@ -23,6 +23,10 @@ describe('agent setup + MCP revoke', () => {
       expect(text).toContain(auth.p!.id);
       expect(text).not.toContain(alice.token);
       expect(text).toContain(mcpToken);
+      expect(text).toMatch(/create_deck/);
+      expect(text).toMatch(/Classroom overlay/);
+      expect(text).toMatch(/CLASSROOM_DECK_ID as the teaching path/);
+      expect(text).not.toMatch(/docs\.google\.com\/presentation/);
     }));
   });
 

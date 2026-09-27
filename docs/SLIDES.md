@@ -82,3 +82,15 @@ migration `4`, previous `3` accepted for upgrade). Local mode
 node --test tests/slides-edits.test.ts tests/slides-actions.test.ts tests/slides-routes.test.mjs
 DATABASE_URL=… node --test tests/slides-postgres.test.ts
 ```
+
+
+## Wave-1 teaching path (facilitators + agents)
+
+Lesson authoring SoT is **Effect Slide decks** (UI + MCP, `server/slides`) — not Google Classroom overlay, and not a BuilderIO `templates/slides` runtime re-import.
+
+1. **Author** the lesson in Slide decks (`/game/decks…`) and/or MCP slide tools (`list_decks`, `get_deck`, `create_deck`, `add_slide`, `update_slide`, `patch_deck`, `export_deck_html`).
+2. **Pin** that deck as Classroom overlay for the room day (facilitator UI: "Pin as Classroom" / `PUT /game/classroom-overlay` with `{ deckId, day? }`). Already on main (AET-105 Slice B).
+3. **Open Classroom** ("Open Classroom mode" / "Classroom-modus openen") teaches the Effect present view: `GET /game/decks/:id/present` (same HTML as `export.html`, inline, session cookie).
+4. **Unpin** (`DELETE /game/classroom-overlay`) → falls back to same-origin `/classroom/{n}` (days 1–2) or `/workshop/{n}` (days 3–7) — Jessy/Cons and workshop packs.
+5. **Google overlay deprecated** as teaching SoT. Do not document a Google iframe or `CLASSROOM_DECK_ID` as the Wave-1 path. Facilitator Google SSO login is unrelated and stays documented elsewhere.
+6. **Cons** remains content SoT for static `/classroom/{n}` until a day is re-authored in-app and PRODUCT-ACCEPT’d. Pins do **not** promote to static `/classroom` routes.
