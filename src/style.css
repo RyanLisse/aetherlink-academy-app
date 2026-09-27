@@ -184,3 +184,18 @@
 @media(prefers-reduced-motion:reduce){.status-loading .status-icon{animation:none}}
 @media(max-width:560px){.right-rail{grid-template-columns:1fr}.right-rail .coach-cta{width:100%}.room-code .room-code-display{font-size:16px;letter-spacing:.06em;padding:10px 36px}}
 .email-access small{display:flex;align-items:center;gap:5px}.email-access input{width:100%;margin:6px 0 8px}.email-access p{overflow-wrap:anywhere}.email-access .email-actions{display:flex;flex-wrap:wrap;gap:6px}.email-access .email-actions button{flex:1 1 110px;width:auto}.email-access .text-button{width:auto;margin-top:6px}.email-access .error{margin:8px 0 0;font-size:12px}.email-sent{font-size:13px;line-height:1.45}
+
+/* AET-115 teach-path nav density */
+.sidebar-nav{display:flex;flex-direction:column;gap:14px}
+.nav-primary{display:flex;flex-direction:column;gap:7px}
+.nav-tools{display:flex;flex-direction:column;gap:4px;padding-top:12px;border-top:1px solid var(--border);opacity:.92}
+.nav-tools-label{display:flex;align-items:center;gap:6px;margin:0 0 4px;padding:0 10px;font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.nav-tools button{font-size:11px;padding:8px 10px;color:var(--muted);font-weight:450}
+.nav-tools button.selected{font-weight:550}
+.nav-primary button{font-size:12px}
+@media(max-width:800px){
+  .sidebar-nav{flex-direction:row;align-items:stretch;gap:8px;overflow:auto}
+  .nav-primary,.nav-tools{flex-direction:row;gap:5px;padding-top:0;border-top:0;opacity:1}
+  .nav-tools{border-left:1px solid var(--border);padding-left:8px}
+  .nav-tools-label{display:none}
+}
