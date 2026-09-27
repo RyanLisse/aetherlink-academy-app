@@ -90,7 +90,7 @@ function App(){
     <main>
       <div className="room-heading"><div><p className="muted">{t('room.supportDay',{day:coursePosition(room)})} · {dayLabel}</p><h1>{room.name}</h1></div><div className="round"><span>{t('room.round',{round:room.round})} · {roundStatus}</span><strong><Clock size={22}/><Timer room={room}/></strong></div></div>
       <div className="sdlc" aria-label={t('room.sdlc')}>{phases.map((p,i)=><React.Fragment key={p}><div className={p===room.phase?'active':''}><span>{p}</span></div>{i<5&&<span className="phase-line"/>}</React.Fragment>)}</div>
-      {!connected&&<StatusState kind="offline" title={t('status.offline')}>{t('status.offlineHelp')}</StatusState>}
+      {!connected&&<StatusState kind="offline" title={t('status.offline')} action={<button type="button" onClick={()=>location.reload()}>{t('status.reload')}</button>}>{t('status.offlineHelp')}</StatusState>}
       {room.readOnly&&<StatusState kind="readonly" title={t('readOnly.title')} action={<button type="button" onClick={()=>action(async()=>{const doc=await api('document');const link=document.createElement('a');link.href=URL.createObjectURL(new Blob([doc.markdown||''],{type:'text/markdown'}));link.download=`${room.name}.md`;link.click();URL.revokeObjectURL(link.href);})}><FileText size={15} aria-hidden="true"/>{t('readOnly.export')}</button>}>{t('readOnly.help')}</StatusState>}
       {error&&<div className="error" role="alert">{error}<button onClick={()=>setError('')} aria-label={t('common.closeAlert')}>×</button></div>}
       {facilitator&&<FacilitatorControls room={room} control={control} busy={busy} connected={connected} onOpenClassroom={()=>setClassroomOpen(true)}/>}
@@ -100,7 +100,7 @@ function App(){
         <aside className="right-rail">
           <section className="panel roster">
             <div className="panel-heading"><h2>{t('roster.title')} <span>({room.members.length}/{t('roster.softMax')})</span></h2><Users size={17}/></div>
-            {room.members.length===0&&<p className="muted">{t('roster.empty')}</p>}
+            {room.members.length===0&&<StatusState kind="empty" title={t('roster.empty')} action={room.code?<button type="button" onClick={()=>action(async()=>{await navigator.clipboard.writeText(room.code);showCopied('code');})}>{copied==='code'?t('roster.codeCopied'):t('roster.copyCodeShort')}</button>:null}>{t('roster.emptyHelp')}</StatusState>}
             {room.members.map(m=><div className="member" key={m.id}><span className="avatar">{m.name.slice(0,2).toUpperCase()}</span><div><strong>{m.name}{m.id===room.me.id?` ${t('common.you')}`:''}</strong><small className={m.role==='Driver'?'cyan':''}>{m.role}</small></div><span className={'presence '+(m.online?'present':'')} title={m.online?t('roster.online'):t('roster.offline')}/>{m.help&&<HelpCircle size={17} className="cyan" aria-label={t('roster.helpAsked')}/>}</div>)}
             {room.code&&<div className="room-code"><small>{t('roster.roomCode')}</small><div className="room-code-actions"><button className="room-code-display" type="button" onClick={()=>action(async()=>{await navigator.clipboard.writeText(room.code);showCopied('code');})} aria-label={t('roster.copyCode',{code:room.code})} title={t('roster.copyCodeTitle')}>{room.code}{copied==='code'?<Check size={14}/>:<Copy size={14}/>}</button><button className="room-code-link" type="button" onClick={()=>action(async()=>{await navigator.clipboard.writeText(`${location.origin}/?code=${room.code}`);showCopied('link');})} title={t('roster.copyLink')}>{copied==='link'?t('roster.linkCopied'):t('roster.copyLink')}</button>{room.me.role==='Facilitator'&&<button className="room-code-link" type="button" onClick={()=>window.open(`${location.origin}/?code=${room.code}`,'_blank','noopener')} title={t('roster.testAsParticipantTitle')}><ExternalLink size={14}/>{t('roster.testAsParticipant')}</button>}</div><span className="sr-only" role="status">{copied==='code'?t('roster.codeCopied'):copied==='link'?t('roster.inviteCopied'):''}</span></div>}
             {!facilitator&&room.me.cohortMemberId&&<div className="participant-access"><small>{t('access.title')}</small><p>{t('access.cohort')}</p></div>}
@@ -351,27 +351,31 @@ function FacilitatorControls({room,control:send,busy,connected,onOpenClassroom})
   const commit=(draft,name,current)=>{const minutes=Number(draft);if(Number.isFinite(minutes)&&minutes*60!==current)control(name,minutes*60);};
   const enter=e=>{if(e.key==='Enter'){e.preventDefault();e.currentTarget.blur();}};
   const disabled=!connected;
+  const dayOptions=room.course?.days.map(entry=>entry.day)??Array.from({length:7},(_,i)=>i+1);
   return <div className="facilitator-controls" role="region" aria-label={t('fac.toolbar')}>
-    <div className="facilitator-controls-row facilitator-controls-time">
-      <strong id="facilitator-label">{t('fac.label')}</strong>
+    <div className="facilitator-controls-row facilitator-teach" role="group" aria-label={t('fac.teach')}>
+      <div className="fac-day-chip">
+        <span className="fac-day-label" aria-live="polite">{t('classroom.dayHint',{day:room.day})}</span>
+        <label className="fac-day-select">{t('fac.day')}<select value={room.day} disabled={disabled} onChange={e=>control('day',Number(e.target.value))} aria-label={t('fac.day')}>{dayOptions.map((day,i)=><option key={day} value={day}>{i+1}</option>)}</select></label>
+      </div>
+      <button type="button" className="classroom-open gradient" onClick={onOpenClassroom} aria-label={t('classroom.open')}><Presentation size={18} aria-hidden="true"/>{t('classroom.open')}</button>
+    </div>
+    <div className="facilitator-controls-row facilitator-dials" role="group" aria-label={t('fac.session')}>
+      <strong className="fac-dials-label">{t('fac.session')}</strong>
       <div className="fac-group" role="group" aria-label={t('fac.round')}>
         <button type="button" disabled={disabled} onClick={()=>control(room.running?'pause':'start')} aria-pressed={room.running}>{room.running?<Pause size={16} aria-hidden="true"/>:<Play size={16} aria-hidden="true"/>}{room.running?t('fac.pause'):t('fac.startTimer')}</button>
         <button type="button" disabled={disabled} onClick={()=>control('next')}><RotateCw size={16} aria-hidden="true"/>{t('fac.nextRound')}</button>
         <button type="button" disabled={disabled||!room.members.length} onClick={()=>control('shuffle')}><Shuffle size={16} aria-hidden="true"/>{t('fac.shuffleRoles')}</button>
       </div>
-      <div className="fac-group">
+      <div className="fac-group" role="group" aria-label={t('fac.timeMin')}>
         <label>{t('fac.timeMin')}<input type="number" min={0} max={120} value={time} onChange={e=>setTime(e.target.value)} onBlur={()=>commit(time,'time',Math.ceil(room.remaining/60)*60)} onKeyDown={enter}/></label>
         <button type="button" disabled={disabled} onClick={()=>control('time',Math.max(0,room.remaining+300))} title={t('fac.plus5')}>+5 min</button>
         <button type="button" disabled={disabled} onClick={()=>control('time',Math.max(0,room.remaining-300))} title={t('fac.minus5')}>−5 min</button>
       </div>
-    </div>
-    <div className="facilitator-controls-row facilitator-controls-context" role="group" aria-label={t('fac.context')}>
       <label>{t('fac.roundMin')}<input type="number" min={1} max={120} value={duration} onChange={e=>setDuration(e.target.value)} onBlur={()=>commit(duration,'duration',room.roundSeconds||1500)} onKeyDown={enter}/></label>
-      <label>{t('fac.phase')}<select value={room.phase} onChange={e=>control('phase',e.target.value)}>{phases.map(p=><option key={p}>{p}</option>)}</select></label>
-      <label>{t('fac.day')}<select value={room.day} onChange={e=>control('day',Number(e.target.value))}>{(room.course?.days.map(entry=>entry.day)??Array.from({length:7},(_,i)=>i+1)).map((day,i)=><option key={day} value={day}>{i+1}</option>)}</select></label>
-      <label>{t('fac.format')}<select value={room.mode} onChange={e=>control('mode',e.target.value)}><option value="lesson">{t('fac.format.lesson')}</option><option value="solo">{t('fac.format.solo')}</option><option value="squad">{t('fac.format.squad')}</option><option value="review">{t('fac.format.review')}</option></select></label>
+      <label>{t('fac.phase')}<select value={room.phase} disabled={disabled} onChange={e=>control('phase',e.target.value)}>{phases.map(p=><option key={p}>{p}</option>)}</select></label>
+      <label>{t('fac.format')}<select value={room.mode} disabled={disabled} onChange={e=>control('mode',e.target.value)}><option value="lesson">{t('fac.format.lesson')}</option><option value="solo">{t('fac.format.solo')}</option><option value="squad">{t('fac.format.squad')}</option><option value="review">{t('fac.format.review')}</option></select></label>
       <label className="facilitator-toggle"><input type="checkbox" checked={room.chat} disabled={disabled} onChange={e=>control('chat',e.target.checked)}/>{t('fac.chat')}</label>
-      <button type="button" className="classroom-open" onClick={onOpenClassroom} aria-label={t('classroom.open')}><Presentation size={16} aria-hidden="true"/>{t('classroom.title')}</button>
     </div>
   </div>;
 }
@@ -476,15 +480,18 @@ function Document({room,theme}){
   const t=useT();
   const frame=useRef(null);
   const [state,setState]=useState(()=>t('doc.loading'));
-  useEffect(()=>{setState(t('doc.loading'));},[t]);
+  const [proofKind,setProofKind]=useState('loading');
+  useEffect(()=>{setState(t('doc.loading'));setProofKind('loading');},[t]);
   useEffect(()=>{localStorage.setItem('proof-share-viewer-name',room.me.name);},[room.me.name]);
   useEffect(()=>{
     const syncMap={Saved:t('doc.saved'),Saving:t('doc.saving'),Connecting:t('doc.connecting'),Offline:t('doc.offline'),Syncing:t('doc.syncing')};
     const update=()=>{try{const win=frame.current?.contentWindow;const d=win?.document;if(!d?.body)return;d.documentElement.dataset.academyTheme=theme;let style=d.getElementById('academy-style');if(!style){style=d.createElement('style');style.id='academy-style';d.head.appendChild(style);}style.textContent=`:root{--font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;--font-size:16px;--line-height:1.7;--bg-color:${theme==='dark'?'#0c1928':'#ffffff'};--text-color:${theme==='dark'?'#e3ecfa':'#14243a'};--code-bg:${theme==='dark'?'#172b43':'#eff4fa'};--blockquote-color:${theme==='dark'?'#b7c7df':'#42536a'}}body{background:var(--bg-color)!important;color:var(--text-color)!important} .milkdown,.ProseMirror{color:var(--text-color)!important;font-family:var(--font-family)!important} #editor{padding:24px 36px!important} .ProseMirror h1{font-size:26px!important}.ProseMirror h2{font-size:18px!important;margin-top:26px!important} #share-banner{display:none!important;position:sticky!important;top:0!important;left:0!important;transform:none!important;width:100%!important;margin:0!important;border-radius:0!important;background:var(--bg-color)!important;color:var(--text-color)!important;box-shadow:none!important;padding:8px 16px!important} #share-banner .share-pill-agent-btn,#share-banner .share-pill-share-btn,#share-banner .share-pill-title,#share-banner .share-pill-sep,#share-banner>a{display:none!important} #share-banner button[aria-label="Share options"]{display:none!important} #share-banner *{color:var(--text-color)!important} #share-banner .share-pill-status-inline{display:flex!important} #editor{padding-top:20px!important}`;
-      const editable=d.querySelector('[contenteditable="true"]');const sync=d.querySelector('.share-pill-status-inline .status-label')?.textContent?.trim();if(sync)setState(syncMap[sync]||('Proof · '+sync));else if(editable)setState(t('doc.opened'));else if(d.body.innerText.includes('error')||d.body.innerText.includes('Not found'))setState(t('doc.loadFail'));}catch{setState(t('doc.statusUnavailable'));}};
+      const editable=d.querySelector('[contenteditable="true"]');const sync=d.querySelector('.share-pill-status-inline .status-label')?.textContent?.trim();if(sync){setState(syncMap[sync]||('Proof · '+sync));setProofKind(sync==='Offline'?'offline':'ok');}else if(editable){setState(t('doc.opened'));setProofKind('ok');}else if(d.body.innerText.includes('error')||d.body.innerText.includes('Not found')){setState(t('doc.loadFail'));setProofKind('fail');}}catch{setState(t('doc.statusUnavailable'));setProofKind('unavailable');}};
     update();const timer=setInterval(update,1500);return()=>clearInterval(timer);
   },[theme,t]);
-  return <section className="panel document"><div className="document-heading"><div><h2>{t('doc.title')}</h2><p>{t('doc.subtitle')}</p></div><span><FileText size={15}/>{t('doc.badge')}</span></div><div className="document-status"><i/>{state}</div><iframe ref={frame} key={room.documentSlug} src={'/d/'+room.documentSlug} title={t('doc.badge')}/><div className="document-foot"><span>{t('doc.footDriver')}</span><small>{t('doc.footAll')}</small></div></section>;
+  const proofBad=proofKind==='offline'||proofKind==='fail'||proofKind==='unavailable';
+  const retryProof=()=>{const el=frame.current;if(!el)return;setProofKind('loading');setState(t('doc.loading'));el.src=el.src;};
+  return <section className="panel document"><div className="document-heading"><div><h2>{t('doc.title')}</h2><p>{t('doc.subtitle')}</p></div><span><FileText size={15}/>{t('doc.badge')}</span></div><div className="document-status"><i/>{state}</div>{proofBad&&<StatusState kind="offline" title={state} action={<button type="button" onClick={retryProof}>{t('status.retry')}</button>}>{t('doc.offlineHelp')}</StatusState>}<iframe ref={frame} key={room.documentSlug} src={'/d/'+room.documentSlug} title={t('doc.badge')}/><div className="document-foot"><span>{t('doc.footDriver')}</span><small>{t('doc.footAll')}</small></div></section>;
 }
 
 function Board({room,action,busy,onBoard}){
