@@ -123,6 +123,31 @@ Als "Inloggen met Google" op het aanmeldscherm staat, meld je aan met je Google 
 11. Beschrijf geen volledige n8n- of transfermissies als bestaande functionaliteit.
     Nog niet beschikbaar in deze versie.
 
+## Lessen maken en als Classroom tonen (Slide decks)
+
+Wave-1 les-authoring loopt via Effect Slide decks en MCP — niet via Google Classroom-overlay.
+Facilitator Google-SSO-login hierboven blijft ongewijzigd; die is geen teaching-pad.
+
+1. Maak of bewerk lessen in "Slide decks".
+   Open in de sidebar "Slide decks" (`/game/decks…`).
+   Maak een nieuw deck, bewerk slides in de UI, of laat Claude Code hetzelfde doen via de MCP-tools `list_decks`, `get_deck`, `create_deck`, `add_slide`, `update_slide`, `patch_deck` en `export_deck_html` (zie [SLIDES.md](SLIDES.md) en de privé-instructie uit "Agent-setup").
+2. Pin het deck als Classroom-overlay voor de kamerdag.
+   Open het deck en kies als facilitator "Pin als Classroom" (volledige knop: "Pin dit deck als Classroom-overlay voor dag {day}").
+   De applicatie toont: "Gepind als Classroom-overlay voor dag {day}. Open Classroom toont dit Effect-deck in plaats van het statische /classroom- of /workshop-pakket.".
+3. Open Classroom om te lesgeven.
+   Klik op "Classroom-modus openen".
+   Met een pin toont de overlay de Effect present-view van dat deck (`/game/decks/:id/present`), niet het statische Jessy/Cons- of workshop-pakket.
+4. Maak de pin los wanneer je terug wilt naar het statische dagpakket.
+   Kies "Classroom losmaken" ("Classroom-overlay voor deze dag losmaken").
+   Zonder pin valt "Classroom-modus openen" terug op same-origin `/classroom/{n}` (dag 1–2) of `/workshop/{n}` (dag 3–7) — de Jessy/Cons- en workshop-packs.
+5. Behandel de Google Classroom-overlay als deprecated.
+   Documenteer of gebruik geen Google iframe en geen `CLASSROOM_DECK_ID` als teaching-pad.
+   Effect decks in de UI + MCP (`server/slides`) zijn de les-authoring source of truth.
+   Importeer BuilderIO `templates/slides` niet opnieuw als runtime.
+6. Laat Cons de content-SoT voor statische `/classroom/{n}` tot een dag in-app is hergeschreven.
+   Pins promoten niet naar statische `/classroom`-routes.
+   Een dag blijft Cons/Jessy tot die dag opnieuw is geautoriseerd in Effect decks én PRODUCT-ACCEPT die inhoud vrijgeeft.
+
 ## Problemen oplossen
 
 1. Controleer de naam als een deelnemer niet kan aanmelden.
