@@ -444,6 +444,8 @@
   "classroom.open": "Classroom-modus openen",
   "classroom.exit": "Classroom sluiten",
   "classroom.exitShort": "Sluiten",
+  "classroom.enterFullscreen": "Volledig scherm",
+  "classroom.exitFullscreen": "Volledig scherm verlaten",
   "classroom.dayHint": "Dag {day}",
   "classroom.frameTitle": "Classroom-slides",
   "path.label": "Pad",

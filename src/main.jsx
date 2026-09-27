@@ -127,6 +127,13 @@ function ClassroomOverlay({room,onClose}){
   // inline closers; unstable deps were exiting+requesting fullscreen every ~2s).
   const onCloseRef=useRef(onClose);
   onCloseRef.current=onClose;
+  const [isFullscreen,setIsFullscreen]=useState(()=>typeof document!=='undefined'&&!!document.fullscreenElement);
+  useEffect(()=>{
+    const sync=()=>setIsFullscreen(!!document.fullscreenElement);
+    sync();
+    document.addEventListener('fullscreenchange',sync);
+    return()=>document.removeEventListener('fullscreenchange',sync);
+  },[]);
   useEffect(()=>{
     const prevOverflow=document.body.style.overflow;
     const returnFocusTo=document.activeElement;
@@ -190,6 +197,16 @@ function ClassroomOverlay({room,onClose}){
     };
   },[]);
   const exit=()=>{try{if(document.fullscreenElement)document.exitFullscreen?.();}catch{}onCloseRef.current();};
+  const toggleFullscreen=(event)=>{
+    try{
+      if(document.fullscreenElement)document.exitFullscreen?.();
+      else document.documentElement.requestFullscreen?.();
+    }catch{}
+    // AET-107: drop focus ring from ⛶ so Space/arrows go to slides cleanly.
+    event.currentTarget.blur();
+    frameRef.current?.focus?.();
+  };
+  const fullscreenLabel=isFullscreen?t('classroom.exitFullscreen'):t('classroom.enterFullscreen');
   return <div ref={shellRef} className="classroom-overlay" role="dialog" aria-modal="true" aria-label={t('classroom.title')} data-testid="classroom-overlay">
     <div className="classroom-chrome">
       <div className="classroom-chrome-left">
@@ -199,7 +216,10 @@ function ClassroomOverlay({room,onClose}){
         {pinnedDeckIdForRoom(room)?<span className="classroom-pin-hint cyan">{t('classroom.pinnedHint')}</span>:null}
         <span className="muted classroom-room-hint">{room.name}</span>
       </div>
-      <button type="button" className="classroom-exit" onClick={exit} aria-label={t('classroom.exit')}><X size={16}/>{t('classroom.exitShort')}</button>
+      <div className="classroom-chrome-actions">
+        <button type="button" className="classroom-fullscreen" onClick={toggleFullscreen} aria-label={fullscreenLabel} title={fullscreenLabel} data-testid="classroom-overlay-fullscreen">⛶</button>
+        <button type="button" className="classroom-exit" onClick={exit} aria-label={t('classroom.exit')}><X size={16}/>{t('classroom.exitShort')}</button>
+      </div>
     </div>
     <iframe ref={frameRef} className="classroom-frame" src={classroomEmbedUrl(room.day,pinnedDeckIdForRoom(room))} title={t('classroom.frameTitle')} sandbox={CLASSROOM_SANDBOX} allow="fullscreen" allowFullScreen/>
   </div>;
