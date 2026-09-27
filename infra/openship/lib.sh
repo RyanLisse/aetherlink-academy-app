@@ -14,6 +14,31 @@ TARGET_APP="${TARGET_APP_CONTAINER:-openship-$OPENSHIP_SLUG-app}"
 TARGET_PG="${TARGET_PG_CONTAINER:-openship-$OPENSHIP_SLUG-postgres}"
 TARGET_REDIS="${TARGET_REDIS_CONTAINER:-openship-$OPENSHIP_SLUG-redis}"
 STAGING_URL="${STAGING_URL:-http://127.0.0.1:4327}"
+
+# Health-check base. lib.sh defaults STAGING_URL to the pre-cutover staging port
+# :4327. After cutover (state.env phase=cutover) or when domain.env is set, the
+# app is on loopback :4317. cutover/domain already wrap with STAGING_URL=…:4317;
+# bare `deploy` must rewrite the default too so it does not probe :4327 and exit 1.
+# An explicit non-default STAGING_URL from the caller is left alone.
+# Usage: pass STATE and DOMAIN_FILE paths (step.sh / verify.sh set them).
+staging_health_url() {
+  local state="${1:-${STATE:-}}"
+  local domain_file="${2:-${DOMAIN_FILE:-}}"
+  if [[ "${STAGING_URL}" != "http://127.0.0.1:4327" ]]; then
+    echo "$STAGING_URL"
+    return
+  fi
+  if [[ -n "$state" && -f "$state" && "$(marker_value "$state" phase)" == cutover ]]; then
+    echo "http://127.0.0.1:4317"
+    return
+  fi
+  if [[ -n "$domain_file" && -f "$domain_file" && -n "$(marker_value "$domain_file" domain)" ]]; then
+    echo "http://127.0.0.1:4317"
+    return
+  fi
+  echo "$STAGING_URL"
+}
+
 # Env names owned by compose / step.sh upserts — never copied from legacy .env.
 # DATABASE_URL / REDIS_URL / SOURCE_REVISION are fully resolved secrets upserted by step.sh
 # into project env only (compose must omit them on the app service — a literal

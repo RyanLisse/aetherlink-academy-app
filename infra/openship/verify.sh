@@ -13,8 +13,9 @@ MIGRATED="$BACKUP_DIR/migrate-done.env"
 MARKER="$BACKUP_DIR/verify-passed.env"
 [[ -f "$MIGRATED" ]] || die "no $MIGRATED; run migrate-data first"
 [[ -f "$STATE" ]] || die "no $STATE; run deploy first"
-base="$STAGING_URL"
-if [[ "$(marker_value "$STATE" phase)" == cutover ]]; then base=http://127.0.0.1:4317; fi
+# DOMAIN_FILE may be unset in older callers; staging_health_url tolerates that.
+DOMAIN_FILE="${DOMAIN_FILE:-$KIT_HOME/domain.env}"
+base="$(staging_health_url "$STATE" "$DOMAIN_FILE")"
 sha="$(marker_value "$STATE" deployed_sha)"
 rm -f "$MARKER"
 failures=0

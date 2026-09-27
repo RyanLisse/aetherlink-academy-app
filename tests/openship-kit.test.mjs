@@ -1048,3 +1048,73 @@ if [[ -n "$domain" ]]; then env_exclude="\${env_exclude}|ACADEMY_PUBLIC_URL"; fi
     assert.doesNotMatch(lib, /COMPOSE_OWNED_ENV='[^']*ACADEMY_PUBLIC_URL/);
   });
 });
+
+describe('post-cutover bare deploy health URL', () => {
+  const lib = readFileSync(path.join(root, 'infra/openship/lib.sh'), 'utf8');
+  const step = readFileSync(path.join(root, 'infra/openship/step.sh'), 'utf8');
+  const verify = readFileSync(path.join(root, 'infra/openship/verify.sh'), 'utf8');
+
+  const resolve = ({phase, domain, stagingUrl} = {}) => {
+    const dir = mkdtempSync(path.join(scratch, 'health-url-'));
+    if (phase) writeFileSync(path.join(dir, 'state.env'), `phase=${phase}\nproject_id=proj_x\ndeployed_sha=abc\n`);
+    if (domain) writeFileSync(path.join(dir, 'domain.env'), `domain=${domain}\n`);
+    const stateArg = phase ? path.join(dir, 'state.env') : '';
+    const domainArg = domain ? path.join(dir, 'domain.env') : path.join(dir, 'missing-domain.env');
+    const env = {...process.env};
+    if (stagingUrl !== undefined) env.STAGING_URL = stagingUrl;
+    // Unset so lib.sh default applies when stagingUrl is omitted.
+    if (stagingUrl === undefined) delete env.STAGING_URL;
+    const script = `
+set -Eeuo pipefail
+source "${root}/infra/openship/lib.sh"
+staging_health_url ${JSON.stringify(stateArg)} ${JSON.stringify(domainArg)}
+`;
+    const result = spawnSync('bash', ['-c', script], {encoding: 'utf8', env});
+    assert.equal(result.status, 0, result.stderr + result.stdout);
+    return result.stdout.trim();
+  };
+
+  test('lib.sh defines staging_health_url next to the STAGING_URL default', () => {
+    assert.match(lib, /STAGING_URL="\$\{STAGING_URL:-http:\/\/127\.0\.0\.1:4327\}"/);
+    assert.match(lib, /staging_health_url\(\)/);
+    assert.match(lib, /http:\/\/127\.0\.0\.1:4317/);
+  });
+
+  test('deploy() health-checks staging_health_url, not bare \$STAGING_URL', () => {
+    assert.match(step, /health_url="\$\(staging_health_url\)"/);
+    assert.match(step, /"\$health_url\/game\/health"/);
+    // Must not die on the raw default after cutover.
+    assert.doesNotMatch(step, /die "\$STAGING_URL\/game\/health is not ok/);
+    assert.match(step, /die "\$health_url\/game\/health is not ok/);
+  });
+
+  test('verify.sh uses staging_health_url (same post-cutover rewrite)', () => {
+    assert.match(verify, /base="\$\(staging_health_url/);
+    assert.doesNotMatch(verify, /base="\$STAGING_URL"\nif \[\[ "\$\(marker_value "\$STATE" phase\)" == cutover \]\]/);
+  });
+
+  test('pre-cutover (no state / no domain) keeps lib.sh :4327 default', () => {
+    assert.equal(resolve({}), 'http://127.0.0.1:4327');
+    assert.equal(resolve({phase: 'deployed'}), 'http://127.0.0.1:4327');
+  });
+
+  test('phase=cutover rewrites default :4327 → loopback :4317', () => {
+    assert.equal(resolve({phase: 'cutover'}), 'http://127.0.0.1:4317');
+  });
+
+  test('domain.env alone (no phase) also rewrites to :4317', () => {
+    assert.equal(resolve({domain: 'academy.91-99-78-17.sslip.io'}), 'http://127.0.0.1:4317');
+  });
+
+  test('explicit non-default STAGING_URL is respected even after cutover', () => {
+    assert.equal(
+      resolve({phase: 'cutover', stagingUrl: 'http://127.0.0.1:9999'}),
+      'http://127.0.0.1:9999',
+    );
+    // cutover/domain wrappers set this explicitly — helper must leave it alone.
+    assert.equal(
+      resolve({phase: 'cutover', stagingUrl: 'http://127.0.0.1:4317'}),
+      'http://127.0.0.1:4317',
+    );
+  });
+});
