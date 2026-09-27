@@ -185,7 +185,9 @@ ensure_project_id() {
 container_exists() { docker inspect --type container "$1" >/dev/null 2>&1; }
 container_running() { [[ "$(docker inspect --type container --format '{{.State.Running}}' "$1" 2>/dev/null)" == true ]]; }
 
-# Row counts for every table outside the system schemas, one "schema.table count" per line, sorted.
+# Row counts for every user table, one "schema.table count" per line, sorted.
+# Exclude catalog/toast/temp schemas and the helper temp table itself — otherwise
+# kit_counts appears under pg_temp_* and self-counts differ between source/target.
 row_counts() {
   local container="$1" db="$2"
   docker exec -i -e PGDATABASE="$db" "$container" sh -c 'psql -U "$POSTGRES_USER" -v ON_ERROR_STOP=1 -qAt -F " " -f -' <<'SQL' | sort
@@ -194,7 +196,10 @@ DO $$
 DECLARE r record; c bigint;
 BEGIN
   FOR r IN SELECT schemaname, tablename FROM pg_tables
-           WHERE schemaname NOT IN ('pg_catalog', 'information_schema') AND schemaname NOT LIKE 'pg_toast%'
+           WHERE schemaname NOT IN ('pg_catalog', 'information_schema')
+             AND schemaname NOT LIKE 'pg_toast%'
+             AND schemaname NOT LIKE 'pg_temp%'
+             AND tablename <> 'kit_counts'
   LOOP
     EXECUTE format('SELECT count(*) FROM %I.%I', r.schemaname, r.tablename) INTO c;
     INSERT INTO kit_counts VALUES (r.schemaname || '.' || r.tablename, c);
