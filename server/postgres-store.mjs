@@ -29,7 +29,7 @@ export class PostgresStore {
  }
  async init() {
   const sql=await readFile(new URL('./schema/academy.sql',import.meta.url),'utf8');
-  const migration=`11:${createHash('sha256').update(sql).digest('hex')}`,previousMigrations=['10:69d548aa2f4e29f3f498c1c3a7468eb8d6321b9971fa0abebe962358e94807fe','6:fbae0eba4b46d45c35d4d9705afa174d0d46cb651e940ac979d7c26c2ad59c2a','5:57e09fb6b675447a5d37dca65ae64d9910c99ff4c8a4214a9c04402d38284bd0','4:0b073193ff907df7232bf74f47211525b268a81df5c3dd9210879a07e5081a11','3:321f2a26590284cfb07e23cad1940e0d56c3589ac012f9c7cfaf03d7315be2a3','2:3fa9bb87a5cfb8efe24eddc2f7fa94ff0657c0d711f5f9e19e41c6f91b12f3d2','1:cfd75de0661902abf5fd6d4b2fe2984d7e9228cc111392e96686ed29d228b3e1'];
+  const migration=`12:${createHash('sha256').update(sql).digest('hex')}`,previousMigrations=['11:1c1970bcae8faa2ea8719ecb3b0caf851a2a8c2be2e61ed300cc0bda760300ae','10:69d548aa2f4e29f3f498c1c3a7468eb8d6321b9971fa0abebe962358e94807fe','6:fbae0eba4b46d45c35d4d9705afa174d0d46cb651e940ac979d7c26c2ad59c2a','5:57e09fb6b675447a5d37dca65ae64d9910c99ff4c8a4214a9c04402d38284bd0','4:0b073193ff907df7232bf74f47211525b268a81df5c3dd9210879a07e5081a11','3:321f2a26590284cfb07e23cad1940e0d56c3589ac012f9c7cfaf03d7315be2a3','2:3fa9bb87a5cfb8efe24eddc2f7fa94ff0657c0d711f5f9e19e41c6f91b12f3d2','1:cfd75de0661902abf5fd6d4b2fe2984d7e9228cc111392e96686ed29d228b3e1'];
   await this.transaction(async client=>{
    await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))',[`academy-schema:${this.schema}`]);
    const existing=await client.query('SELECT 1 FROM pg_catalog.pg_namespace WHERE nspname=$1',[this.schema]);

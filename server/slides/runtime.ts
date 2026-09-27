@@ -4,7 +4,8 @@
 import path from 'node:path';
 import {Cause,Context,Effect,Exit,Layer,ManagedRuntime} from 'effect';
 import type {Pool} from 'pg';
-import {type Actor,type DeckActions,type DeckActionName,makeDeckActions} from './actions.ts';
+import type {Actor} from '../shared/actor.ts';
+import {type DeckActions,type DeckActionName,makeDeckActions} from './actions.ts';
 import {httpStatus,type SlidesError} from './errors.ts';
 import {MemoryDeckRepository,PostgresDeckRepository} from './repository.ts';
 
