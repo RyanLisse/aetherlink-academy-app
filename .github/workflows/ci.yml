@@ -70,9 +70,38 @@ jobs:
         run: >-
           node --import ./vendor/proof-sdk/node_modules/tsx/dist/loader.mjs --test
           tests/room.test.mjs tests/debrief-board.test.mjs tests/board-doc.test.mjs tests/remote-mcp.test.mjs tests/screen-state-mcp.test.mjs tests/proof-stale-retry.test.mjs tests/suggestion-accept-persisted-retry.test.ts tests/runtime-config.test.mjs tests/browser-auth-boundary.test.mjs tests/headless-empty-document.test.ts tests/collab-marks-observer.test.ts tests/anchor-stability.test.ts
+          tests/storage-actions.test.ts tests/storage-routes.test.mjs
           tests/google-sso.test.mjs tests/facilitator-sso-routes.test.mjs tests/native-apps-providers.test.mjs tests/openship-kit.test.mjs
           tests/participant-access.test.mjs tests/participant-access-routes.test.mjs tests/participant-access-ui.test.mjs tests/chat-embed.test.mjs
           tests/agent-setup.test.mjs tests/web-public-assets.test.mjs tests/seven-day-content.test.mjs tests/n8n-triage-starters.test.mjs tests/day-packs-routes.test.mjs tests/lesson-route-day.test.mjs tests/solo-progress-day.test.mjs tests/learning-progress.test.mjs tests/migrate-v2.test.mjs tests/deployed-smoke.test.mjs tests/lab-embed-routes.test.mjs tests/day-pack-quiz.test.mjs tests/day3-progressive-n8n.test.mjs tests/proof-trail.test.mjs tests/lab-grading-routes.test.mjs tests/faq-chat.test.mjs tests/leercoach.test.mjs tests/naslag-release.test.mjs tests/cohort-access.test.mjs tests/cohort-routes.test.mjs tests/autograde.test.mjs tests/certificate.test.mjs tests/course-order.test.mjs tests/legacy-redirect.test.mjs tests/email-otp.test.mjs tests/join-errors.test.mjs tests/verify-scripts.test.mjs
+      - name: Run storage against MinIO
+        id: storage
+        env:
+          S3_BUCKET: academy-ci-storage
+          S3_ENDPOINT: http://127.0.0.1:59000
+          S3_ACCESS_KEY_ID: academy-ci
+          S3_SECRET_ACCESS_KEY: academy-ci-storage-password
+        run: |
+          docker run --detach --name academy-ci-minio -p 127.0.0.1:59000:9000 \
+            --env MINIO_ROOT_USER="$S3_ACCESS_KEY_ID" --env MINIO_ROOT_PASSWORD="$S3_SECRET_ACCESS_KEY" \
+            quay.io/minio/minio@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e server /data
+          for i in $(seq 1 30); do
+            if curl --fail --silent "$S3_ENDPOINT/minio/health/ready"; then
+              break
+            fi
+            if [[ "$i" == 30 ]]; then
+              echo 'MinIO did not become ready' >&2
+              exit 1
+            fi
+            sleep 1
+          done
+          node --input-type=module <<'JS'
+          import {AwsClient} from 'aws4fetch';
+          const client = new AwsClient({accessKeyId:process.env.S3_ACCESS_KEY_ID,secretAccessKey:process.env.S3_SECRET_ACCESS_KEY,service:'s3',region:'auto'});
+          const response = await client.fetch(`${process.env.S3_ENDPOINT}/${process.env.S3_BUCKET}`,{method:'PUT'});
+          if (!response.ok) throw new Error(`Bucket creation failed: ${response.status}`);
+          JS
+          node --import ./vendor/proof-sdk/node_modules/tsx/dist/loader.mjs --test tests/storage-s3.test.ts
       - name: Install Chromium for browser contract tests
         run: pnpm exec playwright install --with-deps chromium
       - name: Run Arcade Lab embed browser test
@@ -94,7 +123,7 @@ jobs:
           tests/postgres-store.test.mjs tests/participant-access.test.mjs tests/cohort-access.test.mjs tests/email-otp.test.mjs tests/certificate-postgres.test.mjs tests/facilitator-postgres.test.mjs tests/learning-postgres.test.mjs tests/presence.test.mjs tests/course-order.test.mjs
           tests/proof-postgres.test.mjs tests/proof-postgres-domain.test.mjs
           tests/canonical-postgres.test.ts tests/proof-snapshot.test.ts tests/proof-rest-rewrite.test.ts tests/proof-invalidation-race.test.ts tests/proof-reservation.test.mjs
-          tests/request-retry.test.mjs tests/proof-trail-postgres.test.mjs tests/leercoach-postgres.test.mjs
+          tests/request-retry.test.mjs tests/storage-postgres.test.ts tests/proof-trail-postgres.test.mjs tests/leercoach-postgres.test.mjs
       - name: Run migrate-v2 apply against a throwaway database
         id: migrate
         run: |
@@ -150,7 +179,7 @@ jobs:
           import {writeFileSync} from 'node:fs';
           import {execFileSync} from 'node:child_process';
           const results = JSON.parse(process.env.CHECK_RESULTS);
-          const checks = ['unit','lab-embed','legacy-ui','marks','database','anchors','live','distributed'].map(id => ({name:id,outcome:results[id]?.outcome || 'not-run'}));
+          const checks = ['unit','storage','lab-embed','legacy-ui','marks','database','anchors','live','distributed'].map(id => ({name:id,outcome:results[id]?.outcome || 'not-run'}));
           writeFileSync('test-results/ci-checks.json', JSON.stringify({revision:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),run:process.env.GITHUB_RUN_ID,attempt:process.env.GITHUB_RUN_ATTEMPT,checks},null,2));
           JS
       - name: Upload check outcomes
@@ -166,6 +195,7 @@ jobs:
           if [[ -f "$RUNNER_TEMP/academy-server.pid" ]]; then
             kill "$(cat "$RUNNER_TEMP/academy-server.pid")" 2>/dev/null || true
           fi
+          docker rm --force academy-ci-minio >/dev/null 2>&1 || true
           bash scripts/ci-services.sh stop
   # Pixel baselines only hold inside the image that rendered them; refresh them
   # with `bash scripts/visual-baselines.sh` (see tests/visual/README.md).
