@@ -247,6 +247,27 @@ export function isClassroom2Path(pathname: string): boolean {
   return pathname === '/classroom/2' || pathname === '/lesson/classroom-2';
 }
 
+/**
+ * Product deck mounted by AppRoutes for a pathname.
+ * Returns null when the path falls through to Shell (squad/connection UI).
+ * Used by tests to lock that /classroom/2 never serves Shell.
+ */
+export function matchProductDeck(
+  pathname: string,
+): 'deck' | 'authoring' | 'classroom-1' | 'classroom-2' | 'workshop-3' | 'workshop-4' | 'workshop-5' | 'workshop-6' | 'workshop-7' | 'live' | null {
+  if (pathname === '/deck') return 'deck';
+  if (pathname === '/authoring') return 'authoring';
+  if (isClassroom1Path(pathname)) return 'classroom-1';
+  if (isClassroom2Path(pathname)) return 'classroom-2';
+  if (isWorkshop5Path(pathname)) return 'workshop-5';
+  if (isWorkshop3Path(pathname)) return 'workshop-3';
+  if (isWorkshop4Path(pathname)) return 'workshop-4';
+  if (isWorkshop6Path(pathname)) return 'workshop-6';
+  if (isWorkshop7Path(pathname)) return 'workshop-7';
+  if (pathname.startsWith('/live/')) return 'live';
+  return null;
+}
+
 /** Facilitator Workshop 5 entry — AI-native SDLC deck (AET-77). */
 export function isWorkshop5Path(pathname: string): boolean {
   return pathname === '/workshop/5' || pathname === '/lesson/workshop-5';
