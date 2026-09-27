@@ -1,8 +1,9 @@
 import React,{useCallback,useEffect,useRef,useState} from 'react';
-import {Presentation,Plus,ChevronLeft,ChevronRight,Maximize,Download,Trash2,Copy,RefreshCw,ArrowLeft,Sparkles,Pin,PinOff} from 'lucide-react';
+import {Presentation,Plus,ChevronLeft,ChevronRight,Maximize,Download,Trash2,Copy,RefreshCw,ArrowLeft,Sparkles,Pin,PinOff,Eye,X,Pencil} from 'lucide-react';
 import {api,apiMethod,getToken} from './api';
 import {useT} from './i18n';
 import {reportScreen} from './screen';
+import {StatusState} from './status';
 
 const DIMS={'16:9':[960,540],'4:3':[960,720],'1:1':[1080,1080],'9:16':[540,960],'4:5':[864,1080]};
 const tokens=ds=>({'--ds-bg':ds?.bg||'#F5F2EA','--ds-surface':ds?.surface||'rgba(0,0,0,0.05)','--ds-text':ds?.text||'#171717','--ds-text-muted':ds?.textMuted||'#5c5c5c','--ds-accent':ds?.accent||'#0f766e','--ds-heading-font':ds?.headingFont||'Inter, system-ui, sans-serif','--ds-body-font':ds?.bodyFont||'Inter, system-ui, sans-serif','--ds-radius':ds?.radius||'8px'});
@@ -20,9 +21,20 @@ export function SlideStage({slide,aspectRatio,designSystem,className=''}){
 export function Decks({room,action,busy,onRoom}){
  const t=useT();
  const [decks,setDecks]=useState(null);
+ const [listError,setListError]=useState('');
  const [open,setOpen]=useState(null);
  const [title,setTitle]=useState('');
- const refresh=useCallback(async()=>{try{const result=await api('decks');setDecks(result.decks);}catch{}},[]);
+ const createRef=useRef(null);
+ const refresh=useCallback(async()=>{
+  try{
+   const result=await api('decks');
+   setDecks(result.decks);
+   setListError('');
+  }catch(e){
+   setListError(e.message||t('decks.loadFailed'));
+   setDecks(prev=>prev===null?[]:prev);
+  }
+ },[t]);
  useEffect(()=>{refresh();const timer=setInterval(refresh,5000);return()=>clearInterval(timer);},[refresh]);
  if(open)return <DeckView room={room} deckId={open} action={action} busy={busy} onRoom={onRoom} onBack={()=>{setOpen(null);refresh();}}/>;
  const canDelete=deck=>room.me.role==='Facilitator'||deck.createdBy?.id===room.me.id;
@@ -30,13 +42,19 @@ export function Decks({room,action,busy,onRoom}){
   <p className="cyan"><Presentation size={16}/>{t('decks.eyebrow')}</p>
   <h2>{t('decks.title')}</h2>
   <p className="lede">{t('decks.lede')}</p>
-  <form className="form-row deck-create" onSubmit={e=>{e.preventDefault();if(!title.trim())return;action(async()=>{const deck=await api('decks',{title:title.trim()});setTitle('');setOpen(deck.id);});}}>
+  <nav className="deck-trail" aria-label={t('decks.trailAria')}>
+   <ol>
+    <li aria-current="page"><span className="deck-trail-here">{t('decks.trailRoot')}</span></li>
+   </ol>
+  </nav>
+  <form ref={createRef} className="form-row deck-create" onSubmit={e=>{e.preventDefault();if(!title.trim())return;action(async()=>{const deck=await api('decks',{title:title.trim()});setTitle('');setOpen(deck.id);});}}>
    <input value={title} onChange={e=>setTitle(e.target.value)} maxLength={200} placeholder={t('decks.newPlaceholder')} aria-label={t('decks.newLabel')}/>
    <button type="submit" className="gradient" disabled={busy||!title.trim()}><Plus size={16}/>{t('decks.create')}</button>
   </form>
   <div className="notice"><strong><Sparkles size={14}/> {t('decks.agentTitle')}</strong><p>{t('decks.agentBody')}</p></div>
-  {decks===null&&<p className="muted">{t('common.loading')}</p>}
-  {decks&&!decks.length&&<p className="empty"><Presentation size={22}/><br/>{t('decks.empty')}</p>}
+  {listError&&<StatusState kind="error" title={t('decks.loadFailed')} action={<button type="button" onClick={refresh}>{t('status.retry')}</button>}>{listError}<p>{t('decks.loadFailedHelp')}</p></StatusState>}
+  {decks===null&&!listError&&<StatusState kind="loading" title={t('common.loading')}/>}
+  {decks&&!decks.length&&!listError&&<StatusState kind="empty" title={t('decks.empty')} action={<button type="button" className="gradient" onClick={()=>createRef.current?.querySelector('input')?.focus()}>{t('decks.create')}</button>}>{t('decks.emptyHelp')}</StatusState>}
   {decks&&decks.length>0&&<div className="deck-list">{decks.map(deck=><article className="deck-card" key={deck.id}>
    <button type="button" className="deck-open" onClick={()=>setOpen(deck.id)}><strong>{deck.title}</strong><small className="muted">{t('decks.meta',{count:deck.slideCount,revision:deck.revision,by:deck.createdBy?.name||'?'})}</small></button>
    <div className="deck-card-actions">
@@ -52,8 +70,11 @@ function DeckView({room,deckId,action,busy,onRoom,onBack}){
  const [deck,setDeck]=useState(null);
  const [index,setIndex]=useState(0);
  const [error,setError]=useState('');
+ const [preview,setPreview]=useState(false);
+ const [renaming,setRenaming]=useState(false);
+ const [draftTitle,setDraftTitle]=useState('');
  const stage=useRef(null);
- const load=useCallback(async()=>{try{const next=await api(`decks/${deckId}`);setDeck(next);setError('');}catch(e){setError(e.message);}},[deckId]);
+ const load=useCallback(async()=>{try{const next=await api(`decks/${deckId}`);setDeck(next);setError('');}catch(e){setError(e.message||t('decks.loadFailed'));}},[deckId,t]);
  useEffect(()=>{load();const timer=setInterval(load,4000);return()=>clearInterval(timer);},[load]);
  const count=deck?.slides.length||0;
  const slideId=deck?.slides[index]?.id??null;
@@ -61,12 +82,13 @@ function DeckView({room,deckId,action,busy,onRoom,onBack}){
  useEffect(()=>()=>reportScreen({deckId:null,slideIndex:null,slideId:null}),[]);
  const go=useCallback(delta=>setIndex(i=>Math.max(0,Math.min(count-1,i+delta))),[count]);
  useEffect(()=>{if(index>=count&&count)setIndex(count-1);},[count,index]);
- useEffect(()=>{const onKey=e=>{if(e.target.closest('input,textarea'))return;if(['ArrowRight','ArrowDown','PageDown'].includes(e.key)){e.preventDefault();go(1);}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(-1);}else if(e.key==='Home')setIndex(0);else if(e.key==='End')setIndex(Math.max(0,count-1));};window.addEventListener('keydown',onKey);return()=>window.removeEventListener('keydown',onKey);},[go,count]);
- const present=()=>{const el=stage.current;if(el?.requestFullscreen)el.requestFullscreen().catch(()=>{});};
+ useEffect(()=>{const onKey=e=>{if(e.key==='Escape'&&preview){e.preventDefault();setPreview(false);return;}if(preview||renaming)return;if(e.target.closest('input,textarea'))return;if(['ArrowRight','ArrowDown','PageDown'].includes(e.key)){e.preventDefault();go(1);}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(-1);}else if(e.key==='Home')setIndex(0);else if(e.key==='End')setIndex(Math.max(0,count-1));};window.addEventListener('keydown',onKey);return()=>window.removeEventListener('keydown',onKey);},[go,count,preview,renaming]);
+ const presentFullscreen=()=>{const el=stage.current;if(el?.requestFullscreen)el.requestFullscreen().catch(()=>{});};
  const download=()=>action(async()=>{const response=await fetch(`/game/decks/${deckId}/export.html`,{headers:{authorization:`Bearer ${getToken()}`}});if(!response.ok)throw Error((await response.json().catch(()=>({})))?.error||t('decks.exportFailed'));const blob=await response.blob();const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=response.headers.get('content-disposition')?.match(/filename="([^"]+)"/)?.[1]||'deck.html';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);});
  const addSlide=()=>action(async()=>{await api(`decks/${deckId}/slides`,{heading:t('decks.newSlideHeading'),body:[t('decks.newSlideBody')]});await load();setIndex(count);});
  const removeSlide=slide=>action(async()=>{await apiMethod('PATCH',`decks/${deckId}`,{operations:[{op:'delete-slide',slideId:slide.id}]});await load();});
  const move=(slide,delta)=>action(async()=>{const ids=deck.slides.map(s=>s.id);const from=ids.indexOf(slide.id),to=from+delta;if(to<0||to>=ids.length)return;ids.splice(to,0,ids.splice(from,1)[0]);await apiMethod('PATCH',`decks/${deckId}`,{expectedRevision:deck.revision,operations:[{op:'reorder-slides',slideIds:ids}]});await load();setIndex(to);});
+ const saveTitle=()=>{const next=draftTitle.trim();if(!next||!deck||next===deck.title){setRenaming(false);return;}action(async()=>{await apiMethod('PATCH',`decks/${deckId}`,{expectedRevision:deck.revision,operations:[{op:'patch-deck-fields',fields:{title:next}}]});await load();setRenaming(false);});};
  const facilitator=room.me.role==='Facilitator';
  const pinned=facilitator&&room.classroomOverlayDeckId===deckId;
  const togglePin=()=>action(async()=>{
@@ -77,25 +99,51 @@ function DeckView({room,deckId,action,busy,onRoom,onBack}){
  });
  const showNotes=room.me.role!=='Navigator';
  const current=deck?.slides[index];
+ const positionLabel=count?t('decks.position',{n:index+1,count}):t('decks.noSlidesShort');
  return <section className="panel content-panel deck-view">
+  <nav className="deck-trail" aria-label={t('decks.trailAria')}>
+   <ol>
+    <li><button type="button" className="deck-trail-link" onClick={onBack}>{t('decks.trailRoot')}</button></li>
+    <li aria-current={renaming?undefined:'page'}><span className="deck-trail-here">{deck?.title||t('common.loading')}</span></li>
+    {deck&&<li aria-current="page"><span className="deck-trail-here">{positionLabel}</span></li>}
+   </ol>
+  </nav>
   <div className="deck-toolbar">
    <button type="button" onClick={onBack}><ArrowLeft size={15}/>{t('decks.back')}</button>
-   <h2>{deck?.title||t('common.loading')}</h2>
+   {renaming?
+    <form className="deck-rename" onSubmit={e=>{e.preventDefault();saveTitle();}}>
+     <input value={draftTitle} onChange={e=>setDraftTitle(e.target.value)} maxLength={200} aria-label={t('decks.renameLabel')} autoFocus/>
+     <button type="submit" className="gradient" disabled={busy||!draftTitle.trim()}>{t('decks.renameSave')}</button>
+     <button type="button" onClick={()=>setRenaming(false)}>{t('decks.renameCancel')}</button>
+    </form>
+    :<h2 className="deck-title-row">
+      <span>{deck?.title||t('common.loading')}</span>
+      {deck&&<button type="button" className="deck-rename-trigger" onClick={()=>{setDraftTitle(deck.title);setRenaming(true);}} title={t('decks.rename')} aria-label={t('decks.rename')}><Pencil size={14}/></button>}
+     </h2>}
    <div className="deck-toolbar-actions">
+    <button type="button" className="deck-primary" disabled={busy} onClick={addSlide}><Plus size={14}/>{t('decks.addSlide')}</button>
+    <button type="button" className="gradient deck-primary" disabled={!count} onClick={()=>setPreview(true)}><Eye size={14}/>{t('decks.preview')}</button>
     <button type="button" onClick={load} aria-label={t('decks.refresh')} title={t('decks.refresh')}><RefreshCw size={14}/></button>
-    <button type="button" disabled={busy} onClick={addSlide}><Plus size={14}/>{t('decks.addSlide')}</button>
     <button type="button" disabled={!count} onClick={download}><Download size={14}/>{t('decks.export')}</button>
     {facilitator&&<button type="button" disabled={busy||!count} onClick={togglePin} aria-pressed={pinned} title={pinned?t('decks.unpinOverlay'):t('decks.pinOverlay',{day:room.day})} aria-label={pinned?t('decks.unpinOverlay'):t('decks.pinOverlay',{day:room.day})}>{pinned?<PinOff size={14}/>:<Pin size={14}/>}{pinned?t('decks.unpinOverlayShort'):t('decks.pinOverlayShort')}</button>}
-    <button type="button" className="gradient" disabled={!count} onClick={present}><Maximize size={14}/>{t('decks.present')}</button>
+    <button type="button" disabled={!count} onClick={presentFullscreen} title={t('decks.presentFullscreen')}><Maximize size={14}/>{t('decks.present')}</button>
    </div>
   </div>
-  {error&&<p className="error" role="alert">{error}</p>}
+  {error&&<StatusState kind="error" title={t('decks.loadFailed')} action={<button type="button" onClick={load}>{t('status.retry')}</button>}>{error}<p>{t('decks.loadFailedHelp')}</p></StatusState>}
   {facilitator&&pinned&&<p className="notice deck-pin-notice" role="status">{t('decks.pinnedNotice',{day:room.day})}</p>}
-  {deck&&!count&&<p className="empty"><Presentation size={22}/><br/>{t('decks.noSlides')}</p>}
+  {!deck&&!error&&<StatusState kind="loading" title={t('common.loading')}/>}
+  {deck&&!count&&<StatusState kind="empty" title={t('decks.noSlides')} action={<button type="button" className="gradient" disabled={busy} onClick={addSlide}><Plus size={14}/>{t('decks.addSlide')}</button>}>{t('decks.noSlidesHelp')}</StatusState>}
   {deck&&count>0&&<div className="deck-body">
-   <ol className="slide-rail" aria-label={t('decks.rail')}>{deck.slides.map((slide,i)=><li key={slide.id} className={i===index?'selected':''}>
-    <button type="button" className="slide-thumb" onClick={()=>setIndex(i)} aria-current={i===index} aria-label={t('decks.slideN',{n:i+1})}><SlideStage slide={slide} aspectRatio={deck.aspectRatio} designSystem={deck.designSystem} className="thumb"/><span>{i+1}</span></button>
-   </li>)}</ol>
+   <div className="deck-structure">
+    <div className="deck-structure-head">
+     <strong>{t('decks.structure')}</strong>
+     <button type="button" className="deck-structure-add" disabled={busy} onClick={addSlide} title={t('decks.addSlide')} aria-label={t('decks.addSlide')}><Plus size={14}/></button>
+    </div>
+    <p className="deck-structure-here muted" aria-live="polite">{t('decks.youAreHere',{n:index+1,count,title:deck.title})}</p>
+    <ol className="slide-rail" aria-label={t('decks.rail')}>{deck.slides.map((slide,i)=><li key={slide.id} className={i===index?'selected':''}>
+     <button type="button" className="slide-thumb" onClick={()=>setIndex(i)} aria-current={i===index} aria-label={t('decks.slideN',{n:i+1})}><SlideStage slide={slide} aspectRatio={deck.aspectRatio} designSystem={deck.designSystem} className="thumb"/><span>{i+1}</span></button>
+    </li>)}</ol>
+   </div>
    <div className="deck-main">
     <div ref={stage} className="deck-stage-wrap" onClick={e=>{if(document.fullscreenElement===stage.current)go(e.clientX<window.innerWidth/3?-1:1);}}>
      <SlideStage slide={current} aspectRatio={deck.aspectRatio} designSystem={deck.designSystem}/>
@@ -112,6 +160,17 @@ function DeckView({room,deckId,action,busy,onRoom,onBack}){
     {showNotes&&current?.notes&&<div className="notice deck-notes"><strong>{t('decks.notes')}</strong><p>{current.notes}</p></div>}
     <small className="muted">{t('decks.editHint',{id:current?.id||'',deckId:deck.id})}</small>
    </div>
+  </div>}
+  {preview&&deck&&<div className="deck-preview-overlay" role="dialog" aria-modal="true" aria-label={t('decks.previewTitle')}>
+   <div className="deck-preview-chrome">
+    <div>
+     <p className="cyan">{t('decks.preview')}</p>
+     <strong>{deck.title}</strong>
+     <small className="muted">{t('decks.previewHint')}</small>
+    </div>
+    <button type="button" className="gradient" onClick={()=>setPreview(false)}><X size={14}/>{t('decks.previewClose')}</button>
+   </div>
+   <iframe className="deck-preview-frame" title={t('decks.previewTitle')} src={`/game/decks/${deckId}/present`}/>
   </div>}
  </section>;
 }
