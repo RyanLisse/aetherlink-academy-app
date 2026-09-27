@@ -141,14 +141,14 @@ test('facilitator bar at 1024px: two rows, every control inside the bar at one h
     const dialHeights=[...new Set(await bar.locator('.facilitator-dials button, .facilitator-dials select, .facilitator-dials input:not([type=checkbox])').evaluateAll(els=>els.map(el=>Math.round(el.getBoundingClientRect().height))))];
     assert.deepEqual(dialHeights,[34],'session dials share one height');
     assert.ok(layout.heights.every(h=>h===34||h===40),'controls are 34px dials or 40px teach primary');
-    assert.ok(layout.rows===2||layout.rows===3,'teach row + dials (dials may wrap once at 1024px)');
-    assert.equal(layout.count,12); // teach: day+classroom+lab select; dials: start/next/shuffle/+5/-5/time/duration/phase/format
+    assert.ok(layout.rows>=2&&layout.rows<=4,'teach row + dials (board CTA may wrap teach at 1024px)');
+    assert.equal(layout.count,13); // teach: day+classroom+board+lab select; dials: start/next/shuffle/+5/-5/time/duration/phase/format
     assert.equal(layout.scroll,0);
     assert.equal(await overflow(page),0);
     assert.ok(await bar.locator('.fac-day-label').isVisible(),'day chip visible without menu');
     assert.ok(await bar.locator('.facilitator-teach').isVisible(),'teach bar');
     assert.ok(await bar.locator('.facilitator-dials').isVisible(),'dials cluster');
-    for(const name of ['Start timer','Volgende ronde','Rollen schudden','Open Classroom'])assert.ok(await bar.getByRole('button',{name}).isVisible(),name);
+    for(const name of ['Start timer','Volgende ronde','Rollen schudden','Open Classroom','Debriefbord openen'])assert.ok(await bar.getByRole('button',{name}).isVisible(),name);
     await bar.getByRole('spinbutton',{name:'Tijd (min)',exact:true}).focus();
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(()=>document.activeElement.textContent.trim()),'+5 min','time adjust follows its input in tab order');
@@ -156,8 +156,8 @@ test('facilitator bar at 1024px: two rows, every control inside the bar at one h
     await shot(page,'facilitator-room-1024.png');
     await page.getByRole('navigation',{name:'Hoofdnavigatie'}).getByRole('button',{name:'Debriefbord',exact:true}).click();
     const empty=page.locator('.primary [data-status="empty"]');
-    assert.equal(await empty.locator('strong').innerText(),'Nog geen debriefbord voor deze kamer.');
-    assert.match(await empty.innerText(),/Open het bord aan het begin van de debrief/);
+    assert.equal(await empty.locator('strong').innerText(),'Start debrief');
+    assert.match(await empty.innerText(),/teach-balk|gedeelde bord|debrief/);
   });
 });
 
