@@ -939,3 +939,29 @@ exit 99
     assert.match(secrets, /^REDIS_PASSWORD=[a-f0-9]{48}$/m);
   });
 });
+
+describe('openship kit row_counts', () => {
+  const lib = readFileSync(path.join(root, 'infra/openship/lib.sh'), 'utf8');
+  // Slice the heredoc SQL inside row_counts() so the filter cannot silently regress.
+  const start = lib.indexOf('row_counts()');
+  const sqlStart = lib.indexOf("<<'SQL'", start);
+  const sqlEnd = lib.indexOf('\nSQL\n', sqlStart);
+  assert.notEqual(start, -1, 'row_counts() exists');
+  assert.notEqual(sqlStart, -1, 'row_counts has a SQL heredoc');
+  assert.notEqual(sqlEnd, -1, 'row_counts SQL heredoc closes');
+  const sql = lib.slice(sqlStart, sqlEnd);
+
+  test('pg_tables filter excludes catalog, toast, and pg_temp schemas', () => {
+    assert.match(sql, /FROM pg_tables/);
+    assert.match(sql, /schemaname NOT IN \('pg_catalog', 'information_schema'\)/);
+    assert.match(sql, /schemaname NOT LIKE 'pg_toast%'/);
+    assert.match(sql, /schemaname NOT LIKE 'pg_temp%'/);
+  });
+
+  test('helper kit_counts is never selected from pg_tables (no self-count)', () => {
+    assert.match(sql, /CREATE TEMP TABLE kit_counts/);
+    assert.match(sql, /tablename <> 'kit_counts'/);
+    // The only SELECT of kit_counts is the final report, not the loop source.
+    assert.match(sql, /SELECT t, n FROM kit_counts/);
+  });
+});
