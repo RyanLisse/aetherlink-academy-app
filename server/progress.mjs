@@ -1,5 +1,6 @@
 import {DAY_COUNT} from '../content/days/index.mjs';
 import {getDayPack} from './content.mjs';
+import {quizRoomStatus} from './quiz.mjs';
 import {dayTasks,taskPassed} from './proof-trail.mjs';
 
 // Every server-graded check for one participant and day, each with its own pass signal. A quiz passes
@@ -20,7 +21,8 @@ export function dayProgress(room, person, day) {
  return {quizScore:saved.quizScore??null,route:saved.route??null,evidenceCount:evidence.length,hasQuiz:saved.quizScore!=null,hasRoute:Boolean(saved.route),hasEvidence:evidence.length>0,reviewedCount:reviewed.length,acceptedCount:evidence.filter(item=>item.status==='accepted').length,hasReview:reviewed.length>0,hasHandoff:handoffs.length>0,reflection:saved.reflection||null,hasReflection:Boolean(saved.reflection),labs:saved.labs||{},labsCompleted:Object.keys(saved.labs||{}).length};
 }
 export function debrief(room) {
- return {day:room.day,name:room.name,members:room.members.map(person=>({id:person.id,name:person.name,help:person.help,progress:dayProgress(room,person,room.day)})),handoffs:(room.handoffs||[]).filter(item=>Number(item.day)===room.day)};
+ const quiz=quizRoomStatus(room.members,room.day);
+ return {day:room.day,name:room.name,quiz,members:room.members.map(person=>({id:person.id,name:person.name,help:person.help,progress:dayProgress(room,person,room.day),quizPhase:quiz.members.find(m=>m.id===person.id)?.phase||'not_started'})),handoffs:(room.handoffs||[]).filter(item=>Number(item.day)===room.day)};
 }
 export function exportDebrief(room,board=null) {
  const lines=['# Squad-overdracht',room.name,'','Dit overzicht toont vastgelegd bewijs, geen certificering of ranglijst.'];

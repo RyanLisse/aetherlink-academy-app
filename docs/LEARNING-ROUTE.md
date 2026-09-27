@@ -25,3 +25,14 @@ Leerdoelen en dagvolgorde komen uit het lesplan (Linear, SoT). Demo, solo-stappe
 ## Acceptatie
 
 De content- en voortgangstests staan in CI. Browseracceptatie, een live import in de workshop-n8n-instantie en eigen Claude Code-accounts blijven afzonderlijke controles.
+
+## Quiz protocol (idle timeout)
+
+Day-pack quizzes use a server-side attempt lifecycle (`POST /game/quiz/start` → `POST /game/quiz`):
+
+- Answer keys live only on the server; the participant payload is `{questions}` without `key`.
+- Opening the first answer starts an attempt. Submitting scores on the server against the day-pack key.
+- **Idle timeout:** an attempt left open without submit expires after **30 minutes** (`QUIZ_ATTEMPT_TTL_MS`). The server returns HTTP 410 with a clear message; the learner must start a new attempt. Progress is **not** auto-saved mid-attempt.
+- Malformed or schema-invalid quiz assets soft-fail: the lesson chrome shows human copy and next actions (retry / solo / contact facilitator) instead of a blank crash.
+- Facilitator debrief shows room quiz status counts (not started / in progress / completed) without raw attempt JSON.
+
