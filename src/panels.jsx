@@ -57,22 +57,74 @@ function ProgressivePath({steps,compact=false}){
   if(!steps?.length)return null;
   return <div className={compact?'progressive-path compact':'progressive-path'} aria-label={t('path.aria')}>{steps.map((s,i)=><div className="progressive-step" key={s.id||i}><span className="agent-badge">{s.badge}</span><strong>{s.title}{s.level==='stretch'&&<small className="muted"> · {t('path.stretch')}</small>}</strong><p>{s.goal}</p>{!compact&&s.doneWhen&&<small><span className="muted">{t('path.doneWhen')}</span> {s.doneWhen}</small>}{compact&&s.hint&&<small className="muted">{s.hint}</small>}</div>)}</div>;
 }
+function QuickCheck({room,action,busy,practice,shownDay,chosen,questions,quizError}){
+  const t=useT();
+  const [answers,setAnswers]=useState({});
+  const [result,setResult]=useState(null);
+  const [expired,setExpired]=useState(false);
+  const [localError,setLocalError]=useState('');
+  const attempt=useRef(null);
+  const total=questions?.length||0;
+  const answered=questions?questions.filter(q=>answers[q.id]).length:0;
+  const currentId=questions?.find(q=>!answers[q.id])?.id||null;
+  useEffect(()=>{attempt.current=null;setAnswers({});setResult(null);setExpired(false);setLocalError('');},[shownDay,questions]);
+  const openAttempt=()=>attempt.current??=api('quiz/start',chosen).catch(e=>{attempt.current=null;throw e;});
+  const resetQuiz=()=>{attempt.current=null;setAnswers({});setResult(null);setExpired(false);setLocalError('');};
+  const submitQuiz=async()=>{
+    setLocalError('');setExpired(false);
+    try{
+      const {attemptId}=await openAttempt();
+      setResult(await api('quiz',{...chosen,attemptId,answers}));
+    }catch(e){
+      if(e.status===410){setAnswers({});setExpired(true);setLocalError(e.message);attempt.current=null;return;}
+      if(e.status===422){setLocalError(e.message);attempt.current=null;return;}
+      throw e;
+    }finally{attempt.current=null;}
+  };
+  if(quizError||!questions?.length){
+    return <section className="quiz-chrome" aria-label={t('lesson.quickCheck')}><h3>{t('lesson.quickCheck')}</h3>
+      <StatusState kind="error" title={t('lesson.quizBadTitle')} action={<button type="button" onClick={()=>location.reload()}>{t('status.retry')}</button>}>
+        {quizError||t('lesson.quizBadBody')}<p>{t('lesson.quizBadNext')}</p>
+      </StatusState>
+    </section>;
+  }
+  const passed=result&&result.score===result.total;
+  return <section className="quiz-chrome" aria-label={t('lesson.quickCheck')}>
+    <div className="quiz-chrome-head">
+      <h3>{t('lesson.quickCheck')}</h3>
+      <span className="quiz-progress" aria-live="polite">{t('lesson.quizProgress',{answered,total})}</span>
+    </div>
+    <p className="muted">{practice?t('naslag.practiceHint',{day:shownDay}):t('lesson.quizHint')}</p>
+    <p className="muted quiz-idle-note">{t('lesson.quizIdle')}</p>
+    {expired&&<StatusState kind="error" title={t('lesson.quizExpiredTitle')} action={<button type="button" onClick={resetQuiz}>{t('lesson.quizRetry')}</button>}>{localError||t('lesson.quizExpiredBody')}</StatusState>}
+    {localError&&!expired&&<StatusState kind="error" title={t('status.errorTitle')}>{localError}</StatusState>}
+    <form onSubmit={e=>{e.preventDefault();action(submitQuiz);}}>
+      {questions.map((q,i)=><fieldset key={q.id} className={q.id===currentId?'quiz-q current':'quiz-q'} aria-current={q.id===currentId?'step':undefined}>
+        <legend>{t('lesson.quizQuestion',{n:i+1,total})} · {q.question}</legend>
+        {q.options.map(o=><label className="radio" key={o.id}><input type="radio" name={q.id} required checked={answers[q.id]===o.id} onChange={()=>{setAnswers({...answers,[q.id]:o.id});setExpired(false);openAttempt().catch(()=>{});}}/>{o.label}</label>)}
+      </fieldset>)}
+      <button className="gradient" disabled={busy||room.me.role==='Facilitator'||room.readOnly||answered<total}>{t('lesson.submit')}<ArrowRight size={17}/></button>
+    </form>
+    {result&&<div className={passed?'notice quiz-result pass':'notice quiz-result fail'} role="status">
+      <strong>{passed?t('lesson.quizPass',{score:result.score,total:result.total}):t('lesson.quizFail',{score:result.score,total:result.total})} · {routeName(t,result.route)}</strong>
+      <p>{result.note}</p>
+      <p>{practice?t('naslag.practiceResult',{day:shownDay}):(passed?t('lesson.soloHint'):t('lesson.quizFailHint'))}</p>
+      {!passed&&<button type="button" className="text-button" onClick={resetQuiz}>{t('lesson.quizRetry')}</button>}
+    </div>}
+  </section>;
+}
+
 export function Lesson({room,action,busy,day}){
   const t=useT();
   const [pack,setPack]=useState(null);
   const [error,setError]=useState('');
-  const [answers,setAnswers]=useState({});
-  const [result,setResult]=useState(null);
-  const attempt=useRef(null);
   const chosen=day===undefined?{}:{day};
   const shownDay=day??room.day,practice=shownDay!==room.day;
-  const openAttempt=()=>attempt.current??=api('quiz/start',chosen).catch(e=>{attempt.current=null;throw e;});
-  const submitQuiz=async()=>{try{const {attemptId}=await openAttempt();setResult(await api('quiz',{...chosen,attemptId,answers}));}catch(e){if(e.status===410)setAnswers({});throw e;}finally{attempt.current=null;}};
-  useEffect(()=>{let active=true;attempt.current=null;setPack(null);setError('');setAnswers({});setResult(null);api(day===undefined?'day-pack':`day-pack?day=${day}`).then(d=>{if(active)setPack(d);}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[room.day,day]);
+  useEffect(()=>{let active=true;setPack(null);setError('');api(day===undefined?'day-pack':`day-pack?day=${day}`).then(d=>{if(active)setPack(d);}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[room.day,day]);
   if(error)return <section className="panel content-panel"><p className="cyan">{t('lesson.eyebrow')}</p><h2>{t('lesson.noneTitle')}</h2><StatusState kind="error" title={t('status.errorTitle')}>{error}<p>{t('lesson.noneHint')}</p></StatusState></section>;
   if(!pack)return <section className="panel content-panel"><StatusState kind="loading" title={t('lesson.loading')}/></section>;
-  const lesson=pack.lesson,questions=pack.quiz.questions;
-  return <section className="panel content-panel"><p className="cyan">{lesson.kicker}</p><h2>{lesson.title}</h2><p className="lede">{lesson.lede}</p>{pack.steps?.length>0&&<><p className="cyan">{t('path.label')}</p><ProgressivePath steps={pack.steps}/></>}<div className="learning-loop">{lesson.loop.map((s,i)=><div key={s.label}><span>0{i+1}</span><strong>{s.label}</strong><small>{s.prompt}</small></div>)}</div><div className="worked"><BookOpen size={20}/><div><h3>{t('lesson.explained')}</h3><p>{lesson.workedExample}</p></div></div>{pack.materials?.length>0&&<><h3>{t('lesson.materials')}</h3><ul className="materials">{pack.materials.map(m=><li key={m.label}>{m.href?<a href={m.href} target={m.href.startsWith('http')?'_blank':undefined} rel="noreferrer">{m.label}</a>:<span>{m.label}: <strong>OPEN</strong> · {m.open}</span>}{m.note&&<small className="muted"> · {m.note}</small>}</li>)}</ul></>}{pack.labs?.length>0&&<section className="lab-slot" aria-label={t('lab.heading')}><h3>{t('lab.heading')}</h3>{pack.labs.map(lab=><LabEmbed key={lab.id} lab={lab} preview={room.me.role==='Facilitator'} saved={room.me.progressByDay?.[String(shownDay)]?.labs?.[lab.id]}/>)}</section>}<h3>{t('lesson.quickCheck')}</h3><p className="muted">{practice?t('naslag.practiceHint',{day:shownDay}):t('lesson.quizHint')}</p><form onSubmit={e=>{e.preventDefault();action(submitQuiz);}}>{questions.map((q,i)=><fieldset key={q.id}><legend>{i+1}. {q.question}</legend>{q.options.map(o=><label className="radio" key={o.id}><input type="radio" name={q.id} required checked={answers[q.id]===o.id} onChange={()=>{setAnswers({...answers,[q.id]:o.id});openAttempt().catch(()=>{});}}/>{o.label}</label>)}</fieldset>)}<button className="gradient" disabled={busy||room.me.role==='Facilitator'||room.readOnly}>{t('lesson.submit')}<ArrowRight size={17}/></button></form>{result&&<div className="notice" role="status"><strong>{result.score}/{result.total} · {routeName(t,result.route)}</strong><p>{result.note}</p><p>{practice?t('naslag.practiceResult',{day:shownDay}):t('lesson.soloHint')}</p></div>}</section>;
+  const lesson=pack.lesson,questions=pack.quiz?.questions;
+  return <section className="panel content-panel"><p className="cyan">{lesson.kicker}</p><h2>{lesson.title}</h2><p className="lede">{lesson.lede}</p>{pack.steps?.length>0&&<><p className="cyan">{t('path.label')}</p><ProgressivePath steps={pack.steps}/></>}<div className="learning-loop">{lesson.loop.map((s,i)=><div key={s.label}><span>0{i+1}</span><strong>{s.label}</strong><small>{s.prompt}</small></div>)}</div><div className="worked"><BookOpen size={20}/><div><h3>{t('lesson.explained')}</h3><p>{lesson.workedExample}</p></div></div>{pack.materials?.length>0&&<><h3>{t('lesson.materials')}</h3><ul className="materials">{pack.materials.map(m=><li key={m.label}>{m.href?<a href={m.href} target={m.href.startsWith('http')?'_blank':undefined} rel="noreferrer">{m.label}</a>:<span>{m.label}: <strong>OPEN</strong> · {m.open}</span>}{m.note&&<small className="muted"> · {m.note}</small>}</li>)}</ul></>}{pack.labs?.length>0&&<section className="lab-slot" aria-label={t('lab.heading')}><h3>{t('lab.heading')}</h3>{pack.labs.map(lab=><LabEmbed key={lab.id} lab={lab} preview={room.me.role==='Facilitator'} saved={room.me.progressByDay?.[String(shownDay)]?.labs?.[lab.id]}/>)}</section>}<QuickCheck room={room} action={action} busy={busy} practice={practice} shownDay={shownDay} chosen={chosen} questions={questions} quizError={pack.quizError}/></section>;
 }
 
 export function Solo({room,action,busy,onNavigate}){
@@ -127,7 +179,20 @@ export function Debrief({room}){
   useEffect(()=>{let active=true;api('debrief').then(d=>{if(active)setData(d);}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[room.day,room.serverTime]);
   if(error)return <section className="panel content-panel"><StatusState kind="error" title={t('status.errorTitle')}>{error}</StatusState></section>;
   if(!data)return <section className="panel content-panel"><StatusState kind="loading" title={t('debrief.loading')}/></section>;
-  return <section className="panel content-panel"><p className="cyan">{t('debrief.eyebrow')}</p><h2>{t('debrief.title',{name:data.name,day:data.day})}</h2><p className="lede">{t('debrief.lede')}</p><div className="day-list">{data.members.map(member=><div key={member.id}><span className="day-number">{member.help?'!':'·'}</span><div><h3>{member.name}</h3><p>{t('debrief.memberStats',{quiz:member.progress.quizScore??'—',evidence:member.progress.evidenceCount,review:member.progress.reviewedCount,accepted:member.progress.acceptedCount})}</p><div className="progress-chips">{chipLabel(member.progress.hasReflection,t('route.reflection'))}{chipLabel(member.progress.hasHandoff,t('route.handoff'))}{member.help&&<span className="progress-chip on">{t('debrief.helpAsked')}</span>}</div>{member.progress.reflection&&<div className="notice"><strong>{t('debrief.reflection')}</strong><p>{member.progress.reflection.learned}</p><small>{t('debrief.nextPractice',{next:member.progress.reflection.next})}</small></div>}</div></div>)}</div><h3>{t('debrief.handoffs')}</h3>{!data.handoffs.length&&<p className="muted">{t('debrief.noHandoffs')}</p>}{data.handoffs.map(h=><div className="notice" key={h.id}><strong>{h.next}</strong><p>{h.decision}</p><small>{t('review.openLabel',{open:h.open})}</small></div>)}<a className="text-button" href="/game/debrief/export" download><Download size={16}/>{t('debrief.export')}</a></section>;
+  const quiz=data.quiz||{total:0,notStarted:0,inProgress:0,completed:0,expired:0,started:0};
+  const phaseLabel=phase=>({not_started:t('debrief.quizNotStarted'),in_progress:t('debrief.quizInProgress'),completed:t('debrief.quizCompleted'),expired:t('debrief.quizExpired')})[phase]||phase;
+  return <section className="panel content-panel"><p className="cyan">{t('debrief.eyebrow')}</p><h2>{t('debrief.title',{name:data.name,day:data.day})}</h2><p className="lede">{t('debrief.lede')}</p>
+    <div className="notice quiz-status" role="status" aria-label={t('debrief.quizStatus')}>
+      <strong>{t('debrief.quizStatus')}</strong>
+      <p>{t('debrief.quizCounts',{started:quiz.started,inProgress:quiz.inProgress,completed:quiz.completed,notStarted:quiz.notStarted,expired:quiz.expired,total:quiz.total})}</p>
+      <div className="progress-chips">
+        <span className={quiz.inProgress?'progress-chip on':'progress-chip'}>{t('debrief.quizInProgress')}: {quiz.inProgress}</span>
+        <span className={quiz.completed?'progress-chip on':'progress-chip'}>{t('debrief.quizCompleted')}: {quiz.completed}</span>
+        <span className="progress-chip">{t('debrief.quizNotStarted')}: {quiz.notStarted}</span>
+        {quiz.expired>0&&<span className="progress-chip">{t('debrief.quizExpired')}: {quiz.expired}</span>}
+      </div>
+    </div>
+    <div className="day-list">{data.members.map(member=><div key={member.id}><span className="day-number">{member.help?'!':'·'}</span><div><h3>{member.name}</h3><p>{t('debrief.memberStats',{quiz:member.progress.quizScore??'—',evidence:member.progress.evidenceCount,review:member.progress.reviewedCount,accepted:member.progress.acceptedCount})}</p><div className="progress-chips"><span className={member.quizPhase==='completed'||member.quizPhase==='in_progress'?'progress-chip on':'progress-chip'}>{phaseLabel(member.quizPhase)}</span>{chipLabel(member.progress.hasReflection,t('route.reflection'))}{chipLabel(member.progress.hasHandoff,t('route.handoff'))}{member.help&&<span className="progress-chip on">{t('debrief.helpAsked')}</span>}</div>{member.progress.reflection&&<div className="notice"><strong>{t('debrief.reflection')}</strong><p>{member.progress.reflection.learned}</p><small>{t('debrief.nextPractice',{next:member.progress.reflection.next})}</small></div>}</div></div>)}</div><h3>{t('debrief.handoffs')}</h3>{!data.handoffs.length&&<p className="muted">{t('debrief.noHandoffs')}</p>}{data.handoffs.map(h=><div className="notice" key={h.id}><strong>{h.next}</strong><p>{h.decision}</p><small>{t('review.openLabel',{open:h.open})}</small></div>)}<a className="text-button" href="/game/debrief/export" download><Download size={16}/>{t('debrief.export')}</a></section>;
 }
 
 const chipLabel=(on,label)=><span className={on?'progress-chip on':'progress-chip'}>{label}</span>;

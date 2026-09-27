@@ -17,7 +17,7 @@ import {createMcpHandler,validateHostHeader} from '@modelcontextprotocol/server'
 import {toNodeHandler} from '@modelcontextprotocol/node';
 import {lessons,mission,initialDocument,searchKnowledge,getDayPack,listRouteDays,listDaySummaries,courseEntry,starterFileNames} from './content.mjs';
 import {courseTemplate} from '../content/days/course.mjs';
-import {openQuizAttempt,participantDayPack,submitQuizAttempt} from './quiz.mjs';
+import {openQuizAttempt,participantDayPack,requireDayQuiz,submitQuizAttempt} from './quiz.mjs';
 import {createGoogleSso,readLoginState,signLoginState} from './google-sso.mjs';
 import {createSlidesService} from './slides/runtime.ts';
 import {createFileStorage} from './storage/runtime.ts';
@@ -170,7 +170,7 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  app.post('/game/screen-state',wrap(async(req,res)=>{await screens.save(screenBinding(await browser(req),req.body));res.status(204).end();}));
  app.post('/game/help',wrap(async(req,res)=>res.json(await store.withSession(token(req),'browser',({p})=>{if(!p)fail(400,'De facilitator heeft geen solo-profiel.');p.help=!p.help;return {help:p.help};}))));
  const quizDay=(context,body)=>{if(!context.p)fail(400,'Alleen deelnemers.');return chosenDay(context,body?.day);};
- app.post('/game/quiz/start',wrap(async(req,res)=>res.json(await store.withSession(token(req),'browser',context=>openQuizAttempt(context.p,quizDay(context,req.body),Date.now())))));
+ app.post('/game/quiz/start',wrap(async(req,res)=>res.json(await store.withSession(token(req),'browser',context=>{const day=quizDay(context,req.body);requireDayQuiz(getDayPack(day).quiz);return openQuizAttempt(context.p,day,Date.now());}))));
  app.post('/game/quiz',wrap(async(req,res)=>res.json(await store.withSession(token(req),'browser',context=>{const day=quizDay(context,req.body);return submitQuizAttempt(context.p,day,getDayPack(day).quiz,req.body,Date.now(),context.r.day);}))));
  app.post('/game/route',wrap(async(req,res)=>{if(!['guided','standard','stretch'].includes(req.body.route))fail(400,'Ongeldige hulpkeuze.');await store.withSession(token(req),'browser',({r,p})=>{if(!p)fail(400,'Alleen deelnemers.');p.route=req.body.route;p.progressByDay??={};p.progressByDay[String(r.day)]={...p.progressByDay[String(r.day)],route:p.route};});res.json({ok:true});}));
  app.post('/game/agent-setup',wrap(async(req,res)=>{const {r,p}=await browser(req);if(!p)fail(403,'Neem als deelnemer deel om je eigen Claude te verbinden.');if(publicUrl.protocol!=='https:')fail(409,'De agentkoppeling is beschikbaar op de publieke HTTPS-versie.');const access=await store.rotateMcpToken(token(req));res.json({instructions:agentInstructions({origin:publicUrl.origin,roomId:r.id,participantId:p.id,accessToken:access.token}),expiresAt:Date.now()+12*60*60*1000,participantId:p.id,roomId:r.id});}));
