@@ -1,6 +1,11 @@
 # Runbook: one Academy, deployed through OpenShip
 
-Status: prepared 2026-09-26. Nothing in this runbook has been run against the host.
+Status: cutover complete 2026-09-27. Public Academy URL is
+`https://academy.91-99-78-17.sslip.io/` (OpenShip edge, HTTPS, health 200). After the
+OpenShip `domain` step, the edge is the public path; raw host `:4317` may bind
+loopback-only (external `http://91.99.78.17:4317` timeout is expected). DNS
+`academy.aetherlink.ai` (AET-42) is a follow-up when the A record exists — do not treat
+that hostname as live yet.
 
 Decision (Ryan, 2026-09-26): "there should only be 1 academy deployed, we should remove all
 others and only have a deployed version thru openship". Data moves by `pg_dump` and restore
@@ -121,7 +126,11 @@ are persisted by OpenShip from `composePath` at deploy-request time — the kit 
 `infra/openship/RESEARCH.md`). Compose publishes the app as hardcoded `0.0.0.0:4317:4317`
 (never bash `${ACADEMY_PORT_BIND:-…}` in `ports:` — that breaks Docker ParseAddr), builds with
 repo-root context `.` (not `../..`), and keeps other non-secret app env (`HOST`, `PORT`, …)
-only. After cutover the Academy answers on `:4317` (legacy `academy-app` must stay stopped).
+only. After cutover the Academy is reached publicly via the OpenShip edge
+(`https://academy.91-99-78-17.sslip.io/`). Compose still publishes `0.0.0.0:4317:4317`,
+but once a domain is attached OpenShip loopback-publish may bind host `:4317` to
+`127.0.0.1` only — raw external `:4317` then times out (expected). Legacy `academy-app`
+must stay stopped.
 If OpenShip shows service drift after compose port/build edits and the sync API is unavailable
 to the PAT, clear it on the host with `openship services drift accept|keep` before re-dispatch.
 
@@ -171,18 +180,21 @@ Undo: as step 4.
 
 Refuses unless verify passed and `academy-app` is stopped. Redeploys and checks health on
 `127.0.0.1:4317`. Compose publish is hardcoded to `0.0.0.0:4317:4317` (do not put bash
-`${…:-…}` defaults in `ports:`). `ACADEMY_PUBLIC_URL` keeps the legacy value, so links
-and the Proof WebSocket origin do not change. Afterwards run `verify` once more: after
-cutover it accepts row counts that grew, never shrank.
+`${…:-…}` defaults in `ports:`). Current public URL is the edge hostname
+(`https://academy.91-99-78-17.sslip.io`); set `ACADEMY_PUBLIC_URL` to that so links and
+the Proof WebSocket origin match. After the `domain` step, prefer the edge — raw host
+`:4317` may be loopback-only. Afterwards run `verify` once more: after cutover it accepts
+row counts that grew, never shrank.
 
 Undo: from here on the new database takes writes. To go back, stop the OpenShip app, dump
 `openship-academy-postgres`, restore that into `academy-postgres`, then start
 `academy-app`. Without that, writes made after cutover are lost.
 
-The domain `academy.aetherlink.ai` is a separate follow-up (AET-42). Once its A record points
-at the host, add the domain to the project in OpenShip, which issues a Let's Encrypt
+The domain `academy.aetherlink.ai` remains a separate follow-up (AET-42). Once its A record
+points at the host, add the domain to the project in OpenShip, which issues a Let's Encrypt
 certificate through `openship-edge` on 80/443, raise `proxy_read_timeout` for the Proof
 WebSocket, and change `ACADEMY_PUBLIC_URL` plus the Google OAuth redirect in one deploy.
+Do not treat `academy.aetherlink.ai` as live until that DNS exists.
 
 ### 7. decommission
 
