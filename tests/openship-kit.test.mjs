@@ -252,13 +252,13 @@ describe('compose ports and project readiness (OpenShip sibling)', () => {
   const research = readFileSync(new URL('RESEARCH.md', kit), 'utf8');
   const step = readFileSync(path.join(root, 'infra/openship/step.sh'), 'utf8');
 
-  test('app ports are hardcoded 127.0.0.1:4327:4317 (no bash :- in ports)', () => {
+  test('app ports are hardcoded 0.0.0.0:4317:4317 (no bash :- in ports)', () => {
     const app = services.find((service) => service.name === 'app');
-    assert.deepEqual(app.ports, ['127.0.0.1:4327:4317']);
-    assert.match(compose, /ports:\n\s+-\s+"127\.0\.0\.1:4327:4317"/);
+    assert.deepEqual(app.ports, ['0.0.0.0:4317:4317']);
+    assert.match(compose, /ports:\n\s+-\s+"0\.0\.0\.0:4317:4317"/);
     // Executable ports lines only — comments may mention the ParseAddr pitfall.
     const portLines = compose.split('\n').filter((line) => /^\s+-\s+"/.test(line) && line.includes(':'));
-    assert.deepEqual(portLines.map((line) => line.trim()), ['- "127.0.0.1:4327:4317"']);
+    assert.deepEqual(portLines.map((line) => line.trim()), ['- "0.0.0.0:4317:4317"']);
     assert.ok(portLines.every((line) => !line.includes('${') && !line.includes(':-')));
   });
 
@@ -293,7 +293,7 @@ describe('compose ports and project readiness (OpenShip sibling)', () => {
 
   test('RESEARCH.md documents ParseAddr ports pitfall and per-service readiness', () => {
     assert.match(research, /ParseAddr/);
-    assert.match(research, /127\.0\.0\.1:4327:4317/);
+    assert.match(research, /0\.0\.0\.0:4317:4317/);
     assert.match(research, /each.*compose service|each\*\* compose service/i);
     assert.match(research, /readiness\.port/);
   });

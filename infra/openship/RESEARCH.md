@@ -156,14 +156,13 @@ for Academy deploy.
   traffic at least every 60 s. Raise `proxy_read_timeout` when attaching the domain.
   SSE needs `X-Accel-Buffering: no` because proxy buffering stays on.
 - A raw port without a domain works: a compose port spec with an explicit `0.0.0.0` stays
-  public, one without an IP is bound to 127.0.0.1 (`docker.ts`). Sibling staging is
-  **hardcoded** in `academy.compose.yaml` as `127.0.0.1:4327:4317` so it never collides
-  with live legacy `:4317`. Do **not** put bash `${VAR:-127.0.0.1:…}` in compose `ports:`:
-  when the expression is not expanded (or HostIp is taken as the literal before the first
-  colon in the default), Docker `ParseAddr` fails with
-  `ParseAddr("${ACADEMY_PORT_BIND:-127.0.0.1")…`. Project env may still list
+  public, one without an IP is bound to 127.0.0.1 (`docker.ts`). Cutover publish is
+  **hardcoded** in `academy.compose.yaml` as `0.0.0.0:4317:4317` (legacy `academy-app`
+  already stopped). Earlier sibling staging used `127.0.0.1:4327:4317`. Do **not** put bash
+  `${VAR:-127.0.0.1:…}` in compose `ports:`: when the expression is not expanded (or HostIp
+  is taken as the literal before the first colon in the default), Docker `ParseAddr` fails
+  with `ParseAddr("${ACADEMY_PORT_BIND:-127.0.0.1")…`. Project env may still list
   `ACADEMY_PORT_BIND=127.0.0.1` (IP only, names-only); it is not interpolated into ports.
-  Cutover to `0.0.0.0:4317` needs a compose publish change (separate from this sibling bind).
   **Unverified:** how a later edge domain route rewrites a routed compose port
   (`G/apps/api/src/lib/loopback-publish.ts` rewrites routed ports to loopback).
 - After compose `ports:` / `build:` edits land in git, OpenShip may still treat the previous
@@ -184,7 +183,7 @@ for Academy deploy.
   **each** compose service (`deploy.service.ts`: `advanced.readiness ?? project.readiness`).
   Do **not** set `readiness.port: 4317` on the project: that forced HTTP `/game/health` on
   postgres and redis (which do not publish 4317), surfacing `"postgres" never answered…`.
-  Omit `port` so only services that publish a port (app → host `4327`) are dialed;
+  Omit `port` so only services that publish a port (app → host `4317`) are dialed;
   postgres/redis skip (no published port). Daemon `healthcheck:` blocks on postgres/redis
   remain Docker HEALTHCHECKs and do not gate the deploy.
 - The default `routeStrategy` (`loopback-port`) stops the old container before starting the new
