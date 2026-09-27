@@ -654,5 +654,11 @@
   "join.errTitle.room": "Room code not found",
   "join.errTitle.full": "Squad is full",
   "join.errTitle.generic": "Could not sign in",
-  "fac.round": "Round"
+  "fac.round": "Round",
+  "decks.pinOverlay": "Pin this deck as Classroom overlay for day {day}",
+  "decks.unpinOverlay": "Unpin Classroom overlay for this day",
+  "decks.pinOverlayShort": "Pin as Classroom",
+  "decks.unpinOverlayShort": "Unpin Classroom",
+  "decks.pinnedNotice": "Pinned as Classroom overlay for day {day}. Open Classroom shows this Effect deck instead of the static /classroom or /workshop pack.",
+  "classroom.pinnedHint": "Pinned Effect deck"
 }
