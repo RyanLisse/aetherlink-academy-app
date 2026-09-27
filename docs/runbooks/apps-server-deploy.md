@@ -1,6 +1,6 @@
 # Runbook: deploy apps/server next to the legacy gateway
 
-Status: prepared 2026-09-26. Nothing in this runbook has been run against production yet.
+Status: superseded 2026-09-26. Ryan decided on a single Academy deployed through OpenShip, and `apps/server` is dropped for now. The `wave-foundation-deploy.yml` workflow this runbook calls has been removed. See `docs/runbooks/single-academy-openship.md`.
 
 For: the operator who puts `apps/server` (Effect + Drizzle, AET-45 to AET-55, AET-25) on the Hetzner host `aetherlink-academy` (91.99.78.17) for the first time.
 
