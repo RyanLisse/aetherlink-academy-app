@@ -118,7 +118,7 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  app.post('/game/facilitator/cohorts',wrap(async(req,res)=>{await requireFacilitator(req);res.json(await store.cohortOverview());}));
  app.post('/game/facilitator/cohort/create',wrap(async(req,res)=>{const identity=await requireFacilitator(req);const input=parseCohortInput(req.body||{}),names=req.body?.members?.length?parseMemberNames(req.body.members):[];res.status(201).json(await store.createCohort(input,names,identity&&{email:identity.email,name:identity.name}));}));
  app.post('/game/facilitator/cohort/members',wrap(async(req,res)=>{await requireFacilitator(req);res.json(await store.addCohortMembers(uuid(req.body.cohortId),parseMemberNames(req.body.members)));}));
- app.post('/game/facilitator/cohort/attach',wrap(async(req,res)=>{await requireFacilitator(req);res.json(await store.attachCohortRoom(uuid(req.body.cohortId),uuid(req.body.roomId)));}));
+ app.post('/game/facilitator/cohort/attach',wrap(async(req,res)=>{await requireFacilitator(req);const cohortId=uuid(req.body.cohortId);const roomId=req.body.roomId?uuid(req.body.roomId):uuid(await store.findRoomIdByCode(text(req.body.roomCode,40)));res.json(await store.attachCohortRoom(cohortId,roomId));}));
  const liveSockets=new Map();
  const closeSockets=personId=>{for(const socket of liveSockets.get(personId)||[])socket.destroy();liveSockets.delete(personId);};
  app.post('/game/facilitator/cohort/revoke',wrap(async(req,res)=>{await requireFacilitator(req);const result=await store.revokeCohortMember(uuid(req.body.cohortId),uuid(req.body.memberId));closeSockets(req.body.memberId);res.json(result);}));

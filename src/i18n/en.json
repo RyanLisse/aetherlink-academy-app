@@ -735,5 +735,19 @@
   "board.reopenRestores": "Reopening restores this room’s board (same Proof document).",
   "debrief.openBoard": "Open debrief board",
   "debrief.reopenBoard": "Reopen debrief board",
-  "debrief.viewBoard": "View debrief board"
+  "debrief.viewBoard": "View debrief board",
+  "cohort.lede": "A Wave cohort is the multi-day programme. Each room code is only one live session under that Wave — not the whole course.",
+  "cohort.linkedRooms": "Linked room sessions",
+  "cohort.noLinkedRooms": "No room sessions linked yet. Attach one below.",
+  "cohort.currentRoom": "today's room",
+  "cohort.attachByCode": "Or attach by room code",
+  "cohort.attachByCodePlaceholder": "e.g. 8A2F…",
+  "cohort.roster": "Cohort roster",
+  "cohort.rosterEmpty": "No participants enrolled yet. Add names below, or wait for seats from linked rooms.",
+  "cohort.copyRoster": "Copy roster",
+  "cohort.exportRoster": "Download CSV",
+  "cohort.createHelp": "Name the Wave and pick a start date. Room codes stay separate sessions under this cohort.",
+  "cohort.membersOptional": "Optional — one name per line",
+  "room.sessionLabel": "Room session",
+  "room.waveOf": "Part of Wave cohort · {name}"
 }

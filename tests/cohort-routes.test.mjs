@@ -39,6 +39,9 @@ test('facilitator creates a Wave cohort, participant activates a personal code i
   assert.equal((await call('POST','/game/facilitator/cohort/attach',{body:{hostKey:'test-host',cohortId:created.body.cohort.id,roomId:'not-a-uuid'}})).status,400);
   const attached=await call('POST','/game/facilitator/cohort/attach',{body:{hostKey:'test-host',cohortId:created.body.cohort.id,roomId:room.body.roomId}});
   assert.equal(attached.body.currentRoomId,room.body.roomId);
+  assert.equal(attached.body.rooms.length,1);
+  assert.equal(attached.body.rooms[0].id,room.body.roomId);
+  assert.equal(attached.body.rooms[0].code,room.body.code);
 
   const activated=await call('POST','/game/cohort/activate',{body:{code:alice.code.toLowerCase()}});
   assert.equal(activated.status,200);
@@ -49,6 +52,13 @@ test('facilitator creates a Wave cohort, participant activates a personal code i
   assert.equal(state.body.me.name,'Alice');
   assert.equal(state.body.readOnly,false);
   assert.equal(state.body.code,null);
+  assert.equal(state.body.wave?.id,created.body.cohort.id);
+  assert.equal(state.body.wave?.name,'Wave oktober (synthetisch)');
+  const byCodeRoom=await call('POST','/game/create',{body:{hostKey:'test-host',name:'Squad Vega'}});
+  const attachedByCode=await call('POST','/game/facilitator/cohort/attach',{body:{hostKey:'test-host',cohortId:created.body.cohort.id,roomCode:byCodeRoom.body.code}});
+  assert.equal(attachedByCode.status,200);
+  assert.equal(attachedByCode.body.rooms.length,2);
+  assert.equal(attachedByCode.body.currentRoomId,byCodeRoom.body.roomId);
   const roomJoin=await call('POST','/game/join',{body:{code:room.body.code,name:'Mallory'}});
   assert.equal(roomJoin.status,403);
   assert.match(roomJoin.body.error,/persoonlijke cohortcode/);
@@ -89,5 +99,24 @@ test('facilitator creates a Wave cohort, participant activates a personal code i
   assert.equal((await call('POST','/game/logout',{cookie:readSession,body:{}})).status,200);
   clock.now=START+104*DAY;
   assert.equal((await call('POST','/game/cohort/activate',{body:{code:reissued.body.code}})).status,403);
+ } finally {await close();}
+});
+
+test('facilitator creates empty Wave cohort and exports roster fields',async()=>{
+ const {call,close}=await gateway();
+ try {
+  const created=await call('POST','/game/facilitator/cohort/create',{body:{hostKey:'test-host',name:'Wave leeg',startDate:'2026-10-05',days:3}});
+  assert.equal(created.status,201);
+  assert.deepEqual(created.body.codes,[]);
+  assert.deepEqual(created.body.cohort.members,[]);
+  assert.deepEqual(created.body.cohort.rooms,[]);
+  const room=await call('POST','/game/create',{body:{hostKey:'test-host',name:'Solo room'}});
+  const attached=await call('POST','/game/facilitator/cohort/attach',{body:{hostKey:'test-host',cohortId:created.body.cohort.id,roomId:room.body.roomId}});
+  assert.equal(attached.body.rooms[0].name,'Solo room');
+  // rooms without cohort still joinable
+  const free=await call('POST','/game/create',{body:{hostKey:'test-host',name:'Free room'}});
+  const joined=await call('POST','/game/join',{body:{code:free.body.code,name:'Charlie'}});
+  assert.equal(joined.status,200);
+  assert.equal(joined.body.roomId,free.body.roomId);
  } finally {await close();}
 });
