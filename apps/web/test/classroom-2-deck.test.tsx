@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import {sourceSlides} from '../src/deck/slides.ts';
 import {normalizeSlides} from '../src/deck/normalize.ts';
-import {isClassroom1Path, isClassroom2Path} from '../src/routes.tsx';
+import {isClassroom1Path, isClassroom2Path, matchProductDeck} from '../src/routes.tsx';
 
 describe('AET-76 Classroom 2 deck', () => {
   const day2 = normalizeSlides(sourceSlides).filter((s) => s.lessonId === 'teaching-day-2');
@@ -37,5 +37,14 @@ describe('AET-76 Classroom 2 deck', () => {
     expect(isClassroom2Path('/lesson/classroom-2')).toBe(true);
     expect(isClassroom2Path('/classroom/1')).toBe(false);
     expect(isClassroom1Path('/classroom/2')).toBe(false);
+  });
+
+  it('does not serve Shell for /classroom/2 or /lesson/classroom-2', () => {
+    expect(matchProductDeck('/classroom/2')).toBe('classroom-2');
+    expect(matchProductDeck('/lesson/classroom-2')).toBe('classroom-2');
+    expect(matchProductDeck('/classroom/2')).not.toBeNull();
+    expect(matchProductDeck('/')).toBeNull();
+    expect(matchProductDeck('/classroom')).toBeNull();
+    expect(matchProductDeck('/lesson')).toBeNull();
   });
 });

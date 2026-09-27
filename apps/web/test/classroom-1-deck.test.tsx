@@ -1,7 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import {sourceSlides} from '../src/deck/slides.ts';
 import {normalizeSlides} from '../src/deck/normalize.ts';
-import {isClassroom1Path} from '../src/routes.tsx';
+import {isClassroom1Path, matchProductDeck} from '../src/routes.tsx';
 
 describe('AET-75 classroom deck sync', () => {
   const slides = normalizeSlides(sourceSlides);
@@ -25,5 +25,11 @@ describe('AET-75 classroom deck sync', () => {
     expect(isClassroom1Path('/lesson/classroom-1')).toBe(true);
     expect(isClassroom1Path('/deck')).toBe(false);
     expect(isClassroom1Path('/lesson')).toBe(false);
+  });
+
+  it('does not serve Shell for /classroom/1 or /lesson/classroom-1', () => {
+    expect(matchProductDeck('/classroom/1')).toBe('classroom-1');
+    expect(matchProductDeck('/lesson/classroom-1')).toBe('classroom-1');
+    expect(matchProductDeck('/')).toBeNull();
   });
 });
