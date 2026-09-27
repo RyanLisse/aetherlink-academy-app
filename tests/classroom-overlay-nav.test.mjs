@@ -190,3 +190,33 @@ test('Effect present no longer skips Space on focused button', () => {
   assert.match(present, /refocusStage/);
   assert.match(present, /preventDefault\(\); show\(current \+ 1\)/);
 });
+
+test('AET-107 fullscreen label flips with fullscreenElement (Deck + Effect present)', () => {
+  const deck = readFileSync(new URL('../packages/deck/src/Deck.tsx', import.meta.url), 'utf8');
+  assert.match(deck, /fullscreenchange/);
+  assert.match(deck, /Exit fullscreen/);
+  assert.match(deck, /Enter fullscreen/);
+  assert.match(deck, /fullscreenLabel/);
+  assert.match(deck, /aria-label=\{fullscreenLabel\}/);
+  assert.match(deck, /title=\{fullscreenLabel\}/);
+  // Framed early-return must still blur so overlay focus ring does not stick.
+  assert.match(deck, /if \(window !== window\.top\) \{ refocus\(\); return; \}/);
+  const present = readFileSync(new URL('../server/slides/export-html.ts', import.meta.url), 'utf8');
+  assert.match(present, /syncFullscreenLabel/);
+  assert.match(present, /Exit fullscreen/);
+  assert.match(present, /fullscreenchange/);
+});
+
+test('AET-107 Classroom overlay chrome ⛶ flips label and blurs after enter-FS', () => {
+  const main = readFileSync(new URL('../src/main.jsx', import.meta.url), 'utf8');
+  const start = main.indexOf('function ClassroomOverlay');
+  const end = main.indexOf('function Brand()');
+  assert.ok(start >= 0 && end > start);
+  const overlay = main.slice(start, end);
+  assert.match(overlay, /classroom-overlay-fullscreen/);
+  assert.match(overlay, /classroom\.enterFullscreen/);
+  assert.match(overlay, /classroom\.exitFullscreen/);
+  assert.match(overlay, /fullscreenchange/);
+  assert.match(overlay, /event\.currentTarget\.blur\(\)/);
+  assert.match(overlay, /frameRef\.current\?\.focus/);
+});

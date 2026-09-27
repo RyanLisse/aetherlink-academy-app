@@ -91,6 +91,8 @@ test('classroom chrome is translated in both catalogs', async () => {
     'classroom.open',
     'classroom.exit',
     'classroom.exitShort',
+    'classroom.enterFullscreen',
+    'classroom.exitFullscreen',
     'classroom.dayHint',
     'classroom.frameTitle',
     'classroom.pinnedHint',

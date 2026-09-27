@@ -53,7 +53,7 @@ ${slides}
       <div class="controls">
         <button type="button" id="previousSlide" aria-label="Vorige slide"><kbd>&larr;</kbd></button>
         <button type="button" id="nextSlide" aria-label="Volgende slide"><kbd>&rarr;</kbd></button>
-        <button type="button" id="fullscreenButton"><kbd>F</kbd> volledig scherm</button>
+        <button type="button" id="fullscreenButton" aria-label="Enter fullscreen" title="Enter fullscreen"><kbd>F</kbd> volledig scherm</button>
         <span><kbd>Esc</kbd> sluiten</span>
       </div>
     </div>
@@ -65,8 +65,17 @@ ${slides}
       var container = document.getElementById('slideContainer');
       var prev = document.getElementById('previousSlide'), next = document.getElementById('nextSlide'), full = document.getElementById('fullscreenButton');
       function show(i) { if (i < 0 || i >= total) return; slides[current].style.display = 'none'; current = i; slides[current].style.display = 'flex'; counter.textContent = (current + 1) + ' / ' + total; prev.disabled = current === 0; next.disabled = current === total - 1; }
+      function syncFullscreenLabel() {
+        if (!full) return;
+        var on = !!document.fullscreenElement;
+        var label = on ? 'Exit fullscreen' : 'Enter fullscreen';
+        full.setAttribute('aria-label', label);
+        full.setAttribute('title', label);
+      }
       function toggleFullscreen() { try { if (window !== window.top) return; } catch (err) { return; } if (document.fullscreenElement) { document.exitFullscreen && document.exitFullscreen().catch(function () {}); } else if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen().catch(function () {}); } }
       function refocusStage(btn) { if (btn && btn.blur) btn.blur(); if (container && container.focus) container.focus(); }
+      document.addEventListener('fullscreenchange', syncFullscreenLabel);
+      syncFullscreenLabel();
       if (container && container.setAttribute) container.setAttribute('tabindex', '-1');
       function fit() { var s = Math.min(window.innerWidth / ${dims.width}, window.innerHeight / ${dims.height}); container.style.transform = 'scale(' + s + ')'; }
       prev.addEventListener('click', function (ev) { show(current - 1); refocusStage(ev.currentTarget); });
