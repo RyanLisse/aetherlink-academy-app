@@ -10,7 +10,7 @@ import {AgentChatPanel} from './agent-chat';
 import {Naslag} from './naslag';
 import {reportScreen,startScreenReporting} from './screen';
 import {I18nProvider,LanguageToggle,useT,useI18n} from './i18n';
-import {classroomEmbedUrl,CLASSROOM_SANDBOX} from './classroom';
+import {classroomEmbedUrl,CLASSROOM_SANDBOX,pinnedDeckIdForRoom} from './classroom';
 import {connectBoard} from './board-doc';
 import {ArcadeApp, isArcadePath} from './arcade/ArcadeApp.jsx';
 import {StatusState} from './status';
@@ -95,7 +95,7 @@ function App(){
       {facilitator&&<FacilitatorControls room={room} control={control} busy={busy} connected={connected} onOpenClassroom={()=>setClassroomOpen(true)}/>}
       {facilitator&&classroomOpen&&<ClassroomOverlay room={room} onClose={()=>setClassroomOpen(false)}/>}
       <div className="workspace">
-        <section className="primary">{view==='squad'&&<Document room={room} theme={theme}/>}{view==='route'&&<Route room={room} onNavigate={setView}/>}{view==='lesson'&&<Lesson room={room} action={action} busy={busy}/>}{view==='solo'&&<Solo room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='coach'&&<Coach room={room} action={action}/>}{view==='naslag'&&<Naslag room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='review'&&<Review room={room} action={action} busy={busy}/>}{view==='decks'&&<Decks room={room} action={action} busy={busy}/>}{view==='apps'&&<AppsLauncher action={action} busy={busy} facilitator={facilitator} hostKey={''}/>}{view==='agentChat'&&agentChatAvailable&&!facilitator&&!room.readOnly&&<AgentChatPanel/>}{view==='debrief'&&facilitator&&<Debrief room={room}/>}{view==='course'&&facilitator&&<CourseComposer room={room} control={control} busy={busy}/>}{view==='board'&&<Board room={room} action={action} busy={busy} onBoard={board=>setRoom(current=>({...current,board}))}/>}{view==='certificate'&&!facilitator&&<MyCertificate room={room}/>}</section>
+        <section className="primary">{view==='squad'&&<Document room={room} theme={theme}/>}{view==='route'&&<Route room={room} onNavigate={setView}/>}{view==='lesson'&&<Lesson room={room} action={action} busy={busy}/>}{view==='solo'&&<Solo room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='coach'&&<Coach room={room} action={action}/>}{view==='naslag'&&<Naslag room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='review'&&<Review room={room} action={action} busy={busy}/>}{view==='decks'&&<Decks room={room} action={action} busy={busy} onRoom={setRoom}/>}{view==='apps'&&<AppsLauncher action={action} busy={busy} facilitator={facilitator} hostKey={''}/>}{view==='agentChat'&&agentChatAvailable&&!facilitator&&!room.readOnly&&<AgentChatPanel/>}{view==='debrief'&&facilitator&&<Debrief room={room}/>}{view==='course'&&facilitator&&<CourseComposer room={room} control={control} busy={busy}/>}{view==='board'&&<Board room={room} action={action} busy={busy} onBoard={board=>setRoom(current=>({...current,board}))}/>}{view==='certificate'&&!facilitator&&<MyCertificate room={room}/>}</section>
         <aside className="right-rail">
           <section className="panel roster">
             <div className="panel-heading"><h2>{t('roster.title')} <span>({room.members.length}/{t('roster.softMax')})</span></h2><Users size={17}/></div>
@@ -182,11 +182,12 @@ function ClassroomOverlay({room,onClose}){
         <Presentation size={18}/>
         <strong>{t('classroom.title')}</strong>
         <span className="classroom-day-hint">{t('classroom.dayHint',{day:room.day})}</span>
+        {pinnedDeckIdForRoom(room)?<span className="classroom-pin-hint cyan">{t('classroom.pinnedHint')}</span>:null}
         <span className="muted classroom-room-hint">{room.name}</span>
       </div>
       <button type="button" className="classroom-exit" onClick={exit} aria-label={t('classroom.exit')}><X size={16}/>{t('classroom.exitShort')}</button>
     </div>
-    <iframe ref={frameRef} className="classroom-frame" src={classroomEmbedUrl(room.day)} title={t('classroom.frameTitle')} sandbox={CLASSROOM_SANDBOX} allow="fullscreen" allowFullScreen/>
+    <iframe ref={frameRef} className="classroom-frame" src={classroomEmbedUrl(room.day,pinnedDeckIdForRoom(room))} title={t('classroom.frameTitle')} sandbox={CLASSROOM_SANDBOX} allow="fullscreen" allowFullScreen/>
   </div>;
 }
 

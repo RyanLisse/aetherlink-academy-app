@@ -231,6 +231,34 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  app.post('/game/decks/:deckId/duplicate',wrap(async(req,res)=>res.status(201).json(await slides.run('duplicateDeck',deckActor(await browser(req)),{deckId:deckId(req)}))));
  app.delete('/game/decks/:deckId',wrap(async(req,res)=>res.json(await slides.run('deleteDeck',deckActor(await browser(req)),{deckId:deckId(req)}))));
  app.get('/game/decks/:deckId/export.html',wrap(async(req,res)=>{const result=await slides.run('exportHtml',deckActor(await browser(req)),{deckId:deckId(req)});res.type('text/html').set('Content-Disposition',`attachment; filename="${result.filename}"`).set('Content-Security-Policy',"default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src https: data:; font-src https: data:").send(result.html);}));
+ // Inline present viewer for Classroom overlay pin (AET-105 Slice B) — same HTML as export, no attachment.
+ app.get('/game/decks/:deckId/present',wrap(async(req,res)=>{const result=await slides.run('exportHtml',deckActor(await browser(req)),{deckId:deckId(req)});res.type('text/html').set('Cache-Control','private, no-store').set('Content-Security-Policy',"default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src https: data:; font-src https: data:").send(result.html);}));
+ // Pin / unpin an Effect deck as Classroom overlay for a room day (no promote-to-static).
+ const overlayDay=(r,raw)=>{if(raw===undefined||raw===null||raw==='')return r.day;const day=Number(raw);if(r.course?!r.course.days.some(entry=>entry.day===day):!Number.isInteger(day)||day<1||day>7)fail(400,r.course?`Dag ${day} zit niet in de cursus.`:'Kies een geldige cursusdag.');return day;};
+ app.put('/game/classroom-overlay',wrap(async(req,res)=>{
+  const pinned=uuid(req.body?.deckId);
+  res.json(await store.withSession(token(req),'browser',async({r,s,p})=>{
+   if(s.personId!=='facilitator')fail(403,'Alleen de facilitator mag het Classroom-overlay pinnen.');
+   const day=overlayDay(r,req.body?.day);
+   await slides.run('getDeck',deckActor({r,s,p}),{deckId:pinned,compact:true});
+   r.classroomOverlayByDay={...(r.classroomOverlayByDay||{}),[String(day)]:pinned};
+   r.version++;
+   return store.view(r,s);
+  }));
+ }));
+ app.delete('/game/classroom-overlay',wrap(async(req,res)=>{
+  res.json(await store.withSession(token(req),'browser',({r,s})=>{
+   if(s.personId!=='facilitator')fail(403,'Alleen de facilitator mag het Classroom-overlay pinnen.');
+   const day=overlayDay(r,req.body?.day??req.query?.day);
+   if(r.classroomOverlayByDay){
+    const next={...r.classroomOverlayByDay};
+    delete next[String(day)];
+    if(Object.keys(next).length)r.classroomOverlayByDay=next;else delete r.classroomOverlayByDay;
+   }
+   r.version++;
+   return store.view(r,s);
+  }));
+ }));
  const fileId=req=>String(req.params.fileId||'');
  const downloadName=name=>name.replace(/[^\p{L}\p{N}._ -]+/gu,'_').slice(0,200)||'bestand';
  app.post('/game/files',wrap(async(req,res)=>res.status(201).json(await files.run('uploadFile',deckActor(await browser(req)),{filename:req.query.filename,contentType:req.query.contentType,bytes:req.body}))));

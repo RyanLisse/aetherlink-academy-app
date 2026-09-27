@@ -1,5 +1,5 @@
 import React,{useCallback,useEffect,useRef,useState} from 'react';
-import {Presentation,Plus,ChevronLeft,ChevronRight,Maximize,Download,Trash2,Copy,RefreshCw,ArrowLeft,Sparkles} from 'lucide-react';
+import {Presentation,Plus,ChevronLeft,ChevronRight,Maximize,Download,Trash2,Copy,RefreshCw,ArrowLeft,Sparkles,Pin,PinOff} from 'lucide-react';
 import {api,apiMethod,getToken} from './api';
 import {useT} from './i18n';
 import {reportScreen} from './screen';
@@ -17,14 +17,14 @@ export function SlideStage({slide,aspectRatio,designSystem,className=''}){
  </div>;
 }
 
-export function Decks({room,action,busy}){
+export function Decks({room,action,busy,onRoom}){
  const t=useT();
  const [decks,setDecks]=useState(null);
  const [open,setOpen]=useState(null);
  const [title,setTitle]=useState('');
  const refresh=useCallback(async()=>{try{const result=await api('decks');setDecks(result.decks);}catch{}},[]);
  useEffect(()=>{refresh();const timer=setInterval(refresh,5000);return()=>clearInterval(timer);},[refresh]);
- if(open)return <DeckView room={room} deckId={open} action={action} busy={busy} onBack={()=>{setOpen(null);refresh();}}/>;
+ if(open)return <DeckView room={room} deckId={open} action={action} busy={busy} onRoom={onRoom} onBack={()=>{setOpen(null);refresh();}}/>;
  const canDelete=deck=>room.me.role==='Facilitator'||deck.createdBy?.id===room.me.id;
  return <section className="panel content-panel decks">
   <p className="cyan"><Presentation size={16}/>{t('decks.eyebrow')}</p>
@@ -47,7 +47,7 @@ export function Decks({room,action,busy}){
  </section>;
 }
 
-function DeckView({room,deckId,action,busy,onBack}){
+function DeckView({room,deckId,action,busy,onRoom,onBack}){
  const t=useT();
  const [deck,setDeck]=useState(null);
  const [index,setIndex]=useState(0);
@@ -67,6 +67,14 @@ function DeckView({room,deckId,action,busy,onBack}){
  const addSlide=()=>action(async()=>{await api(`decks/${deckId}/slides`,{heading:t('decks.newSlideHeading'),body:[t('decks.newSlideBody')]});await load();setIndex(count);});
  const removeSlide=slide=>action(async()=>{await apiMethod('PATCH',`decks/${deckId}`,{operations:[{op:'delete-slide',slideId:slide.id}]});await load();});
  const move=(slide,delta)=>action(async()=>{const ids=deck.slides.map(s=>s.id);const from=ids.indexOf(slide.id),to=from+delta;if(to<0||to>=ids.length)return;ids.splice(to,0,ids.splice(from,1)[0]);await apiMethod('PATCH',`decks/${deckId}`,{expectedRevision:deck.revision,operations:[{op:'reorder-slides',slideIds:ids}]});await load();setIndex(to);});
+ const facilitator=room.me.role==='Facilitator';
+ const pinned=facilitator&&room.classroomOverlayDeckId===deckId;
+ const togglePin=()=>action(async()=>{
+  const next=pinned
+   ?await apiMethod('DELETE','classroom-overlay',{day:room.day})
+   :await apiMethod('PUT','classroom-overlay',{deckId,day:room.day});
+  onRoom?.(next);
+ });
  const showNotes=room.me.role!=='Navigator';
  const current=deck?.slides[index];
  return <section className="panel content-panel deck-view">
@@ -77,10 +85,12 @@ function DeckView({room,deckId,action,busy,onBack}){
     <button type="button" onClick={load} aria-label={t('decks.refresh')} title={t('decks.refresh')}><RefreshCw size={14}/></button>
     <button type="button" disabled={busy} onClick={addSlide}><Plus size={14}/>{t('decks.addSlide')}</button>
     <button type="button" disabled={!count} onClick={download}><Download size={14}/>{t('decks.export')}</button>
+    {facilitator&&<button type="button" disabled={busy||!count} onClick={togglePin} aria-pressed={pinned} title={pinned?t('decks.unpinOverlay'):t('decks.pinOverlay',{day:room.day})} aria-label={pinned?t('decks.unpinOverlay'):t('decks.pinOverlay',{day:room.day})}>{pinned?<PinOff size={14}/>:<Pin size={14}/>}{pinned?t('decks.unpinOverlayShort'):t('decks.pinOverlayShort')}</button>}
     <button type="button" className="gradient" disabled={!count} onClick={present}><Maximize size={14}/>{t('decks.present')}</button>
    </div>
   </div>
   {error&&<p className="error" role="alert">{error}</p>}
+  {facilitator&&pinned&&<p className="notice deck-pin-notice" role="status">{t('decks.pinnedNotice',{day:room.day})}</p>}
   {deck&&!count&&<p className="empty"><Presentation size={22}/><br/>{t('decks.noSlides')}</p>}
   {deck&&count>0&&<div className="deck-body">
    <ol className="slide-rail" aria-label={t('decks.rail')}>{deck.slides.map((slide,i)=><li key={slide.id} className={i===index?'selected':''}>

@@ -654,5 +654,11 @@
   "join.errTitle.room": "Kamercode niet gevonden",
   "join.errTitle.full": "Squad is vol",
   "join.errTitle.generic": "Aanmelden lukte niet",
-  "fac.round": "Ronde"
+  "fac.round": "Ronde",
+  "decks.pinOverlay": "Pin dit deck als Classroom-overlay voor dag {day}",
+  "decks.unpinOverlay": "Classroom-overlay voor deze dag losmaken",
+  "decks.pinOverlayShort": "Pin als Classroom",
+  "decks.unpinOverlayShort": "Classroom losmaken",
+  "decks.pinnedNotice": "Gepind als Classroom-overlay voor dag {day}. Open Classroom toont dit Effect-deck in plaats van het statische /classroom- of /workshop-pakket.",
+  "classroom.pinnedHint": "Gepind Effect-deck"
 }
