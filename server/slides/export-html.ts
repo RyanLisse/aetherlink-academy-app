@@ -65,7 +65,7 @@ ${slides}
       var container = document.getElementById('slideContainer');
       var prev = document.getElementById('previousSlide'), next = document.getElementById('nextSlide'), full = document.getElementById('fullscreenButton');
       function show(i) { if (i < 0 || i >= total) return; slides[current].style.display = 'none'; current = i; slides[current].style.display = 'flex'; counter.textContent = (current + 1) + ' / ' + total; prev.disabled = current === 0; next.disabled = current === total - 1; }
-      function toggleFullscreen() { if (document.fullscreenElement) { document.exitFullscreen && document.exitFullscreen().catch(function () {}); } else if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen().catch(function () {}); } }
+      function toggleFullscreen() { try { if (window !== window.top) return; } catch (err) { return; } if (document.fullscreenElement) { document.exitFullscreen && document.exitFullscreen().catch(function () {}); } else if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen().catch(function () {}); } }
       function fit() { var s = Math.min(window.innerWidth / ${dims.width}, window.innerHeight / ${dims.height}); container.style.transform = 'scale(' + s + ')'; }
       prev.addEventListener('click', function () { show(current - 1); });
       next.addEventListener('click', function () { show(current + 1); });

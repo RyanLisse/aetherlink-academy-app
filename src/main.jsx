@@ -1,4 +1,4 @@
-import React,{useEffect,useState,useRef} from 'react';
+import React,{useEffect,useState,useRef,useCallback} from 'react';
 import {createRoot} from 'react-dom/client';
 import {Library,Users,BookOpen,Compass,Target,Sparkles,ClipboardCheck,Sun,Moon,ArrowRight,Clock,Play,Pause,RotateCw,Shuffle,HelpCircle,Check,LogOut,Copy,FileText,ExternalLink,Presentation,X,LayoutGrid,Link,Columns3,Plus,Download,Award,ListOrdered,MessageSquare,Mail} from 'lucide-react';
 import {api,authApi,getToken,getParticipantAccess,saveParticipantAccess,forgetParticipantAccess,participantAccessUrl,saveSession} from './api';
@@ -10,7 +10,7 @@ import {AgentChatPanel} from './agent-chat';
 import {Naslag} from './naslag';
 import {reportScreen,startScreenReporting} from './screen';
 import {I18nProvider,LanguageToggle,useT,useI18n} from './i18n';
-import {classroomEmbedUrl,CLASSROOM_SANDBOX,pinnedDeckIdForRoom} from './classroom';
+import {classroomEmbedUrl,CLASSROOM_SANDBOX,pinnedDeckIdForRoom,isClassroomNavKey,forwardClassroomNavKey} from './classroom';
 import {connectBoard} from './board-doc';
 import {ArcadeApp, isArcadePath} from './arcade/ArcadeApp.jsx';
 import {StatusState} from './status';
@@ -56,6 +56,7 @@ function App(){
   const [busy,setBusy]=useState(false);
   const [copied,setCopied]=useState(null);
   const [classroomOpen,setClassroomOpen]=useState(false);
+  const closeClassroom=useCallback(()=>setClassroomOpen(false),[]);
   const [agentChatAvailable,setAgentChatAvailable]=useState(false);
   const accessFromUrl=useRef(new URLSearchParams(location.hash.slice(1)).get('access')).current;
   const [participantAccess,setParticipantAccess]=useState(()=>accessFromUrl||getParticipantAccess());
@@ -93,7 +94,7 @@ function App(){
       {room.readOnly&&<StatusState kind="readonly" title={t('readOnly.title')} action={<button type="button" onClick={()=>action(async()=>{const doc=await api('document');const link=document.createElement('a');link.href=URL.createObjectURL(new Blob([doc.markdown||''],{type:'text/markdown'}));link.download=`${room.name}.md`;link.click();URL.revokeObjectURL(link.href);})}><FileText size={15} aria-hidden="true"/>{t('readOnly.export')}</button>}>{t('readOnly.help')}</StatusState>}
       {error&&<div className="error" role="alert">{error}<button onClick={()=>setError('')} aria-label={t('common.closeAlert')}>×</button></div>}
       {facilitator&&<FacilitatorControls room={room} control={control} busy={busy} connected={connected} onOpenClassroom={()=>setClassroomOpen(true)}/>}
-      {facilitator&&classroomOpen&&<ClassroomOverlay room={room} onClose={()=>setClassroomOpen(false)}/>}
+      {facilitator&&classroomOpen&&<ClassroomOverlay room={room} onClose={closeClassroom}/>}
       <div className="workspace">
         <section className="primary">{view==='squad'&&<Document room={room} theme={theme}/>}{view==='route'&&<Route room={room} onNavigate={setView}/>}{view==='lesson'&&<Lesson room={room} action={action} busy={busy}/>}{view==='solo'&&<Solo room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='coach'&&<Coach room={room} action={action}/>}{view==='naslag'&&<Naslag room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='review'&&<Review room={room} action={action} busy={busy}/>}{view==='decks'&&<Decks room={room} action={action} busy={busy} onRoom={setRoom}/>}{view==='apps'&&<AppsLauncher action={action} busy={busy} facilitator={facilitator} hostKey={''}/>}{view==='agentChat'&&agentChatAvailable&&!facilitator&&!room.readOnly&&<AgentChatPanel/>}{view==='debrief'&&facilitator&&<Debrief room={room}/>}{view==='course'&&facilitator&&<CourseComposer room={room} control={control} busy={busy}/>}{view==='board'&&<Board room={room} action={action} busy={busy} onBoard={board=>setRoom(current=>({...current,board}))}/>}{view==='certificate'&&!facilitator&&<MyCertificate room={room}/>}</section>
         <aside className="right-rail">
@@ -122,6 +123,10 @@ function ClassroomOverlay({room,onClose}){
   const t=useT();
   const frameRef=useRef(null);
   const shellRef=useRef(null);
+  // Keep latest onClose without re-running the mount effect (room poll recreates
+  // inline closers; unstable deps were exiting+requesting fullscreen every ~2s).
+  const onCloseRef=useRef(onClose);
+  onCloseRef.current=onClose;
   useEffect(()=>{
     const prevOverflow=document.body.style.overflow;
     const returnFocusTo=document.activeElement;
@@ -129,7 +134,7 @@ function ClassroomOverlay({room,onClose}){
     try{if(!navigator.webdriver)document.documentElement.requestFullscreen?.();}catch{}
     const exit=()=>{
       try{if(document.fullscreenElement)document.exitFullscreen?.();}catch{}
-      onClose();
+      onCloseRef.current();
     };
     const focusable=()=>[...(shellRef.current?.querySelectorAll('button,iframe,[href],[tabindex]:not([tabindex="-1"])')||[])].filter(el=>!el.disabled);
     // Walk to the next element that actually accepts focus: an iframe is only
@@ -147,6 +152,15 @@ function ClassroomOverlay({room,onClose}){
     };
     const onKey=e=>{
       if(e.key==='Escape'){e.preventDefault();exit();return;}
+      if(isClassroomNavKey(e.key)){
+        // Focus is on overlay chrome (Exit etc.): deck key handlers live inside
+        // the iframe and never see these. Forward same-origin without requiring
+        // a prior click into the frame. Skip when iframe focus is editable (K6).
+        if(forwardClassroomNavKey(frameRef.current,e.key)){
+          e.preventDefault();
+        }
+        return;
+      }
       if(e.key!=='Tab')return;
       // The deck covers the whole app, so focus behind it is invisible: drive Tab
       // ourselves instead of letting it reach the room controls underneath.
@@ -174,8 +188,8 @@ function ClassroomOverlay({room,onClose}){
       try{if(document.fullscreenElement)document.exitFullscreen?.();}catch{}
       returnFocusTo?.focus?.();
     };
-  },[onClose]);
-  const exit=()=>{try{if(document.fullscreenElement)document.exitFullscreen?.();}catch{}onClose();};
+  },[]);
+  const exit=()=>{try{if(document.fullscreenElement)document.exitFullscreen?.();}catch{}onCloseRef.current();};
   return <div ref={shellRef} className="classroom-overlay" role="dialog" aria-modal="true" aria-label={t('classroom.title')} data-testid="classroom-overlay">
     <div className="classroom-chrome">
       <div className="classroom-chrome-left">
