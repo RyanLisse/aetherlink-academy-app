@@ -3,7 +3,7 @@ import {renderToStaticMarkup} from 'react-dom/server';
 import type {Slide} from '@academy/schema';
 import {mountSourceVisuals, type SourceVisualMount} from './source-visuals.js';
 import {Instructions, LayoutRenderer} from './renderers.js';
-import {deckNavBlockedByTarget} from './nav-keys.mjs';
+import {deckNavBlockedByTarget} from './nav-keys.js';
 
 export type DeckMode = 'projector' | 'presenter' | 'reader' | 'follow';
 export type DeckSlide = Slide & Record<string, unknown>;

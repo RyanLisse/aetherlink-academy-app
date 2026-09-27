@@ -14,11 +14,11 @@ export const DECK_NAV_KEYS = Object.freeze([
   ' ',
   'Home',
   'End',
-]);
+] as const);
 
-const NAV = new Set(DECK_NAV_KEYS);
+const NAV: ReadonlySet<string> = new Set(DECK_NAV_KEYS);
 
-export function isDeckNavKey(key) {
+export function isDeckNavKey(key: string): boolean {
   return NAV.has(key);
 }
 
@@ -27,17 +27,21 @@ export function isDeckNavKey(key) {
  * Editable fields always block. Buttons/links block only non-nav keys so
  * Arrow/Space still advance after a toolbar click (VERIFIED soft live).
  */
-export function deckNavBlockedByTarget(target, key) {
-  if (!target || typeof target.closest !== 'function') return false;
+export function deckNavBlockedByTarget(
+  target: EventTarget | null | undefined,
+  key: string,
+): boolean {
+  if (!target || typeof (target as Element).closest !== 'function') return false;
+  const el = target as Element;
   if (
-    target.closest(
+    el.closest(
       'input, textarea, select, [contenteditable]:not([contenteditable="false"])',
     )
   ) {
     return true;
   }
-  if (target.closest('dialog')) return true;
+  if (el.closest('dialog')) return true;
   if (isDeckNavKey(key)) return false;
-  if (target.closest('button, a')) return true;
+  if (el.closest('button, a')) return true;
   return false;
 }

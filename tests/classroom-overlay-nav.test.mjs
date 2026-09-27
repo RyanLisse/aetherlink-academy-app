@@ -147,7 +147,7 @@ import {
   DECK_NAV_KEYS,
   deckNavBlockedByTarget,
   isDeckNavKey,
-} from '../packages/deck/src/nav-keys.mjs';
+} from '../packages/deck/src/nav-keys.ts';
 
 test('deckNavBlockedByTarget: toolbar button does not steal Arrow/Space (VERIFIED path)', () => {
   const button = {
