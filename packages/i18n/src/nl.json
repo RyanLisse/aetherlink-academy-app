@@ -705,5 +705,20 @@
   "debrief.quizNotStarted": "Niet gestart",
   "debrief.quizInProgress": "Bezig",
   "debrief.quizCompleted": "Afgerond",
-  "debrief.quizExpired": "Verlopen"
+  "debrief.quizExpired": "Verlopen",
+  "lab.readyToPlay": "Klaar om te spelen",
+  "lab.play": "Lab openen",
+  "lab.playHint": "Open het Arcade Lab hier in de kamer. Je voortgang wordt opgeslagen als je klaar bent.",
+  "lab.playHintFacilitator": "Bekijk het lab in de kamer. Afronden telt hier niet mee voor deelnemers.",
+  "lab.retry": "Opnieuw proberen",
+  "lab.timeout": "Het lab reageerde niet op tijd. Controleer de verbinding en probeer opnieuw.",
+  "lab.loadFailed": "Het lab kon niet worden geladen.",
+  "lab.emptyFacilitator": "Geen Arcade Lab open voor deze dag. Kies een les in de teach-balk en zet Open aan zodat deelnemers kunnen spelen.",
+  "lab.emptyLearner": "Er is nog geen lab open voor deze dag. Wacht op de facilitator, of ga verder met de les.",
+  "fac.lab": "Arcade Lab",
+  "fac.labNone": "Geen lab toegewezen",
+  "fac.labOpen": "Open voor deelnemers",
+  "fac.labOpenHint": "Open · {title}",
+  "fac.labClosedHint": "Toegewezen (dicht) · {title}",
+  "fac.labCatalogFailed": "Labcatalogus niet beschikbaar: {message}"
 }

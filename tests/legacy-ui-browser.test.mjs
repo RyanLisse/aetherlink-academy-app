@@ -142,7 +142,7 @@ test('facilitator bar at 1024px: two rows, every control inside the bar at one h
     assert.deepEqual(dialHeights,[34],'session dials share one height');
     assert.ok(layout.heights.every(h=>h===34||h===40),'controls are 34px dials or 40px teach primary');
     assert.ok(layout.rows===2||layout.rows===3,'teach row + dials (dials may wrap once at 1024px)');
-    assert.equal(layout.count,11);
+    assert.equal(layout.count,12); // teach: day+classroom+lab select; dials: start/next/shuffle/+5/-5/time/duration/phase/format
     assert.equal(layout.scroll,0);
     assert.equal(await overflow(page),0);
     assert.ok(await bar.locator('.fac-day-label').isVisible(),'day chip visible without menu');

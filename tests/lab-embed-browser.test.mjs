@@ -36,6 +36,7 @@ test('a real Arcade lesson embedded in the day-1 lesson reports completion into 
   await page.goto(`${base}/#access=${resumeToken}`);
   await page.getByRole('button',{name:'Les & quick check',exact:true}).click();
   const embed=page.locator('article.lab-embed[data-lab-id="sample-counter"]');
+  await embed.getByTestId('lab-play').click();
   const chip=embed.getByRole('status');
   await assert.doesNotReject(chip.filter({hasText:'Stap 0 van 2'}).waitFor({timeout:20000}),'lab handshake reports step 0 of 2');
 
@@ -102,6 +103,7 @@ test('graded Arcade stops are checked by the server before the lab can complete'
   await page.goto(`${base}/#access=${resumeToken}`);
   await page.getByRole('button',{name:'Les & quick check',exact:true}).click();
   const embed=page.locator('article.lab-embed[data-lab-id="ws-2-eve-state"]');
+  await embed.getByTestId('lab-play').click();
   const chip=embed.getByRole('status');
   await assert.doesNotReject(chip.filter({hasText:'Stap 0 van 3'}).waitFor({timeout:20000}),'lab handshake reports step 0 of 3');
   const lab=page.frameLocator('iframe.lab-frame');

@@ -1,6 +1,6 @@
 import React,{useEffect,useState,useRef,useCallback} from 'react';
 import {createRoot} from 'react-dom/client';
-import {Library,Users,BookOpen,Compass,Target,Sparkles,ClipboardCheck,Sun,Moon,ArrowRight,Clock,Play,Pause,RotateCw,Shuffle,HelpCircle,Check,LogOut,Copy,FileText,ExternalLink,Presentation,X,LayoutGrid,Link,Columns3,Plus,Download,Award,ListOrdered,MessageSquare,Mail} from 'lucide-react';
+import {Library,Users,BookOpen,Compass,Target,Sparkles,ClipboardCheck,Sun,Moon,ArrowRight,Clock,Play,Pause,RotateCw,Shuffle,HelpCircle,Check,LogOut,Copy,FileText,ExternalLink,Presentation,FlaskConical,X,LayoutGrid,Link,Columns3,Plus,Download,Award,ListOrdered,MessageSquare,Mail} from 'lucide-react';
 import {api,authApi,getToken,getParticipantAccess,saveParticipantAccess,forgetParticipantAccess,participantAccessUrl,saveSession} from './api';
 import {AppsLauncher} from './portal/AppsLauncher.jsx';
 import {Knowledge,Coach,Lesson,Solo,Review,Route,Debrief,CourseComposer,coursePosition} from './panels';
@@ -339,6 +339,34 @@ function Join({ready,action,busy,error,clearError,joined}){
   </main>;
 }
 
+
+function LabConfigChrome({room,control,disabled}){
+  const t=useT();
+  const [catalog,setCatalog]=useState([]);
+  const [loadError,setLoadError]=useState('');
+  useEffect(()=>{let active=true;api('lab-catalog').then(data=>{if(active){setCatalog(data.labs||[]);setLoadError('');}}).catch(err=>{if(active)setLoadError(err.message||String(err));});return()=>{active=false;};},[]);
+  const assigned=room.lab||null;
+  const selectId=assigned?.id||'';
+  const onSelect=e=>{
+    const lessonId=e.target.value;
+    if(!lessonId)control('lab',{lessonId:null});
+    else control('lab',{lessonId,open:assigned?.open!==false});
+  };
+  const onToggle=e=>control('lab',{lessonId:assigned.id,open:e.target.checked});
+  return <div className="fac-lab-config" role="group" aria-label={t('fac.lab')}>
+    <FlaskConical size={16} aria-hidden="true"/>
+    <label className="fac-lab-select">{t('fac.lab')}
+      <select value={selectId} disabled={disabled||Boolean(loadError)} onChange={onSelect} aria-label={t('fac.lab')} data-testid="fac-lab-select">
+        <option value="">{t('fac.labNone')}</option>
+        {catalog.map(lesson=><option key={lesson.id} value={lesson.id}>{lesson.title}</option>)}
+      </select>
+    </label>
+    {assigned&&<label className="facilitator-toggle fac-lab-open"><input type="checkbox" checked={assigned.open===true} disabled={disabled} onChange={onToggle} data-testid="fac-lab-open"/>{t('fac.labOpen')}</label>}
+    {assigned&&<span className="fac-lab-status muted" aria-live="polite">{assigned.open?t('fac.labOpenHint',{title:assigned.title}):t('fac.labClosedHint',{title:assigned.title})}</span>}
+    {loadError&&<span className="error" role="alert">{t('fac.labCatalogFailed',{message:loadError})}</span>}
+  </div>;
+}
+
 function FacilitatorControls({room,control:send,busy,connected,onOpenClassroom}){
   const t=useT();
   // Ignore input while a command is in flight instead of disabling: a disabled
@@ -359,6 +387,7 @@ function FacilitatorControls({room,control:send,busy,connected,onOpenClassroom})
         <label className="fac-day-select">{t('fac.day')}<select value={room.day} disabled={disabled} onChange={e=>control('day',Number(e.target.value))} aria-label={t('fac.day')}>{dayOptions.map((day,i)=><option key={day} value={day}>{i+1}</option>)}</select></label>
       </div>
       <button type="button" className="classroom-open gradient" onClick={onOpenClassroom} aria-label={t('classroom.open')}><Presentation size={18} aria-hidden="true"/>{t('classroom.open')}</button>
+      <LabConfigChrome room={room} control={control} disabled={disabled}/>
     </div>
     <div className="facilitator-controls-row facilitator-dials" role="group" aria-label={t('fac.session')}>
       <strong className="fac-dials-label">{t('fac.session')}</strong>
