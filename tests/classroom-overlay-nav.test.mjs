@@ -142,3 +142,51 @@ test('framed deck FS guards land in Deck package + Effect present HTML', () => {
   assert.match(present, /window\s*!==\s*window\.top/);
   assert.match(present, /function toggleFullscreen/);
 });
+
+import {
+  DECK_NAV_KEYS,
+  deckNavBlockedByTarget,
+  isDeckNavKey,
+} from '../packages/deck/src/nav-keys.mjs';
+
+test('deckNavBlockedByTarget: toolbar button does not steal Arrow/Space (VERIFIED path)', () => {
+  const button = {
+    closest(sel) {
+      if (sel.includes('button')) return this;
+      return null;
+    },
+  };
+  for (const key of DECK_NAV_KEYS) {
+    assert.equal(deckNavBlockedByTarget(button, key), false, `nav key ${JSON.stringify(key)}`);
+  }
+  // Non-nav still blocked on button (e.g. presenter shortcut)
+  assert.equal(deckNavBlockedByTarget(button, 's'), true);
+  assert.equal(deckNavBlockedByTarget(button, 'c'), true);
+});
+
+test('deckNavBlockedByTarget: input/textarea still steal keys (K6)', () => {
+  const input = {
+    closest(sel) {
+      if (sel.includes('input')) return this;
+      return null;
+    },
+  };
+  assert.equal(deckNavBlockedByTarget(input, 'ArrowRight'), true);
+  assert.equal(deckNavBlockedByTarget(input, ' '), true);
+  assert.equal(isDeckNavKey(' '), true);
+});
+
+test('Deck.tsx uses deckNavBlockedByTarget and blurs toolbar after activate', () => {
+  const deck = readFileSync(new URL('../packages/deck/src/Deck.tsx', import.meta.url), 'utf8');
+  assert.match(deck, /deckNavBlockedByTarget/);
+  assert.doesNotMatch(deck, /closest\('input, textarea, select, button, a/);
+  assert.match(deck, /event\.currentTarget\.blur\(\)/);
+  assert.match(deck, /stageRef\.current\?\.focus/);
+});
+
+test('Effect present no longer skips Space on focused button', () => {
+  const present = readFileSync(new URL('../server/slides/export-html.ts', import.meta.url), 'utf8');
+  assert.doesNotMatch(present, /e\.key === ' ' && e\.target\.closest && e\.target\.closest\('button'\)/);
+  assert.match(present, /refocusStage/);
+  assert.match(present, /preventDefault\(\); show\(current \+ 1\)/);
+});

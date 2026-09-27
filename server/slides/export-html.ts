@@ -66,15 +66,21 @@ ${slides}
       var prev = document.getElementById('previousSlide'), next = document.getElementById('nextSlide'), full = document.getElementById('fullscreenButton');
       function show(i) { if (i < 0 || i >= total) return; slides[current].style.display = 'none'; current = i; slides[current].style.display = 'flex'; counter.textContent = (current + 1) + ' / ' + total; prev.disabled = current === 0; next.disabled = current === total - 1; }
       function toggleFullscreen() { try { if (window !== window.top) return; } catch (err) { return; } if (document.fullscreenElement) { document.exitFullscreen && document.exitFullscreen().catch(function () {}); } else if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen().catch(function () {}); } }
+      function refocusStage(btn) { if (btn && btn.blur) btn.blur(); if (container && container.focus) container.focus(); }
+      if (container && container.setAttribute) container.setAttribute('tabindex', '-1');
       function fit() { var s = Math.min(window.innerWidth / ${dims.width}, window.innerHeight / ${dims.height}); container.style.transform = 'scale(' + s + ')'; }
-      prev.addEventListener('click', function () { show(current - 1); });
-      next.addEventListener('click', function () { show(current + 1); });
-      full.addEventListener('click', toggleFullscreen);
+      prev.addEventListener('click', function (ev) { show(current - 1); refocusStage(ev.currentTarget); });
+      next.addEventListener('click', function (ev) { show(current + 1); refocusStage(ev.currentTarget); });
+      full.addEventListener('click', function (ev) { toggleFullscreen(); refocusStage(ev.currentTarget); });
       prev.disabled = true; next.disabled = total < 2;
       window.addEventListener('resize', fit); fit();
       document.addEventListener('keydown', function (e) {
+        // Space/arrows advance even when a chrome button (⛶) still has focus —
+        // preventDefault so Space does not activate the focused button (AET-106).
+        var editable = e.target && e.target.closest && e.target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])');
+        if (editable) return;
         switch (e.key) {
-          case 'ArrowRight': case 'ArrowDown': case ' ': case 'PageDown': if (e.key === ' ' && e.target.closest && e.target.closest('button')) break; e.preventDefault(); show(current + 1); break;
+          case 'ArrowRight': case 'ArrowDown': case ' ': case 'PageDown': e.preventDefault(); show(current + 1); break;
           case 'ArrowLeft': case 'ArrowUp': case 'PageUp': e.preventDefault(); show(current - 1); break;
           case 'Home': e.preventDefault(); show(0); break;
           case 'End': e.preventDefault(); show(total - 1); break;
