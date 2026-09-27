@@ -209,16 +209,16 @@ for (const [label,backend,options] of backends) {
  });
 }
 
-test('PostgresStore: schema version 10 upgrades in place to 11 with the email tables',{skip:process.env.ACADEMY_POSTGRES_TEST!=='1'},async()=>{
+test('PostgresStore: schema version 10 upgrades in place to 12 with the email and room_files tables',{skip:process.env.ACADEMY_POSTGRES_TEST!=='1'},async()=>{
  const env=await postgresBackend();
  try {
   await env.pool.query(`UPDATE "${env.schema}".system_metadata SET value='10:69d548aa2f4e29f3f498c1c3a7468eb8d6321b9971fa0abebe962358e94807fe' WHERE key='academy_schema_migration'`);
-  await env.pool.query(`DROP TABLE "${env.schema}".participant_emails, "${env.schema}".email_challenges`);
+  await env.pool.query(`DROP TABLE "${env.schema}".participant_emails, "${env.schema}".email_challenges, "${env.schema}".room_files`);
   await new PostgresStore(env.pool,{schema:env.schema}).init();
   const migration=(await env.pool.query(`SELECT value FROM "${env.schema}".system_metadata WHERE key='academy_schema_migration'`)).rows[0].value;
-  assert.match(migration,/^11:[a-f0-9]{64}$/);
-  const tables=(await env.pool.query(`SELECT table_name FROM information_schema.tables WHERE table_schema=$1 AND table_name IN ('participant_emails','email_challenges') ORDER BY table_name`,[env.schema])).rows.map(row=>row.table_name);
-  assert.deepEqual(tables,['email_challenges','participant_emails']);
+  assert.match(migration,/^12:[a-f0-9]{64}$/);
+  const tables=(await env.pool.query(`SELECT table_name FROM information_schema.tables WHERE table_schema=$1 AND table_name IN ('participant_emails','email_challenges','room_files') ORDER BY table_name`,[env.schema])).rows.map(row=>row.table_name);
+  assert.deepEqual(tables,['email_challenges','participant_emails','room_files']);
  } finally {await env.close();}
 });
 
