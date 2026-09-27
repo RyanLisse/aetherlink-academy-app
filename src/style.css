@@ -133,7 +133,7 @@
 .fac-day-chip{display:flex;align-items:center;gap:12px;flex:0 1 auto;min-width:0}
 .fac-day-label{font-size:15px;font-weight:650;letter-spacing:-.2px;color:var(--cyan);padding:7px 14px;border:1px solid #5482b055;border-radius:999px;background:color-mix(in srgb,var(--cyan) 10%,var(--surface));white-space:nowrap}
 .fac-day-select{font-size:12px;font-weight:550;color:var(--text)}
-.classroom-open{margin-left:auto;font-size:13px;font-weight:700;padding:10px 16px;height:auto;min-height:40px}
+.classroom-open{margin-left:auto;font-size:13px;font-weight:700;padding:10px 16px;height:auto;min-height:40px;box-sizing:border-box}
 .classroom-open.gradient{box-shadow:0 4px 16px #739afe33}
 .facilitator-dials{padding-top:12px;border-top:1px solid var(--border);gap:8px 12px}
 .fac-dials-label{font-size:10px;font-weight:650;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-right:4px;flex:0 0 auto}
