@@ -479,7 +479,7 @@
   "arcade.unknown.back": "Terug naar hub",
   "arcade.soft.default": "Standaardles geladen.",
   "arcade.soft.unknown": "Onbekende les — standaardles geladen.",
-  "nav.apps": "Apps",
+  "nav.apps": "App-portal",
   "apps.eyebrow": "OpenShip portal",
   "apps.title": "App-launcher",
   "apps.lede": "Start agent-native apps vanuit Academy met een kort geldig launch-ticket. Geen vaste beheerkeys in de browser.",
@@ -749,5 +749,9 @@
   "cohort.createHelp": "Geef de Wave een naam en startdatum. Kamercodes blijven aparte sessies onder dit cohort.",
   "cohort.membersOptional": "Optioneel — één naam per regel",
   "room.sessionLabel": "Kamersessie",
-  "room.waveOf": "Onderdeel van Wave-cohort · {name}"
+  "room.waveOf": "Onderdeel van Wave-cohort · {name}",
+  "nav.teach": "Leerpad",
+  "nav.tools": "Tools",
+  "debrief.learnerTitle": "Debrief wordt geleid door de facilitator",
+  "debrief.learnerHelp": "Je facilitator opent de debrief voor de room. Gebruik Review & overdracht voor je reflectie en overdracht."
 }

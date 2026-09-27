@@ -479,7 +479,7 @@
   "arcade.unknown.back": "Back to hub",
   "arcade.soft.default": "Showing the default lesson.",
   "arcade.soft.unknown": "Unknown lesson — showing the default.",
-  "nav.apps": "Apps",
+  "nav.apps": "App portal",
   "apps.eyebrow": "OpenShip portal",
   "apps.title": "App launcher",
   "apps.lede": "Launch agent-native apps from Academy with a short-lived ticket. No static admin keys in the browser.",
@@ -749,5 +749,9 @@
   "cohort.createHelp": "Name the Wave and pick a start date. Room codes stay separate sessions under this cohort.",
   "cohort.membersOptional": "Optional — one name per line",
   "room.sessionLabel": "Room session",
-  "room.waveOf": "Part of Wave cohort · {name}"
+  "room.waveOf": "Part of Wave cohort · {name}",
+  "nav.teach": "Teach path",
+  "nav.tools": "Tools",
+  "debrief.learnerTitle": "Debrief is facilitator-led",
+  "debrief.learnerHelp": "Your facilitator opens debrief for the room. Use Review & handoff for your reflection and handoff."
 }
