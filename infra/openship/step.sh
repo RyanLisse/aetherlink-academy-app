@@ -15,10 +15,9 @@ legacy_env_names() {
   grep -E '^[A-Za-z_][A-Za-z0-9_]*=' "$LEGACY_HOME/.env" | cut -d= -f1 | grep -Ev "^(${COMPOSE_OWNED_ENV})$" | sort -u
 }
 
-# Staging publish is hardcoded in academy.compose.yaml as 127.0.0.1:4327:4317
+# Compose publish is hardcoded in academy.compose.yaml as 0.0.0.0:4317:4317
 # (no ${ACADEMY_PORT_BIND:-…} in ports — OpenShip/Docker ParseAddr breaks on
-# bash defaults with colons). This helper is display/STAGING_URL only until a
-# cutover PR changes the compose publish to 0.0.0.0:4317.
+# bash defaults with colons). This helper is display/STAGING_URL only.
 port_bind() {
   if [[ -f "$STATE" && "$(marker_value "$STATE" phase)" == cutover ]]; then echo 0.0.0.0:4317; else echo 127.0.0.1:4327; fi
 }
@@ -131,8 +130,8 @@ deploy() {
   [[ -f "$LEGACY_HOME/.env" ]] || die "legacy env file $LEGACY_HOME/.env is missing"
   {
     grep -E '^[A-Za-z_][A-Za-z0-9_]*=' "$LEGACY_HOME/.env" | grep -Ev "^(${COMPOSE_OWNED_ENV})="
-    # ACADEMY_PORT_BIND is IP-only documentation for the sibling bind; compose
-    # ports are hardcoded to 127.0.0.1:4327:4317 (no bash :- interpolation).
+    # ACADEMY_PORT_BIND is IP-only documentation; compose ports are hardcoded
+    # to 0.0.0.0:4317:4317 (no bash :- interpolation).
     # DATABASE_URL / REDIS_URL / SOURCE_REVISION must be fully resolved here and
     # live only in project env. Compose must NOT set those keys on the app
     # service: OpenShip does not interpolate ${VAR} in compose environment

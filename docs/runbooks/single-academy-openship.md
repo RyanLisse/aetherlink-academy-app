@@ -118,16 +118,15 @@ entirely so project env injects the resolved values. Redis `--requirepass` uses
 project `readiness.port` so only the app is probed). Compose services (app, postgres, redis)
 are persisted by OpenShip from `composePath` at deploy-request time — the kit does not call
 `POST /services/sync` (that endpoint 404s for a `project:*:create` PAT; see
-`infra/openship/RESEARCH.md`). Compose publishes the app as hardcoded `127.0.0.1:4327:4317`
+`infra/openship/RESEARCH.md`). Compose publishes the app as hardcoded `0.0.0.0:4317:4317`
 (never bash `${ACADEMY_PORT_BIND:-…}` in `ports:` — that breaks Docker ParseAddr), builds with
 repo-root context `.` (not `../..`), and keeps other non-secret app env (`HOST`, `PORT`, …)
-only. The new Academy answers on `127.0.0.1:4327` only, with an empty database. Legacy keeps
-serving 4317.
+only. After cutover the Academy answers on `:4317` (legacy `academy-app` must stay stopped).
 If OpenShip shows service drift after compose port/build edits and the sync API is unavailable
 to the PAT, clear it on the host with `openship services drift accept|keep` before re-dispatch.
 
 The step fails if the deployment does not reach `ready`, if an expected env name is missing in
-the app container, or if `http://127.0.0.1:4327/game/health` is not ok at the deployed revision.
+the app container, or if `http://127.0.0.1:4317/game/health` is not ok at the deployed revision.
 
 Undo: in OpenShip, delete project `aetherlink-academy` with volumes. Legacy is untouched.
 
@@ -171,9 +170,8 @@ Undo: as step 4.
 ### 6. cutover (maintenance ends)
 
 Refuses unless verify passed and `academy-app` is stopped. Redeploys and checks health on
-`127.0.0.1:4317`. Sibling staging compose is currently hardcoded to `127.0.0.1:4327:4317`;
-cutover therefore needs a follow-up compose publish change to `0.0.0.0:4317:4317` (do not put
-bash `${…:-…}` defaults in `ports:`). `ACADEMY_PUBLIC_URL` keeps the legacy value, so links
+`127.0.0.1:4317`. Compose publish is hardcoded to `0.0.0.0:4317:4317` (do not put bash
+`${…:-…}` defaults in `ports:`). `ACADEMY_PUBLIC_URL` keeps the legacy value, so links
 and the Proof WebSocket origin do not change. Afterwards run `verify` once more: after
 cutover it accepts row counts that grew, never shrank.
 
