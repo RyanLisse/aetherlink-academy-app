@@ -74,6 +74,8 @@ for (const [label,backend,options] of backends) {
    const view=env.store.view(r,s);
    assert.equal(view.me.name,'Alice');
    assert.equal(view.code,null);
+   assert.equal(view.wave?.id,cohort.id);
+   assert.equal(view.wave?.name,WAVE.name);
    assert.equal((await env.store.auth(room.token,'browser')).r.code,room.code);
    await rejectsWith(()=>env.store.join(room.code,'Mallory'),403);
    assert.equal(view.readOnly,false);
@@ -83,7 +85,11 @@ for (const [label,backend,options] of backends) {
    assert.equal(overview.activeEndsAt,START+90*DAY);
    assert.equal(overview.readOnlyEndsAt,START+104*DAY);
    assert.equal(overview.purgeAt,START+185*DAY);
-   assert.deepEqual(overview.rooms,[{id:room.roomId,name:'Squad Orion',code:room.code}]);
+   assert.equal(overview.rooms.length,1);
+   assert.equal(overview.rooms[0].id,room.roomId);
+   assert.equal(overview.rooms[0].name,'Squad Orion');
+   assert.equal(overview.rooms[0].code,room.code);
+   assert.equal(typeof overview.rooms[0].attachedAt,'number');
   } finally {await env.close();}
  });
 
