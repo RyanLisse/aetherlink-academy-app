@@ -128,8 +128,12 @@ deploy() {
 
   say "Project env (names only)"
   [[ -f "$LEGACY_HOME/.env" ]] || die "legacy env file $LEGACY_HOME/.env is missing"
+  # When domain is set we printf ACADEMY_PUBLIC_URL once below; exclude the legacy
+  # copy so PATCH /env upserts do not contain duplicate keys (OpenShip 400).
+  local env_exclude="${COMPOSE_OWNED_ENV}"
+  if [[ -n "$domain" ]]; then env_exclude="${env_exclude}|ACADEMY_PUBLIC_URL"; fi
   {
-    grep -E '^[A-Za-z_][A-Za-z0-9_]*=' "$LEGACY_HOME/.env" | grep -Ev "^(${COMPOSE_OWNED_ENV})="
+    grep -E '^[A-Za-z_][A-Za-z0-9_]*=' "$LEGACY_HOME/.env" | grep -Ev "^(${env_exclude})="
     # ACADEMY_PORT_BIND is IP-only documentation; compose ports are hardcoded
     # to 0.0.0.0:4317:4317 (no bash :- interpolation).
     # DATABASE_URL / REDIS_URL / SOURCE_REVISION must be fully resolved here and

@@ -965,3 +965,86 @@ describe('openship kit row_counts', () => {
     assert.match(sql, /SELECT t, n FROM kit_counts/);
   });
 });
+
+describe('deploy env upserts: no duplicate ACADEMY_PUBLIC_URL when domain set', () => {
+  const step = readFileSync(path.join(root, 'infra/openship/step.sh'), 'utf8');
+  const lib = readFileSync(path.join(root, 'infra/openship/lib.sh'), 'utf8');
+
+  test('step.sh excludes ACADEMY_PUBLIC_URL from legacy copy when domain is set', () => {
+    assert.match(step, /env_exclude="\$\{COMPOSE_OWNED_ENV\}"/);
+    assert.match(step, /env_exclude="\$\{env_exclude\}\|ACADEMY_PUBLIC_URL"/);
+    assert.match(step, /grep -Ev "\^\(\$\{env_exclude\}\)=/);
+    assert.match(step, /if \[\[ -n "\$domain" \]\]; then printf 'ACADEMY_PUBLIC_URL=https:\/\/%s\\n' "\$domain"/);
+    // Domain-derived printf must remain; exclusion prevents the OpenShip 400 on duplicate upsert keys.
+    assert.match(step, /Duplicate environment variable keys|duplicate keys \(OpenShip 400\)/);
+  });
+
+  const buildUpserts = ({domain, legacyEnv}) => {
+    const dir = mkdtempSync(path.join(scratch, 'env-dup-'));
+    const legacyHome = path.join(dir, 'legacy');
+    mkdirSync(legacyHome, {recursive: true});
+    writeFileSync(path.join(legacyHome, '.env'), legacyEnv);
+    const out = path.join(dir, 'env.json');
+    const script = `
+set -Eeuo pipefail
+source "${root}/infra/openship/lib.sh"
+LEGACY_HOME="${legacyHome}"
+domain=${JSON.stringify(domain)}
+SOURCE_SHA=deadbeef
+pg_password=testpgpassword012345678901234
+redis_password=testredispassword0123456789
+env_exclude="\${COMPOSE_OWNED_ENV}"
+if [[ -n "$domain" ]]; then env_exclude="\${env_exclude}|ACADEMY_PUBLIC_URL"; fi
+{
+  grep -E '^[A-Za-z_][A-Za-z0-9_]*=' "$LEGACY_HOME/.env" | grep -Ev "^(\${env_exclude})="
+  printf 'POSTGRES_PASSWORD=%s\\nREDIS_PASSWORD=%s\\n' "$pg_password" "$redis_password"
+  printf 'DATABASE_URL=postgresql://academy:%s@postgres:5432/academy\\n' "$pg_password"
+  printf 'REDIS_URL=rediss://:%s@redis:6379\\n' "$redis_password"
+  printf 'ACADEMY_PORT_BIND=127.0.0.1\\nSOURCE_REVISION=%s\\n' "$SOURCE_SHA"
+  if [[ -n "$domain" ]]; then printf 'ACADEMY_PUBLIC_URL=https://%s\\n' "$domain"; fi
+} | jq -Rn '{environment: "production", deletes: [], upserts: [inputs
+    | (index("=")) as $i
+    | {key: .[:$i], value: (.[$i+1:] | if test("^\\".*\\"$") or test("^'"'"'.*'"'"'$") then .[1:-1] else . end)}
+    | . + {isSecret: (.key | IN("ACADEMY_PORT_BIND", "SOURCE_REVISION") | not)}]}' > "${out}"
+`;
+    const result = spawnSync('bash', ['-c', script], {encoding: 'utf8'});
+    assert.equal(result.status, 0, result.stderr + result.stdout);
+    return JSON.parse(readFileSync(out, 'utf8'));
+  };
+
+  test('upserts have unique keys and ACADEMY_PUBLIC_URL at most once when domain is set', () => {
+    const domain = 'academy.91-99-78-17.sslip.io';
+    const body = buildUpserts({
+      domain,
+      legacyEnv: [
+        'ACADEMY_PUBLIC_URL=https://legacy.example.invalid',
+        'SOME_OTHER=keep-me',
+        'DATABASE_URL=postgresql://should-not-copy',
+        'REDIS_URL=rediss://should-not-copy',
+      ].join('\n') + '\n',
+    });
+    const keys = body.upserts.map((u) => u.key);
+    assert.equal(keys.length, new Set(keys).size, `duplicate upsert keys: ${keys.join(',')}`);
+    const publicUrl = body.upserts.filter((u) => u.key === 'ACADEMY_PUBLIC_URL');
+    assert.equal(publicUrl.length, 1, 'ACADEMY_PUBLIC_URL must appear exactly once');
+    assert.equal(publicUrl[0].value, `https://${domain}`);
+    assert.ok(keys.includes('SOME_OTHER'));
+    assert.ok(keys.includes('DATABASE_URL'));
+  });
+
+  test('without domain, legacy ACADEMY_PUBLIC_URL is copied once (no domain printf)', () => {
+    const body = buildUpserts({
+      domain: '',
+      legacyEnv: 'ACADEMY_PUBLIC_URL=https://legacy.example.invalid\nFOO=bar\n',
+    });
+    const keys = body.upserts.map((u) => u.key);
+    assert.equal(keys.length, new Set(keys).size);
+    const publicUrl = body.upserts.filter((u) => u.key === 'ACADEMY_PUBLIC_URL');
+    assert.equal(publicUrl.length, 1);
+    assert.equal(publicUrl[0].value, 'https://legacy.example.invalid');
+  });
+
+  test('COMPOSE_OWNED_ENV still does not permanently own ACADEMY_PUBLIC_URL (legacy copy when no domain)', () => {
+    assert.doesNotMatch(lib, /COMPOSE_OWNED_ENV='[^']*ACADEMY_PUBLIC_URL/);
+  });
+});
