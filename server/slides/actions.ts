@@ -9,11 +9,9 @@ import {applySlideEdits} from './edits.ts';
 import {DeckNotFound,EditFailed,Forbidden,InvalidInput,RevisionConflict,SlideNotFound,StaleContent,type SlidesError} from './errors.ts';
 import {ensureUniqueSlideIds,hashSlideContent,newSlideId,sanitizeSlideContent,templateSlide,textPreview} from './html.ts';
 import {renderDeckHtml} from './export-html.ts';
+import type {Actor} from '../shared/actor.ts';
 import {DeckRepository} from './repository.ts';
 import {AddSlideInput,CreateDeckInput,Deck,DeckIdInput,type DeckOperation,GetDeckInput,PatchDeckInput,Slide,type SlideInput,UpdateSlideInput} from './schema.ts';
-
-/** Who is acting; derived from the academy session, never from the payload. */
-export interface Actor{readonly roomId:string;readonly id:string;readonly name:string;readonly role:'facilitator'|'participant';readonly source:'human'|'ai';}
 
 const parse=<A,I>(schema:Schema.Schema<A,I>)=>(input:unknown)=>Schema.decodeUnknown(schema)(input).pipe(
  Effect.mapError(error=>new InvalidInput({reason:ParseResult.ArrayFormatter.formatErrorSync(error).map(issue=>`${issue.path.join('.')||'input'}: ${issue.message}`).join('; ')})));

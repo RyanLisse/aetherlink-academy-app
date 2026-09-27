@@ -16,7 +16,7 @@ test('Postgres Academy state survives independent concurrent instances', {skip:!
  try {
   await one.init();
   const migration=(await pool.query(`SELECT value FROM "${schema}".system_metadata WHERE key='academy_schema_migration'`)).rows[0]?.value;
-  assert.match(migration,/^4:[a-f0-9]{64}$/);
+  assert.match(migration,/^5:[a-f0-9]{64}$/);
   await two.init();
   const room=await one.create('Concurrency',{slug:'test-document',editor:'test-editor'});
   const joined=await Promise.allSettled(Array.from({length:15},(_,i)=>(i%2?one:two).join(room.code,`Participant ${i}`)));

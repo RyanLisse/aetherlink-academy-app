@@ -15,13 +15,14 @@ import {toNodeHandler} from '@modelcontextprotocol/node';
 import {lessons,mission,initialDocument,searchKnowledge,getDayPack,listRouteDays} from './content.mjs';
 import {createGoogleSso,readLoginState,signLoginState} from './google-sso.mjs';
 import {createSlidesService} from './slides/runtime.ts';
+import {createFileStorage} from './storage/runtime.ts';
 const text=(v,max=4000)=>{if(typeof v!=='string'||!v.trim()||v.length>max)fail(400,`Vul tekst in (maximaal ${max} tekens).`);return v.trim();};
 const namedCookie=(req,name)=>{const value=req.headers.cookie?.split(';').map(c=>c.trim()).find(c=>c.startsWith(`${name}=`))?.slice(name.length+1);if(value===undefined)return;try{return decodeURIComponent(value);}catch{return;}};
 const cookie=req=>namedCookie(req,'academy');
 const bearer=req=>req.headers.authorization?.startsWith('Bearer ')?req.headers.authorization.slice(7):null;
-export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4400',root=process.cwd(),hostKey,publicBaseUrl=process.env.ACADEMY_PUBLIC_URL||`http://127.0.0.1:${process.env.PORT||4317}`,googleClientId=process.env.GOOGLE_CLIENT_ID,googleClientSecret=process.env.GOOGLE_CLIENT_SECRET,facilitatorDomains=process.env.ACADEMY_FACILITATOR_DOMAINS,signingSecret=process.env.PROOF_COLLAB_SIGNING_SECRET,fetchImpl=fetch,slidesService}={}){
+export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4400',root=process.cwd(),hostKey,publicBaseUrl=process.env.ACADEMY_PUBLIC_URL||`http://127.0.0.1:${process.env.PORT||4317}`,googleClientId=process.env.GOOGLE_CLIENT_ID,googleClientSecret=process.env.GOOGLE_CLIENT_SECRET,facilitatorDomains=process.env.ACADEMY_FACILITATOR_DOMAINS,signingSecret=process.env.PROOF_COLLAB_SIGNING_SECRET,fetchImpl=fetch,slidesService,fileStorageService}={}){
  const publicUrl=new URL(publicBaseUrl);if(!['http:','https:'].includes(publicUrl.protocol)||publicUrl.username||publicUrl.password||publicUrl.search||publicUrl.hash||publicUrl.pathname!=='/')throw Error('ACADEMY_PUBLIC_URL moet een HTTP(S)-origin zonder pad of credentials zijn.');
- const store=repository||new LocalStore(dir);const proof=new Proof(proofBase);const slides=slidesService||createSlidesService(repository?{pool:repository.pool,schema:repository.schema}:{dir});const app=express();const proxy=httpProxy.createProxyServer({target:proofBase,ws:true});
+ const store=repository||new LocalStore(dir);const proof=new Proof(proofBase);const slides=slidesService||createSlidesService(repository?{pool:repository.pool,schema:repository.schema}:{dir});const files=fileStorageService||createFileStorage(repository?{pool:repository.pool,schema:repository.schema}:{});const app=express();const proxy=httpProxy.createProxyServer({target:proofBase,ws:true});
  const token=req=>bearer(req)||cookie(req);
  const browser=req=>store.auth(bearer(req)||cookie(req),'browser');
  const suggestionReviewer=({r,s})=>{if(s.personId!=='facilitator'&&s.personId!==r.members[r.driver]?.id)fail(403,'Driver of facilitator beslist over documentvoorstellen.');};
@@ -45,6 +46,11 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
    req.headers.authorization=`Bearer ${r.proof.editor}`;req.headers['x-share-token']=r.proof.editor;proxy.web(req,res);
   }catch(e){res.status(e.status||500).json({error:e.message});}
  });
+ // Uploads carry their own content type, including application/json, so the raw
+ // parser has to claim /game/files before the global JSON parser consumes it.
+ app.use('/game/files',async(req,res,next)=>{try{await browser(req);next();}catch(e){next(e);}});
+ app.use('/game/files',express.raw({type:'*/*',limit:'26mb'}));
+ app.use('/game/files',(e,req,res,next)=>{if(e?.status===413&&e.type==='entity.too.large')return res.status(413).json({error:'Bestand is te groot; maximaal 25 MiB.'});next(e);});
  app.use(express.json({limit:'64kb'}));
  const buckets=new Map();app.use(['/game','/mcp','/auth'],(req,res,next)=>{const k=req.ip;const b=buckets.get(k)||{t:Date.now(),n:0};if(Date.now()-b.t>60000){b.t=Date.now();b.n=0;}b.n++;buckets.set(k,b);if(b.n>1500)return res.status(429).json({error:'Te veel verzoeken. Wacht even.'});next();});
  const wrap=fn=>async(req,res,next)=>{try{await fn(req,res);}catch(e){next(e);}};
@@ -119,6 +125,20 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  app.post('/game/decks/:deckId/duplicate',wrap(async(req,res)=>res.status(201).json(await slides.run('duplicateDeck',deckActor(await browser(req)),{deckId:deckId(req)}))));
  app.delete('/game/decks/:deckId',wrap(async(req,res)=>res.json(await slides.run('deleteDeck',deckActor(await browser(req)),{deckId:deckId(req)}))));
  app.get('/game/decks/:deckId/export.html',wrap(async(req,res)=>{const result=await slides.run('exportHtml',deckActor(await browser(req)),{deckId:deckId(req)});res.type('text/html').set('Content-Disposition',`attachment; filename="${result.filename}"`).set('Content-Security-Policy',"default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src https: data:; font-src https: data:").send(result.html);}));
+
+ const fileId=req=>String(req.params.fileId||'');
+ const downloadName=name=>name.replace(/[^\p{L}\p{N}._ -]+/gu,'_').slice(0,200)||'bestand';
+ app.post('/game/files',wrap(async(req,res)=>res.status(201).json(await files.run('uploadFile',deckActor(await browser(req)),{filename:req.query.filename,contentType:req.query.contentType,bytes:req.body}))));
+ app.get('/game/files',wrap(async(req,res)=>res.json(await files.run('listFiles',deckActor(await browser(req))))));
+ app.get('/game/files/:fileId',wrap(async(req,res)=>{
+  const file=await files.run('getFile',deckActor(await browser(req)),{fileId:fileId(req)});
+  // SVG renders as same-origin script, so only raster images are served inline.
+  const inline=file.contentType.startsWith('image/')&&file.contentType!=='image/svg+xml';
+  res.attachment(downloadName(file.filename)).type(file.contentType);
+  if(inline)res.set('Content-Disposition',res.get('Content-Disposition').replace(/^attachment/,'inline'));
+  res.set('Cache-Control','private, no-store').send(Buffer.from(file.bytes));
+ }));
+ app.delete('/game/files/:fileId',wrap(async(req,res)=>res.json(await files.run('deleteFile',deckActor(await browser(req)),{fileId:fileId(req)}))));
  async function executeMcp(token,tool,input){const a=await store.auth(token,'mcp');const {r,p}=a;if(!p)fail(403,'Geen deelnemer.');let result;
   switch(tool){case 'get_mission':{const pack=getDayPack(r.day);result={session:{roomId:r.id,participantId:p.id,participantName:p.name,squadName:r.name},mission:pack?.mission||mission,day:r.day,phase:r.phase,route:p.route,role:r.members[r.driver]?.id===p.id?'Driver':'Navigator',coach:'Leg begrippen uit, citeer les-IDs, pas hints aan de hulpkeuze aan. Lees eerst de gedeelde intent. Geen browserchat of model-API vanuit de game.'};break;}
   case 'get_document':result=await proof.state(r);break;
@@ -144,5 +164,5 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  app.use(express.static(path.join(root,'dist')));app.get('/',(_req,res)=>res.sendFile(path.join(root,'dist/index.html')));
  app.use((e,req,res,_next)=>{if(!e.status)console.error('[academy] unhandled',{method:req.method,path:req.path,message:e?.message,stack:e?.stack});return res.status(e.status||500).json({error:e.status?e.message:'Onverwachte serverfout. Probeer opnieuw; je invoer blijft staan.'});});
  const server=http.createServer(app);server.on('upgrade',async(req,socket,head)=>{try{const {r}=await browser(req);const url=new URL(req.url,'http://localhost');if(req.headers.origin&&req.headers.origin!==`http://${req.headers.host}`&&req.headers.origin!==`https://${req.headers.host}`)fail(403,'Origin');if(url.pathname!=='/ws'||url.searchParams.get('slug')!==r.proof.slug)fail(403,'Kamer');proxy.ws(req,socket,head);}catch(e){console.warn('WS denied',new URL(req.url,'http://localhost').pathname,e.message);socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');socket.destroy();}});
- return {app,server,store,proof,slides};
+ return {app,server,store,proof,slides,files};
 }
