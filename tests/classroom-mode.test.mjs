@@ -1,23 +1,41 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {CLASSROOM_DECK_ID, SLIDES_EMBED_URL, CLASSROOM_SANDBOX, classroomEmbedUrl} from '../src/classroom.js';
+import {CLASSROOM_SANDBOX, classroomEmbedUrl, classroomPathForDay} from '../src/classroom.js';
 
-test('classroom embed targets Wave daily deck and /embed', () => {
-  assert.equal(CLASSROOM_DECK_ID, '1DZ9-9XynhHBj62e-_r9wAy3MQHOni85VCGnW6kgh8bI');
-  assert.match(SLIDES_EMBED_URL, /docs\.google\.com\/presentation\/d\//);
-  assert.match(SLIDES_EMBED_URL, new RegExp(CLASSROOM_DECK_ID));
-  assert.match(SLIDES_EMBED_URL, /\/embed/);
-  assert.match(SLIDES_EMBED_URL, /start=false/);
+const DAY_PATHS = [
+  [1, '/classroom/1'],
+  [2, '/classroom/2'],
+  [3, '/workshop/3'],
+  [4, '/workshop/4'],
+  [5, '/workshop/5'],
+  [6, '/workshop/6'],
+  [7, '/workshop/7'],
+];
+
+test('classroomPathForDay maps room.day to Academy classroom/workshop routes', () => {
+  for (const [day, path] of DAY_PATHS) {
+    assert.equal(classroomPathForDay(day), path, `day ${day}`);
+    assert.equal(classroomEmbedUrl(day), path, `embed day ${day}`);
+  }
 });
 
-test('classroomEmbedUrl keeps free browse (no day slide lock)', () => {
-  const url = classroomEmbedUrl(3);
-  assert.match(url, new RegExp(CLASSROOM_DECK_ID));
-  assert.match(url, /\/embed/);
-  assert.doesNotMatch(url, /slide=id\./);
-  // day hint is chrome-only; URL may carry rm=minimal but not day lock
-  const u = new URL(url);
-  assert.equal(u.searchParams.has('day'), false);
+test('classroomPathForDay falls back to Classroom 1 for unknown days', () => {
+  for (const day of [0, 8, 99, null, undefined, 'nope', NaN]) {
+    assert.equal(classroomPathForDay(day), '/classroom/1', String(day));
+  }
+});
+
+test('Google Classroom deck id and docs.google embed are gone', async () => {
+  const {readFileSync} = await import('node:fs');
+  const classroom = readFileSync(new URL('../src/classroom.js', import.meta.url), 'utf8');
+  const main = readFileSync(new URL('../src/main.jsx', import.meta.url), 'utf8');
+  assert.doesNotMatch(classroom, /CLASSROOM_DECK_ID/);
+  assert.doesNotMatch(classroom, /1DZ9-9Xynh/);
+  assert.doesNotMatch(classroom, /docs\.google\.com/);
+  assert.doesNotMatch(main, /docs\.google\.com/);
+  assert.doesNotMatch(main, /1DZ9-9Xynh/);
+  assert.match(classroomEmbedUrl(1), /^\/classroom\/1$/);
+  assert.doesNotMatch(classroomEmbedUrl(1), /^https:\/\//);
 });
 
 test('facilitator classroom UI hooks exist in main.jsx', async () => {
@@ -48,18 +66,14 @@ test('classroom chrome is translated in both catalogs', async () => {
 test('classroom iframe is sandboxed and cannot navigate the facilitator away', async () => {
   const {readFileSync} = await import('node:fs');
   const main = readFileSync(new URL('../src/main.jsx', import.meta.url), 'utf8');
-  // The embed must carry the sandbox attribute, not just the allow= policy.
   assert.match(main, /className="classroom-frame"[^>]*sandbox=\{CLASSROOM_SANDBOX\}/);
+  assert.match(main, /classroomEmbedUrl\(room\.day\)/);
 
   const tokens = CLASSROOM_SANDBOX.split(' ');
-  // What the Slides viewer needs to render and stay usable.
   for (const needed of ['allow-scripts', 'allow-same-origin', 'allow-popups', 'allow-presentation']) {
     assert.ok(tokens.includes(needed), `missing ${needed}`);
   }
-  // Withheld on purpose: a deck must never navigate the facilitator out of the room.
   for (const withheld of ['allow-top-navigation', 'allow-top-navigation-by-user-activation', 'allow-forms', 'allow-downloads', 'allow-modals', 'allow-pointer-lock']) {
     assert.ok(!tokens.includes(withheld), `unexpectedly granted ${withheld}`);
   }
-  // allow-scripts + allow-same-origin is only an escape for a same-origin frame.
-  assert.match(SLIDES_EMBED_URL, /^https:\/\/docs\.google\.com\//);
 });
