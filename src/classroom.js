@@ -54,3 +54,95 @@ export function pinnedDeckIdForRoom(room) {
  */
 export const CLASSROOM_SANDBOX =
   'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-presentation';
+
+/** Keys the facilitator uses to advance/retreat slides in Classroom overlay. */
+export const CLASSROOM_NAV_KEYS = Object.freeze([
+  'ArrowLeft',
+  'ArrowRight',
+  'ArrowUp',
+  'ArrowDown',
+  'PageUp',
+  'PageDown',
+  ' ',
+]);
+
+const CLASSROOM_NAV_KEY_SET = new Set(CLASSROOM_NAV_KEYS);
+
+/** True when `key` is a slide-nav key (Space is the single character `' '`). */
+export function isClassroomNavKey(key) {
+  return CLASSROOM_NAV_KEY_SET.has(key);
+}
+
+/**
+ * True when the deck's focused element should keep arrow/space keys for typing
+ * (matches SPA Deck + Effect present guards).
+ */
+export function isDeckEditableTarget(el) {
+  if (!el) return false;
+  const tag = typeof el.tagName === 'string' ? el.tagName.toLowerCase() : '';
+  if (tag === 'input' || tag === 'textarea' || tag === 'select') return true;
+  if (el.isContentEditable === true) return true;
+  if (typeof el.closest === 'function') {
+    return Boolean(
+      el.closest(
+        'input, textarea, select, [contenteditable]:not([contenteditable="false"])',
+      ),
+    );
+  }
+  return false;
+}
+
+/**
+ * Decide whether the overlay parent should synthesize a keydown into the iframe.
+ * Returns false when the key is not nav, or when the iframe focus is editable.
+ */
+export function shouldForwardClassroomNavKey(key, iframeActiveElement) {
+  if (!isClassroomNavKey(key)) return false;
+  if (isDeckEditableTarget(iframeActiveElement)) return false;
+  return true;
+}
+
+/**
+ * Dispatch a bubbling keydown into a same-origin classroom iframe document.
+ * SPA Deck listens on window; Effect present listens on document — bubbling
+ * from document covers both. Returns true when an event was dispatched.
+ */
+export function forwardClassroomNavKey(iframe, key, KeyboardEventCtor = globalThis.KeyboardEvent) {
+  if (!iframe || !shouldForwardClassroomNavKey(key, null)) return false;
+  let doc;
+  try {
+    doc = iframe.contentDocument;
+  } catch {
+    return false;
+  }
+  if (!doc) return false;
+  let active = null;
+  try {
+    active = doc.activeElement;
+  } catch {
+    active = null;
+  }
+  if (!shouldForwardClassroomNavKey(key, active)) return false;
+  if (typeof KeyboardEventCtor !== 'function') return false;
+  const event = new KeyboardEventCtor('keydown', {
+    key,
+    code: key === ' ' ? 'Space' : key,
+    bubbles: true,
+    cancelable: true,
+  });
+  doc.dispatchEvent(event);
+  return true;
+}
+
+/**
+ * Deck/present fullscreen toggle must not duel the overlay's documentElement FS.
+ * When embedded (`window !== window.top`), leave FS to the parent overlay.
+ */
+export function deckFullscreenAllowed(win = globalThis) {
+  try {
+    return win === win.top;
+  } catch {
+    // Cross-origin parent access throws — treat as framed / disallow.
+    return false;
+  }
+}
