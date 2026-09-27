@@ -64,7 +64,7 @@ plan() {
 == What each step would do
   deploy        create or update project $OPENSHIP_SLUG, turn auto-deploy off, copy the env names above,
                 reuse or mint Postgres/Redis passwords and TLS under $KIT_HOME, deploy $SOURCE_SHA,
-                serve it on $(port_bind) and check $STAGING_URL/game/health
+                serve it on $(port_bind) and check $(staging_health_url)/game/health
   migrate-data  stop $LEGACY_APP (maintenance starts), pg_dump $LEGACY_PG to $BACKUP_DIR,
                 restore into $TARGET_PG, compare row counts, copy $LEGACY_HOME/data into $TARGET_APP
   verify        health, /game/config, join smoke on the OpenShip app, row-count parity, write the marker
@@ -196,8 +196,11 @@ deploy() {
   missing="$(comm -23 <( { legacy_env_names; printf '%s\n' DATABASE_URL REDIS_URL NODE_EXTRA_CA_CERTS; } | sort -u) \
     <(docker inspect --type container --format '{{range .Config.Env}}{{println .}}{{end}}' "$TARGET_APP" | cut -d= -f1 | sort -u))"
   [[ -z "$missing" ]] || die "env names missing inside $TARGET_APP: $(echo "$missing" | tr '\n' ' ')"
-  curl -fsS --max-time 10 "$STAGING_URL/game/health" | jq -e --arg sha "$SOURCE_SHA" '.ok == true and .proof == true and .revision == $sha' >/dev/null || die "$STAGING_URL/game/health is not ok at revision $SOURCE_SHA"
-  echo "  $STAGING_URL/game/health ok, proof ready"
+  # Post-cutover bare deploy must health-check :4317 (not lib.sh's :4327 default).
+  local health_url
+  health_url="$(staging_health_url)"
+  curl -fsS --max-time 10 "$health_url/game/health" | jq -e --arg sha "$SOURCE_SHA" '.ok == true and .proof == true and .revision == $sha' >/dev/null || die "$health_url/game/health is not ok at revision $SOURCE_SHA"
+  echo "  $health_url/game/health ok, proof ready"
   write_marker "$STATE" "project_id=$id" "deployed_sha=$SOURCE_SHA" "deployment=$deployment" "phase=$( [[ -f "$STATE" ]] && marker_value "$STATE" phase || echo deployed)"
 }
 
