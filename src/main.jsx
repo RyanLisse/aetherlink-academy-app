@@ -1,6 +1,6 @@
 import React,{useEffect,useState,useRef,useCallback} from 'react';
 import {createRoot} from 'react-dom/client';
-import {Library,Users,BookOpen,Compass,Target,Sparkles,ClipboardCheck,Sun,Moon,ArrowRight,Clock,Play,Pause,RotateCw,Shuffle,HelpCircle,Check,LogOut,Copy,FileText,ExternalLink,Presentation,FlaskConical,X,LayoutGrid,Link,Columns3,Plus,Download,Award,ListOrdered,MessageSquare,Mail} from 'lucide-react';
+import {Library,Users,BookOpen,Compass,Target,Sparkles,ClipboardCheck,Sun,Moon,ArrowRight,Clock,Play,Pause,RotateCw,Shuffle,HelpCircle,Check,LogOut,Copy,FileText,ExternalLink,Presentation,FlaskConical,X,LayoutGrid,Link,Columns3,Plus,Download,Award,ListOrdered,MessageSquare,Mail,StickyNote,Type} from 'lucide-react';
 import {api,authApi,getToken,getParticipantAccess,saveParticipantAccess,forgetParticipantAccess,participantAccessUrl,saveSession} from './api';
 import {AppsLauncher} from './portal/AppsLauncher.jsx';
 import {Knowledge,Coach,Lesson,Solo,Review,Route,Debrief,CourseComposer,coursePosition} from './panels';
@@ -93,10 +93,10 @@ function App(){
       {!connected&&<StatusState kind="offline" title={t('status.offline')} action={<button type="button" onClick={()=>location.reload()}>{t('status.reload')}</button>}>{t('status.offlineHelp')}</StatusState>}
       {room.readOnly&&<StatusState kind="readonly" title={t('readOnly.title')} action={<button type="button" onClick={()=>action(async()=>{const doc=await api('document');const link=document.createElement('a');link.href=URL.createObjectURL(new Blob([doc.markdown||''],{type:'text/markdown'}));link.download=`${room.name}.md`;link.click();URL.revokeObjectURL(link.href);})}><FileText size={15} aria-hidden="true"/>{t('readOnly.export')}</button>}>{t('readOnly.help')}</StatusState>}
       {error&&<div className="error" role="alert">{error}<button onClick={()=>setError('')} aria-label={t('common.closeAlert')}>×</button></div>}
-      {facilitator&&<FacilitatorControls room={room} control={control} busy={busy} connected={connected} onOpenClassroom={()=>setClassroomOpen(true)}/>}
+      {facilitator&&<FacilitatorControls room={room} control={control} busy={busy} connected={connected} onOpenClassroom={()=>setClassroomOpen(true)} onOpenBoard={()=>action(async()=>{setView('board');if(!room.board||room.board.status==='closed'){const board=await api('board',{action:'open'});if(board)setRoom(current=>({...current,board}));}})}/>}
       {facilitator&&classroomOpen&&<ClassroomOverlay room={room} onClose={closeClassroom}/>}
       <div className="workspace">
-        <section className="primary">{view==='squad'&&<Document room={room} theme={theme}/>}{view==='route'&&<Route room={room} onNavigate={setView}/>}{view==='lesson'&&<Lesson room={room} action={action} busy={busy}/>}{view==='solo'&&<Solo room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='coach'&&<Coach room={room} action={action}/>}{view==='naslag'&&<Naslag room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='review'&&<Review room={room} action={action} busy={busy}/>}{view==='decks'&&<Decks room={room} action={action} busy={busy} onRoom={setRoom}/>}{view==='apps'&&<AppsLauncher action={action} busy={busy} facilitator={facilitator} hostKey={''}/>}{view==='agentChat'&&agentChatAvailable&&!facilitator&&!room.readOnly&&<AgentChatPanel/>}{view==='debrief'&&facilitator&&<Debrief room={room}/>}{view==='course'&&facilitator&&<CourseComposer room={room} control={control} busy={busy}/>}{view==='board'&&<Board room={room} action={action} busy={busy} onBoard={board=>setRoom(current=>({...current,board}))}/>}{view==='certificate'&&!facilitator&&<MyCertificate room={room}/>}</section>
+        <section className="primary">{view==='squad'&&<Document room={room} theme={theme}/>}{view==='route'&&<Route room={room} onNavigate={setView}/>}{view==='lesson'&&<Lesson room={room} action={action} busy={busy}/>}{view==='solo'&&<Solo room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='coach'&&<Coach room={room} action={action}/>}{view==='naslag'&&<Naslag room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='review'&&<Review room={room} action={action} busy={busy}/>}{view==='decks'&&<Decks room={room} action={action} busy={busy} onRoom={setRoom}/>}{view==='apps'&&<AppsLauncher action={action} busy={busy} facilitator={facilitator} hostKey={''}/>}{view==='agentChat'&&agentChatAvailable&&!facilitator&&!room.readOnly&&<AgentChatPanel/>}{view==='debrief'&&facilitator&&<Debrief room={room} onOpenBoard={()=>action(async()=>{setView('board');if(!room.board||room.board.status==='closed'){const board=await api('board',{action:'open'});if(board)setRoom(current=>({...current,board}));}})}/>}{view==='course'&&facilitator&&<CourseComposer room={room} control={control} busy={busy}/>}{view==='board'&&<Board room={room} action={action} busy={busy} onBoard={board=>setRoom(current=>({...current,board}))}/>}{view==='certificate'&&!facilitator&&<MyCertificate room={room}/>}</section>
         <aside className="right-rail">
           <section className="panel roster">
             <div className="panel-heading"><h2>{t('roster.title')} <span>({room.members.length}/{t('roster.softMax')})</span></h2><Users size={17}/></div>
@@ -367,7 +367,7 @@ function LabConfigChrome({room,control,disabled}){
   </div>;
 }
 
-function FacilitatorControls({room,control:send,busy,connected,onOpenClassroom}){
+function FacilitatorControls({room,control:send,busy,connected,onOpenClassroom,onOpenBoard}){
   const t=useT();
   // Ignore input while a command is in flight instead of disabling: a disabled
   // button drops keyboard focus when the blur-commit of a time field starts.
@@ -387,6 +387,7 @@ function FacilitatorControls({room,control:send,busy,connected,onOpenClassroom})
         <label className="fac-day-select">{t('fac.day')}<select value={room.day} disabled={disabled} onChange={e=>control('day',Number(e.target.value))} aria-label={t('fac.day')}>{dayOptions.map((day,i)=><option key={day} value={day}>{i+1}</option>)}</select></label>
       </div>
       <button type="button" className="classroom-open gradient" onClick={onOpenClassroom} aria-label={t('classroom.open')}><Presentation size={18} aria-hidden="true"/>{t('classroom.open')}</button>
+      <button type="button" className={'fac-board-open'+(room.mode==='review'?' is-review':'')+(room.board?.status==='open'?' is-open':'')} data-testid="fac-board-open" disabled={disabled||busy} onClick={onOpenBoard} aria-label={t(!room.board?'fac.boardOpen':room.board.status==='closed'?'fac.boardReopen':'fac.boardView')}><Columns3 size={18} aria-hidden="true"/>{t(!room.board?'fac.boardOpen':room.board.status==='closed'?'fac.boardReopen':'fac.boardView')}</button>
       <LabConfigChrome room={room} control={control} disabled={disabled}/>
     </div>
     <div className="facilitator-controls-row facilitator-dials" role="group" aria-label={t('fac.session')}>
@@ -529,14 +530,30 @@ function Board({room,action,busy,onBoard}){
   const [columns,setColumns]=useState([]);
   const [sync,setSync]=useState('connecting');
   const [drafts,setDrafts]=useState({});
+  const [tool,setTool]=useState('sticky');
   const link=useRef(null);
+  const firstCard=useRef(null);
   useEffect(()=>{if(!board)return;let active=true,connection=null;setSync('connecting');connectBoard(board.slug,{onColumns:columns=>active&&setColumns(columns),onStatus:status=>active&&setSync(status)}).then(next=>{if(active){connection=next;link.current=next;}else next.close();}).catch(()=>active&&setSync('denied'));return()=>{active=false;link.current=null;connection?.close();};},[board?.slug,board?.status]);
   const change=kind=>action(async()=>onBoard(await api('board',{action:kind})));
   const add=(event,index)=>{event.preventDefault();const text=(drafts[index]||'').trim();if(!text||!link.current)return;link.current.add(index,text);setDrafts(current=>({...current,[index]:''}));};
-  return <section className="panel document board"><div className="document-heading"><div><h2>{t('board.title')}</h2><p>{t(!board?'board.none':closed?'board.closedLede':'board.lede')}</p></div>{board&&<span className={'board-status '+board.status}>{t(closed?'board.closed':'board.open')}</span>}</div>
-    {facilitator&&<div className="board-actions">{(!board||closed)&&<button type="button" className="gradient" disabled={busy} onClick={()=>change('open')}>{t(board?'board.reopen':'board.start')}</button>}{board&&!closed&&<button type="button" disabled={busy} onClick={()=>change('close')}>{t('board.closeAction')}</button>}{board&&<a className="text-button" href="/game/debrief/export" download><Download size={16}/>{t('debrief.export')}</a>}</div>}
-    {!board&&<div className="board-empty"><StatusState kind="empty" title={t('board.none')}>{t(facilitator?'board.emptyFacilitator':'board.emptyParticipant')}</StatusState></div>}
-    {board&&<><div className="document-status"><i/>{t(closed&&sync==='synced'?'board.sync.readonly':'board.sync.'+sync)}</div><div className="board-columns">{columns.map((column,index)=><section className="board-column" key={index} aria-label={column.title}><h3>{column.title}<span>{column.cards.length}</span></h3><ul>{column.cards.map((card,cardIndex)=><li key={cardIndex}>{card}</li>)}</ul>{!column.cards.length&&<p className="muted">{t('board.noCards')}</p>}{!closed&&<form onSubmit={event=>add(event,index)}><label className="sr-only" htmlFor={'card-'+index}>{t('board.addLabel',{column:column.title})}</label><textarea id={'card-'+index} rows={2} maxLength={280} value={drafts[index]||''} placeholder={t('board.placeholder')} onChange={event=>setDrafts(current=>({...current,[index]:event.target.value}))} onKeyDown={event=>{if(event.key==='Enter'&&!event.shiftKey)add(event,index);}}/><button type="submit" disabled={sync!=='synced'||!(drafts[index]||'').trim()}><Plus size={15}/>{t('board.add')}</button></form>}</section>)}</div><div className="document-foot"><span>{t(closed?'board.footClosed':'board.footOpen')}</span><small>{t('board.columnsPlaceholder')}</small></div></>}</section>;
+  const focusAdd=()=>{setTool('sticky');(firstCard.current||document.getElementById('card-0'))?.focus();};
+  const emptyCards=board&&!closed&&columns.length>0&&columns.every(column=>!column.cards.length);
+  const reconnect=()=>{if(!board)return;setSync('connecting');link.current?.close();link.current=null;connectBoard(board.slug,{onColumns:setColumns,onStatus:setSync}).then(next=>{link.current=next;}).catch(()=>setSync('denied'));};
+  return <section className="panel document board" data-testid="debrief-board">
+    <div className="document-heading"><div><h2>{t('board.title')}</h2><p>{t(!board?'board.none':closed?'board.closedLede':'board.lede')}</p></div>{board&&<span className={'board-status '+board.status}>{t(closed?'board.closed':'board.open')}</span>}</div>
+    <div className="board-toolbar" role="toolbar" aria-label={t('board.toolbar')} data-testid="board-toolbar">
+      {board&&!closed&&<>
+        <button type="button" className={tool==='sticky'?'is-active':''} data-tool="sticky" disabled={sync!=='synced'} onClick={()=>{setTool('sticky');focusAdd();}}><StickyNote size={15} aria-hidden="true"/>{t('board.tool.sticky')}</button>
+        <button type="button" className={tool==='text'?'is-active':''} data-tool="text" disabled={sync!=='synced'} onClick={()=>{setTool('text');focusAdd();}}><Type size={15} aria-hidden="true"/>{t('board.tool.text')}</button>
+      </>}
+      {facilitator&&(!board||closed)&&<button type="button" className="gradient" data-tool="open" disabled={busy} onClick={()=>change('open')}>{t(board?'board.reopen':'board.start')}</button>}
+      {facilitator&&board&&!closed&&<button type="button" data-tool="close" disabled={busy} onClick={()=>change('close')}>{t('board.closeAction')}</button>}
+      {board&&<a className="text-button" data-tool="export" href="/game/debrief/export" download><Download size={16} aria-hidden="true"/>{t('debrief.export')}</a>}
+    </div>
+    {!board&&<div className="board-empty"><StatusState kind="empty" title={t('board.startDebrief')} action={facilitator?<button type="button" className="gradient" disabled={busy} onClick={()=>change('open')}>{t('board.start')}</button>:null}>{t(facilitator?'board.startDebriefHelp':'board.emptyParticipant')}</StatusState></div>}
+    {board&&(sync==='offline'||sync==='denied')&&<StatusState kind="offline" title={t('board.sync.'+sync)} action={<button type="button" onClick={reconnect}>{t('status.retry')}</button>}>{t('board.offlineHelp')}</StatusState>}
+    {board&&emptyCards&&sync==='synced'&&<div className="board-empty-cards" role="status"><StatusState kind="empty" title={t('board.startDebrief')}>{t('board.emptyCardsHelp')}</StatusState></div>}
+    {board&&<><div className="document-status" data-testid="board-sync"><i/>{t(closed&&sync==='synced'?'board.sync.readonly':'board.sync.'+sync)}</div><div className="board-columns">{columns.map((column,index)=><section className="board-column" key={index} aria-label={column.title}><h3>{column.title}<span>{column.cards.length}</span></h3><ul>{column.cards.map((card,cardIndex)=><li key={cardIndex}>{card}</li>)}</ul>{!column.cards.length&&<p className="muted">{t('board.noCards')}</p>}{!closed&&<form onSubmit={event=>add(event,index)}><label className="sr-only" htmlFor={'card-'+index}>{t('board.addLabel',{column:column.title})}</label><textarea id={'card-'+index} ref={index===0?firstCard:undefined} rows={2} maxLength={280} value={drafts[index]||''} placeholder={tool==='text'?t('board.placeholderText'):t('board.placeholder')} onChange={event=>setDrafts(current=>({...current,[index]:event.target.value}))} onKeyDown={event=>{if(event.key==='Enter'&&!event.shiftKey)add(event,index);}}/><button type="submit" disabled={sync!=='synced'||!(drafts[index]||'').trim()}><Plus size={15}/>{t('board.add')}</button></form>}</section>)}</div><div className="document-foot"><span>{t(closed?'board.footClosed':'board.footOpen')}</span><small>{t('board.columnsPlaceholder')}</small></div></>}
+  </section>;
 }
-
 createRoot(document.getElementById('root')).render(<I18nProvider><App/></I18nProvider>);
