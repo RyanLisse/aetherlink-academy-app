@@ -270,6 +270,14 @@ export class PostgresStore {
    return {codes:await this.addMembers(client,cohortId,names)};
   });
  }
+ async findRoomIdByCode(code) {
+  const normalized=String(code||'').trim().toUpperCase();
+  return this.transaction(async client=>{
+   const found=await client.query('SELECT id FROM rooms WHERE code=$1',[normalized]);
+   if(!found.rowCount)fail(404,'Kamer bestaat niet.');
+   return found.rows[0].id;
+  });
+ }
  async attachCohortRoom(cohortId,roomId) {
   return this.transaction(async client=>{
    const cohort=await this.cohortRow(client,cohortId,true);
@@ -277,7 +285,7 @@ export class PostgresStore {
    const r=found.rows[0]?.data;
    if(!r)fail(404,'Kamer bestaat niet.');
    if(r.cohortId&&r.cohortId!==cohortId)fail(409,'Deze kamer hoort al bij een ander cohort.');
-   r.cohortId=cohortId;r.cohortAttachedAt=this.now();r.version++;
+   r.cohortId=cohortId;r.cohortName=cohort.name;r.cohortAttachedAt=this.now();r.version++;
    await this.save(client,r);
    await client.query('UPDATE cohorts SET current_room_id=$2 WHERE id=$1',[cohortId,roomId]);
    return this.cohortSnapshot(client,{...cohort,currentRoomId:roomId});

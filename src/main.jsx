@@ -88,7 +88,7 @@ function App(){
     <header className="topbar"><Brand/><div className="account"><span className={'connection '+(connected?'online':'offline')} role="status" aria-live="polite"><i/>{connected?t('account.connected'):t('account.disconnected')}</span>{localeToggle}{themeButton}<span className="avatar small">{room.me.name.slice(0,2).toUpperCase()}</span><span>{room.me.name}</span><button className="icon-button" aria-label={t('account.leave')} onClick={leaveSession}><LogOut size={17}/></button></div></header>
     <aside className="sidebar"><nav aria-label={t('nav.main')}>{navIds.map(([id,labelKey,Icon])=><button key={id} className={view===id?'selected':''} onClick={()=>setView(id)}><Icon size={19}/>{t(labelKey)}</button>)}{(facilitator||room.board)&&<button className={view==='board'?'selected':''} onClick={()=>setView('board')}><Columns3 size={19}/>{t('nav.board')}</button>}{agentChatAvailable&&!facilitator&&!room.readOnly&&<button className={view==='agentChat'?'selected':''} onClick={()=>setView('agentChat')}><MessageSquare size={19}/>{t('nav.agentChat')}</button>}{facilitator&&<button className={view==='debrief'?'selected':''} onClick={()=>setView('debrief')}><ClipboardCheck size={19}/>{t('nav.debrief')}</button>}{facilitator&&<button className={view==='course'?'selected':''} onClick={()=>setView('course')}><ListOrdered size={19}/>{t('nav.course')}</button>}{!facilitator&&room.me.cohortMemberId&&<button className={view==='certificate'?'selected':''} onClick={()=>setView('certificate')}><Award size={19}/>{t('nav.certificate')}</button>}</nav><div className="sidebar-bottom"><span>{t('nav.tagline1')}</span><span>{t('nav.tagline2')}</span><strong>{t('nav.tagline3')}</strong><hr/><small>{t('nav.schedule')}</small></div></aside>
     <main>
-      <div className="room-heading"><div><p className="muted">{t('room.supportDay',{day:coursePosition(room)})} · {dayLabel}</p><h1>{room.name}</h1></div><div className="round"><span>{t('room.round',{round:room.round})} · {roundStatus}</span><strong><Clock size={22}/><Timer room={room}/></strong></div></div>
+      <div className="room-heading"><div><p className="muted" data-testid="room-session-label">{t('room.sessionLabel')} · {t('room.supportDay',{day:coursePosition(room)})} · {dayLabel}</p><h1>{room.name}</h1>{room.wave?.name&&<p className="wave-cohort-badge" data-testid="wave-cohort-badge">{t('room.waveOf',{name:room.wave.name})}</p>}</div><div className="round"><span>{t('room.round',{round:room.round})} · {roundStatus}</span><strong><Clock size={22}/><Timer room={room}/></strong></div></div>
       <div className="sdlc" aria-label={t('room.sdlc')}>{phases.map((p,i)=><React.Fragment key={p}><div className={p===room.phase?'active':''}><span>{p}</span></div>{i<5&&<span className="phase-line"/>}</React.Fragment>)}</div>
       {!connected&&<StatusState kind="offline" title={t('status.offline')} action={<button type="button" onClick={()=>location.reload()}>{t('status.reload')}</button>}>{t('status.offlineHelp')}</StatusState>}
       {room.readOnly&&<StatusState kind="readonly" title={t('readOnly.title')} action={<button type="button" onClick={()=>action(async()=>{const doc=await api('document');const link=document.createElement('a');link.href=URL.createObjectURL(new Blob([doc.markdown||''],{type:'text/markdown'}));link.download=`${room.name}.md`;link.click();URL.revokeObjectURL(link.href);})}><FileText size={15} aria-hidden="true"/>{t('readOnly.export')}</button>}>{t('readOnly.help')}</StatusState>}
@@ -423,32 +423,64 @@ function CohortPanel({squads,hostKey,action}){
   const [cohorts,setCohorts]=useState([]);
   const [codes,setCodes]=useState([]);
   const [copied,setCopied]=useState(false);
+  const [rosterCopied,setRosterCopied]=useState(null);
   const refresh=async()=>setCohorts(await api('facilitator/cohorts',{hostKey}));
   useEffect(()=>{action(refresh);},[hostKey]);
   const reveal=list=>{setCodes(current=>[...current,...list]);setCopied(false);};
   const names=value=>String(value||'').split('\n').map(name=>name.trim()).filter(Boolean);
   const date=ms=>new Date(ms).toLocaleDateString(locale==='nl'?'nl-NL':'en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'});
+  const dateTime=ms=>ms?new Date(ms).toLocaleString(locale==='nl'?'nl-NL':'en-GB',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit',timeZone:'UTC'}):'';
   const submit=(route,build,after)=>e=>{e.preventDefault();const form=e.currentTarget,data=Object.fromEntries(new FormData(form));action(async()=>{const result=await api(route,{hostKey,...build(data)});after(result);form.reset();await refresh();});};
   const memberAction=(route,cohortId,memberId)=>action(async()=>{const result=await api(route,{hostKey,cohortId,memberId});if(result.code)reveal([result]);await refresh();});
   const revokeCertificate=(cohortId,certificateId)=>action(async()=>{await api('facilitator/cohort/certificate/revoke',{hostKey,cohortId,certificateId});await refresh();});
   const openCertificate=certificateId=>{const view=window.open('','_blank');if(view)view.opener=null;action(async()=>{try{const response=await fetch('/game/facilitator/cohort/certificate/view',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({hostKey,certificateId})});if(!response.ok)throw Error((await response.json()).error);const url=URL.createObjectURL(new Blob([await response.text()],{type:'text/html'}));view.location=url;setTimeout(()=>URL.revokeObjectURL(url),60000);}catch(error){view?.close();throw error;}});};
-  return <section className="cohort-panel" aria-labelledby="cohort-heading">
+  const rosterCsvText=cohort=>{
+    const rows=[['name','room','room_code','joined_at'],...cohort.members.map(member=>[member.name,member.room?.name||'',member.room?.code||'',member.joinedAt?new Date(member.joinedAt).toISOString():''])];
+    return rows.map(row=>row.map(value=>{const text=value==null?'':String(value);return /["\n,]/.test(text)?`"${text.replaceAll('"','""')}"`:text;}).join(',')).join('\n')+'\n';
+  };
+  const exportRoster=(cohort,mode)=>action(async()=>{
+    const csv=rosterCsvText(cohort);
+    if(mode==='copy'){await navigator.clipboard.writeText(csv);setRosterCopied(cohort.id);return;}
+    const link=document.createElement('a');
+    link.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+    link.download=`${cohort.name.replace(/[^\w.-]+/g,'_')||'wave-cohort'}-roster.csv`;
+    link.click();URL.revokeObjectURL(link.href);
+  });
+  return <section className="cohort-panel" aria-labelledby="cohort-heading" data-testid="wave-cohort-panel">
     <h3 id="cohort-heading">{t('cohort.title')}</h3>
+    <p className="muted cohort-lede" data-testid="cohort-vocab">{t('cohort.lede')}</p>
     {codes.length>0&&<div className="cohort-codes" role="region" aria-label={t('cohort.codesTitle')}>
       <strong>{t('cohort.codesTitle')}</strong><p>{t('cohort.codesHelp')}</p>
       <ul>{codes.map(entry=><li key={entry.memberId+entry.code}><span>{entry.name}</span><code>{entry.code}</code></li>)}</ul>
       <div className="cohort-actions"><button type="button" onClick={()=>action(async()=>{await navigator.clipboard.writeText(codes.map(entry=>`${entry.name}\t${entry.code}`).join('\n'));setCopied(true);})}>{copied?t('cohort.copied'):t('cohort.copyAll')}</button><button type="button" className="text-button" onClick={()=>setCodes([])}>{t('cohort.hideCodes')}</button></div>
     </div>}
-    {!cohorts.length&&<p className="muted">{t('cohort.empty')}</p>}
-    {cohorts.map(cohort=><article className="cohort-card" key={cohort.id}>
+    {!cohorts.length&&<p className="muted" data-testid="cohort-empty">{t('cohort.empty')}</p>}
+    {cohorts.map(cohort=><article className="cohort-card" key={cohort.id} data-testid="cohort-card">
       <header><h4>{cohort.name}</h4><span className={'cohort-phase '+cohort.phase}>{t(`cohort.phase.${cohort.phase}`)}</span></header>
       <p className="muted">{t('cohort.window',{start:date(cohort.startsAt),active:date(cohort.activeEndsAt),readOnly:date(cohort.readOnlyEndsAt)})}</p>
-      <form className="cohort-attach" key={cohort.currentRoomId||"none"} onSubmit={submit('facilitator/cohort/attach',data=>({cohortId:cohort.id,roomId:data.roomId}),()=>{})}>
+      <div className="cohort-rooms" data-testid="cohort-rooms">
+        <strong>{t('cohort.linkedRooms')}</strong>
+        {!cohort.rooms?.length&&<p className="muted">{t('cohort.noLinkedRooms')}</p>}
+        {!!cohort.rooms?.length&&<ul className="cohort-room-list">{cohort.rooms.map(room=><li key={room.id}><span>{room.name}</span><code>{room.code}</code>{room.id===cohort.currentRoomId&&<small className="cohort-status activated">{t('cohort.currentRoom')}</small>}</li>)}</ul>}
+      </div>
+      <form className="cohort-attach" key={(cohort.currentRoomId||'none')+'-select'} onSubmit={submit('facilitator/cohort/attach',data=>({cohortId:cohort.id,roomId:data.roomId}),()=>{})}>
         <label>{t('cohort.room')}<select name="roomId" defaultValue={cohort.currentRoomId||''} required><option value="" disabled>{t('cohort.noRoom')}</option>{squads.map(squad=><option key={squad.id} value={squad.id}>{squad.name} · {squad.code}</option>)}</select></label>
         <button type="submit">{t('cohort.attach')}</button>
       </form>
+      <form className="cohort-attach" onSubmit={submit('facilitator/cohort/attach',data=>({cohortId:cohort.id,roomCode:String(data.roomCode||'').trim().toUpperCase()}),()=>{})}>
+        <label>{t('cohort.attachByCode')}<input name="roomCode" required maxLength={40} autoCapitalize="characters" autoComplete="off" spellCheck={false} placeholder={t('cohort.attachByCodePlaceholder')}/></label>
+        <button type="submit">{t('cohort.attach')}</button>
+      </form>
+      <div className="cohort-roster-heading">
+        <strong>{t('cohort.roster')}</strong>
+        <span className="cohort-actions">
+          <button type="button" data-testid="cohort-roster-copy" onClick={()=>exportRoster(cohort,'copy')}>{rosterCopied===cohort.id?t('cohort.copied'):t('cohort.copyRoster')}</button>
+          <button type="button" data-testid="cohort-roster-csv" onClick={()=>exportRoster(cohort,'csv')}><Download size={14} aria-hidden="true"/>{t('cohort.exportRoster')}</button>
+        </span>
+      </div>
+      {!cohort.members.length&&<p className="muted" data-testid="cohort-roster-empty">{t('cohort.rosterEmpty')}</p>}
       <ul className="cohort-roster">{cohort.members.map(member=><li key={member.id}>
-        <span><strong>{member.name}</strong><small className={'cohort-status '+member.status}>{t(`cohort.status.${member.status}`)}{member.seated?` · ${t('cohort.seated')}`:''}</small></span>
+        <span><strong>{member.name}</strong><small className={'cohort-status '+member.status}>{t(`cohort.status.${member.status}`)}{member.seated?` · ${t('cohort.seated')}`:''}{member.room?` · ${member.room.name}`:''}{member.joinedAt?` · ${dateTime(member.joinedAt)}`:''}</small></span>
         <span className="cohort-actions">{member.status!=='revoked'&&<button type="button" onClick={()=>memberAction('facilitator/cohort/revoke',cohort.id,member.id)}>{t('cohort.revoke')}</button>}<button type="button" onClick={()=>memberAction('facilitator/cohort/reissue',cohort.id,member.id)}>{t('cohort.reissue')}</button></span>
         <CertificateLine certificate={member.certificate} date={date} open={()=>openCertificate(member.certificate.id)} revoke={()=>revokeCertificate(cohort.id,member.certificate.id)}/>
       </li>)}</ul>
@@ -457,16 +489,16 @@ function CohortPanel({squads,hostKey,action}){
         <button type="submit">{t('cohort.submitAdd')}</button>
       </form>
     </article>)}
-    <form className="cohort-create" onSubmit={submit('facilitator/cohort/create',data=>({name:data.name,startDate:data.startDate,days:Number(data.days),members:names(data.members)}),result=>reveal(result.codes))}>
+    <form className="cohort-create" data-testid="cohort-create" onSubmit={submit('facilitator/cohort/create',data=>({name:data.name,startDate:data.startDate,days:Number(data.days),members:names(data.members)}),result=>reveal(result.codes))}>
       <strong>{t('cohort.create')}</strong>
+      <p className="muted">{t('cohort.createHelp')}</p>
       <label>{t('cohort.name')}<input name="name" required maxLength={60} placeholder={t('cohort.namePlaceholder')}/></label>
       <div className="cohort-row"><label>{t('cohort.startDate')}<input name="startDate" type="date" required/></label><label>{t('cohort.days')}<input name="days" type="number" min={1} max={14} defaultValue={5} required/></label></div>
-      <label>{t('cohort.members')}<textarea name="members" rows={4}/></label>
+      <label>{t('cohort.members')}<textarea name="members" rows={4} placeholder={t('cohort.membersOptional')}/></label>
       <button type="submit" className="gradient">{t('cohort.submitCreate')}</button>
     </form>
   </section>;
 }
-
 function CertificateLine({certificate,date,open,revoke}){
   const t=useT();
   if(certificate.id)return <div className="cohort-certificate"><small className="cohort-status activated">{t('cert.issued',{date:date(certificate.issuedAt)})}</small><span className="cohort-actions"><button type="button" onClick={open}>{t('cert.open')}</button><button type="button" onClick={revoke}>{t('cert.revoke')}</button></span></div>;

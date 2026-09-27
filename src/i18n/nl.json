@@ -735,5 +735,19 @@
   "board.reopenRestores": "Heropenen herstelt het bord van deze kamer (zelfde Proof-document).",
   "debrief.openBoard": "Debriefbord openen",
   "debrief.reopenBoard": "Debriefbord heropenen",
-  "debrief.viewBoard": "Debriefbord bekijken"
+  "debrief.viewBoard": "Debriefbord bekijken",
+  "cohort.lede": "Een Wave-cohort is het meerdaagse programma. Elke kamercode is alleen één livesessie onder die Wave — niet het hele traject.",
+  "cohort.linkedRooms": "Gekoppelde kamersessies",
+  "cohort.noLinkedRooms": "Nog geen kamersessies gekoppeld. Koppel er hieronder één.",
+  "cohort.currentRoom": "kamer van vandaag",
+  "cohort.attachByCode": "Of koppel via kamercode",
+  "cohort.attachByCodePlaceholder": "Bijv. 8A2F…",
+  "cohort.roster": "Cohortrooster",
+  "cohort.rosterEmpty": "Nog geen deelnemers. Voeg namen toe, of wacht op zitplaatsen uit gekoppelde kamers.",
+  "cohort.copyRoster": "Kopieer rooster",
+  "cohort.exportRoster": "Download CSV",
+  "cohort.createHelp": "Geef de Wave een naam en startdatum. Kamercodes blijven aparte sessies onder dit cohort.",
+  "cohort.membersOptional": "Optioneel — één naam per regel",
+  "room.sessionLabel": "Kamersessie",
+  "room.waveOf": "Onderdeel van Wave-cohort · {name}"
 }

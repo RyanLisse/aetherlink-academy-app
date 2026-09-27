@@ -100,6 +100,7 @@ export function anonymizeRoom(room,memberIds){
  for(const handoff of room.handoffs||[])if(ids.has(handoff.by))Object.assign(handoff,{by:ANONYMIZED_NAME,decision:ANONYMIZED_NAME,checked:ANONYMIZED_NAME,open:ANONYMIZED_NAME});
  for(const handoff of room.handoffs||[])if(names.has(handoff.next))handoff.next=ANONYMIZED_NAME;
  delete room.cohortId;
+ delete room.cohortName;
  delete room.cohortAttachedAt;
  room.version=(room.version||0)+1;
  return room;
@@ -138,15 +139,49 @@ export function dueCertificates({cohort,members,codes,rooms,certificates,now}){
 
 export const certificateVerifiableUntil=certificate=>certificate.endsAt+RETENTION_DAYS*DAY_MS;
 
+export function memberSeat(rooms,memberId){
+ const seats=rooms.flatMap(room=>{
+  const seat=room.members.find(candidate=>candidate.id===memberId);
+  return seat?[{roomId:room.id,roomName:room.name,roomCode:room.code,joinedAt:seat.seatedAt||null}]:[];
+ }).sort((a,b)=>(b.joinedAt||0)-(a.joinedAt||0));
+ return seats[0]||null;
+}
+
 export function cohortView({cohort,members,codes,rooms,certificates,now}){
  const current=rooms.find(room=>room.id===cohort.currentRoomId);
  return {
   id:cohort.id,name:cohort.name,startsAt:cohort.startsAt,days:cohort.days,readOnlyExport:cohort.readOnlyExport,createdAt:cohort.createdAt,
   phase:accessPhase(cohort,now).phase,...cohortWindow(cohort),
   currentRoomId:cohort.currentRoomId||null,
-  rooms:rooms.map(room=>({id:room.id,name:room.name,code:room.code})),
-  members:[...members].sort((a,b)=>a.name.localeCompare(b.name)).map(member=>{const own=codes.filter(code=>code.memberId===member.id);return {id:member.id,name:member.name,...memberStatus(own),seated:Boolean(current?.members.some(seat=>seat.id===member.id)),certificate:memberCertificate({cohort,memberId:member.id,codes:own,rooms,certificates,now})};}),
+  rooms:rooms.map(room=>({id:room.id,name:room.name,code:room.code,attachedAt:room.cohortAttachedAt||null})),
+  members:[...members].sort((a,b)=>a.name.localeCompare(b.name)).map(member=>{
+   const own=codes.filter(code=>code.memberId===member.id);
+   const seat=memberSeat(rooms,member.id);
+   const activated=own.map(code=>code.lastActivatedAt).filter(Boolean).sort((a,b)=>b-a)[0]||null;
+   return {
+    id:member.id,name:member.name,...memberStatus(own),
+    seated:Boolean(current?.members.some(seatRow=>seatRow.id===member.id)),
+    room:seat?{id:seat.roomId,name:seat.roomName,code:seat.roomCode}:null,
+    joinedAt:seat?.joinedAt||activated,
+    certificate:memberCertificate({cohort,memberId:member.id,codes:own,rooms,certificates,now}),
+   };
+  }),
  };
+}
+
+// CSV for facilitator roster export (F4): name, room, join time — best available fields.
+export function rosterCsv(cohort){
+ const escape=value=>{
+  const text=value==null?'':String(value);
+  return /["\n,]/.test(text)?`"${text.replaceAll('"','""')}"`:text;
+ };
+ const rows=[['name','room','room_code','joined_at'],...cohort.members.map(member=>[
+  member.name,
+  member.room?.name||'',
+  member.room?.code||'',
+  member.joinedAt?new Date(member.joinedAt).toISOString():'',
+ ])];
+ return rows.map(row=>row.map(escape).join(',')).join('\n')+'\n';
 }
 
 export function parseCohortInput({name,startDate,days,readOnlyExport=true}){
