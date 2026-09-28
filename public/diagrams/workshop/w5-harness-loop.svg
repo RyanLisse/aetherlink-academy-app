@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" font-family="system-ui, -apple-system, sans-serif">
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#555"/>
+    </marker>
+    <marker id="arr-blue" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="arr-amber" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#d97706"/>
+    </marker>
+    <linearGradient id="hdr" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e3a5f"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="900" height="420" fill="#fafbfc" rx="8"/>
+  <rect x="0" y="0" width="900" height="48" fill="url(#hdr)" rx="8"/>
+  <rect x="0" y="40" width="900" height="8" fill="url(#hdr)"/>
+  <text x="450" y="31" fill="#fff" font-size="16" font-weight="700" text-anchor="middle">AI-native SDLC harness loop — Plan → build → gate (human decides)</text>
+
+  <!-- Pipeline boxes -->
+  <!-- Intent -->
+  <rect x="28" y="100" width="100" height="56" rx="8" fill="#f0f4ff" stroke="#2563eb" stroke-width="2"/>
+  <text x="78" y="124" fill="#1e3a5f" font-size="13" font-weight="700" text-anchor="middle">Intent</text>
+  <text x="78" y="142" fill="#64748b" font-size="10" text-anchor="middle">outcome + bound</text>
+
+  <line x1="128" y1="128" x2="148" y2="128" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Spec -->
+  <rect x="150" y="100" width="100" height="56" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="200" y="124" fill="#334155" font-size="13" font-weight="700" text-anchor="middle">Spec</text>
+  <text x="200" y="142" fill="#64748b" font-size="10" text-anchor="middle">quoted examples</text>
+
+  <line x1="250" y1="128" x2="270" y2="128" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Plan + human gate -->
+  <rect x="272" y="88" width="118" height="80" rx="8" fill="#fff8f0" stroke="#d97706" stroke-width="2"/>
+  <text x="331" y="112" fill="#92400e" font-size="13" font-weight="700" text-anchor="middle">Plan</text>
+  <text x="331" y="130" fill="#92400e" font-size="10" text-anchor="middle">proof + rollback</text>
+  <rect x="286" y="140" width="90" height="20" rx="10" fill="#fef3c7" stroke="#d97706" stroke-width="1"/>
+  <text x="331" y="154" fill="#92400e" font-size="9" font-weight="600" text-anchor="middle">HUMAN GATE</text>
+
+  <line x1="390" y1="128" x2="410" y2="128" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Build -->
+  <rect x="412" y="100" width="100" height="56" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="462" y="124" fill="#334155" font-size="13" font-weight="700" text-anchor="middle">Build</text>
+  <text x="462" y="142" fill="#64748b" font-size="10" text-anchor="middle">red → green</text>
+
+  <line x1="512" y1="128" x2="532" y2="128" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Test -->
+  <rect x="534" y="100" width="100" height="56" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="584" y="124" fill="#334155" font-size="13" font-weight="700" text-anchor="middle">Test</text>
+  <text x="584" y="142" fill="#64748b" font-size="10" text-anchor="middle">evidence.md</text>
+
+  <line x1="634" y1="128" x2="654" y2="128" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Review -->
+  <rect x="656" y="100" width="100" height="56" rx="8" fill="#fff" stroke="#94a3b8" stroke-width="1.5"/>
+  <text x="706" y="124" fill="#334155" font-size="13" font-weight="700" text-anchor="middle">Review</text>
+  <text x="706" y="142" fill="#64748b" font-size="10" text-anchor="middle">stranger can re-run</text>
+
+  <line x1="756" y1="128" x2="776" y2="128" stroke="#555" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Gate -->
+  <rect x="778" y="88" width="100" height="80" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="828" y="112" fill="#166534" font-size="13" font-weight="700" text-anchor="middle">Gate</text>
+  <text x="828" y="130" fill="#166534" font-size="10" text-anchor="middle">PASS / FAIL / OPEN</text>
+  <rect x="792" y="140" width="72" height="20" rx="10" fill="#bbf7d0" stroke="#16a34a" stroke-width="1"/>
+  <text x="828" y="154" fill="#166534" font-size="9" font-weight="600" text-anchor="middle">HUMAN</text>
+
+  <!-- Loop-back handoff -->
+  <path d="M 828 168 L 828 240 L 78 240 L 78 156" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="6,3" marker-end="url(#arr-blue)"/>
+  <text x="453" y="232" fill="#2563eb" font-size="11" font-weight="600" text-anchor="middle">Handoff → next intent.md (the line becomes a loop)</text>
+
+  <!-- Callouts -->
+  <rect x="28" y="270" width="410" height="120" rx="8" fill="#fff" stroke="#e2e8f0" stroke-width="1.5"/>
+  <text x="44" y="296" fill="#1e3a5f" font-size="13" font-weight="700">Harness around the lab vehicle</text>
+  <text x="44" y="318" fill="#475569" font-size="12">aetherlink-daily-brief-lab-s1 stays the build vehicle.</text>
+  <text x="44" y="338" fill="#475569" font-size="12">The harness is the loop + human gates — not the agent alone.</text>
+  <text x="44" y="358" fill="#475569" font-size="12">Plan mode holds until a human accepts; gate refuses unread PASS.</text>
+  <text x="44" y="378" fill="#64748b" font-size="11">Keep Uitleg → Voordoen → Zelf doen on the Apple bar.</text>
+
+  <rect x="462" y="270" width="416" height="120" rx="8" fill="#fff8f0" stroke="#fcd34d" stroke-width="1.5"/>
+  <text x="478" y="296" fill="#92400e" font-size="13" font-weight="700">Where the human pauses</text>
+  <text x="478" y="318" fill="#78350f" font-size="12">1. After Plan — accept design / ADR / evidence commands</text>
+  <text x="478" y="338" fill="#78350f" font-size="12">2. At Gate — PASS / FAIL / OPEN with citations</text>
+  <text x="478" y="358" fill="#78350f" font-size="12">3. Agent may use one read-only tool; no shell, no write</text>
+  <text x="478" y="378" fill="#a16207" font-size="11">ConceptSim steps Plan → … → gate without API keys.</text>
+</svg>
