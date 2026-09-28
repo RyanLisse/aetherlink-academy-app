@@ -43,4 +43,6 @@ P0 Workshop 5 (AET-77) → P1 Workshop 4 (AET-80) → P2 Workshop 3 (AET-79). W6
 
 **P0 status:** Workshop 5 ships harness-loop diagram (`public/diagrams/workshop/w5-harness-loop.svg`) + ConceptSim `w5-sdlc-loop` (EN+NL) while keeping Apple bar / Uitleg→Voordoen→Zelf doen and the daily-brief lab vehicle.
 
-**P1 status:** Workshop 4 ships ticket→tool_use→priority diagram (`public/diagrams/workshop/w4-ticket-tool-priority.svg`) + ConceptSim `w4-ticket-priority` (EN+NL) while keeping Apple bar / Uitleg→Voordoen→Zelf doen and SOLO 0–4 on aetherlink-day5-n8n-to-agent. Do not start P2 W3 until CoS poteto.
+**P1 status:** Workshop 4 ships ticket→tool_use→priority diagram (`public/diagrams/workshop/w4-ticket-tool-priority.svg`) + ConceptSim `w4-ticket-priority` (EN+NL) while keeping Apple bar / Uitleg→Voordoen→Zelf doen and SOLO 0–4 on aetherlink-day5-n8n-to-agent.
+
+**P2 status:** Workshop 3 ships agency-ladder diagram (`public/diagrams/workshop/w3-agency-ladder.svg`) + ConceptSim `w3-agency-ladder` (EN+NL) while keeping Apple bar / Uitleg→Voordoen→Zelf doen and L1→L2 (L3 stretch) on the n8n triage starters. Must B P0–P2 complete — do not auto-start P3 Early Classroom / W1–W2 until CoS.

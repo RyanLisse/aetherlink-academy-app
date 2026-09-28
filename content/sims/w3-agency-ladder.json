@@ -1,0 +1,150 @@
+{
+  "version": "w3-agency-ladder",
+  "attribution": "Academy-authored ConceptSim for Workshop 3 / AET-79 (Agents in n8n L1→L3). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches the agency ladder on the existing n8n triage vehicle. Not a port of an upstream chapter.",
+  "locales": {
+    "en": {
+      "title": "Agency ladder · L1 → L2 → L3",
+      "description": "Step one support ticket up the agency ladder: Switch rules (no LLM), then one AI Agent with memory, then Reply + Risk specialists behind one human gate — without API keys.",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Triage fixture ticket WL-1026: \"I was charged twice. I need this fixed today or I will file a complaint.\" Route to low, medium, or high on L1, then L2, then L3.",
+          "annotation": "Same fixture ticket climbs every rung. Labels stay fixed."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Starting at L1: a Switch with keyword rules — no LLM. Duplicate charge + same-day urgency + complaint should hit HIGH.",
+          "annotation": "L1 mechanism — rules only. Import n8n-triage-l1-switch.json; no credential."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "switch_route",
+          "content": "{\"ticket_id\":\"WL-1026\",\"rules\":[\"charged twice\",\"today\",\"complaint\"],\"branch\":\"high\"}",
+          "annotation": "L1 Switch fires the high branch from keyword hits."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "switch_route",
+          "content": "{\"priority\":\"high\",\"level\":\"L1\",\"llm\":false,\"match\":\"fixture\"}",
+          "annotation": "L1 label matches the shared fixture. Gate before climbing to L2."
+        },
+        {
+          "type": "system_event",
+          "content": "LEVEL UP · L1 → L2 — same tickets, add one bounded AI Agent with memory. Agent proposes; human reviews before accept.",
+          "annotation": "Solo bar today = L2. Never silent auto-send."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "ai_agent_priority",
+          "content": "{\"ticket_id\":\"WL-1026\",\"memory\":\"prior:high on similar refunds\",\"propose\":\"high\"}",
+          "annotation": "L2 — AI Agent + memory drafts a priority (n8n-triage-l2-agent-memory.json)."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "ai_agent_priority",
+          "content": "{\"priority\":\"high\",\"confidence\":0.86,\"needs_human_review\":true}",
+          "annotation": "Proposal only. Human must review before anything customer-facing."
+        },
+        {
+          "type": "system_event",
+          "content": "HUMAN GATE · L2 Review — facilitator checks proposed high against the fixture. Mismatch → fix rules/prompt, never invent a label.",
+          "annotation": "Human decides. An import is not a model run — claim L2 with a trace."
+        },
+        {
+          "type": "system_event",
+          "content": "LEVEL UP · L2 → L3 (stretch) — split Customer Reply and Risk as specialists; keep one explicit human gate.",
+          "annotation": "L3 is stretch. Same tickets; more agency."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "orchestrate_specialists",
+          "content": "{\"ticket_id\":\"WL-1026\",\"roles\":[\"customer_reply\",\"risk\"],\"priority\":\"high\",\"gate\":\"human_approval_required\"}",
+          "annotation": "L3 — n8n-triage-l3-multi-agent.json: Reply drafts, Risk flags, one gate."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "orchestrate_specialists",
+          "content": "{\"reply_draft\":\"Apologies for the double charge — refund queued pending approval.\",\"risk\":\"refund_sensitive\",\"priority\":\"high\",\"awaiting_gate\":true}",
+          "annotation": "Joint output waits on the single human gate — never silent auto-send."
+        },
+        {
+          "type": "assistant_text",
+          "content": "WL-1026 climbed L1→L2→L3 as high. Proof pack: export or screenshot, L/M/H rules in one paragraph, human gate named, achieved level ≥ L2.",
+          "annotation": "Agency ladder closed for one ticket. Pedagogy (Apple bar) and n8n starters unchanged."
+        }
+      ]
+    },
+    "nl": {
+      "title": "Agency-ladder · L1 → L2 → L3",
+      "description": "Stap één supportticket de agency-ladder op: Switch-regels (geen LLM), daarna één AI Agent met memory, daarna Reply + Risk-specialisten achter één menselijke gate — zonder API-sleutels.",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Triage fixture-ticket WL-1026: \"I was charged twice. I need this fixed today or I will file a complaint.\" Routeer naar low, medium of high op L1, daarna L2, daarna L3.",
+          "annotation": "Hetzelfde fixture-ticket klimt elke sport. Labels blijven vast."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Start bij L1: een Switch met keyword-regels — geen LLM. Dubbele afschrijving + same-day urgentie + klacht moet op HIGH landen.",
+          "annotation": "L1-mechanisme — alleen regels. Importeer n8n-triage-l1-switch.json; geen credential."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "switch_route",
+          "content": "{\"ticket_id\":\"WL-1026\",\"rules\":[\"charged twice\",\"today\",\"complaint\"],\"branch\":\"high\"}",
+          "annotation": "L1 Switch vuurt de high-tak af op keyword-hits."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "switch_route",
+          "content": "{\"priority\":\"high\",\"level\":\"L1\",\"llm\":false,\"match\":\"fixture\"}",
+          "annotation": "L1-label matcht de gedeelde fixture. Gate vóór je naar L2 klimt."
+        },
+        {
+          "type": "system_event",
+          "content": "LEVEL UP · L1 → L2 — dezelfde tickets, plus één begrensde AI Agent met memory. Agent stelt voor; mens reviewt vóór acceptatie.",
+          "annotation": "Solo-lat vandaag = L2. Nooit stille auto-send."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "ai_agent_priority",
+          "content": "{\"ticket_id\":\"WL-1026\",\"memory\":\"prior:high on similar refunds\",\"propose\":\"high\"}",
+          "annotation": "L2 — AI Agent + memory stelt een prioriteit voor (n8n-triage-l2-agent-memory.json)."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "ai_agent_priority",
+          "content": "{\"priority\":\"high\",\"confidence\":0.86,\"needs_human_review\":true}",
+          "annotation": "Alleen een voorstel. Een mens moet reviewen vóór iets klantgericht wordt."
+        },
+        {
+          "type": "system_event",
+          "content": "MENSELIJKE GATE · L2 Review — facilitator checkt voorgesteld high tegen de fixture. Mismatch → regels/prompt verbeteren, nooit een nieuw label verzinnen.",
+          "annotation": "De mens beslist. Een import is geen modelrun — claim L2 met een trace."
+        },
+        {
+          "type": "system_event",
+          "content": "LEVEL UP · L2 → L3 (stretch) — splits Customer Reply en Risk als specialisten; houd één expliciete menselijke gate.",
+          "annotation": "L3 is stretch. Dezelfde tickets; meer agency."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "orchestrate_specialists",
+          "content": "{\"ticket_id\":\"WL-1026\",\"roles\":[\"customer_reply\",\"risk\"],\"priority\":\"high\",\"gate\":\"human_approval_required\"}",
+          "annotation": "L3 — n8n-triage-l3-multi-agent.json: Reply schrijft, Risk markeert, één gate."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "orchestrate_specialists",
+          "content": "{\"reply_draft\":\"Excuses voor de dubbele afschrijving — refund in de wachtrij hangt van goedkeuring af.\",\"risk\":\"refund_sensitive\",\"priority\":\"high\",\"awaiting_gate\":true}",
+          "annotation": "Gezamenlijke output wacht op de ene menselijke gate — nooit stille auto-send."
+        },
+        {
+          "type": "assistant_text",
+          "content": "WL-1026 klom L1→L2→L3 als high. Proof-pakket: export of screenshot, L/M/H-regels in één alinea, menselijke gate benoemd, behaald niveau ≥ L2.",
+          "annotation": "Agency-ladder sluit voor één ticket. Pedagogie (Apple-bar) en n8n-starters ongewijzigd."
+        }
+      ]
+    }
+  }
+}
