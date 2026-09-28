@@ -29,7 +29,7 @@ function ExerciseCard({item}){
     {open&&<div className="classroom-exercise-body">
       <section><h4>The problem</h4><p>{item.problem}</p></section>
       <section><h4>How to think about it</h4><p>{item.explanation}</p></section>
-      <section><h4>Flow</h4><ol className="exercise-flow" aria-label={`${item.title} process`}>{item.diagram.map((step,index)=><li key={step}><span>{step}</span>{index<item.diagram.length-1&&<span className="exercise-flow-arrow" aria-hidden="true">→</span>}</li>)}</ol></section>
+      <section><h4>Flow</h4><ol className="exercise-flow" tabIndex={0} aria-label={`${item.title} process`}>{item.diagram.map((step,index)=><li key={step}><span>{step}</span>{index<item.diagram.length-1&&<span className="exercise-flow-arrow" aria-hidden="true">→</span>}</li>)}</ol></section>
       <section><h4>Walkthrough</h4><ol>{item.walkthrough.map(step=><li key={step}>{step}</li>)}</ol></section>
       <section className="exercise-try"><h4>Try it in your repository</h4><p>{item.tryIt}</p></section>
       <section><h4>Expected evidence</h4><ul>{item.evidence.map(evidence=><li key={evidence}>{evidence}</li>)}</ul></section>
