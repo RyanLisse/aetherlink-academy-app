@@ -43,7 +43,7 @@ async function openView(page,label){
 const shots=[];
 await setDay(1);
 await withPage(1440,async page=>{
- await openView(page,'Les & quick check');
+ await openView(page,'Les');
  await page.waitForSelector('text=Maak de opdracht helder');
  for(const w of widths){
   await page.setViewportSize({width:w,height:1100});
@@ -56,7 +56,7 @@ await withPage(1440,async page=>{
 
 await setDay(2);
 await withPage(1440,async page=>{
- await openView(page,'Les & quick check');
+ await openView(page,'Les');
  await page.waitForSelector('text=Geef een agent de juiste context');
  for(const w of widths){
   await page.setViewportSize({width:w,height:1100});
