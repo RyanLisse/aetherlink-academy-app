@@ -10,6 +10,7 @@ test('room authorization, real MCP bridge evidence and human handoff',async()=>{
  const m=await req('/game/mcp-token',{},people[0].token);await req('/game/control',{action:'next'},m.token,401);await req('/game/mcp/get_mission',{},people[0].token,401);
  const transport=new StdioClientTransport({command:process.execPath,args:['server/mcp.mjs'],env:{...process.env,ACADEMY_URL:base,ACADEMY_TOKEN:m.token}});const client=new Client({name:'academy-integration-test',version:'1'});await client.connect(transport);
  try{const tools=await client.listTools();assert.deepEqual(tools.tools.map(t=>t.name).sort(),['add_slide','create_deck','export_deck_html','get_deck','get_document','get_mission','get_screen_state','list_decks','patch_deck','pin_classroom_deck','search_knowledge','submit_evidence','suggest_document','update_slide']);assert(!tools.tools.some(t=>/accept|rotate|rewrite/.test(t.name)));
+ await req('/game/mcp/pin_classroom_deck',{deckId:randomUUID(),day:1},m.token,403);
  const call=async(name,args={})=>{const r=await client.callTool({name,arguments:args});assert(!r.isError,JSON.stringify(r));return JSON.parse(r.content[0].text);};
  assert.equal((await call('get_mission')).mission.id,'CLASSROOM-01');assert.equal((await call('search_knowledge',{query:''})).lessons.length,10);assert.equal((await call('search_knowledge',{query:'MCP'})).lessons.some(l=>l.id==='L2-MCP'),true);
  const before=await call('get_document');assert.match(before.markdown,/Onze intent/);

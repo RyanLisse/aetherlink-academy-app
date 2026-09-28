@@ -40,10 +40,15 @@ for (const [width, height] of [[1440, 900], [390, 844]]) {
   });
 }
 
-test('facilitator room 1024', async ({page}) => {
+test('facilitator workshop landing 1024', async ({page}) => {
   await open(page, {width: 1024, height: 768, token: fixture.facilitatorToken});
   await page.goto(fixture.base + '/');
-  await page.getByRole('region', {name: 'Facilitatorbediening'}).waitFor();
+  await page.getByRole('heading', {name: 'Squad Noord'}).waitFor();
+  await expect(page.locator('.simple-eyebrow')).toHaveText('Facilitatorwerkplek · Dag 1');
+  await expect(page.getByRole('heading', {name: 'Jouw workshop'})).toBeVisible();
+  await expect(page.getByRole('button', {name: 'Slides presenteren'})).toBeVisible();
+  await expect(page.getByRole('region', {name: 'Facilitatorbediening'})).toHaveCount(0);
+  await expect(page.locator('.simple-settings')).toHaveCount(0);
   await settle(page);
   await expect(page).toHaveScreenshot('facilitator-room-1024.png');
 });

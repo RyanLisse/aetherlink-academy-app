@@ -1,0 +1,51 @@
+/* Quiet, presentation-first slide controls. The parent shell may mount this
+   view beside a contextual drawer; keep the stage flexible at either width. */
+.academy-simple.deck-view{min-width:0;min-height:0}
+.academy-simple .simple-deck-toolbar{display:grid;grid-template-columns:auto minmax(120px,1fr) auto;align-items:center;gap:12px;margin:0 0 14px}
+.academy-simple .simple-deck-back{width:36px;height:36px;justify-content:center;padding:0}
+.academy-simple .deck-title-row{font-size:18px;line-height:1.25;min-width:0}
+.academy-simple .deck-title-row>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.academy-simple .simple-deck-actions{align-items:center;justify-content:flex-end;gap:8px;flex-wrap:nowrap}
+.academy-simple .simple-deck-actions>button,.academy-simple .simple-deck-more>summary{min-height:38px}
+.academy-simple .simple-deck-edit{background:transparent}
+.academy-simple .simple-deck-present{min-width:126px;justify-content:center}
+.academy-simple .simple-deck-more{position:relative}
+.academy-simple .simple-deck-more>summary{display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;border:1px solid var(--border);border-radius:7px;cursor:pointer;list-style:none;font-size:12px}
+.academy-simple .simple-deck-more>summary::-webkit-details-marker{display:none}
+.academy-simple .simple-deck-more-menu{position:absolute;z-index:15;right:0;top:calc(100% + 6px);display:grid;min-width:190px;padding:6px;border:1px solid var(--border);border-radius:8px;background:var(--surface2,var(--bg,#fff));box-shadow:0 12px 32px #0003}
+.academy-simple .simple-deck-more-menu button{display:flex;align-items:center;gap:9px;width:100%;padding:9px 10px;border:0;background:transparent;text-align:left}
+.academy-simple .simple-deck-more-menu button:hover{background:var(--surface)}
+.academy-simple .deck-body{grid-template-columns:minmax(132px,17%) minmax(0,1fr);gap:18px}
+.academy-simple .deck-structure{gap:10px;min-width:0}
+.academy-simple .deck-structure-head{padding:2px 2px 4px}
+.academy-simple .slide-rail{max-height:min(72vh,760px);gap:10px;padding:1px 3px 1px 1px}
+.academy-simple .slide-rail li{min-width:0}
+.academy-simple .slide-thumb{border-width:2px;border-radius:7px}
+.academy-simple .slide-thumb:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+.academy-simple .slide-thumb span{left:6px;bottom:6px;font-size:11px;padding:2px 7px}
+.academy-simple .deck-stage-wrap{border-radius:9px}
+.academy-simple .deck-stage-wrap>.slide-stage{min-height:280px}
+.academy-simple .simple-deck-nav{justify-content:center;gap:12px;margin:12px 0 0}
+.academy-simple .simple-deck-nav>span{min-width:70px;text-align:center}
+.academy-simple .simple-deck-nav button{width:40px;height:40px;justify-content:center;padding:0}
+.academy-simple .simple-slide-tools,.academy-simple .simple-speaker-notes,.academy-simple .simple-technical-details{margin-top:10px;border:1px solid var(--border);border-radius:8px;background:var(--surface2,transparent)}
+.academy-simple .simple-slide-tools>summary,.academy-simple .simple-speaker-notes>summary,.academy-simple .simple-technical-details>summary{padding:11px 13px;cursor:pointer;font-size:12px;list-style-position:inside}
+.academy-simple .simple-slide-tools-actions{display:flex;flex-wrap:wrap;gap:7px;padding:0 12px 12px}
+.academy-simple .simple-slide-tools-actions button{font-size:11px}
+.academy-simple .simple-speaker-notes .deck-notes{margin:0 10px 10px}
+.academy-simple .simple-speaker-notes .deck-notes p{margin:0;white-space:pre-wrap}
+.academy-simple .simple-technical-details p{margin:0;padding:0 13px 12px;font-size:11px;overflow-wrap:anywhere}
+@media(max-width:760px){
+ .academy-simple .simple-deck-toolbar{grid-template-columns:auto minmax(0,1fr);gap:8px}
+ .academy-simple .simple-deck-actions{grid-column:1/-1;justify-content:stretch}
+ .academy-simple .simple-deck-present{flex:1}
+ .academy-simple .deck-body{grid-template-columns:minmax(0,1fr);gap:12px}
+ .academy-simple .slide-rail{flex-direction:row;max-height:none;overflow-x:auto;overflow-y:hidden}
+ .academy-simple .slide-rail li{flex:0 0 clamp(112px,24vw,170px)}
+ .academy-simple .deck-stage-wrap>.slide-stage{min-height:220px}
+}
+@media(max-width:420px){
+ .academy-simple .simple-deck-actions{gap:5px}
+ .academy-simple .simple-deck-edit,.academy-simple .simple-deck-more>summary{padding-inline:9px}
+ .academy-simple .simple-deck-present{min-width:0}
+}
