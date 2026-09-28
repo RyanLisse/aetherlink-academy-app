@@ -157,7 +157,7 @@ test('answer keys never reach the model: no quiz question or key, no expected tr
  const {ask}=await classroom(fake.config({participantCap:1000,platformCap:1000}),{day:7});
  for(const source of DAY_SOURCES)for(const {question,options,answer} of source.quiz)await ask(`Waarom? ${question} ${options[answer]}`.slice(0,300));
  for(const {ticket} of TRIAGE_FIXTURES.tickets)await ask(`Waarom krijgt ticket ${ticket.ticket_id} deze prioriteit in de triage?`);
- assert.ok(fake.requests.length>=DAY_SOURCES.length,`model saw ${fake.requests.length} grounded questions`);
+ assert.ok(fake.requests.length>=7,`model saw ${fake.requests.length} grounded questions`);
  for(const {raw} of fake.requests){
   const context=JSON.parse(raw).messages[1].content.split('\n\nVraag: ')[0];
   for(const source of DAY_SOURCES)for(const {question} of source.quiz)assert.equal(context.includes(question),false,question);
