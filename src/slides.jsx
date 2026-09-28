@@ -1,9 +1,10 @@
 import React,{useCallback,useEffect,useRef,useState} from 'react';
-import {Presentation,Plus,ChevronLeft,ChevronRight,Maximize,Download,Trash2,Copy,RefreshCw,ArrowLeft,Sparkles,Pin,PinOff,Eye,X,Pencil} from 'lucide-react';
+import {Presentation,Plus,ChevronLeft,ChevronRight,Download,Trash2,Copy,RefreshCw,ArrowLeft,Sparkles,Pin,PinOff,Eye,X,Pencil} from 'lucide-react';
 import {api,apiMethod,getToken} from './api';
-import {useT} from './i18n';
+import {useI18n,useT} from './i18n';
 import {reportScreen} from './screen';
 import {StatusState} from './status';
+import './slides-simple.css';
 
 const DIMS={'16:9':[960,540],'4:3':[960,720],'1:1':[1080,1080],'9:16':[540,960],'4:5':[864,1080]};
 const tokens=ds=>({'--ds-bg':ds?.bg||'#F5F2EA','--ds-surface':ds?.surface||'rgba(0,0,0,0.05)','--ds-text':ds?.text||'#171717','--ds-text-muted':ds?.textMuted||'#5c5c5c','--ds-accent':ds?.accent||'#0f766e','--ds-heading-font':ds?.headingFont||'Inter, system-ui, sans-serif','--ds-body-font':ds?.bodyFont||'Inter, system-ui, sans-serif','--ds-radius':ds?.radius||'8px'});
@@ -18,7 +19,7 @@ export function SlideStage({slide,aspectRatio,designSystem,className=''}){
  </div>;
 }
 
-export function Decks({room,action,busy,onRoom}){
+export function Decks({room,action,busy,onRoom,onContext}){
  const t=useT();
  const [decks,setDecks]=useState(null);
  const [listError,setListError]=useState('');
@@ -36,7 +37,7 @@ export function Decks({room,action,busy,onRoom}){
   }
  },[t]);
  useEffect(()=>{refresh();const timer=setInterval(refresh,5000);return()=>clearInterval(timer);},[refresh]);
- if(open)return <DeckView room={room} deckId={open} action={action} busy={busy} onRoom={onRoom} onBack={()=>{setOpen(null);refresh();}}/>;
+ if(open)return <DeckView room={room} deckId={open} action={action} busy={busy} onRoom={onRoom} onContext={onContext} onBack={()=>{setOpen(null);refresh();}}/>;
  const canDelete=deck=>room.me.role==='Facilitator'||deck.createdBy?.id===room.me.id;
  return <section className="panel content-panel decks">
   <p className="cyan"><Presentation size={16}/>{t('decks.eyebrow')}</p>
@@ -65,25 +66,32 @@ export function Decks({room,action,busy,onRoom}){
  </section>;
 }
 
-function DeckView({room,deckId,action,busy,onRoom,onBack}){
+function DeckView({room,deckId,action,busy,onRoom,onContext,onBack}){
  const t=useT();
+ const {locale}=useI18n();
  const [deck,setDeck]=useState(null);
  const [index,setIndex]=useState(0);
  const [error,setError]=useState('');
  const [preview,setPreview]=useState(false);
  const [renaming,setRenaming]=useState(false);
+ const [editing,setEditing]=useState(false);
+ const [moreOpen,setMoreOpen]=useState(false);
  const [draftTitle,setDraftTitle]=useState('');
  const stage=useRef(null);
+ const onContextRef=useRef(onContext);
+ useEffect(()=>{onContextRef.current=onContext;},[onContext]);
  const load=useCallback(async()=>{try{const next=await api(`decks/${deckId}`);setDeck(next);setError('');}catch(e){setError(e.message||t('decks.loadFailed'));}},[deckId,t]);
  useEffect(()=>{load();const timer=setInterval(load,4000);return()=>clearInterval(timer);},[load]);
  const count=deck?.slides.length||0;
  const slideId=deck?.slides[index]?.id??null;
  useEffect(()=>{reportScreen({deckId,slideIndex:index,slideId});},[deckId,index,slideId]);
  useEffect(()=>()=>reportScreen({deckId:null,slideIndex:null,slideId:null}),[]);
+ useEffect(()=>{if(!deck?.title||!slideId)return;onContextRef.current?.({deckId,slideId,slideIndex:index,deckTitle:deck.title});},[deckId,slideId,index,deck?.title]);
+ useEffect(()=>()=>onContextRef.current?.(null),[]);
  const go=useCallback(delta=>setIndex(i=>Math.max(0,Math.min(count-1,i+delta))),[count]);
  useEffect(()=>{if(index>=count&&count)setIndex(count-1);},[count,index]);
- useEffect(()=>{const onKey=e=>{if(e.key==='Escape'&&preview){e.preventDefault();setPreview(false);return;}if(preview||renaming)return;if(e.target.closest('input,textarea'))return;if(['ArrowRight','ArrowDown','PageDown'].includes(e.key)){e.preventDefault();go(1);}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(-1);}else if(e.key==='Home')setIndex(0);else if(e.key==='End')setIndex(Math.max(0,count-1));};window.addEventListener('keydown',onKey);return()=>window.removeEventListener('keydown',onKey);},[go,count,preview,renaming]);
- const presentFullscreen=()=>{const el=stage.current;if(el?.requestFullscreen)el.requestFullscreen().catch(()=>{});};
+ useEffect(()=>{const onKey=e=>{if(e.key==='Escape'&&preview){e.preventDefault();setPreview(false);return;}if(preview||renaming)return;if(e.target.closest('input,textarea,select,[contenteditable],.simple-assistant,.simple-menu'))return;if(['ArrowRight','ArrowDown','PageDown'].includes(e.key)){e.preventDefault();go(1);}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(-1);}else if(e.key==='Home')setIndex(0);else if(e.key==='End')setIndex(Math.max(0,count-1));};window.addEventListener('keydown',onKey);return()=>window.removeEventListener('keydown',onKey);},[go,count,preview,renaming]);
+ const presentFullscreen=()=>setPreview(true);
  const download=()=>action(async()=>{const response=await fetch(`/game/decks/${deckId}/export.html`,{headers:{authorization:`Bearer ${getToken()}`}});if(!response.ok)throw Error((await response.json().catch(()=>({})))?.error||t('decks.exportFailed'));const blob=await response.blob();const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=response.headers.get('content-disposition')?.match(/filename="([^"]+)"/)?.[1]||'deck.html';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);});
  const addSlide=()=>action(async()=>{await api(`decks/${deckId}/slides`,{heading:t('decks.newSlideHeading'),body:[t('decks.newSlideBody')]});await load();setIndex(count);});
  const removeSlide=slide=>action(async()=>{await apiMethod('PATCH',`decks/${deckId}`,{operations:[{op:'delete-slide',slideId:slide.id}]});await load();});
@@ -100,7 +108,7 @@ function DeckView({room,deckId,action,busy,onRoom,onBack}){
  const showNotes=room.me.role!=='Navigator';
  const current=deck?.slides[index];
  const positionLabel=count?t('decks.position',{n:index+1,count}):t('decks.noSlidesShort');
- return <section className="panel content-panel deck-view">
+ return <section className="panel content-panel deck-view academy-simple">
   <nav className="deck-trail" aria-label={t('decks.trailAria')}>
    <ol>
     <li><button type="button" className="deck-trail-link" onClick={onBack}>{t('decks.trailRoot')}</button></li>
@@ -108,8 +116,8 @@ function DeckView({room,deckId,action,busy,onRoom,onBack}){
     {deck&&<li aria-current="page"><span className="deck-trail-here">{positionLabel}</span></li>}
    </ol>
   </nav>
-  <div className="deck-toolbar">
-   <button type="button" onClick={onBack}><ArrowLeft size={15}/>{t('decks.back')}</button>
+  <div className="deck-toolbar simple-deck-toolbar">
+   <button type="button" className="simple-deck-back" onClick={onBack} aria-label={t('decks.back')}><ArrowLeft size={15}/></button>
    {renaming?
     <form className="deck-rename" onSubmit={e=>{e.preventDefault();saveTitle();}}>
      <input value={draftTitle} onChange={e=>setDraftTitle(e.target.value)} maxLength={200} aria-label={t('decks.renameLabel')} autoFocus/>
@@ -118,15 +126,21 @@ function DeckView({room,deckId,action,busy,onRoom,onBack}){
     </form>
     :<h2 className="deck-title-row">
       <span>{deck?.title||t('common.loading')}</span>
-      {deck&&<button type="button" className="deck-rename-trigger" onClick={()=>{setDraftTitle(deck.title);setRenaming(true);}} title={t('decks.rename')} aria-label={t('decks.rename')}><Pencil size={14}/></button>}
+      {deck&&editing&&<button type="button" className="deck-rename-trigger" onClick={()=>{setDraftTitle(deck.title);setRenaming(true);}} title={t('decks.rename')} aria-label={t('decks.rename')}><Pencil size={14}/></button>}
      </h2>}
-   <div className="deck-toolbar-actions">
-    <button type="button" className="deck-primary" disabled={busy} onClick={addSlide}><Plus size={14}/>{t('decks.addSlide')}</button>
-    <button type="button" className="gradient deck-primary" disabled={!count} onClick={()=>setPreview(true)}><Eye size={14}/>{t('decks.preview')}</button>
-    <button type="button" onClick={load} aria-label={t('decks.refresh')} title={t('decks.refresh')}><RefreshCw size={14}/></button>
-    <button type="button" disabled={!count} onClick={download}><Download size={14}/>{t('decks.export')}</button>
-    {facilitator&&<button type="button" disabled={busy||!count} onClick={togglePin} aria-pressed={pinned} title={pinned?t('decks.unpinOverlay'):t('decks.pinOverlay',{day:room.day})} aria-label={pinned?t('decks.unpinOverlay'):t('decks.pinOverlay',{day:room.day})}>{pinned?<PinOff size={14}/>:<Pin size={14}/>}{pinned?t('decks.unpinOverlayShort'):t('decks.pinOverlayShort')}</button>}
-    <button type="button" disabled={!count} onClick={presentFullscreen} title={t('decks.presentFullscreen')}><Maximize size={14}/>{t('decks.present')}</button>
+   <div className="deck-toolbar-actions simple-deck-actions">
+    <button type="button" className="simple-deck-edit" aria-pressed={editing} onClick={()=>{setEditing(v=>!v);setRenaming(false);}}><Pencil size={14}/>{editing?(locale==='nl'?'Gereed':'Done'):(locale==='nl'?'Bewerken':'Edit')}</button>
+    <button type="button" className="gradient deck-primary simple-deck-present" disabled={!count} onClick={presentFullscreen}><Presentation size={16}/>{t('decks.present')}</button>
+    <details className="simple-deck-more" open={moreOpen} onToggle={e=>setMoreOpen(e.currentTarget.open)}>
+     <summary>{locale==='nl'?'Meer':'More'}</summary>
+     <div className="simple-deck-more-menu">
+      <button type="button" disabled={busy} onClick={addSlide}><Plus size={14}/>{t('decks.addSlide')}</button>
+      <button type="button" disabled={!count} onClick={()=>setPreview(true)}><Eye size={14}/>{t('decks.preview')}</button>
+      <button type="button" onClick={load} aria-label={t('decks.refresh')}><RefreshCw size={14}/>{t('decks.refresh')}</button>
+      <button type="button" disabled={!count} onClick={download}><Download size={14}/>{t('decks.export')}</button>
+      {facilitator&&<button type="button" disabled={busy||!count} onClick={togglePin} aria-pressed={pinned}>{pinned?<PinOff size={14}/>:<Pin size={14}/>}{pinned?t('decks.unpinOverlayShort'):t('decks.pinOverlayShort')}</button>}
+     </div>
+    </details>
    </div>
   </div>
   {error&&<StatusState kind="error" title={t('decks.loadFailed')} action={<button type="button" onClick={load}>{t('status.retry')}</button>}>{error}<p>{t('decks.loadFailedHelp')}</p></StatusState>}
@@ -135,11 +149,7 @@ function DeckView({room,deckId,action,busy,onRoom,onBack}){
   {deck&&!count&&<StatusState kind="empty" title={t('decks.noSlides')} action={<button type="button" className="gradient" disabled={busy} onClick={addSlide}><Plus size={14}/>{t('decks.addSlide')}</button>}>{t('decks.noSlidesHelp')}</StatusState>}
   {deck&&count>0&&<div className="deck-body">
    <div className="deck-structure">
-    <div className="deck-structure-head">
-     <strong>{t('decks.structure')}</strong>
-     <button type="button" className="deck-structure-add" disabled={busy} onClick={addSlide} title={t('decks.addSlide')} aria-label={t('decks.addSlide')}><Plus size={14}/></button>
-    </div>
-    <p className="deck-structure-here muted" aria-live="polite">{t('decks.youAreHere',{n:index+1,count,title:deck.title})}</p>
+    <div className="deck-structure-head"><strong>{t('decks.structure')}</strong><span className="muted">{index+1} / {count}</span></div>
     <ol className="slide-rail" aria-label={t('decks.rail')}>{deck.slides.map((slide,i)=><li key={slide.id} className={i===index?'selected':''}>
      <button type="button" className="slide-thumb" onClick={()=>setIndex(i)} aria-current={i===index} aria-label={t('decks.slideN',{n:i+1})}><SlideStage slide={slide} aspectRatio={deck.aspectRatio} designSystem={deck.designSystem} className="thumb"/><span>{i+1}</span></button>
     </li>)}</ol>
@@ -148,17 +158,22 @@ function DeckView({room,deckId,action,busy,onRoom,onBack}){
     <div ref={stage} className="deck-stage-wrap" onClick={e=>{if(document.fullscreenElement===stage.current)go(e.clientX<window.innerWidth/3?-1:1);}}>
      <SlideStage slide={current} aspectRatio={deck.aspectRatio} designSystem={deck.designSystem}/>
     </div>
-    <div className="deck-nav">
+    {editing&&<details className="simple-slide-tools">
+     <summary>{t('decks.structure')} · {t('decks.addSlide')}</summary>
+     <div className="simple-slide-tools-actions">
+      <button type="button" disabled={busy} onClick={addSlide}><Plus size={14}/>{t('decks.addSlide')}</button>
+      <button type="button" disabled={busy||index===0} onClick={()=>move(current,-1)}>{t('decks.moveUp')}</button>
+      <button type="button" disabled={busy||index>=count-1} onClick={()=>move(current,1)}>{t('decks.moveDown')}</button>
+      <button type="button" disabled={busy} onClick={()=>{if(confirm(t('decks.deleteSlideConfirm')))removeSlide(current);}}><Trash2 size={14}/>{t('decks.deleteSlide')}</button>
+     </div>
+    </details>}
+    <div className="deck-nav simple-deck-nav">
      <button type="button" onClick={()=>go(-1)} disabled={index===0} aria-label={t('decks.prev')}><ChevronLeft size={16}/></button>
      <span>{index+1} / {count}</span>
      <button type="button" onClick={()=>go(1)} disabled={index>=count-1} aria-label={t('decks.next')}><ChevronRight size={16}/></button>
-     <span className="deck-nav-spacer"/>
-     <button type="button" disabled={busy||index===0} onClick={()=>move(current,-1)}>{t('decks.moveUp')}</button>
-     <button type="button" disabled={busy||index>=count-1} onClick={()=>move(current,1)}>{t('decks.moveDown')}</button>
-     <button type="button" disabled={busy} onClick={()=>{if(confirm(t('decks.deleteSlideConfirm')))removeSlide(current);}}><Trash2 size={14}/>{t('decks.deleteSlide')}</button>
     </div>
-    {showNotes&&current?.notes&&<div className="notice deck-notes"><strong>{t('decks.notes')}</strong><p>{current.notes}</p></div>}
-    <small className="muted">{t('decks.editHint',{id:current?.id||'',deckId:deck.id})}</small>
+    {showNotes&&current?.notes&&<details className="simple-speaker-notes"><summary>{t('decks.notes')}</summary><div className="notice deck-notes"><p>{current.notes}</p></div></details>}
+    <details className="simple-technical-details"><summary>{locale==='nl'?'Technische details':'Technical details'}</summary><p>{t('decks.editHint',{id:current?.id||'',deckId:deck.id})}</p></details>
    </div>
   </div>}
   {preview&&deck&&<div className="deck-preview-overlay" role="dialog" aria-modal="true" aria-label={t('decks.previewTitle')}>
