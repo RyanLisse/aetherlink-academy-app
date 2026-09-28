@@ -91,16 +91,19 @@ test('participant views: loading, empty, error and offline states are visible an
     const page=await open({width:1440,height:900});
     await page.goto(`${fixture.base}/#access=${fixture.participantAccess}`);
     await page.getByRole('heading',{name:'Squad Noord'}).waitFor();
-    const nav=name=>page.getByRole('navigation',{name:'Hoofdnavigatie'}).getByRole('button',{name,exact:true});
+    const navigation=page.getByRole('navigation',{name:'Hoofdnavigatie'});
+    const nav=name=>navigation.getByRole('button',{name,exact:true});
+    const selectNav=async name=>{if(name!=='Mijn route'&&name!=='Les'&&name!=='Squad-room'&&!await nav(name).isVisible())await nav('Meer').click();await nav(name).click();};
+    assert.equal(await page.locator('.right-rail').count(),0,'participant support rail is closed by default');
     for(const [label,ready] of [['Mijn route','Vijf dagen. Echte voortgang.'],['Les',null],['Solo-missie',null],['Naslag','Alles wat al vrijgegeven is, om na te lezen'],['Review & overdracht','Alles klaar voor overdracht?']]){
-      await nav(label).click();
+      await selectNav(label);
       await page.waitForFunction(()=>!document.querySelector('.primary [data-status="loading"]'),null,{timeout:10000});
       assert.equal(await page.locator('.primary').innerText().then(text=>text.trim().length>0),true,`${label} is never blank`);
       assert.deepEqual(await blockingViolations(page),[],label);
       if(ready)assert.ok(await page.locator('.primary').getByText(ready).first().isVisible(),`${label} shows ${ready}`);
     }
 
-    await nav('Les').click();
+    await selectNav('Les');
     await page.getByTestId('course-pages').waitFor();
     const courseNav=page.getByRole('navigation',{name:"Cursuspagina's"});
     assert.ok(await courseNav.isVisible(),'participants can reach the course pages from Lesson');
@@ -116,6 +119,13 @@ test('participant views: loading, empty, error and offline states are visible an
     await courseNav.getByRole('button',{name:'Quiz',exact:true}).click();
     assert.equal(await answer.isChecked(),true,'switching pages preserves the in-progress quiz answers');
     assert.deepEqual(await blockingViolations(page),[],'quiz page passes axe');
+    const squadHelp=page.getByRole('button',{name:'Squad en hulp',exact:true});
+    await squadHelp.click();
+    assert.equal(await page.locator('.right-rail .roster').count(),1,'participants can open the squad roster and access actions');
+    assert.equal(await answer.isChecked(),true,'opening squad support keeps the active quiz mounted');
+    await squadHelp.click();
+    assert.equal(await page.locator('.right-rail').count(),0,'participants can close squad support');
+    assert.equal(await answer.isChecked(),true,'closing squad support keeps the active quiz mounted');
 
     assert.equal(await nav('Debriefbord').count(),0,'participants only see the board once it exists');
 
@@ -185,8 +195,9 @@ test('facilitator workshop landing keeps settings tucked away and exposes usable
     assert.ok(await page.getByText('Voortgang van de huidige dag.',{exact:false}).isVisible(),'workshop agenda opens the facilitator debrief for the selected day');
     await page.locator('.simple-more > summary').click();
     await page.locator('.simple-menu').getByRole('button',{name:'Les',exact:true}).click();
-    await page.getByRole('navigation',{name:"Cursuspagina's"}).waitFor();
-    assert.ok(await page.getByRole('navigation',{name:"Cursuspagina's"}).isVisible(),'facilitators see the same Lesson, Assignments, and Quiz navigation');
+    const courseNavigation=page.getByRole('navigation',{name:"Cursuspagina's"});
+    await courseNavigation.waitFor({state:'visible'});
+    assert.ok(await courseNavigation.isVisible(),'facilitators see the same Lesson, Assignments, and Quiz navigation');
   });
 });
 
@@ -210,6 +221,10 @@ test('facilitator overview and read-only cohort room pass axe and show their sta
     await reader.getByRole('button',{name:'Inloggen met cohortcode'}).click();
     const banner=reader.locator('[data-status="readonly"]');
     await banner.waitFor();
+    const participantNavigation=reader.getByRole('navigation',{name:'Hoofdnavigatie'});
+    await participantNavigation.getByRole('button',{name:'Meer',exact:true}).click();
+    assert.equal(await participantNavigation.getByRole('button',{name:'Naslag',exact:true}).getAttribute('aria-current'),'page','read-only cohort participants land on Reference');
+    await participantNavigation.getByRole('button',{name:'Meer',exact:true}).click();
     assert.match(await banner.innerText(),/Alleen-lezen\s+De schrijfperiode van je cohort is voorbij/);
     assert.ok(await banner.getByRole('button',{name:'Exporteer het document'}).isVisible());
     assert.deepEqual(await blockingViolations(reader),[],'read-only room 390');

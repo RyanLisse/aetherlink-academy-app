@@ -193,6 +193,47 @@
 .nav-tools button{font-size:11px;padding:8px 10px;color:var(--muted);font-weight:450}
 .nav-tools button.selected{font-weight:550}
 .nav-primary button{font-size:12px}
+
+/* Minimal participant shell: keep the lesson readable and make room support opt-in. */
+.participant-app{display:block;min-height:100vh}
+.participant-app .topbar{height:64px;padding:0 28px}
+.participant-app .sidebar-bottom{display:none}
+.participant-app .participant-sidebar{position:relative;border-right:0;border-bottom:1px solid var(--border);padding:7px 28px;background:var(--bg)}
+.participant-sidebar .sidebar-nav{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:12px}
+.participant-app .sidebar-nav{overflow:visible}
+.participant-primary-nav{display:flex;align-items:center;gap:5px}
+.participant-primary-nav button,.participant-more>button{padding:8px 11px;font-size:12px;border:1px solid transparent;border-radius:7px;color:var(--muted)}
+.participant-primary-nav button[aria-current=page]{background:var(--selected);color:var(--cyan);border-color:var(--border)}
+.participant-more{position:relative}
+.participant-more>button{border-color:var(--border);background:var(--surface)}
+.participant-more-menu{position:absolute;z-index:20;right:0;top:calc(100% + 7px);min-width:210px;padding:7px;display:flex;flex-direction:column;gap:2px;background:var(--surface);border:1px solid var(--border);border-radius:8px;box-shadow:0 10px 28px #0005}
+.participant-more-menu[hidden]{display:none}
+.participant-more-menu button{justify-content:flex-start;padding:8px 10px;font-size:12px;color:var(--muted);border:1px solid transparent;background:transparent}
+.participant-more-menu button[aria-current=page]{color:var(--cyan);background:var(--selected);border-color:var(--border)}
+.participant-app main{max-width:1120px;padding:24px 30px 0}
+.participant-app .room-heading{margin-bottom:18px;gap:14px}
+.participant-room-heading>div:first-child{min-width:0}
+.participant-room-heading h1{font-size:25px}
+.participant-room-heading p{font-size:11px;margin-bottom:3px}
+.participant-squad-toggle{padding:8px 11px;font-size:12px;white-space:nowrap}
+.participant-app .workspace{display:block}
+.participant-app .primary{max-width:960px}
+.participant-app .participant-workspace-open{display:grid;grid-template-columns:minmax(0,1fr) 258px;gap:20px;align-items:start}
+.participant-app .participant-workspace-open .primary{max-width:none}
+.participant-app .right-rail{min-width:0}
+@media(max-width:800px){
+ .participant-app .topbar{height:58px;padding:0 16px}
+ .participant-app .sidebar{padding:7px 12px}
+ .participant-sidebar .sidebar-nav{gap:5px}
+ .participant-primary-nav{gap:2px;overflow-x:auto}
+ .participant-primary-nav button,.participant-more>button{padding:8px 9px;font-size:11px}
+ .participant-app main{padding:18px 16px 0}
+ .participant-app .participant-workspace-open{display:flex;flex-direction:column}
+ .participant-app .participant-workspace-open .right-rail{width:100%;display:flex}
+ .participant-app .participant-workspace-open .right-rail{order:-1}
+ .participant-room-heading{align-items:flex-start}
+ .participant-squad-toggle{padding:7px 9px;font-size:11px;gap:5px}
+}
 @media(max-width:800px){
   .sidebar-nav{flex-direction:row;align-items:stretch;gap:8px;overflow:auto}
   .nav-primary,.nav-tools{flex-direction:row;gap:5px;padding-top:0;border-top:0;opacity:1}
@@ -245,4 +286,9 @@
 .course-page-nav button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:120px;padding:10px 15px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:7px;font-size:13px}
 .course-page-nav button[aria-current="page"]{color:var(--cyan);border-color:var(--cyan);background:var(--selected)}
 .course-page-nav button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+@media(max-width:800px){
+ .participant-app .course-page-nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+ .participant-app .course-page-nav button{min-width:0;padding:10px 5px;font-size:11px;gap:4px}
+ .participant-app .course-page-nav button svg{width:13px;height:13px}
+}
 .course-quiz-page[hidden]{display:none}
