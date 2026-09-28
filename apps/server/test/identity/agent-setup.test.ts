@@ -1,6 +1,6 @@
 import {Effect, Layer} from 'effect';
 import {describe, expect, test} from 'vitest';
-import {agentInstructions} from '../../src/identity/agent-setup.ts';
+import {agentInstructions,facilitatorAgentInstructions} from '../../src/identity/agent-setup.ts';
 import {authorizeMcpBearer, TokenService, TokenServiceLive} from '../../src/identity/tokens.ts';
 import {runSquad, SquadStore, SquadStoreMemory} from '../../src/squad/store.ts';
 
@@ -49,4 +49,34 @@ describe('agent setup + MCP revoke', () => {
       }).pipe(Effect.provide(live)),
     );
   });
+
+  test('codex client emits bearer-token-env-var setup', async () => {
+    await runSquad(Effect.gen(function* () {
+      const store = yield* SquadStore;
+      const host = yield* store.create('Squad', {slug: 'intent'});
+      const alice = yield* store.join(host.code, 'Alice');
+      const auth = yield* store.auth(alice.token);
+      const mcpToken = yield* store.mintSession(auth.r.id, auth.p!.id, 'mcp');
+      const text = agentInstructions({
+        origin: 'https://academy.example.test',
+        roomId: auth.r.id,
+        participantId: auth.p!.id,
+        accessToken: mcpToken,
+        client: 'codex',
+      });
+      expect(text).toMatch(/codex mcp add/);
+      expect(text).toMatch(/--bearer-token-env-var/);
+      expect(text).toContain(mcpToken);
+      expect(text).not.toMatch(/claude mcp add/);
+      const fac = facilitatorAgentInstructions({
+        origin: 'https://academy.example.test',
+        roomId: auth.r.id,
+        accessToken: mcpToken,
+        client: 'codex',
+      });
+      expect(fac).toMatch(/codex mcp add/);
+      expect(fac).toMatch(/session\.role=facilitator/);
+    }));
+  });
+
 });

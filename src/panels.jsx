@@ -27,23 +27,37 @@ export function Coach({room}){
   const t=useT();
   const {locale}=useI18n();
   const facilitator=room.me.role==='Facilitator';
-  const cacheKey=`academy-agent-setup:${room.id}:${room.me.id}`;
-  const validSetup=value=>value?.participantId===room.me.id&&value?.roomId===room.id&&value?.expiresAt>Date.now()&&typeof value.instructions==='string'&&value.instructions.length>0;
+  const [client,setClient]=useState('claude');
+  const cacheKey=`academy-agent-setup:${room.id}:${room.me.id}:${client}`;
+  const validSetup=value=>value?.participantId===room.me.id&&value?.roomId===room.id&&value?.client===client&&value?.expiresAt>Date.now()&&typeof value.instructions==='string'&&value.instructions.length>0;
   const [setup,setSetup]=useState(()=>{try{const value=JSON.parse(sessionStorage.getItem(cacheKey)||'null');return validSetup(value)?value:null;}catch{return null;}});
   const [error,setError]=useState('');
   const [copied,setCopied]=useState(false);
   const [busy,setBusy]=useState(false);
-  async function copyForClaude(){
+  useEffect(()=>{
+    setCopied(false);setError('');
+    try{const value=JSON.parse(sessionStorage.getItem(cacheKey)||'null');setSetup(validSetup(value)?value:null);}catch{setSetup(null);}
+  },[client,cacheKey]);
+  async function copyForAgent(){
     if(busy)return;setBusy(true);setError('');setCopied(false);
-    const pending=validSetup(setup)?Promise.resolve(setup):api('agent-setup',{}).then(result=>{if(!validSetup(result))throw Error(t('coach.invalidSetup'));setSetup(result);try{sessionStorage.setItem(cacheKey,JSON.stringify(result));}catch{}return result;});
+    const pending=validSetup(setup)?Promise.resolve(setup):api('agent-setup',{client}).then(result=>{if(!validSetup({...result,client:result.client||client}))throw Error(t('coach.invalidSetup'));const stored={...result,client:result.client||client};setSetup(stored);try{sessionStorage.setItem(cacheKey,JSON.stringify(stored));}catch{}return stored;});
     try{
       if(navigator.clipboard?.write&&globalThis.ClipboardItem)await navigator.clipboard.write([new ClipboardItem({'text/plain':pending.then(result=>new Blob([result.instructions],{type:'text/plain'}))})]);
       else{const result=await pending;if(!navigator.clipboard?.writeText)throw Error('clipboard');await navigator.clipboard.writeText(result.instructions);}
       setCopied(true);
     }catch{try{await pending;setError(t('coach.copyBlocked'));}catch(err){setError(err.message);}}finally{setBusy(false);}
   }
+  const expired=Boolean(setup&&setup.expiresAt<=Date.now());
+  const status=expired?'expired':room.me.lastMcp?'verified':validSetup(setup)?'waiting':'configured';
   const mcpTime=room.me.lastMcp?new Date(room.me.lastMcp).toLocaleTimeString(locale==='nl'?'nl-NL':'en-GB'):null;
-  return <section className="panel content-panel"><p className="cyan"><Sparkles size={16}/>{t('coach.eyebrow')}</p><h2>{t(facilitator?'coach.facilitatorTitle':'coach.title')}</h2><p className="lede">{t(facilitator?'coach.facilitatorLede':'coach.lede')}</p><div className="notice"><strong>{facilitator?t('coach.facilitatorConnection'):mcpTime?t('coach.lastMcp',{time:mcpTime}):t('coach.noMcp')}</strong><p>{t('coach.mcpNote')}</p></div><button className="gradient" type="button" disabled={busy} onClick={copyForClaude}><Copy size={19}/>{copied?t('coach.copied'):t('coach.copy')}</button>{error&&<p className="error" role="alert">{error}</p>}{setup&&<details open={Boolean(error)}><summary>{t('coach.viewInstructions')}</summary><label>{t('coach.instructionsLabel')}<textarea readOnly rows={Math.min(16,Math.max(5,setup.instructions.split('\n').length))} value={setup.instructions} onFocus={event=>event.currentTarget.select()} aria-label={t('coach.instructionsLabel')}/></label></details>}<p className="muted">{t('coach.privateNote')}</p><div className="coach-context"><span><Target size={17}/>{t('coach.ctx.repo')}</span><span><FileText size={17}/>{t('coach.ctx.intent')}</span><span><BookOpen size={17}/>{t('coach.ctx.lessons')}</span></div><div className="prompt"><strong>{t('coach.pasteTitle')}</strong><p>{t('coach.pasteBody')}</p></div><h3>{t('coach.searchHeading')}</h3><Knowledge/></section>;
+  const statusText=status==='verified'?t('coach.status.verified',{time:mcpTime}):t(`coach.status.${status}`);
+  const copyLabel=client==='codex'?t('coach.copyCodex'):t('coach.copyClaude');
+  const instructionsLabel=client==='codex'?t('coach.instructionsLabelCodex'):t('coach.instructionsLabelClaude');
+  const pasteTitle=client==='codex'?t('coach.pasteTitleCodex'):t('coach.pasteTitleClaude');
+  const pasteBody=client==='codex'?t('coach.pasteBodyCodex'):t('coach.pasteBodyClaude');
+  const eyebrow=client==='codex'?t('coach.eyebrowCodex'):t('coach.eyebrowClaude');
+  const facilitatorLede=client==='codex'?t('coach.facilitatorLedeCodex'):t('coach.facilitatorLedeClaude');
+  return <section className="panel content-panel"><p className="cyan"><Sparkles size={16}/>{eyebrow}</p><h2>{t(facilitator?'coach.facilitatorTitle':'coach.title')}</h2><p className="lede">{facilitator?facilitatorLede:t('coach.lede')}</p><fieldset className="client-selector"><legend>{t('coach.clientLabel')}</legend><div role="radiogroup" aria-label={t('coach.clientLabel')} className="client-selector-options"><button type="button" role="radio" aria-checked={client==='claude'} className={client==='claude'?'selected':''} onClick={()=>setClient('claude')}>{t('coach.clientClaude')}</button><button type="button" role="radio" aria-checked={client==='codex'} className={client==='codex'?'selected':''} onClick={()=>setClient('codex')}>{t('coach.clientCodex')}</button></div></fieldset><div className={`notice connection-status status-${status}`} data-testid="agent-connection-status" data-status={status}><strong>{statusText}</strong><p>{t('coach.mcpNote')}</p><p className="muted">{t('coach.wrongRoomHelp')}</p></div><button className="gradient" type="button" disabled={busy} onClick={copyForAgent}><Copy size={19}/>{copied?t('coach.copied'):copyLabel}</button>{error&&<p className="error" role="alert">{error}</p>}{setup&&<details open={Boolean(error)}><summary>{t('coach.viewInstructions')}</summary><label>{instructionsLabel}<textarea readOnly rows={Math.min(16,Math.max(5,setup.instructions.split('\n').length))} value={setup.instructions} onFocus={event=>event.currentTarget.select()} aria-label={instructionsLabel}/></label></details>}<p className="muted">{t('coach.privateNote')}</p><div className="coach-context"><span><Target size={17}/>{t('coach.ctx.repo')}</span><span><FileText size={17}/>{t('coach.ctx.intent')}</span><span><BookOpen size={17}/>{t('coach.ctx.lessons')}</span></div><div className="prompt"><strong>{pasteTitle}</strong><p>{pasteBody}</p></div><h3>{t('coach.searchHeading')}</h3><Knowledge/></section>;
 }
 
 export function CopyConfiguration({value,label}){

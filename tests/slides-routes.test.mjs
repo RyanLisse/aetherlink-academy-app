@@ -81,6 +81,7 @@ test('facilitator agent setup issues a room-bound MCP token and exposes facilita
  const mission=await invoke(app,'post','/game/mcp/:tool',{params:{tool:'get_mission'},bearer:facilitatorToken});
  assert.equal(mission.statusCode,200);assert.equal(mission.body.session.role,'facilitator');assert.equal(mission.body.session.roomId,host.roomId);
  assert.equal('participantId' in mission.body.session,false);
+ assert.ok(instance.store.data.rooms[host.roomId].facilitatorLastMcp,'facilitator MCP success stamps lastMcp');
  const created=await invoke(app,'post','/game/mcp/:tool',{params:{tool:'create_deck'},body:{title:'Facilitator lesson'},bearer:facilitatorToken});
  assert.equal(created.statusCode,200,JSON.stringify(created.body));
  const added=await invoke(app,'post','/game/mcp/:tool',{params:{tool:'add_slide'},body:{deckId:created.body.id,heading:'Private notes',notes:'Facilitator-only note'},bearer:facilitatorToken});
