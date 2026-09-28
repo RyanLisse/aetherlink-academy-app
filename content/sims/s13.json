@@ -133,7 +133,8 @@
           "content": "Authentication was refactored in its task-bound worktree and the dependent tests pass.",
           "annotation": "The Lead combines parallel results into one user-facing outcome."
         }
-      ]
+      ],
+      "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     },
     "nl": {
       "title": "Agent Team Runtime",
@@ -266,7 +267,8 @@
           "content": "Authenticatie is gerefactord in de task-gebonden worktree en de afhankelijke tests slagen.",
           "annotation": "De Lead combineert parallelle resultaten tot één gebruikersuitkomst."
         }
-      ]
+      ],
+      "attribution": "Overgenomen uit shareAI-lab/learn-claude-code (MIT-licentie, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     }
   }
 }

@@ -43,7 +43,8 @@
           "content": "Scheduled. When the cron fires, the queue processor will run the reminder prompt through the agent loop.",
           "annotation": "The final answer explains the durable recurring behavior."
         }
-      ]
+      ],
+      "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     },
     "nl": {
       "title": "Cron Scheduler",
@@ -88,7 +89,8 @@
           "annotation": "Gepland werk gebruikt dezelfde loop als handmatige prompts.",
           "toolName": "bash"
         }
-      ]
+      ],
+      "attribution": "Overgenomen uit shareAI-lab/learn-claude-code (MIT-licentie, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     }
   }
 }

@@ -39,7 +39,8 @@
           "content": "The parser is isolated in cli.py and dispatches by command name. I'll use that summary in the main plan.",
           "annotation": "The parent avoids carrying every exploratory detail."
         }
-      ]
+      ],
+      "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     },
     "nl": {
       "title": "Subagent",
@@ -77,7 +78,8 @@
           "content": "ouder-messages[] bevat geen tussentijdse subagent-toolcalls",
           "annotation": "Tussenstappen van de subagent blijven buiten de oudercontext."
         }
-      ]
+      ],
+      "attribution": "Overgenomen uit shareAI-lab/learn-claude-code (MIT-licentie, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     }
   }
 }

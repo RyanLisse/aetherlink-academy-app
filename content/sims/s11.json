@@ -44,7 +44,8 @@
           "content": "The scan finished with 12 matches. I'll summarize the most important ones now.",
           "annotation": "The agent consumes the background result as fresh context."
         }
-      ]
+      ],
+      "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     },
     "nl": {
       "title": "Background Tasks",
@@ -89,7 +90,8 @@
           "content": "Tests groen (bg_42). Docs opgeruimd. Klaar voor de volgende stap.",
           "annotation": "Achtergrondwerk blokkeert de hoofdloop niet."
         }
-      ]
+      ],
+      "attribution": "Overgenomen uit shareAI-lab/learn-claude-code (MIT-licentie, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     }
   }
 }

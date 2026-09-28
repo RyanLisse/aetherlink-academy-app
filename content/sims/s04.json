@@ -43,7 +43,8 @@
           "content": "The project exposes a build script that runs Next's production build.",
           "annotation": "Stop hooks can run when the model no longer requests tools."
         }
-      ]
+      ],
+      "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     },
     "nl": {
       "title": "Hooks",
@@ -86,7 +87,8 @@
           "content": "Het project heeft een build-script dat de productiebuild van Next draait.",
           "annotation": "Stop-hooks kunnen draaien wanneer het model geen tools meer vraagt."
         }
-      ]
+      ],
+      "attribution": "Overgenomen uit shareAI-lab/learn-claude-code (MIT-licentie, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     }
   }
 }

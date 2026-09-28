@@ -39,7 +39,8 @@
           "content": "I inspected the parser and will update the todo list before making the code change.",
           "annotation": "The planning state guides the next turn."
         }
-      ]
+      ],
+      "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     },
     "nl": {
       "title": "TodoWrite",
@@ -78,7 +79,8 @@
           "content": "Plan bijgewerkt. Ik ga nu de bestanden hernoemen volgens snake_case.",
           "annotation": "Het plan voorkomt dat latere stappen uit de aandacht verdwijnen."
         }
-      ]
+      ],
+      "attribution": "Overgenomen uit shareAI-lab/learn-claude-code (MIT-licentie, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     }
   }
 }

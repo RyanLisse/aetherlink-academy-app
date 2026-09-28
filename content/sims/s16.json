@@ -53,7 +53,8 @@
           "content": "append Workflow tool_result -> messages[]",
           "annotation": "A main-loop integration can append this JSON-safe result and continue with the updated conversation."
         }
-      ]
+      ],
+      "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     },
     "nl": {
       "title": "Workflow Runtime",
@@ -106,7 +107,8 @@
           "content": "append Workflow tool_result → messages[]",
           "annotation": "Main-loop-integratie kan dit JSON-veilige resultaat toevoegen en doorgaan met het bijgewerkte gesprek."
         }
-      ]
+      ],
+      "attribution": "Overgenomen uit shareAI-lab/learn-claude-code (MIT-licentie, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     }
   }
 }

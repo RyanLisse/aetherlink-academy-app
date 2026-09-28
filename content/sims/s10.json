@@ -83,7 +83,8 @@
           "content": "Completed task_a1b2c3d4 (Run tests)\nUnblocked: Deploy release",
           "annotation": "The harness reports newly available work."
         }
-      ]
+      ],
+      "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     },
     "nl": {
       "title": "Task System",
@@ -166,7 +167,8 @@
           "annotation": "Voortgang is herstelbaar over sessies heen.",
           "toolName": "complete_task"
         }
-      ]
+      ],
+      "attribution": "Overgenomen uit shareAI-lab/learn-claude-code (MIT-licentie, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     }
   }
 }

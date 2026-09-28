@@ -55,7 +55,8 @@
           "content": "WL-1026 accepted as high. Next: run the remaining fixture tickets; keep the human gate before you claim ship.",
           "annotation": "Loop closes for one ticket. Stretch SOLO 3 can split Reply/Risk specialists."
         }
-      ]
+      ],
+      "attribution": "Academy-authored ConceptSim for Workshop 4 / AET-80 (n8n → Claude Agent SDK). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches ticket→tool_use→priority (s01–s02 territory). Not a port of an upstream chapter."
     },
     "nl": {
       "title": "Ticket → tool_use → prioriteit",
@@ -110,7 +111,8 @@
           "content": "WL-1026 geaccepteerd als high. Volgende: de overige fixture-tickets; houd de menselijke gate vóór je ship claimt.",
           "annotation": "Lus sluit voor één ticket. Stretch SOLO 3 kan Reply/Risk-specialisten afsplitsen."
         }
-      ]
+      ],
+      "attribution": "Door Academy geschreven ConceptSim voor Workshop 4 / AET-80 (n8n → Claude Agent SDK). Scenariovorm compatibel met shareAI-lab/learn-claude-code (MIT). Leert ticket→tool_use→priority (s01–s02-terrein). Geen port van een upstream-hoofdstuk."
     }
   }
 }

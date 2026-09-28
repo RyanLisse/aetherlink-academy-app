@@ -32,7 +32,8 @@
           "content": "extract_memory -> wrote feedback_tabs.md",
           "annotation": "After the turn, new durable facts can be extracted from the original conversation."
         }
-      ]
+      ],
+      "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     },
     "nl": {
       "title": "Memory",
@@ -65,7 +66,8 @@
           "content": "Ik formatteer met tabs, volgens je opgeslagen voorkeur.",
           "annotation": "On-demand recall voorkomt dat de hele geheugenbank in elke prompt zit."
         }
-      ]
+      ],
+      "attribution": "Overgenomen uit shareAI-lab/learn-claude-code (MIT-licentie, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     }
   }
 }
