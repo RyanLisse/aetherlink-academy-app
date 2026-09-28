@@ -1,0 +1,94 @@
+{
+  "version": "s12",
+  "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code",
+  "locales": {
+    "en": {
+      "title": "Cron Scheduler",
+      "description": "A daemon loop watches durable cron definitions, queues due jobs, and lets the agent process them.",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Every weekday morning, remind me to review open tasks.",
+          "annotation": "The user asks for a recurring future action."
+        },
+        {
+          "type": "assistant_text",
+          "content": "I'll create a cron job and store it so the scheduler can pick it up later.",
+          "annotation": "The agent delegates recurrence to the scheduler instead of relying on current context."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "schedule_cron",
+          "content": "{\"name\":\"review-open-tasks\",\"cron\":\"0 9 * * 1-5\",\"prompt\":\"Review open tasks and summarize blockers.\"}",
+          "annotation": "The new tool validates and persists a cron definition."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "schedule_cron",
+          "content": "Scheduled review-open-tasks with id cron_7.",
+          "annotation": "The job is written to the durable schedule store."
+        },
+        {
+          "type": "system_event",
+          "content": "cron_scheduler_loop: cron_7 matched current minute -> cron_queue.put(cron_7)",
+          "annotation": "The independent scheduler daemon detects that the job is due."
+        },
+        {
+          "type": "system_event",
+          "content": "queue_processor_loop: dequeued cron_7 and invoked agent_loop(prompt)",
+          "annotation": "A separate processor turns due jobs into normal agent work."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Scheduled. When the cron fires, the queue processor will run the reminder prompt through the agent loop.",
+          "annotation": "The final answer explains the durable recurring behavior."
+        }
+      ]
+    },
+    "nl": {
+      "title": "Cron Scheduler",
+      "description": "Cron bewaart schema’s, zet due prompts in een wachtrij en levert ze wanneer de agent idle is.",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Draai elke ochtend om 09:00 de tests.",
+          "annotation": "De gebruiker wil herhaald werk zonder opnieuw te prompten."
+        },
+        {
+          "type": "tool_call",
+          "content": "{\"cron\":\"0 9 * * *\",\"prompt\":\"run tests\"}",
+          "annotation": "schedule_cron bewaart job + prompt.",
+          "toolName": "schedule_cron"
+        },
+        {
+          "type": "tool_result",
+          "content": "CronJob cron_01 gepland: 0 9 * * * → run tests",
+          "annotation": "Schema blijft bestaan buiten de huidige beurt.",
+          "toolName": "schedule_cron"
+        },
+        {
+          "type": "system_event",
+          "content": "09:00 · scheduler match cron_01 · enqueue [Scheduled] run tests",
+          "annotation": "De scheduler-thread controleert de tijd."
+        },
+        {
+          "type": "system_event",
+          "content": "agent idle · queue processor start Agent Loop-beurt",
+          "annotation": "Levering wacht tot de agent idle is."
+        },
+        {
+          "type": "tool_call",
+          "content": "npm test",
+          "annotation": "Het model handelt de geplande prompt af met gewone tools.",
+          "toolName": "bash"
+        },
+        {
+          "type": "tool_result",
+          "content": "214 passed",
+          "annotation": "Gepland werk gebruikt dezelfde loop als handmatige prompts.",
+          "toolName": "bash"
+        }
+      ]
+    }
+  }
+}

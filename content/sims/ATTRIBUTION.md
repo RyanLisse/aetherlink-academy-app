@@ -17,17 +17,31 @@ Copyright (c) 2024 shareAI Lab
 When a chapter scenario is **ported** from that repo (s01–s17), keep
 the MIT notice on the JSON (`attribution` field) and in the lesson footer.
 
-## Ported chapters (Slice 1+)
+## Ported chapters (Slice 1 + Slice 2)
 
 | Id | Upstream | Notes |
 |---|---|---|
 | `s01.json` | `web/src/data/scenarios/s01.json` + `s01_agent_loop/` | Agent Loop |
 | `s02.json` | `web/src/data/scenarios/s02.json` + `s02_tool_use/` | Tool Use |
 | `s03.json` | `web/src/data/scenarios/s03.json` + `s03_permission/` | Permission System |
+| `s04.json` | `web/src/data/scenarios/s04.json` + `s04_hooks/` | Hook System |
+| `s05.json` | `web/src/data/scenarios/s05.json` + `s05_todo_write/` | TodoWrite |
+| `s06.json` | `web/src/data/scenarios/s06.json` + `s06_subagent/` | Subagent |
+| `s07.json` | `web/src/data/scenarios/s07.json` + `s07_skill_loading/` | Skill Loading |
+| `s08.json` | `web/src/data/scenarios/s08.json` + `s08_context_compact/` | Context Compact |
+| `s09.json` | `web/src/data/scenarios/s09.json` + `s09_memory/` | Memory |
+| `s10.json` | `web/src/data/scenarios/s10.json` + `s10_task_system/` | Task System |
+| `s11.json` | `web/src/data/scenarios/s11.json` + `s11_background_tasks/` | Background Tasks |
+| `s12.json` | `web/src/data/scenarios/s12.json` + `s12_cron_scheduler/` | Cron Scheduler |
+| `s13.json` | `web/src/data/scenarios/s13.json` + `s13_agent_teams/` | Agent Teams |
+| `s14.json` | `web/src/data/scenarios/s14.json` + `s14_mcp_plugin/` | MCP Plugin |
+| `s15.json` | `web/src/data/scenarios/s15.json` + `s15_integrated_harness/` | Integrated Harness |
+| `s16.json` | `web/src/data/scenarios/s16.json` + `s16_workflow_runtime/` | Workflow Runtime |
+| `s17.json` | `web/src/data/scenarios/s17.json` + `s17_goal_loop/` | Goal Loop |
 
 Harness sims ship `locales:{en,nl}` with real copy in both (AET-116 locale lock). Fixture remains flat EN-only.
 
-Diagrams under `public/harness/*.svg` are the EN SVGs from the same upstream chapter `images/*.en.svg` folders (MIT).
+Diagrams under `public/diagrams/harness/*.svg` are the EN SVGs from the same upstream chapter `images/*.en.svg` folders (MIT). s16/s17 use the plain overview SVGs where `.en.svg` was not published.
 
 ## Academy fixtures
 

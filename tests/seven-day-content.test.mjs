@@ -8,13 +8,19 @@ import {getDayPack,listDaySummaries,listRouteDays,starterFileNames} from '../ser
 const root=process.cwd();
 const decks=await loadDeckSlides(root);
 
-test('Wave 1–7 stay locked; Harness packs 8–10 are opt-in',()=>{
- assert.deepEqual(listDaySummaries().map(d=>d.day),[1,2,3,4,5,6,7,8,9,10]);
+test('Wave 1–7 stay locked; Harness packs 8–24 are opt-in',()=>{
+ assert.deepEqual(listDaySummaries().map(d=>d.day),Array.from({length:24},(_,i)=>i+1));
  assert.deepEqual([1,2,3,4,5,6,7].map(day=>getDayPack(day).code),['classroom-1','classroom-2','workshop-3','workshop-4','workshop-5','workshop-6','workshop-7']);
  assert.deepEqual([1,2,3,4,5,6,7].map(day=>getDayPack(day).mission.id),['CLASSROOM-01','CLASSROOM-02','TRIAGE-N8N-03','TRIAGE-CLAUDE-04','SDLC-BRIEF-05','EIGEN-SLICE-06','EIGEN-SHIP-07']);
  assert.equal(getDayPack(8)?.code,'harness');
  assert.equal(getDayPack(9)?.mission.id,'HARNESS-S02');
  assert.equal(getDayPack(10)?.mission.id,'HARNESS-S03');
+ assert.equal(getDayPack(11)?.mission.id,'HARNESS-S04');
+ assert.equal(getDayPack(14)?.mission.id,'HARNESS-S07');
+ assert.equal(getDayPack(17)?.mission.id,'HARNESS-S10');
+ assert.equal(getDayPack(22)?.mission.id,'HARNESS-S15');
+ assert.equal(getDayPack(24)?.mission.id,'HARNESS-S17');
+ assert.equal(getDayPack(24)?.code,'harness');
  assert.equal(listRouteDays()[6].title,'Workshop 7 · Eigen opdracht: afronden');
  assert.equal(listRouteDays().length,7,'default route stays Wave 1–7');
 });

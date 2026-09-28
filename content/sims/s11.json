@@ -1,0 +1,95 @@
+{
+  "version": "s11",
+  "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code",
+  "locales": {
+    "en": {
+      "title": "Background Tasks",
+      "description": "Long-running work moves to a thread while the agent keeps the main loop responsive.",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Run a long repository scan and tell me when it finishes.",
+          "annotation": "The user asks for work that may exceed the normal foreground loop."
+        },
+        {
+          "type": "assistant_text",
+          "content": "I'll start the scan in the background so we can keep the conversation responsive.",
+          "annotation": "The model chooses the background path instead of blocking on the tool result."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "bash",
+          "content": "rg \"TODO|FIXME\" .",
+          "toolInput": "{\"background\":true}",
+          "annotation": "The tool call is wrapped with a background flag."
+        },
+        {
+          "type": "system_event",
+          "content": "background_tasks[task_42] = Thread(target=run_bash)",
+          "annotation": "The runtime starts a thread and returns immediately."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "bash",
+          "content": "Started background task task_42.",
+          "annotation": "A placeholder result is appended to the main conversation."
+        },
+        {
+          "type": "system_event",
+          "content": "<task_notification id=\"task_42\" status=\"done\">Found 12 matches.</task_notification>",
+          "annotation": "The completed thread injects a notification back into the next loop."
+        },
+        {
+          "type": "assistant_text",
+          "content": "The scan finished with 12 matches. I'll summarize the most important ones now.",
+          "annotation": "The agent consumes the background result as fresh context."
+        }
+      ]
+    },
+    "nl": {
+      "title": "Background Tasks",
+      "description": "Trage bash-commando’s draaien in een achtergrondthread; de agent-loop gaat door en haalt later resultaten op.",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Draai de volledige testsuite en ruim intussen de docs-map op.",
+          "annotation": "Later werk hangt niet van de tests af."
+        },
+        {
+          "type": "tool_call",
+          "content": "{\"command\":\"npm test\",\"run_in_background\":true}",
+          "annotation": "run_in_background stuurt bash naar een thread.",
+          "toolName": "bash"
+        },
+        {
+          "type": "tool_result",
+          "content": "Gestart op achtergrond bg_id=bg_42",
+          "annotation": "Voorlopig tool_result laat de loop doorgaan.",
+          "toolName": "bash"
+        },
+        {
+          "type": "tool_call",
+          "content": "{\"path\":\"docs\"}",
+          "annotation": "De agent werkt verder terwijl tests draaien.",
+          "toolName": "bash"
+        },
+        {
+          "type": "tool_result",
+          "content": "docs/ opgeruimd",
+          "annotation": "Synchroon werk blijft gewoon mogelijk.",
+          "toolName": "bash"
+        },
+        {
+          "type": "system_event",
+          "content": "bg_notify: bg_42 voltooid · exit 0 · 214 tests geslaagd",
+          "annotation": "Voltooide resultaten komen als notificatie in een latere beurt."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Tests groen (bg_42). Docs opgeruimd. Klaar voor de volgende stap.",
+          "annotation": "Achtergrondwerk blokkeert de hoofdloop niet."
+        }
+      ]
+    }
+  }
+}

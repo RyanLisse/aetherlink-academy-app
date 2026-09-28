@@ -163,7 +163,7 @@ export function assertScenarioLocaleComplete(localized: LocalizedScenario, at = 
   const nl = JSON.stringify(localized.locales.nl!.steps.map((s) => s.content + s.annotation));
   if (en === nl) throw new Error(`${at}: locales.nl must differ from locales.en (no silent EN leak)`);
   const blob = JSON.stringify(localized.locales.nl);
-  if (/TODO|FIXME|PLACEHOLDER|\[NL\]|lorem ipsum/i.test(blob)) {
+  if (/\[PLACEHOLDER\]|\[NL\]|lorem ipsum|\bTODO:|\bFIXME:/i.test(blob)) {
     throw new Error(`${at}: locales.nl looks like a placeholder`);
   }
 }

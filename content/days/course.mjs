@@ -8,8 +8,8 @@ export const COURSE_TITLE_MAX=120;
 /** Worldline Wave default route — days 1–7 only (Harness packs exist but are opt-in via course). */
 export const WAVE_DAYS=[1,2,3,4,5,6,7];
 
-/** Harness Engineering vertical (AET-116 / AET-117) — s01–s03 in Slice 1; s04–s17 later. */
-export const HARNESS_DAYS=[8,9,10];
+/** Harness Engineering vertical (AET-116 / AET-117) — s01–s17 (Slice 1+2). */
+export const HARNESS_DAYS=[8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24];
 
 const invalid=message=>Object.assign(new Error(message),{status:400});
 const PACK_DAYS=new Set(DAY_PACKS.map(pack=>pack.day));

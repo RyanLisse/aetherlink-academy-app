@@ -1,4 +1,4 @@
-/** AET-116 / AET-117 Harness Engineering — thin facilitator deck for s01–s03 (Slice 1).
+/** AET-116 / AET-117 Harness Engineering — thin facilitator deck for s01–s17.
  *  Primary teach path is in-room Lesson (narrative + SVG + ConceptSim), not this deck.
  *  Content adapted from shareAI-lab/learn-claude-code (MIT, Copyright 2024 shareAI Lab).
  */
@@ -56,6 +56,51 @@ export const harnessSourceSlides: ReadonlyArray<Record<string, unknown>> = [
   type: 'concept',
   visual: { keynote: true },
   notes: 'Safety is code in the harness, not trust in the model. Step the ConceptSim for the approval pause.'
+},
+
+{ // 7
+  lessonId: 'harness-s04',
+  title: 'Hang on the loop, don\'t write into it.',
+  kicker: 'Harness · s04 · Hooks',
+  type: 'concept',
+  visual: { keynote: true },
+  notes: 'PreToolUse / PostToolUse hang outside while True. Teach in Lesson.'
+},
+
+{ // 8
+  lessonId: 'harness-s07',
+  title: 'Catalog cheap. Full SKILL.md on demand.',
+  kicker: 'Harness · s07 · Skill Loading',
+  type: 'concept',
+  visual: { keynote: true },
+  notes: 'Soft-live mid checkpoint. load_skill injects full text as tool_result.'
+},
+
+{ // 9
+  lessonId: 'harness-s10',
+  title: 'Persist tasks. Honor blockedBy.',
+  kicker: 'Harness · s10 · Task System',
+  type: 'concept',
+  visual: { keynote: true },
+  notes: 'Soft-live mid alternate. File-persisted graph with owner and dependencies.'
+},
+
+{ // 10
+  lessonId: 'harness-s15',
+  title: 'Many mechanisms, one loop.',
+  kicker: 'Harness · s15 · Integrated Harness',
+  type: 'concept',
+  visual: { keynote: true },
+  notes: 'Soft-live endpoint. Mechanisms hang off the same while True.'
+},
+
+{ // 11
+  lessonId: 'harness-s17',
+  title: 'The model may stop. The evaluator decides.',
+  kicker: 'Harness · s17 · Goal Loop',
+  type: 'concept',
+  visual: { keynote: true },
+  notes: 'Soft-live endpoint. Independent stop evaluation continues the same loop.'
 },
 
 ];

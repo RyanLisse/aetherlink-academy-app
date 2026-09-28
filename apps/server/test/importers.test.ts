@@ -204,10 +204,12 @@ describe('training-site archive importer', () => {
 describe('content.mjs importer', () => {
   it('imports Wave + Harness day packs from server/content.mjs (read only)', async () => {
     const imported = await importContentMjs(contentMjsPath);
-    expect(imported.days.map((d) => d.day)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    expect(imported.days.map((d) => d.day)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]);
     expect(imported.days[2]?.title).toBe('Workshop 3 · Agents in n8n');
     expect(imported.slides.length).toBeGreaterThan(15);
     expect(imported.days[0]?.slides.some((s) => s.type === 'practice')).toBe(true);
+    expect(imported.days[13]?.title).toMatch(/s07/i);
+    expect(imported.days[23]?.title).toMatch(/s17/i);
   });
 });
 

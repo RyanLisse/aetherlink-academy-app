@@ -1,0 +1,272 @@
+{
+  "version": "s13",
+  "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code",
+  "locales": {
+    "en": {
+      "title": "Agent Team Runtime",
+      "description": "The Lead coordinates persistent teammates while the runtime owns message delivery, atomic task claims, and task-bound worktree directories.",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Refactor authentication and update its dependent tests in parallel without mixing the edits.",
+          "annotation": "The user states the outcome and parallel-edit boundary, not an implementation-specific worktree procedure."
+        },
+        {
+          "type": "assistant_text",
+          "content": "I propose a backend teammate for authentication and a test teammate that picks up the dependent checks once they are ready. Shall I start the team?",
+          "annotation": "The Lead makes the extra-agent decision visible before spawning."
+        },
+        {
+          "type": "user_message",
+          "content": "Yes, go ahead.",
+          "annotation": "The team starts only after explicit confirmation."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "create_task",
+          "content": "{\"subject\":\"Refactor authentication\"}",
+          "annotation": "The shared task board remains the source of ownership and status."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "create_task",
+          "content": "Created task_1a2b3c4d: Refactor authentication",
+          "annotation": "The runtime-generated task ID is carried into every later operation on this task."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "create_task",
+          "content": "{\"subject\":\"Update authentication tests\"}",
+          "annotation": "The Lead creates every task node before adding graph edges."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "create_task",
+          "content": "Created task_5e6f7a8b: Update authentication tests",
+          "annotation": "The second generated ID names the dependent task that the test teammate will later claim."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "update_task",
+          "content": "{\"task_id\":\"task_5e6f7a8b\",\"addBlockedBy\":[\"task_1a2b3c4d\"]}",
+          "annotation": "Only the Lead links tasks using IDs already returned by the runtime."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "update_task",
+          "content": "Updated task_5e6f7a8b blockedBy: task_1a2b3c4d",
+          "annotation": "The dependency is fixed before teammates begin claiming work."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "create_worktree",
+          "content": "{\"name\":\"auth-refactor\",\"task_id\":\"task_1a2b3c4d\"}",
+          "annotation": "The worktree directory is recorded on the task instead of managed as a separate workflow or security sandbox."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "spawn_teammate",
+          "content": "{\"name\":\"backend\",\"role\":\"backend engineer\",\"prompt\":\"Review the assigned authentication task and propose a plan.\",\"task_id\":\"task_1a2b3c4d\",\"require_plan\":true}",
+          "annotation": "The runtime claims the initial task and activates the plan gate before the teammate thread starts."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "spawn_teammate",
+          "content": "{\"name\":\"tests\",\"role\":\"test engineer\",\"prompt\":\"Watch the board and claim the dependent test task when it becomes ready.\"}",
+          "annotation": "A second persistent teammate can wait in IDLE without another direct dispatch."
+        },
+        {
+          "type": "system_event",
+          "content": "spawn_teammate(backend, task_1a2b3c4d) -> task_store_lock commits owner=backend before thread start",
+          "annotation": "The ownership check and persisted state transition share the cross-process task-store lock."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "request_plan",
+          "content": "{\"teammate\":\"backend\",\"task\":\"Inspect the claimed authentication task and submit a plan before changing files.\"}",
+          "annotation": "The Lead delivers the plan request for the current assignment; the gate was already active before the teammate thread started."
+        },
+        {
+          "type": "system_event",
+          "content": "backend submit_plan -> plan_approval_request(request_id=req_000007, task_id=task_1a2b3c4d)",
+          "annotation": "The request records the task and work version that the plan is meant to authorize."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "review_plan",
+          "content": "{\"request_id\":\"req_000007\",\"approve\":true,\"feedback\":\"Proceed with the scoped refactor.\"}",
+          "annotation": "Approval is correlated by request ID and cannot carry into a different assignment."
+        },
+        {
+          "type": "system_event",
+          "content": "plan_approval_response(request_id=req_000007, approve=true) -> backend",
+          "annotation": "The teammate receives the typed response before mutating tools are released."
+        },
+        {
+          "type": "system_event",
+          "content": "backend tool cwd -> .worktrees/auth-refactor",
+          "annotation": "Bash, read, and write derive their directory from the claimed task binding."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "complete_task",
+          "content": "{\"task_id\":\"task_1a2b3c4d\"}",
+          "annotation": "Completing the first task makes its dependent test task ready."
+        },
+        {
+          "type": "system_event",
+          "content": "backend -> Lead: result(auth refactor complete) -> idle_notification",
+          "annotation": "The task directory stays selected through the completion turn, then IDLE releases the assignment."
+        },
+        {
+          "type": "system_event",
+          "content": "claim_next_task(tests) -> task_5e6f7a8b; task_store_lock commits owner=tests",
+          "annotation": "An idle teammate discovers newly ready work without another direct assignment."
+        },
+        {
+          "type": "system_event",
+          "content": "tests -> Lead: result(test suite passed) -> idle_notification",
+          "annotation": "The runtime wakes the Lead when mailbox events arrive instead of asking the model to poll."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Authentication was refactored in its task-bound worktree and the dependent tests pass.",
+          "annotation": "The Lead combines parallel results into one user-facing outcome."
+        }
+      ]
+    },
+    "nl": {
+      "title": "Agent Team Runtime",
+      "description": "Persistente teammates, gedeelde taskselectie, optionele worktrees en coördinatieprotocollen onder Lead-controle.",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Refactor authenticatie en werk de afhankelijke tests parallel bij zonder edits te mengen.",
+          "annotation": "De gebruiker noemt uitkomst en parallelle-editgrens, geen implementatie-specifieke worktree-procedure."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Ik stel een backend-teammate voor authenticatie voor en een test-teammate die de afhankelijke taak oppakt.",
+          "annotation": "De Lead maakt de extra-agentbeslissing zichtbaar vóór spawn."
+        },
+        {
+          "type": "user_message",
+          "content": "Ja, ga door.",
+          "annotation": "Het team start pas na expliciete bevestiging."
+        },
+        {
+          "type": "tool_call",
+          "content": "{\"subject\":\"Refactor authentication\"}",
+          "annotation": "Het gedeelde taskboard blijft de bron van eigenaarschap en status.",
+          "toolName": "create_task"
+        },
+        {
+          "type": "tool_result",
+          "content": "Created task_1a2b3c4d: Refactor authentication",
+          "annotation": "Het runtime-gegenereerde task-ID gaat mee in elke latere operatie op deze taak.",
+          "toolName": "create_task"
+        },
+        {
+          "type": "tool_call",
+          "content": "{\"subject\":\"Update authentication tests\"}",
+          "annotation": "De Lead maakt elk task-knooppunt aan vóór graph-edges.",
+          "toolName": "create_task"
+        },
+        {
+          "type": "tool_result",
+          "content": "Created task_5e6f7a8b: Update authentication tests",
+          "annotation": "Het tweede gegenereerde ID noemt de afhankelijke taak die de test-teammate later claimt.",
+          "toolName": "create_task"
+        },
+        {
+          "type": "tool_call",
+          "content": "{\"task_id\":\"task_5e6f7a8b\",\"addBlockedBy\":[\"task_1a2b3c4d\"]}",
+          "annotation": "Alleen de Lead koppelt taken met IDs die de runtime al teruggaf.",
+          "toolName": "update_task"
+        },
+        {
+          "type": "tool_result",
+          "content": "Updated task_5e6f7a8b blockedBy: task_1a2b3c4d",
+          "annotation": "De afhankelijkheid staat vast vóór teammates werk claimen.",
+          "toolName": "update_task"
+        },
+        {
+          "type": "tool_call",
+          "content": "{\"name\":\"auth-refactor\",\"task_id\":\"task_1a2b3c4d\"}",
+          "annotation": "De worktree-map wordt op de taak vastgelegd, niet als apart workflow- of securitypad.",
+          "toolName": "create_worktree"
+        },
+        {
+          "type": "tool_call",
+          "content": "{\"name\":\"backend\",\"role\":\"backend engineer\",\"prompt\":\"Review the assigned authentication task and propose a plan.\",\"task_id\":\"task_1a2b3c4d\",\"require_plan\":true}",
+          "annotation": "De runtime claimt de initiële taak en activeert de plan-gate vóór de teammate-thread start.",
+          "toolName": "spawn_teammate"
+        },
+        {
+          "type": "tool_call",
+          "content": "{\"name\":\"tests\",\"role\":\"test engineer\",\"prompt\":\"Watch the board and claim the dependent test task when it becomes ready.\"}",
+          "annotation": "Een tweede persistente teammate kan in IDLE wachten zonder nieuwe directe dispatch.",
+          "toolName": "spawn_teammate"
+        },
+        {
+          "type": "system_event",
+          "content": "spawn_teammate(backend, task_1a2b3c4d) → task_store_lock commit owner=backend vóór threadstart",
+          "annotation": "Ownership-check en persistente statusovergang delen de cross-process task-store-lock."
+        },
+        {
+          "type": "tool_call",
+          "content": "{\"teammate\":\"backend\",\"task\":\"Inspect the claimed authentication task and submit a plan before changing files.\"}",
+          "annotation": "De Lead levert het planverzoek voor de huidige toewijzing; de gate was al actief vóór de thread.",
+          "toolName": "request_plan"
+        },
+        {
+          "type": "system_event",
+          "content": "backend submit_plan → plan_approval_request(request_id=req_000007, task_id=task_1a2b3c4d)",
+          "annotation": "Het verzoek registreert de taak en work-version die het plan moet autoriseren."
+        },
+        {
+          "type": "tool_call",
+          "content": "{\"request_id\":\"req_000007\",\"approve\":true,\"feedback\":\"Proceed with the scoped refactor.\"}",
+          "annotation": "Goedkeuring correleert op request-ID en mag niet meeliften naar een andere toewijzing.",
+          "toolName": "review_plan"
+        },
+        {
+          "type": "system_event",
+          "content": "plan_approval_response(request_id=req_000007, approve=true) → backend",
+          "annotation": "De teammate ontvangt het getypeerde antwoord vóór muterende tools vrijkomen."
+        },
+        {
+          "type": "system_event",
+          "content": "backend tool cwd → .worktrees/auth-refactor",
+          "annotation": "Bash, read en write leiden hun directory af van de geclaimde task-binding."
+        },
+        {
+          "type": "tool_call",
+          "content": "{\"task_id\":\"task_1a2b3c4d\"}",
+          "annotation": "Het afronden van de eerste taak maakt de afhankelijke testtaak klaar.",
+          "toolName": "complete_task"
+        },
+        {
+          "type": "system_event",
+          "content": "backend → Lead: result(auth-refactor klaar) → idle_notification",
+          "annotation": "De task-directory blijft geselecteerd tot de completion-beurt; IDLE laat de toewijzing los."
+        },
+        {
+          "type": "system_event",
+          "content": "claim_next_task(tests) → task_5e6f7a8b; task_store_lock commit owner=tests",
+          "annotation": "Een idle teammate ontdekt nieuw klaar werk zonder nieuwe directe toewijzing."
+        },
+        {
+          "type": "system_event",
+          "content": "tests → Lead: result(testsuite geslaagd) → idle_notification",
+          "annotation": "De runtime wekt de Lead bij mailbox-events i.p.v. het model te laten pollen."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Authenticatie is gerefactord in de task-gebonden worktree en de afhankelijke tests slagen.",
+          "annotation": "De Lead combineert parallelle resultaten tot één gebruikersuitkomst."
+        }
+      ]
+    }
+  }
+}
