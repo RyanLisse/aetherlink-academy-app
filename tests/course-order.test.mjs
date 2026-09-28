@@ -11,10 +11,10 @@ import {Store} from '../server/store.mjs';
 import {listRouteDays} from '../server/content.mjs';
 import {courseOrder,courseTemplate,parseCourse} from '../content/days/course.mjs';
 
-async function invoke(app,route,{method='get',body={},cookies={}}={}){
+async function invoke(app,route,{method='get',body={},cookies={},query={}}={}){
  const layer=app.router.stack.find(candidate=>candidate.route?.path===route&&candidate.route.methods[method]);assert.ok(layer,`Missing ${method} ${route}`);
  const response={statusCode:200,body:null};
- const req={body,query:{},headers:{cookie:Object.entries(cookies).map(([name,value])=>`${name}=${value}`).join('; ')}};
+ const req={body,query,headers:{cookie:Object.entries(cookies).map(([name,value])=>`${name}=${value}`).join('; ')}};
  const res={cookie(){return this;},clearCookie(){return this;},status(status){response.statusCode=status;return this;},json(value){response.body=value;return this;},end(){return this;}};
  await layer.route.stack[0].handle(req,res,error=>{response.statusCode=error.status||500;response.body={error:error.status?error.message:'Onverwachte serverfout.'};});
  return response;
@@ -148,18 +148,23 @@ test('Harness Engineering course exposes s01–s03 day packs on the route',async
  assert.equal(saved.statusCode,200);
  assert.equal(saved.body.day,8);
  const route=await invoke(app,'/game/day-route',participant);
- assert.deepEqual(route.body.days.map(d=>[d.position,d.day,d.title]),[
-  [1,8,'Harness · s01 Agent Loop'],
-  [2,9,'Harness · s02 Tool Use'],
-  [3,10,'Harness · s03 Permission System']
- ]);
- const pack=await invoke(app,'/game/day-pack',participant);
- assert.equal(pack.statusCode,200);
- assert.equal(pack.body.day,8);
- assert.ok(pack.body.sims?.some(s=>s.id==='s01'));
- assert.ok(pack.body.diagrams?.length>=1);
- assert.match(pack.body.attribution||'', /shareAI-lab\/learn-claude-code/);
+ assert.deepEqual(route.body.days.map(d=>[d.position,d.day]),[[1,8],[2,9],[3,10]]);
+ const packEn=await invoke(app,'/game/day-pack',{...participant,query:{locale:'en'}});
+ assert.equal(packEn.statusCode,200);
+ assert.equal(packEn.body.day,8);
+ assert.equal(packEn.body.locale,'en');
+ assert.equal(packEn.body.localeComplete,true);
+ assert.match(packEn.body.lesson.title,/Agent Loop/i);
+ assert.ok(packEn.body.sims?.some(s=>s.id==='s01'&&/Agent Loop/i.test(s.title)));
+ assert.ok(packEn.body.diagrams?.length>=1);
+ assert.match(packEn.body.attribution||'',/shareAI-lab\/learn-claude-code/);
+ const packNl=await invoke(app,'/game/day-pack',{...participant,query:{locale:'nl'}});
+ assert.equal(packNl.body.locale,'nl');
+ assert.match(packNl.body.lesson.title,/agent-loop/i);
+ assert.notEqual(packNl.body.lesson.narrative[0],packEn.body.lesson.narrative[0]);
+ assert.ok(packNl.body.sims?.some(s=>s.id==='s01'&&/agent-loop/i.test(s.title)));
  assert.equal((await invoke(app,'/game/control',{...host,method:'post',body:{action:'day',value:9}})).body.day,9);
- const s02=await invoke(app,'/game/day-pack',participant);
+ const s02=await invoke(app,'/game/day-pack',{...participant,query:{locale:'nl'}});
  assert.ok(s02.body.sims?.some(s=>s.id==='s02'));
+ assert.match(s02.body.lesson.title,/Toolgebruik/i);
 });

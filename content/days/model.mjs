@@ -1,3 +1,5 @@
+import {assertLocaleComplete} from './locale.mjs';
+
 export const DECKS={
  'classroom-1':{route:'/classroom/1',module:'apps/web/src/deck/slides.ts',firstSlide:1},
  'classroom-2':{route:'/classroom/2',module:'apps/web/src/deck/slides.ts',firstSlide:45},
@@ -31,6 +33,21 @@ export function dayQuiz(day,authored){
 
 const quizSlides=(day,authored)=>Object.fromEntries(authored.flatMap(({slide},i)=>slide?[[questionId(day,i),slide]]:[]));
 
+function bakeCopy(day,copy){
+ if(!copy?.en||!copy?.nl)return copy;
+ const bake=lang=>{
+  const c=copy[lang];
+  const open=c.demo?.open;
+  const script=c.demo?.script||[];
+  return {
+   ...c,
+   quiz:Array.isArray(c.quiz)?dayQuiz(day,c.quiz):c.quiz,
+   workedExample:c.workedExample??(open?`OPEN: ${open}`:script.join(' '))
+  };
+ };
+ return {en:bake('en'),nl:bake('nl')};
+}
+
 export function projectDayPack(src){
  const deck=DECKS[src.deck];
  if(!deck)throw new Error(`Unknown deck "${src.deck}" for day ${src.day}`);
@@ -41,7 +58,8 @@ export function projectDayPack(src){
   ...(src.skipAutoDeckLink?[]:[link('deck',`Deck ${src.title.split(' · ')[0]}`,deck.route)]),
   ...src.materials
  ];
- return {
+ const bakedCopy=bakeCopy(src.day,src.copy);
+ const pack={
   day:src.day,
   kind:src.kind,
   code:src.deck,
@@ -73,6 +91,11 @@ export function projectDayPack(src){
   mission:{stop:DEFAULT_STOP,...src.mission,checks:src.proof},
   ...(src.sims?.length?{sims:src.sims}:{}),
   ...(src.diagrams?.length?{diagrams:src.diagrams}:{}),
-  ...(src.attribution?{attribution:src.attribution}:{})
+  ...(src.attribution?{attribution:src.attribution}:{}),
+  ...(bakedCopy?{copy:bakedCopy}:{}),
+  localeComplete:Boolean(bakedCopy?.en&&bakedCopy?.nl),
+  requireLocales:Boolean(src.requireLocales||src.localeComplete||src.kind==='harness')
  };
+ if(pack.requireLocales)assertLocaleComplete(pack);
+ return pack;
 }

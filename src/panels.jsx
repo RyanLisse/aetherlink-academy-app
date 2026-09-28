@@ -117,11 +117,12 @@ function QuickCheck({room,action,busy,practice,shownDay,chosen,questions,quizErr
 
 export function Lesson({room,action,busy,day}){
   const t=useT();
+  const {locale}=useI18n();
   const [pack,setPack]=useState(null);
   const [error,setError]=useState('');
   const chosen=day===undefined?{}:{day};
   const shownDay=day??room.day,practice=shownDay!==room.day;
-  useEffect(()=>{let active=true;setPack(null);setError('');api(day===undefined?'day-pack':`day-pack?day=${day}`).then(d=>{if(active)setPack(d);}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[room.day,day]);
+  useEffect(()=>{let active=true;setPack(null);setError('');const q=new URLSearchParams({locale});if(day!==undefined)q.set('day',String(day));api(`day-pack?${q}`).then(d=>{if(active)setPack(d);}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[room.day,day,locale]);
   if(error)return <section className="panel content-panel"><p className="cyan">{t('lesson.eyebrow')}</p><h2>{t('lesson.noneTitle')}</h2><StatusState kind="error" title={t('status.errorTitle')}>{error}<p>{t('lesson.noneHint')}</p></StatusState></section>;
   if(!pack)return <section className="panel content-panel"><StatusState kind="loading" title={t('lesson.loading')}/></section>;
   const lesson=pack.lesson,questions=pack.quiz?.questions;
@@ -136,7 +137,8 @@ export function Solo({room,action,busy,onNavigate}){
   const participant=room.me.role!=='Facilitator';
   const trail=useRemote(participant?'tasks':null,[room.day,trailKey(room)]),tasks=trail.data?.tasks;
   const submittable=(tasks||[]).filter(task=>task.status==='open'||task.status==='changes_requested');
-  useEffect(()=>{let active=true;setPack(null);setError('');setSent(false);api('day-pack').then(d=>{if(active)setPack(d);}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[room.day]);
+  const {locale}=useI18n();
+  useEffect(()=>{let active=true;setPack(null);setError('');setSent(false);api(`day-pack?locale=${locale}`).then(d=>{if(active)setPack(d);}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[room.day,locale]);
   if(error)return <section className="panel content-panel"><p className="cyan">{t('solo.eyebrow')}</p><h2>{t('solo.noneTitle')}</h2><StatusState kind="error" title={t('status.errorTitle')}>{error}<p>{t('solo.noneHint')}</p></StatusState></section>;
   if(!pack)return <section className="panel content-panel"><StatusState kind="loading" title={t('solo.loading')}/></section>;
   const mission=pack.mission;

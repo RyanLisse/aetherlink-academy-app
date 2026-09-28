@@ -25,6 +25,8 @@ the MIT notice on the JSON (`attribution` field) and in the lesson footer.
 | `s02.json` | `web/src/data/scenarios/s02.json` + `s02_tool_use/` | Tool Use |
 | `s03.json` | `web/src/data/scenarios/s03.json` + `s03_permission/` | Permission System |
 
+Harness sims ship `locales:{en,nl}` with real copy in both (AET-116 locale lock). Fixture remains flat EN-only.
+
 Diagrams under `public/harness/*.svg` are the EN SVGs from the same upstream chapter `images/*.en.svg` folders (MIT).
 
 ## Academy fixtures

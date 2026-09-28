@@ -53,3 +53,34 @@ describe('isValidSimId', () => {
     expect(isValidSimId('../etc')).toBe(false);
   });
 });
+
+describe('localized scenarios', () => {
+  it('projects EN and NL from locales', async () => {
+    const {parseLocalizedScenario, projectScenario, assertScenarioLocaleComplete} = await import('../src/index.ts');
+    const localized = parseLocalizedScenario({
+      version: 's01',
+      attribution: 'MIT',
+      locales: {
+        en: {
+          title: 'The Agent Loop',
+          description: 'EN desc',
+          steps: [
+            {type: 'user_message', content: 'Create hello.py', annotation: 'User asks'},
+            {type: 'assistant_text', content: 'Done', annotation: 'End'},
+          ],
+        },
+        nl: {
+          title: 'De agent-loop',
+          description: 'NL beschrijving',
+          steps: [
+            {type: 'user_message', content: 'Maak hello.py', annotation: 'Gebruiker vraagt'},
+            {type: 'assistant_text', content: 'Klaar', annotation: 'Einde'},
+          ],
+        },
+      },
+    });
+    assertScenarioLocaleComplete(localized);
+    expect(projectScenario(localized, 'en').title).toBe('The Agent Loop');
+    expect(projectScenario(localized, 'nl').title).toBe('De agent-loop');
+  });
+});

@@ -84,8 +84,10 @@ test('a participant opens day 2 while the room is on day 5; unreleased and unkno
 
   const locked=await g.call('GET','/game/day-pack?day=6',{token:g.ann.token});
   assert.deepEqual([locked.status,locked.body.error],[403,'Dag 6 is nog niet vrijgegeven.']);
-  const unknown=await g.call('GET','/game/day-pack?day=9',{token:g.ann.token});
-  assert.deepEqual([unknown.status,unknown.body.error],[404,'Geen contentpakket voor dag 9.']);
+  const unknown=await g.call('GET','/game/day-pack?day=99',{token:g.ann.token});
+  assert.deepEqual([unknown.status,unknown.body.error],[404,'Geen contentpakket voor dag 99.']);
+  const harnessLocked=await g.call('GET','/game/day-pack?day=9',{token:g.ann.token});
+  assert.deepEqual([harnessLocked.status,harnessLocked.body.error],[404,'Dag 9 zit niet in de cursus.']);
   assert.equal((await g.call('GET','/game/day-pack?day=abc',{token:g.ann.token})).status,404);
   assert.equal((await g.call('GET','/game/knowledge?day=6',{token:g.ann.token})).status,403);
   assert.equal((await g.call('GET','/game/knowledge?day=2',{token:g.ann.token})).body.mission.id,getDayPack(2).mission.id);
