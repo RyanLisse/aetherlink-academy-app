@@ -1,0 +1,17 @@
+{
+  "name": "@academy/concept-sim",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Academy-native step-through concept simulator (preauthored messages → tool_use → results). Scenario shape inspired by shareAI-lab/learn-claude-code (MIT).",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsgo --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.6"
+  }
+}

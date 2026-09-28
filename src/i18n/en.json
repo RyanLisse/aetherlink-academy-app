@@ -753,5 +753,22 @@
   "nav.teach": "Teach path",
   "nav.tools": "Tools",
   "debrief.learnerTitle": "Debrief is facilitator-led",
-  "debrief.learnerHelp": "Your facilitator opens debrief for the room. Use Review & handoff for your reflection and handoff."
+  "debrief.learnerHelp": "Your facilitator opens debrief for the room. Use Review & handoff for your reflection and handoff.",
+  "sim.heading": "Concept simulation",
+  "sim.help": "Step through a preauthored agent scenario — no API key required.",
+  "sim.controls": "Simulator controls",
+  "sim.play": "Play",
+  "sim.pause": "Pause",
+  "sim.step": "Step forward",
+  "sim.reset": "Reset",
+  "sim.speed": "Speed",
+  "sim.progress": "Step {step} of {total}",
+  "sim.startHint": "Press Play or Step to reveal the next message in the loop.",
+  "sim.complete": "Scenario complete — you saw the full message → tool_use → result loop.",
+  "sim.emptyResult": "(empty)",
+  "sim.type.user": "User",
+  "sim.type.assistant": "Assistant",
+  "sim.type.toolCall": "Tool call",
+  "sim.type.toolResult": "Tool result",
+  "sim.type.system": "System"
 }

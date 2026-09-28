@@ -53,6 +53,7 @@ export function projectDayPack(src){
   lesson:{kicker:src.kicker,title:src.lessonTitle,lede:src.leerdoel,loop:src.loop,workedExample:open?`OPEN: ${open}`:script.join(' ')},
   quiz:dayQuiz(src.day,src.quiz),
   quizSlides:quizSlides(src.day,src.quiz),
-  mission:{stop:DEFAULT_STOP,...src.mission,checks:src.proof}
+  mission:{stop:DEFAULT_STOP,...src.mission,checks:src.proof},
+  ...(src.sims?.length?{sims:src.sims}:{})
  };
 }

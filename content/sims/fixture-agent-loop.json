@@ -1,0 +1,47 @@
+{
+  "version": "fixture-agent-loop",
+  "title": "Agent loop (surface fixture)",
+  "description": "Slice 0 surface proof: step through a preauthored message → tool_use → result loop without API keys. Not a Harness Engineering chapter — Slice 1 attaches s01–s17.",
+  "attribution": "Scenario shape compatible with shareAI-lab/learn-claude-code (MIT, Copyright 2024 shareAI Lab). Academy fixture content © AetherLink.",
+  "steps": [
+    {
+      "type": "user_message",
+      "content": "Create hello.py that prints Hello, World!",
+      "annotation": "Learner task enters the agent as a user message"
+    },
+    {
+      "type": "assistant_text",
+      "content": "I'll use bash to create the file.",
+      "annotation": "Model plans the next action inside the loop"
+    },
+    {
+      "type": "tool_call",
+      "content": "echo 'print(\"Hello, World!\")' > hello.py",
+      "toolName": "bash",
+      "annotation": "tool_use: the model emits a structured tool call"
+    },
+    {
+      "type": "tool_result",
+      "content": "",
+      "toolName": "bash",
+      "annotation": "Tool result is appended to messages; the loop continues"
+    },
+    {
+      "type": "tool_call",
+      "content": "cat hello.py",
+      "toolName": "bash",
+      "annotation": "Another tool_use to verify — still inside while True"
+    },
+    {
+      "type": "tool_result",
+      "content": "print(\"Hello, World!\")",
+      "toolName": "bash",
+      "annotation": "Result confirms the file"
+    },
+    {
+      "type": "assistant_text",
+      "content": "Done — hello.py is ready. Run it with python hello.py.",
+      "annotation": "stop_reason is not tool_use → the loop breaks and the agent answers the user"
+    }
+  ]
+}
