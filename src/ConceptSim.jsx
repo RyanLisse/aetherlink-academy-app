@@ -80,7 +80,7 @@ export function ConceptSim({scenario}){
     <div className="sim-controls" role="group" aria-label={t('sim.controls')}>
       {sim.playing
         ?<button type="button" className="sim-btn" onClick={sim.pause} data-testid="sim-pause" title={t('sim.pause')} aria-label={t('sim.pause')}><Pause size={16}/></button>
-        :<button type="button" className="sim-btn primary" onClick={sim.play} disabled={sim.complete} data-testid="sim-play" title={t('sim.play')} aria-label={t('sim.play')}><Play size={16}/></button>}
+        :<button type="button" className="sim-btn sim-btn-primary" onClick={sim.play} disabled={sim.complete} data-testid="sim-play" title={t('sim.play')} aria-label={t('sim.play')}><Play size={16}/></button>}
       <button type="button" className="sim-btn" onClick={sim.stepForward} disabled={sim.complete} data-testid="sim-step" title={t('sim.step')} aria-label={t('sim.step')}><SkipForward size={16}/></button>
       <button type="button" className="sim-btn" onClick={sim.reset} data-testid="sim-reset" title={t('sim.reset')} aria-label={t('sim.reset')}><RotateCcw size={16}/></button>
       <span className="sim-speed muted">{t('sim.speed')}</span>

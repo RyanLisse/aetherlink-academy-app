@@ -211,7 +211,7 @@
 .sim-controls{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:0 14px 12px}
 .sim-btn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:7px;border:1px solid var(--border);background:var(--surface);color:inherit;cursor:pointer}
 .sim-btn:disabled{opacity:.4;cursor:not-allowed}
-.sim-btn.primary{background:var(--text);color:var(--surface);border-color:transparent}
+.sim-btn-primary{background:var(--text);color:var(--surface);border-color:transparent}
 .sim-speed{font-size:11px;margin-left:6px}
 .sim-speed-btn{border:1px solid var(--border);background:transparent;border-radius:5px;padding:3px 7px;font:inherit;font-size:11px;cursor:pointer;color:inherit}
 .sim-speed-btn.on{background:var(--cyan);color:var(--surface);border-color:transparent}
