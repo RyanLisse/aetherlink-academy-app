@@ -119,12 +119,20 @@ export function parseLocalizedScenario(raw: unknown, at = 'scenario'): Localized
       locales[lang] = parseScenarioBody(localesRaw[lang] as Record<string, unknown>, `${at}.locales.${lang}`);
     }
     if (!locales.en) throw new Error(`${at}.locales.en required when locales is set`);
-    return {version, attribution, locales};
+    return {
+      version,
+      locales,
+      ...(attribution !== undefined ? {attribution} : {}),
+    };
   }
 
   // Flat fixture shape → treat as EN-only
   const body = parseScenarioBody(s, at);
-  return {version, attribution, locales: {en: body}};
+  return {
+    version,
+    locales: {en: body},
+    ...(attribution !== undefined ? {attribution} : {}),
+  };
 }
 
 /** Project a catalog entry to a concrete Scenario for one UI locale. */
