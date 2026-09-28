@@ -2,6 +2,7 @@ import {existsSync} from 'node:fs';
 import path from 'node:path';
 import {decodeDayQuiz} from '../packages/schema/src/day-quiz.ts';
 import {GRADER_IDS} from './autograde.mjs';
+import {resolvePackSims} from './sims.mjs';
 
 export function dayPackIssues(packs,{starterDir,starterFileNames}){
  const issues=[],questionDays=new Map();
@@ -18,6 +19,7 @@ export function dayPackIssues(packs,{starterDir,starterFileNames}){
    if(!starterFileNames.includes(file))issues.push(`${at}: starter file "${file}" is not a served starter file`);
    else if(!existsSync(path.join(starterDir,file)))issues.push(`${at}: starter file "${file}" is missing from ${starterDir}`);
   }
+  try{resolvePackSims(pack.sims,{at:`${at} sims`});}catch(error){issues.push(`${at}: sims ${error.message}`);}
  }
  return issues;
 }

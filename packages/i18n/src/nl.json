@@ -753,5 +753,22 @@
   "nav.teach": "Leerpad",
   "nav.tools": "Tools",
   "debrief.learnerTitle": "Debrief wordt geleid door de facilitator",
-  "debrief.learnerHelp": "Je facilitator opent de debrief voor de room. Gebruik Review & overdracht voor je reflectie en overdracht."
+  "debrief.learnerHelp": "Je facilitator opent de debrief voor de room. Gebruik Review & overdracht voor je reflectie en overdracht.",
+  "sim.heading": "Conceptsimulatie",
+  "sim.help": "Stap door een voorbereid agentscenario — geen API-sleutel nodig.",
+  "sim.controls": "Simulatorbediening",
+  "sim.play": "Afspelen",
+  "sim.pause": "Pauze",
+  "sim.step": "Stap vooruit",
+  "sim.reset": "Opnieuw",
+  "sim.speed": "Snelheid",
+  "sim.progress": "Stap {step} van {total}",
+  "sim.startHint": "Druk op Afspelen of Stap om het volgende bericht in de lus te tonen.",
+  "sim.complete": "Scenario klaar — je zag de volledige message → tool_use → result-lus.",
+  "sim.emptyResult": "(leeg)",
+  "sim.type.user": "Gebruiker",
+  "sim.type.assistant": "Assistent",
+  "sim.type.toolCall": "Tool-aanroep",
+  "sim.type.toolResult": "Toolresultaat",
+  "sim.type.system": "Systeem"
 }

@@ -26,6 +26,7 @@ import {createPortal} from './portal/index.mjs';
 import {READ_ONLY_MESSAGE,parseCohortInput,parseMemberNames,normalizeAccessCode,certificateVerifiableUntil} from './cohort.mjs';
 import {CERTIFICATE_CSP,CERTIFICATE_INVALID_MESSAGE,publicVerification,renderCertificatePage,renderVerificationPage} from './certificate.mjs';
 import {parseLabAnswer,parseLabCompletion,parseOriginAllowlist,resolveLabs} from '../packages/lab-embed/src/index.ts';
+import {listSims,resolvePackSims} from './sims.mjs';
 import {gradedStopsPassed,parseLabKeys,recordAttempt} from '../packages/lab-embed/src/grading.ts';
 import {isLegacySite,resolveLegacyUrl} from '../apps/web/src/redirects/legacy.ts';
 import {labGradingKeys} from './lab-keys.mjs';
@@ -142,8 +143,9 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  const allowedLabOrigins=parseOriginAllowlist(labOrigins,publicUrl.origin),gradingKeys=parseLabKeys(labKeys),dayLabs=(day,room)=>resolveLabs([...(labsForDay(day)??[]),...roomLabDeclarations(room,day)],{baseUrl:publicUrl.origin,allowedOrigins:allowedLabOrigins,gradedStopsFor:id=>[...(gradingKeys.get(id)?.keys()??[])]});
  // A lab belongs to one day; practising an earlier released day records on that day, not on today.
  const participantLab=(context,labId)=>{const {r,p}=context;if(!p)fail(403,'Alleen deelnemers maken een lab.');const labDay=[r.day,...readableDays(context)].find(day=>dayLabs(day,r).some(lab=>lab.id===labId));if(labDay===undefined)fail(404,`Lab ${labId} hoort niet bij een vrijgegeven dag.`);const key=String(labDay);p.progressByDay??={};return {key,labDay,day:p.progressByDay[key]||{}};};
- const publicDayPack=(pack,room)=>({...participantDayPack(pack),labs:dayLabs(pack.day,room)});
+ const publicDayPack=(pack,room)=>({...participantDayPack(pack),labs:dayLabs(pack.day,room),sims:resolvePackSims(pack.sims)});
  app.get('/game/lab-catalog',wrap(async(req,res)=>{await browser(req);res.json({labs:ARCADE_CATALOG.map(({id,title,track,workshop})=>({id,title,track,...(workshop!=null?{workshop}:{})}))});}));
+ app.get('/game/sim-catalog',wrap(async(req,res)=>{await browser(req);res.json({sims:listSims()});}));
  app.get('/game/day-pack',wrap(async(req,res)=>{const context=await browser(req),{r}=context,day=chosenDay(context,req.query.day),pack=getDayPack(day);if(!pack)fail(400,`Geen contentpakket voor supportdag ${day}.`);const entry=courseEntry(r.course,day);res.json(entry?{...publicDayPack(pack,r),title:entry.title??pack.title,course:{name:r.course.name,position:entry.position,count:r.course.days.length,date:entry.date}}:publicDayPack(pack,r));}));
  app.get('/game/naslag/search',wrap(async(req,res)=>{const context=await browser(req),q=String(req.query.q||'').slice(0,300);res.json({query:q,released:readableDays(context),hits:rankDocuments(q,{day:context.r.day,days:readableDays(context),locale:req.query.locale==='en'?'en':'nl'}).hits});}));
  const chatSession=async req=>{const context=await browser(req);if(context.s.personId!=='facilitator'&&context.r.chat===false)fail(403,'De facilitator heeft de chat voor deze kamer uitgezet.');return context;};

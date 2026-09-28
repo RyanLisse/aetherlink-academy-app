@@ -39,6 +39,8 @@ export default {
   link('naslag','Claude Code 101','https://anthropic.skilljar.com/claude-code-101','Anthropic Academy; lesplan-naslag'),
   link('naslag','Claude Code in Action','https://anthropic.skilljar.com/claude-code-in-action','Anthropic Academy; lesplan-naslag')
  ],
+ // AET-116 Slice 0: surface fixture only (not Harness s01). Slice 1 replaces/extends with s01–s03.
+ sims:[{id:'fixture-agent-loop',title:'Concept sim · agent loop'}],
  proof:[
   'Repository-kaart met bewijs uit de bestanden; geen code gewijzigd en onbekenden als OPEN (opdracht 1, dia 35).',
   'Plan goedgekeurd vóór de eerste bestandswijziging (opdracht 2, dia 37).',

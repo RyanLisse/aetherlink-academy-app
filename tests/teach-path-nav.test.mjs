@@ -39,6 +39,9 @@ test('F4 Labs stay under Lesson (no Labs nav / no Apps conflation)', () => {
   assert.doesNotMatch(teachOrder().join(','), /lab/i);
   const lesson = readFileSync(join(root, 'src/panels.jsx'), 'utf8');
   assert.match(lesson, /LabEmbed|lab/i);
+  // AET-116 Slice 0: concept sims are also under Lesson (sibling slot), not a nav item
+  assert.match(lesson, /ConceptSimSlot/);
+  assert.doesNotMatch(main, /\['sims'/);
 });
 
 test('F5 tertiary Tools quieter than teach-path', () => {
