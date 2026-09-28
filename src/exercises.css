@@ -1,0 +1,41 @@
+.classroom-exercises{margin:30px 0 24px;border:1px solid var(--border);border-radius:9px;background:var(--surface2);padding:22px;}
+.classroom-exercises>h3{margin:4px 0 7px;}
+.classroom-exercise-intro{font-size:12px;line-height:1.65;max-width:80ch;margin-bottom:18px;}
+.classroom-exercise-picker{display:flex;gap:8px;overflow-x:auto;padding:3px 0 12px;scrollbar-width:thin;}
+.classroom-exercise-picker button,.classroom-code-tabs button{white-space:nowrap;border:1px solid var(--border);background:var(--surface);font-size:11px;padding:8px 11px;}
+.classroom-exercise-picker button[aria-pressed="true"],.classroom-code-tabs button[aria-pressed="true"]{border-color:var(--cyan);color:var(--cyan);background:color-mix(in srgb,var(--cyan) 10%,var(--surface));}
+.classroom-exercise{background:var(--surface);border:1px solid var(--border);border-radius:7px;overflow:hidden;}
+.classroom-exercise-toggle{width:100%;display:flex;align-items:center;gap:12px;text-align:left;background:transparent;border:0;border-radius:0;padding:13px 15px;}
+.classroom-exercise-badge{display:grid;place-items:center;width:38px;height:38px;flex:none;border-radius:8px;background:color-mix(in srgb,var(--violet) 16%,var(--surface));color:var(--violet);font-size:12px;font-weight:700;}
+.classroom-exercise-heading{flex:1;display:flex;flex-direction:column;gap:3px;}
+.classroom-exercise-heading strong{font-size:13px;}
+.classroom-exercise-heading small{font-size:10px;color:var(--muted);}
+.classroom-exercise-chevron{font-size:20px;color:var(--muted);}
+.classroom-exercise-body{padding:4px 18px 20px;border-top:1px solid var(--border);}
+.classroom-exercise-body section{margin-top:18px;}
+.classroom-exercise-body h4,.classroom-code h4{font-size:13px;margin:0 0 7px;}
+.classroom-exercise-body p,.classroom-exercise-body li{font-size:12px;line-height:1.7;}
+.classroom-exercise-body ol,.classroom-exercise-body ul{padding-left:20px;margin:5px 0 0;}
+.classroom-exercise-body li+li{margin-top:5px;}
+.exercise-flow{display:flex;align-items:stretch;gap:6px;list-style:none;padding:0!important;overflow-x:auto;}
+.exercise-flow li{display:flex;align-items:center;gap:6px;min-width:max-content;}
+.exercise-flow li>span:first-child{padding:10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;}
+.exercise-flow-arrow{color:var(--cyan);font-weight:700;}
+.exercise-try{padding:14px 15px;border-left:3px solid var(--cyan);background:var(--surface2);border-radius:5px;}
+.exercise-try p,.exercise-deep-dive>p{margin:0;}
+.classroom-code{margin-top:14px;padding:14px;border:1px solid var(--border);border-radius:7px;background:var(--surface2);}
+.classroom-code-head{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;}
+.classroom-code-head p{margin:0;max-width:70ch;color:var(--muted);font-size:10px;}
+.classroom-code-tabs{display:flex;gap:5px;flex:none;}
+.classroom-code pre{margin:13px 0 0;max-height:320px;}
+.classroom-exercise-sources{display:flex;gap:8px 15px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--border);margin-top:17px;padding-top:13px;font-size:10px;}
+.classroom-exercise-sources strong{color:var(--muted);font-weight:500;}
+.classroom-exercise-sources a{color:var(--cyan);}
+@media(max-width:700px){.classroom-exercises{padding:15px;}.classroom-exercise-body{padding:4px 13px 16px;}.classroom-code-head{display:block;}.classroom-code-tabs{margin-top:12px;}.exercise-flow{padding-bottom:5px!important;}}
+
+.classroom-setup{margin:16px 0;padding:15px;border:1px solid var(--border);border-radius:7px;background:var(--surface);}
+.classroom-setup h4{font-size:13px;margin:0 0 7px;}
+.classroom-setup p{font-size:11px;line-height:1.65;color:var(--muted);}
+.classroom-setup pre{margin:10px 0;font-size:11px;}
+
+.classroom-exercises{min-width:0}.classroom-exercise-body p,.classroom-exercise-body li{font-size:15px}.classroom-exercise-body h4,.classroom-code h4{font-size:16px}.classroom-exercise-intro,.classroom-setup p{font-size:14px}.classroom-exercise-picker button,.classroom-code-tabs button{font-size:13px}.classroom-code pre,.classroom-setup pre{overflow:auto;max-width:100%;font-size:13px}.classroom-exercise-heading strong{font-size:16px}.classroom-code-head p,.classroom-exercise-sources,.classroom-exercise-heading small{font-size:12px}
