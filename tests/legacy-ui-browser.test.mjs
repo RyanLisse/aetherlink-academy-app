@@ -126,38 +126,46 @@ test('participant views: loading, empty, error and offline states are visible an
   });
 });
 
-test('facilitator bar at 1024px: two rows, every control inside the bar at one height, no axe blockers',async()=>{
+test('facilitator workshop landing keeps settings tucked away and exposes usable day controls',async()=>{
   await withBrowser(async({fixture,open})=>{
     const page=await open({width:1024,height:768,token:fixture.facilitatorToken});
     await page.goto(fixture.base+'/');
-    const bar=page.getByRole('region',{name:'Facilitatorbediening'});
+    await page.getByRole('heading',{name:'Squad Noord'}).waitFor();
+    assert.match(await page.locator('.simple-eyebrow').innerText(),/^Facilitatorwerkplek · Dag 1$/,'workshop landing is the default facilitator view');
+    assert.ok(await page.getByRole('button',{name:'Slides presenteren'}).isVisible(),'presentation action is available on the landing');
+    assert.ok(await page.getByRole('heading',{name:'Jouw workshop'}).isVisible(),'workshop agenda is visible');
+    assert.equal(await page.getByRole('region',{name:'Facilitatorbediening'}).count(),0,'session controls start hidden');
+    assert.equal(await page.locator('.simple-settings').count(),0,'settings panel is not rendered before it is requested');
+    assert.equal(await overflow(page),0,'workshop landing has no horizontal scroll');
+    assert.deepEqual(await blockingViolations(page),[],'facilitator workshop landing');
+    await shot(page,'facilitator-room-1024.png');
+
+    await page.locator('.simple-more > summary').click();
+    await page.getByRole('button',{name:'Sessie-instellingen'}).click();
+    const settings=page.locator('.simple-settings');
+    await settings.getByRole('heading',{name:'Sessie-instellingen'}).waitFor();
+    const bar=settings.getByRole('region',{name:'Facilitatorbediening'});
     await bar.waitFor();
-    const layout=await bar.evaluate(el=>{
-      const box=el.getBoundingClientRect();
-      const controls=[...el.querySelectorAll('button,select,input:not([type=checkbox])')].map(c=>{const r=c.getBoundingClientRect();return {name:c.textContent.trim()||c.getAttribute('aria-label')||c.type,left:r.left,right:r.right,top:Math.round(r.top+r.height/2),height:Math.round(r.height)};});
-      return {inside:controls.filter(c=>c.left<box.left||c.right>box.right).map(c=>c.name),heights:[...new Set(controls.map(c=>c.height))],rows:[...new Set(controls.map(c=>c.top))].length,count:controls.length,scroll:el.scrollWidth-el.clientWidth};
-    });
-    assert.deepEqual(layout.inside,[],'no control overflows the bar');
-    const dialHeights=[...new Set(await bar.locator('.facilitator-dials button, .facilitator-dials select, .facilitator-dials input:not([type=checkbox])').evaluateAll(els=>els.map(el=>Math.round(el.getBoundingClientRect().height))))];
-    assert.deepEqual(dialHeights,[34],'session dials share one height');
-    assert.ok(layout.heights.every(h=>h===34||h===40),'controls are 34px dials or 40px teach primary');
-    assert.ok(layout.rows>=2&&layout.rows<=4,'teach row + dials (board CTA may wrap teach at 1024px)');
-    assert.equal(layout.count,13); // teach: day+classroom+board+lab select; dials: start/next/shuffle/+5/-5/time/duration/phase/format
-    assert.equal(layout.scroll,0);
-    assert.equal(await overflow(page),0);
-    assert.ok(await bar.locator('.fac-day-label').isVisible(),'day chip visible without menu');
-    assert.ok(await bar.locator('.facilitator-teach').isVisible(),'teach bar');
-    assert.ok(await bar.locator('.facilitator-dials').isVisible(),'dials cluster');
+    assert.ok(await bar.locator('.facilitator-teach').isVisible(),'teach controls remain available in settings');
+    assert.ok(await bar.locator('.facilitator-dials').isVisible(),'session controls remain available in settings');
     for(const name of ['Start timer','Volgende ronde','Rollen schudden','Open Classroom','Debriefbord openen'])assert.ok(await bar.getByRole('button',{name}).isVisible(),name);
+    const day=bar.getByRole('combobox',{name:'Dag',exact:true});
+    assert.equal(await day.inputValue(),'1','day selector starts on the active room day');
+    assert.equal(await bar.locator('.fac-day-label').innerText(),'Dag 1','current day is announced beside its selector');
+    await day.selectOption('2');
+    await page.waitForFunction(()=>document.querySelector('.simple-eyebrow')?.textContent.includes('Dag 2'));
+    assert.equal(await day.inputValue(),'2','selecting a day updates the room control');
+    assert.equal(await bar.locator('.fac-day-label').innerText(),'Dag 2','updated day is announced to assistive technology');
     await bar.getByRole('spinbutton',{name:'Tijd (min)',exact:true}).focus();
     await page.keyboard.press('Tab');
     assert.equal(await page.evaluate(()=>document.activeElement.textContent.trim()),'+5 min','time adjust follows its input in tab order');
-    assert.deepEqual(await blockingViolations(page),[],'facilitator room 1024');
-    await shot(page,'facilitator-room-1024.png');
-    await page.getByRole('navigation',{name:'Hoofdnavigatie'}).getByRole('button',{name:'Debriefbord',exact:true}).click();
-    const empty=page.locator('.primary [data-status="empty"]');
-    assert.equal(await empty.locator('strong').innerText(),'Start debrief');
-    assert.match(await empty.innerText(),/teach-balk|gedeelde bord|debrief/);
+    assert.equal(await overflow(page),0,'revealed settings have no horizontal scroll');
+    assert.deepEqual(await blockingViolations(page),[],'facilitator session settings');
+    await settings.getByRole('button',{name:'Sluiten'}).click();
+    assert.equal(await page.getByRole('region',{name:'Facilitatorbediening'}).count(),0,'closing settings hides the session controls again');
+    await page.getByRole('button',{name:/Reflecteer samen/}).click();
+    await page.getByRole('heading',{name:'Squad Noord · dag 2'}).waitFor();
+    assert.ok(await page.getByText('Voortgang van de huidige dag.',{exact:false}).isVisible(),'workshop agenda opens the facilitator debrief for the selected day');
   });
 });
 
