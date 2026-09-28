@@ -184,7 +184,8 @@ test('facilitator workshop landing keeps settings tucked away and exposes usable
     await page.getByRole('heading',{name:'Squad Noord · dag 2'}).waitFor();
     assert.ok(await page.getByText('Voortgang van de huidige dag.',{exact:false}).isVisible(),'workshop agenda opens the facilitator debrief for the selected day');
     await page.locator('.simple-more > summary').click();
-    await page.getByRole('button',{name:'Les',exact:true}).click();
+    await page.locator('.simple-menu').getByRole('button',{name:'Les',exact:true}).click();
+    await page.getByRole('navigation',{name:"Cursuspagina's"}).waitFor();
     assert.ok(await page.getByRole('navigation',{name:"Cursuspagina's"}).isVisible(),'facilitators see the same Lesson, Assignments, and Quiz navigation');
   });
 });
