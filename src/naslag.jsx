@@ -28,6 +28,7 @@ export function Naslag({room,action,busy,onNavigate}){
     <p className="cyan"><Library size={16} aria-hidden="true"/>{t('naslag.eyebrow')}</p>
     <h2>{t('naslag.title')}</h2>
     <p className="lede">{room.allReleased?t('naslag.ledeAll'):t('naslag.lede')}</p>
+    <p className="naslag-links"><a href="/?learn=s01">Learn Claude Code · English developer course <ExternalLink size={14} aria-hidden="true"/></a></p>
     <form className="naslag-search" role="search" onSubmit={search}>
       <label className="search"><Search size={18} aria-hidden="true"/><input value={query} onChange={e=>setQuery(e.target.value)} maxLength={300} placeholder={t('naslag.searchPlaceholder')} aria-label={t('naslag.searchLabel')}/></label>
       <button type="submit" disabled={!query.trim()}>{t('naslag.searchButton')}</button>

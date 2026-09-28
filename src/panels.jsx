@@ -6,6 +6,7 @@ import {LabEmbed,LabSlotEmpty} from './LabEmbed';
 import {ConceptSimSlot} from './ConceptSim';
 import {StatusState,RemoteStatus,useRemote} from './status';
 import {ClassroomExercises} from './exercises';
+import {OfficialDocs} from './official-docs';
 
 export const coursePosition=room=>room.course?room.course.days.findIndex(entry=>entry.day===room.day)+1:room.day;
 
@@ -146,7 +147,7 @@ export function Lesson({room,action,busy,day,onNavigate}){
     <nav className="course-page-nav" aria-label={t('coursePages.nav')}>
       {['lesson','assignments','quiz'].map(id=><button key={id} type="button" aria-current={page===id?'page':undefined} onClick={()=>setPage(id)}>{id==='lesson'?<BookOpen size={17}/>:id==='assignments'?<ClipboardList size={17}/>:<Check size={17}/>}<span>{t(`coursePages.${id}`)}</span></button>)}
     </nav>
-    {page==='lesson'&&<div data-testid="lesson-panel">{lessonPage}</div>}
+    {page==='lesson'&&<div data-testid="lesson-panel">{lessonPage}<OfficialDocs day={shownDay}/><p className="naslag-links"><a href="/?learn=s01">Developer deep dive: Learn Claude Code →</a></p></div>}
     {page==='assignments'&&<section data-testid="assignments-page"><p className="cyan">{t('coursePages.day',{day:coursePosition({...room,day:shownDay})})}</p><h2>{t('coursePages.assignments')}</h2>{shownDay===1||shownDay===2?<ClassroomExercises day={shownDay}/>:pack.mission?<div className="notice"><h3>{pack.mission.title}</h3><p>{pack.mission.goal}</p>{pack.steps?.length>0&&<ProgressivePath steps={pack.steps} compact/>}{!practice&&onNavigate&&<button type="button" onClick={()=>onNavigate('solo')}>{t('coursePages.openSolo')}<ArrowRight size={16}/></button>}</div>:<StatusState kind="empty" title={t('coursePages.noAssignments')}/>}</section>}
     <section className="course-quiz-page" hidden={page!=='quiz'} aria-label={t('coursePages.quiz')} data-testid="quiz-page"><p className="cyan">{t('coursePages.day',{day:coursePosition({...room,day:shownDay})})}</p><h2>{t('coursePages.quiz')}</h2><QuickCheck room={room} action={action} busy={busy} practice={practice} shownDay={shownDay} chosen={chosen} questions={questions} quizError={pack.quizError}/></section>
   </section>;

@@ -5,6 +5,8 @@ import {renderToString} from 'react-dom/server';
 import {describe, expect, test} from 'vitest';
 import {I18nProvider} from '../src/i18n.tsx';
 import {matchReference, REFERENCE_DAYS, ReferenceView, searchBundledDays, snippetRuns, type ReferencePage} from '../src/reference/index.ts';
+import {filterGlossaryTerms, OfficialGlossaryEntries} from '../src/reference/ReferenceView.tsx';
+import officialDocumentation from '../../../content/official-documentation.json' with {type: 'json'};
 
 const render = (page: ReferencePage, locale: 'en' | 'nl' = 'en') =>
   renderToString(
@@ -51,9 +53,49 @@ describe('reference view per day', () => {
     host.remove();
   });
 
-  test('the glossary page states that no glossary source exists instead of inventing entries', () => {
-    expect(render({kind: 'glossary'})).toContain('No glossary has been imported for this course yet.');
-    expect(render({kind: 'glossary'}, 'nl')).toContain('Voor deze cursus is nog geen woordenlijst geïmporteerd.');
+  test('the glossary renders course terms with links to official documentation', () => {
+    const markup = render({kind: 'glossary'});
+    expect(markup).toContain('Agent loop');
+    expect(markup).toContain('Model Context Protocol (MCP)');
+    expect(markup).toContain('https://code.claude.com/docs/en/how-claude-code-works');
+    expect(markup).toContain('https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro');
+    expect(markup).toContain('target="_blank" rel="noopener noreferrer"');
+    expect(markup).not.toContain('No glossary has been imported');
+    expect(render({kind: 'glossary'}, 'nl')).toContain('Cursusbegrippen met links naar primaire documentatie');
+  });
+
+  test('glossary terms are searchable and the catalog only links to primary official documentation', () => {
+    expect(officialDocumentation.terms).toHaveLength(25);
+    expect(filterGlossaryTerms(officialDocumentation.terms, 'mCp').map(({id}) => id)).toEqual(['mcp', 'mcp-tool']);
+    expect(filterGlossaryTerms(officialDocumentation.terms, '  ')).toHaveLength(25);
+    expect(filterGlossaryTerms(officialDocumentation.terms, 'no such term')).toEqual([]);
+
+    const officialHosts = new Set(['code.claude.com', 'platform.claude.com', 'modelcontextprotocol.io', 'docs.n8n.io']);
+    for (const entry of officialDocumentation.terms) {
+      expect(entry.id).toBeTruthy();
+      expect(entry.definition.length).toBeGreaterThan(20);
+      expect(entry.chapterIds.length).toBeGreaterThan(0);
+      expect(entry.sources.length).toBeGreaterThan(0);
+      for (const source of entry.sources) {
+        const url = new URL(source.url);
+        expect(url.protocol).toBe('https:');
+        expect(officialHosts.has(url.hostname)).toBe(true);
+      }
+    }
+  });
+
+  test('glossary text is rendered as text, not interpreted as injected markup', () => {
+    const markup = renderToString(
+      <OfficialGlossaryEntries terms={[{
+        id: 'hostile', term: '<img src=x onerror=alert(1)>', definition: '<script>alert(1)</script>',
+        sources: [{title: '<svg onload=alert(1)>', url: 'https://code.claude.com/docs/en/overview'}], chapterIds: ['s01'], days: [],
+      }]} />,
+    );
+    expect(markup).toContain('&lt;img src=x onerror=alert(1)&gt;');
+    expect(markup).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+    expect(markup).not.toContain('<img src=x');
+    expect(markup).not.toContain('<script>alert');
+    expect(markup).toContain('rel="noopener noreferrer"');
   });
 });
 
