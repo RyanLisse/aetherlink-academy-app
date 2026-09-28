@@ -33,7 +33,8 @@
           "content": "I'll review the diff for behavioral risks first, then note test gaps.",
           "annotation": "The loaded skill guides the next response."
         }
-      ]
+      ],
+      "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     },
     "nl": {
       "title": "Skills",
@@ -66,7 +67,8 @@
           "content": "Ik bekijk eerst gedragsrisico’s in de diff, daarna testgaten.",
           "annotation": "De geladen skill stuurt het volgende antwoord."
         }
-      ]
+      ],
+      "attribution": "Overgenomen uit shareAI-lab/learn-claude-code (MIT-licentie, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     }
   }
 }

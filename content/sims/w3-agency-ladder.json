@@ -72,7 +72,8 @@
           "content": "WL-1026 climbed L1→L2→L3 as high. Proof pack: export or screenshot, L/M/H rules in one paragraph, human gate named, achieved level ≥ L2.",
           "annotation": "Agency ladder closed for one ticket. Pedagogy (Apple bar) and n8n starters unchanged."
         }
-      ]
+      ],
+      "attribution": "Academy-authored ConceptSim for Workshop 3 / AET-79 (Agents in n8n L1→L3). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches the agency ladder on the existing n8n triage vehicle. Not a port of an upstream chapter."
     },
     "nl": {
       "title": "Agency-ladder · L1 → L2 → L3",
@@ -144,7 +145,8 @@
           "content": "WL-1026 klom L1→L2→L3 als high. Proof-pakket: export of screenshot, L/M/H-regels in één alinea, menselijke gate benoemd, behaald niveau ≥ L2.",
           "annotation": "Agency-ladder sluit voor één ticket. Pedagogie (Apple-bar) en n8n-starters ongewijzigd."
         }
-      ]
+      ],
+      "attribution": "Door Academy geschreven ConceptSim voor Workshop 3 / AET-79 (Agents in n8n L1→L3). Scenariovorm compatibel met shareAI-lab/learn-claude-code (MIT). Leert de agency ladder op het bestaande n8n-triagevoertuig. Geen port van een upstream-hoofdstuk."
     }
   }
 }

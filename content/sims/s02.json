@@ -45,7 +45,8 @@
           "content": "I've updated hello.py with a greet(name) function that takes a name parameter.",
           "annotation": "4 tools beat 1: each tool has a clear, focused purpose"
         }
-      ]
+      ],
+      "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     },
     "nl": {
       "title": "Toolgebruik",
@@ -90,7 +91,8 @@
           "content": "hello.py heeft nu een functie greet(name) met een naamparameter.",
           "annotation": "Meerdere tools winnen van alleen bash: elke tool heeft een scherp doel"
         }
-      ]
+      ],
+      "attribution": "Overgenomen uit shareAI-lab/learn-claude-code (MIT-licentie, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     }
   }
 }

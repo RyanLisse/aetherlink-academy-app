@@ -45,7 +45,8 @@
           "content": "The docs server found three matches for deployment guidance.",
           "annotation": "The agent summarizes external tool output for the user."
         }
-      ]
+      ],
+      "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     },
     "nl": {
       "title": "MCP Tools",
@@ -90,7 +91,8 @@
           "content": "De docs-server vond drie treffers voor deployment-richtlijnen.",
           "annotation": "De agent vat externe tooluitvoer samen voor de gebruiker."
         }
-      ]
+      ],
+      "attribution": "Overgenomen uit shareAI-lab/learn-claude-code (MIT-licentie, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     }
   }
 }

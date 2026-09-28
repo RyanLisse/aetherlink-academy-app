@@ -43,9 +43,10 @@ export interface Scenario {
 
 export interface LocalizedScenario {
   version: string;
+  /** Top-level EN attribution (back-compat). Prefer locales.*.attribution for bilingual sims. */
   attribution?: string;
   /** Present for bilingual chapters; EN always required when locales is set. */
-  locales: Partial<Record<ContentLocale, Omit<Scenario, 'version' | 'attribution' | 'locale'>>>;
+  locales: Partial<Record<ContentLocale, Omit<Scenario, 'version' | 'locale'>>>;
 }
 
 export interface SimRef {
@@ -89,11 +90,16 @@ function parseScenarioBody(raw: Record<string, unknown>, at: string) {
   if (typeof raw.title !== 'string' || !raw.title.trim()) throw new Error(`${at}: title required`);
   if (typeof raw.description !== 'string') throw new Error(`${at}: description must be string`);
   if (!Array.isArray(raw.steps) || raw.steps.length < 1) throw new Error(`${at}: steps must be a non-empty array`);
-  return {
+  const out: Omit<Scenario, 'version' | 'locale'> = {
     title: raw.title.trim(),
     description: raw.description,
     steps: raw.steps.map((step, i) => parseSimStep(step, `${at}.steps[${i}]`)),
   };
+  if (raw.attribution !== undefined) {
+    if (typeof raw.attribution !== 'string') throw new Error(`${at}: attribution must be string`);
+    out.attribution = raw.attribution;
+  }
+  return out;
 }
 
 /** Parse flat (legacy/fixture) or localized scenario documents. */
@@ -138,15 +144,24 @@ export function parseLocalizedScenario(raw: unknown, at = 'scenario'): Localized
 /** Project a catalog entry to a concrete Scenario for one UI locale. */
 export function projectScenario(localized: LocalizedScenario, locale: unknown = 'en'): Scenario {
   const lang = normalizeContentLocale(locale);
-  const body = localized.locales[lang] || localized.locales.en;
+  const resolved: ContentLocale = localized.locales[lang] ? lang : 'en';
+  const body = localized.locales[resolved];
   if (!body) throw new Error(`scenario ${localized.version}: no content for locale ${lang}`);
+  // Prefer locale-body attribution. Top-level attribution is EN-only back-compat —
+  // never fall back to it when projecting nl (that was the AET-118 EN leak).
+  let attribution: string | undefined;
+  if (body.attribution !== undefined) {
+    attribution = body.attribution;
+  } else if (resolved === 'en' && localized.attribution) {
+    attribution = localized.attribution;
+  }
   return {
     version: localized.version,
     title: body.title,
     description: body.description,
     steps: body.steps,
-    locale: localized.locales[lang] ? lang : 'en',
-    ...(localized.attribution ? {attribution: localized.attribution} : {}),
+    locale: resolved,
+    ...(attribution !== undefined ? {attribution} : {}),
   };
 }
 
@@ -165,6 +180,22 @@ export function assertScenarioLocaleComplete(localized: LocalizedScenario, at = 
   const blob = JSON.stringify(localized.locales.nl);
   if (/\[PLACEHOLDER\]|\[NL\]|lorem ipsum|\bTODO:|\bFIXME:/i.test(blob)) {
     throw new Error(`${at}: locales.nl looks like a placeholder`);
+  }
+  const topAttr = localized.attribution;
+  const enBodyAttr = localized.locales.en!.attribution;
+  const nlAttr = localized.locales.nl!.attribution;
+  const hasAnyAttr = Boolean(topAttr || enBodyAttr || nlAttr);
+  if (hasAnyAttr) {
+    if (typeof nlAttr !== 'string' || !nlAttr.trim()) {
+      throw new Error(`${at}: locales.nl.attribution required when attribution is present`);
+    }
+    const enAttr = enBodyAttr ?? topAttr ?? '';
+    if (nlAttr === enAttr) {
+      throw new Error(`${at}: locales.nl.attribution must differ from EN attribution`);
+    }
+    if (/\[PLACEHOLDER\]|\[NL\]|lorem ipsum|\bTODO:|\bFIXME:/i.test(nlAttr)) {
+      throw new Error(`${at}: locales.nl.attribution looks like a placeholder`);
+    }
   }
 }
 

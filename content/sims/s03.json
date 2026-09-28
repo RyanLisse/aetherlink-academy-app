@@ -38,7 +38,8 @@
           "content": "(no output)",
           "annotation": "Allowed commands continue through the normal tool result path."
         }
-      ]
+      ],
+      "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     },
     "nl": {
       "title": "Permissies",
@@ -76,7 +77,8 @@
           "content": "(geen uitvoer)",
           "annotation": "Toegestane commando's volgen daarna het gewone tool-resultaatpad."
         }
-      ]
+      ],
+      "attribution": "Overgenomen uit shareAI-lab/learn-claude-code (MIT-licentie, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     }
   }
 }

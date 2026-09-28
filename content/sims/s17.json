@@ -48,7 +48,8 @@
           "content": "goal_evaluated ok=true -> achieved",
           "annotation": "The controller records success, clears the active goal, and returns."
         }
-      ]
+      ],
+      "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     },
     "nl": {
       "title": "Goal Loop",
@@ -96,7 +97,8 @@
           "content": "goal_evaluated ok=true → achieved",
           "annotation": "De controller registreert succes, wist het actieve doel en keert terug."
         }
-      ]
+      ],
+      "attribution": "Overgenomen uit shareAI-lab/learn-claude-code (MIT-licentie, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     }
   }
 }

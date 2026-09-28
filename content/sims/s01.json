@@ -50,7 +50,8 @@
           "content": "Done! I've created hello.py with the print statement. You can run it with `python hello.py`.",
           "annotation": "stop_reason != 'tool_use' -> loop breaks, agent responds to user"
         }
-      ]
+      ],
+      "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     },
     "nl": {
       "title": "De agent-loop",
@@ -100,7 +101,8 @@
           "content": "Klaar — hello.py staat er. Je kunt het draaien met `python hello.py`.",
           "annotation": "Geen tool_use meer → de loop stopt en de agent antwoordt de gebruiker"
         }
-      ]
+      ],
+      "attribution": "Overgenomen uit shareAI-lab/learn-claude-code (MIT-licentie, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     }
   }
 }

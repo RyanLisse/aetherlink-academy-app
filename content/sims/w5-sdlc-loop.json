@@ -72,7 +72,8 @@
           "content": "Gate filled OPEN on the weekday CI stretch. PR opened without secrets. Next intent.md follows from what merged today.",
           "annotation": "Handoff closes the loop — the line becomes a loop."
         }
-      ]
+      ],
+      "attribution": "Academy-authored ConceptSim for Workshop 5 / AET-77 (AI-native SDLC). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Not a port of an upstream chapter."
     },
     "nl": {
       "title": "SDLC-harnesslus — Plan → gate",
@@ -144,7 +145,8 @@
           "content": "Gate op OPEN voor de weekday-CI-stretch. PR open zonder secrets. Volgende intent.md volgt uit wat vandaag is gemerged.",
           "annotation": "Handoff sluit de lus — de lijn wordt een lus."
         }
-      ]
+      ],
+      "attribution": "Door Academy geschreven ConceptSim voor Workshop 5 / AET-77 (AI-native SDLC). Scenariovorm compatibel met shareAI-lab/learn-claude-code (MIT). Geen port van een upstream-hoofdstuk."
     }
   }
 }

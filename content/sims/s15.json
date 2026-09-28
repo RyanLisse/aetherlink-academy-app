@@ -101,7 +101,8 @@
           "content": "Release preparation is ready: checks passed, docs are updated in the teammate worktree, and deployment status is available.",
           "annotation": "The integrated harness returns a single user-facing outcome."
         }
-      ]
+      ],
+      "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     },
     "nl": {
       "title": "Integrated Harness",
@@ -202,7 +203,8 @@
           "content": "Releasevoorbereiding is klaar: checks geslaagd, docs bijgewerkt in de teammate-worktree, en deploy-status is running.",
           "annotation": "De geïntegreerde harness geeft één gebruikersuitkomst terug."
         }
-      ]
+      ],
+      "attribution": "Overgenomen uit shareAI-lab/learn-claude-code (MIT-licentie, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     }
   }
 }

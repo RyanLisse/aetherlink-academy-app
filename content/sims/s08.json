@@ -32,7 +32,8 @@
           "content": "Summary: user asked for parser refactor; files inspected: cli.py, parser.py; open task: add test.",
           "annotation": "The compacted summary replaces older context while preserving task-relevant facts."
         }
-      ]
+      ],
+      "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     },
     "nl": {
       "title": "Context Compact",
@@ -63,7 +64,8 @@
           "content": "Samenvatting geladen. Volgende stap: de twee falende tests in auth herstellen.",
           "annotation": "Compaction houdt een begrensde context bruikbaar tijdens lange taken."
         }
-      ]
+      ],
+      "attribution": "Overgenomen uit shareAI-lab/learn-claude-code (MIT-licentie, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code"
     }
   }
 }
