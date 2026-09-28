@@ -770,5 +770,8 @@
   "sim.type.assistant": "Assistent",
   "sim.type.toolCall": "Tool-aanroep",
   "sim.type.toolResult": "Toolresultaat",
-  "sim.type.system": "Systeem"
+  "sim.type.system": "Systeem",
+  "lesson.diagrams": "Diagrammen",
+  "lesson.motto": "Motto",
+  "course.fromNamedTemplate": "Start vanuit {name}"
 }

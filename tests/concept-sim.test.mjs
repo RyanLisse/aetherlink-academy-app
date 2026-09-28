@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync,mkdtempSync} from 'node:fs';
+import {readFileSync,mkdtempSync,existsSync} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -129,4 +129,37 @@ test('catalog loader rejects path-traversal filenames via isValidSimId gate', ()
   const dir = mkdtempSync(path.join(os.tmpdir(), 'academy-bad-sims-'));
   // empty dir loads fine
   assert.equal(loadSimCatalog(dir).size, 0);
+});
+
+test('Slice 1 harness sims s01–s03 parse and catalog', () => {
+  for (const id of ['s01', 's02', 's03']) {
+    const raw = JSON.parse(readFileSync(join(root, `content/sims/${id}.json`), 'utf8'));
+    const scenario = parseScenario(raw);
+    assert.equal(scenario.version, id);
+    assert.ok(scenario.steps.length >= 4, id);
+    assert.match(scenario.attribution || '', /shareAI-lab\/learn-claude-code/);
+    assert.equal(getSim(id)?.title, scenario.title);
+  }
+  assert.ok(listSims().filter((s) => /^s0[123]$/.test(s.id)).length === 3);
+});
+
+test('Slice 1 harness day packs declare diagram + sim + MIT attribution', async () => {
+  const {DAY_PACKS} = await import('../content/days/index.mjs');
+  const byDay = Object.fromEntries(DAY_PACKS.map((p) => [p.day, p]));
+  for (const [day, simId, titlePart] of [[8, 's01', 'Agent Loop'], [9, 's02', 'Tool Use'], [10, 's03', 'Permission']]) {
+    const pack = byDay[day];
+    assert.ok(pack, `missing day ${day}`);
+    assert.match(pack.title, new RegExp(titlePart));
+    assert.ok(pack.diagrams?.length >= 1, `day ${day} diagrams`);
+    assert.ok(pack.sims?.some((s) => s.id === simId), `day ${day} sim`);
+    assert.match(pack.attribution || '', /MIT/);
+    assert.ok(pack.lesson?.narrative?.length >= 2, `day ${day} narrative`);
+    assert.ok(pack.lesson?.motto, `day ${day} motto`);
+    for (const d of pack.diagrams) {
+      assert.ok(d.src.startsWith('/diagrams/harness/'));
+      assert.ok(existsSync(join(root, 'public', d.src.replace(/^\//, ''))), d.src);
+    }
+  }
+  // Classroom 1 fixture preserved
+  assert.ok(byDay[1].sims?.some((s) => s.id === 'fixture-agent-loop'));
 });

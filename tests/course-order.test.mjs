@@ -44,7 +44,7 @@ test('parseCourse keeps order, drops excluded days and normalises overrides',()=
 test('parseCourse rejects duplicates, unknown packs, empty courses, bad dates and missing names',()=>{
  const rejects=(input,message)=>assert.throws(()=>parseCourse(input),{status:400,message});
  rejects({name:'X',days:[{day:2},{day:2}]},'Dag 2 staat dubbel in de cursus.');
- rejects({name:'X',days:[{day:8}]},'Dag 8 bestaat niet als contentpakket.');
+ rejects({name:'X',days:[{day:99}]},'Dag 99 bestaat niet als contentpakket.');
  rejects({name:'X',days:[{day:'1'}]},'Dag 1 bestaat niet als contentpakket.');
  rejects({name:'X',days:[]},'Neem minimaal één dag op in de cursus.');
  rejects({name:'X',days:[{day:1,date:'2026-02-30'}]},'Gebruik een datum als JJJJ-MM-DD.');
@@ -109,8 +109,9 @@ test('participants cannot read the composer or change the course',async()=>{
  const composer=await invoke(app,'/game/course',host);
  assert.equal(composer.statusCode,200);
  assert.equal(composer.body.course,null);
- assert.deepEqual(composer.body.packs.map(pack=>pack.day),[1,2,3,4,5,6,7]);
+ assert.deepEqual(composer.body.packs.map(pack=>pack.day),[1,2,3,4,5,6,7,8,9,10]);
  assert.deepEqual(composer.body.template.days.map(d=>d.day),[1,2,3,4,5,6,7]);
+ assert.ok(composer.body.templates.some(t=>t.name==='Harness Engineering'&&t.days.map(d=>d.day).join()==='8,9,10'));
 });
 
 test('an invalid course is rejected and leaves the room unchanged',async()=>{
@@ -138,4 +139,27 @@ test('a course survives a committed cross-instance Postgres round trip',{skip:!p
   await control(two,host.token,'course',null);
   assert.equal((await one.auth(person.token,'browser')).r.course,undefined);
  }finally{await pool.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);await pool.end();}
+});
+
+test('Harness Engineering course exposes s01–s03 day packs on the route',async()=>{
+ const {app,host,participant}=fixture();
+ const harness={name:'Harness Engineering',days:[{day:8},{day:9},{day:10}]};
+ const saved=await invoke(app,'/game/control',{...host,method:'post',body:{action:'course',value:harness}});
+ assert.equal(saved.statusCode,200);
+ assert.equal(saved.body.day,8);
+ const route=await invoke(app,'/game/day-route',participant);
+ assert.deepEqual(route.body.days.map(d=>[d.position,d.day,d.title]),[
+  [1,8,'Harness · s01 Agent Loop'],
+  [2,9,'Harness · s02 Tool Use'],
+  [3,10,'Harness · s03 Permission System']
+ ]);
+ const pack=await invoke(app,'/game/day-pack',participant);
+ assert.equal(pack.statusCode,200);
+ assert.equal(pack.body.day,8);
+ assert.ok(pack.body.sims?.some(s=>s.id==='s01'));
+ assert.ok(pack.body.diagrams?.length>=1);
+ assert.match(pack.body.attribution||'', /shareAI-lab\/learn-claude-code/);
+ assert.equal((await invoke(app,'/game/control',{...host,method:'post',body:{action:'day',value:9}})).body.day,9);
+ const s02=await invoke(app,'/game/day-pack',participant);
+ assert.ok(s02.body.sims?.some(s=>s.id==='s02'));
 });

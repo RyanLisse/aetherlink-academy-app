@@ -16,7 +16,8 @@ import {createAcademyMcpServer} from './mcp-tools.mjs';
 import {createMcpHandler,validateHostHeader} from '@modelcontextprotocol/server';
 import {toNodeHandler} from '@modelcontextprotocol/node';
 import {lessons,mission,initialDocument,searchKnowledge,getDayPack,listRouteDays,listDaySummaries,courseEntry,starterFileNames} from './content.mjs';
-import {courseTemplate} from '../content/days/course.mjs';
+import {courseTemplate,courseTemplates} from '../content/days/course.mjs';
+import {WAVE_DAYS} from '../content/days/course.mjs';
 import {openQuizAttempt,participantDayPack,requireDayQuiz,submitQuizAttempt} from './quiz.mjs';
 import {createGoogleSso,readLoginState,signLoginState} from './google-sso.mjs';
 import {createSlidesService} from './slides/runtime.ts';
@@ -153,7 +154,7 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  const coachPerson=({r,s})=>s.personId==='facilitator'?`facilitator:${r.id}`:s.personId;
  app.post('/game/chat',wrap(async(req,res)=>{const {r,s}=await chatSession(req),locale=req.body?.locale==='en'?'en':'nl',faq=answerQuestion({day:r.day,released:readableDays({r,s}),query:text(req.body?.q,300),locale});if(!coachConfig)return res.json(faq);res.json(await coachAnswer({faq,config:coachConfig,store,fetchImpl,locale,personKey:coachPerson({r,s}),redact:q=>redactQuestion(q,{names:[...r.members.map(m=>m.name),s.displayName],codes:[r.code]})}));}));
  app.get('/game/chat/coach',wrap(async(req,res)=>{const context=await chatSession(req);res.json(coachConfig?await coachStatus({config:coachConfig,store,personKey:coachPerson(context)}):{enabled:false});}));
- app.get('/game/course',wrap(async(req,res)=>{const {r,s}=await browser(req);if(s.personId!=='facilitator')fail(403,'Alleen de facilitator stelt de cursus samen.');res.json({course:r.course??null,template:courseTemplate(),packs:listDaySummaries()});}));
+ app.get('/game/course',wrap(async(req,res)=>{const {r,s}=await browser(req);if(s.personId!=='facilitator')fail(403,'Alleen de facilitator stelt de cursus samen.');res.json({course:r.course??null,template:courseTemplate(),templates:courseTemplates(),packs:listDaySummaries()});}));
  app.get('/game/day-route',wrap(async(req,res)=>{const context=await browser(req),{r,p}=context,released=readableDays(context);res.json({day:r.day,released,...(r.course?{course:{name:r.course.name}}:{}),days:listRouteDays(r.course).map(d=>({...d,released:released.includes(d.day),labsTotal:dayLabs(d.day,r).length,progress:dayProgress(r,p,d.day)}))});}));
  app.post('/game/lab-answer',wrap(async(req,res)=>{const submission=parseLabAnswer(req.body);if(!submission)fail(400,'Ongeldig labantwoord.');res.json(await store.withSession(token(req),'browser',context=>{const {p}=context;const {key,labDay,day}=participantLab(context,submission.labId),answerKey=gradingKeys.get(submission.labId)?.get(submission.stopId);if(!answerKey)fail(404,`Stop ${submission.stopId} wordt niet beoordeeld.`);const stops=day.labStops?.[submission.labId]||{},{recorded,stop}=recordAttempt(stops[submission.stopId],answerKey,submission,new Date().toISOString());if(recorded)p.progressByDay[key]={...day,labStops:{...day.labStops,[submission.labId]:{...stops,[submission.stopId]:stop}}};return {recorded,day:labDay,labId:submission.labId,stop};}));}));
  app.post('/game/lab-complete',wrap(async(req,res)=>{const completion=parseLabCompletion(req.body);if(!completion)fail(400,'Ongeldige labvoltooiing.');res.json(await store.withSession(token(req),'browser',context=>{const {p}=context;const {key,labDay,day}=participantLab(context,completion.labId),existing=day.labs?.[completion.labId];if(existing)return {recorded:false,day:labDay,labId:completion.labId,lab:existing};const graded=gradedStopsPassed(gradingKeys.get(completion.labId),day.labStops?.[completion.labId]);if(graded.passed<graded.total)fail(409,`Nog niet alle beoordeelde stops gehaald (${graded.passed}/${graded.total}).`);const lab=graded.total?{source:'server-graded',result:{outcome:'completed',score:{value:graded.passed,max:graded.total}},evidence:completion.evidence??null,at:new Date().toISOString()}:{source:'lab-reported',result:completion.result,evidence:completion.evidence??null,at:new Date().toISOString()};p.progressByDay[key]={...day,labs:{...day.labs,[completion.labId]:lab}};return {recorded:true,day:labDay,labId:completion.labId,lab};}));}));
@@ -238,7 +239,7 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  // Inline present viewer for Classroom overlay pin (AET-105 Slice B) — same HTML as export, no attachment.
  app.get('/game/decks/:deckId/present',wrap(async(req,res)=>{const result=await slides.run('exportHtml',deckActor(await browser(req)),{deckId:deckId(req)});res.type('text/html').set('Cache-Control','private, no-store').set('Content-Security-Policy',"default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src https: data:; font-src https: data:").send(result.html);}));
  // Pin / unpin an Effect deck as Classroom overlay for a room day (no promote-to-static).
- const overlayDay=(r,raw)=>{if(raw===undefined||raw===null||raw==='')return r.day;const day=Number(raw);if(r.course?!r.course.days.some(entry=>entry.day===day):!Number.isInteger(day)||day<1||day>7)fail(400,r.course?`Dag ${day} zit niet in de cursus.`:'Kies een geldige cursusdag.');return day;};
+ const overlayDay=(r,raw)=>{if(raw===undefined||raw===null||raw==='')return r.day;const day=Number(raw);if(r.course?!r.course.days.some(entry=>entry.day===day):!Number.isInteger(day)||!WAVE_DAYS.includes(day))fail(400,r.course?`Dag ${day} zit niet in de cursus.`:'Kies een geldige cursusdag.');return day;};
  app.put('/game/classroom-overlay',wrap(async(req,res)=>{
   const pinned=uuid(req.body?.deckId);
   res.json(await store.withSession(token(req),'browser',async({r,s,p})=>{
@@ -359,7 +360,7 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  });
  // apps/web SPA (Classroom / deck / workshop / lesson / live) — AET-75+ routes live in apps/web, not root dist/
  const webIndex=path.join(webDist,'index.html');
- const isWebSpaPath=p=>p==='/deck'||p==='/reference'||p.startsWith('/reference/')||p==='/archive'||p.startsWith('/archive/')||p.startsWith('/classroom/')||p.startsWith('/workshop/')||p==='/lesson'||p.startsWith('/lesson/')||p.startsWith('/live/');
+ const isWebSpaPath=p=>p==='/deck'||p==='/reference'||p.startsWith('/reference/')||p==='/archive'||p.startsWith('/archive/')||p.startsWith('/classroom/')||p.startsWith('/workshop/')||p==='/harness'||p==='/lesson'||p.startsWith('/lesson/')||p.startsWith('/live/');
  app.get('/legacy-redirect',(req,res)=>{
   const site=req.query.site;
   if(!isLegacySite(site))return res.status(400).type('text').send('unknown legacy site');

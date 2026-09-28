@@ -22,7 +22,7 @@ Keep Apple bar / Uitleg → Voordoen → Zelf doen rhythm when retrofitting work
 3. Lesson panel renders `ConceptSimSlot` in-room (Academy-native; **not** LabEmbed iframe). Labs (Arcade) stay a separate slot under Lesson ([AET-87](https://linear.app/aetherlink/issue/AET-87) / [AET-115](https://linear.app/aetherlink/issue/AET-115)).
 4. Catalog: authenticated `GET /game/sim-catalog`.
 
-Future Harness Engineering chapters **s01–s17** attach the same way (Slice 1+). Filename id should match chapter id (`s01`, …).
+Harness Engineering chapters attach the same way. Slice 1 ships **s01–s03** as day packs 8–10 under the **Harness Engineering** course template (`harnessCourseTemplate()` in `content/days/course.mjs`). Filename id matches chapter id (`s01`, …). Diagrams live under `public/diagrams/harness/` and are declared on the day pack as `diagrams:[{src,title,alt}]`.
 
 ## PR DoD (B2)
 
