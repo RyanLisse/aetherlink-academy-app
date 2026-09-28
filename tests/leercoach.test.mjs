@@ -8,6 +8,7 @@ import {createApp} from '../server/app.mjs';
 import {answerQuestion} from '../server/faq.mjs';
 import {LocalStore} from '../server/local-store.mjs';
 import {readCoachConfig,coachAnswer,COACH_DEFAULT_MODEL} from '../server/coach.mjs';
+import {OPENROUTER_FREE_MODEL_IDS,checkOpenRouterModels} from '../scripts/openrouter-model-check.mjs';
 import {validateRuntimeEnvironment} from '../server/runtime-config.mjs';
 import {DAY_SOURCES} from '../content/days/index.mjs';
 import {TRIAGE_FIXTURES} from '../content/triage/grade.mjs';
@@ -210,3 +211,69 @@ test('the facilitator toggle also closes the coach and its status route',async t
  assert.equal((await invoke(instance.app,'/game/chat/coach',{method:'get',cookies:{academy:'nope'}})).statusCode,401);
  assert.equal(fake.requests.length,0);
 });
+
+function mockOpenRouterCheck({catalog=OPENROUTER_FREE_MODEL_IDS.map(id=>({id,canonical_slug:id.replace(':free','-dated'),pricing:{prompt:'0',completion:'0'}})),completion=({body})=>({status:200,payload:{model:body.model,usage:{cost:'0'},choices:[{message:{content:JSON.stringify({answer:'The bridge supports three coins.',citations:['synthetic-lesson-1'],outOfScope:false})}}]}})}={}){
+ const calls=[];
+ const fetchImpl=async(url,options={})=>{
+  calls.push({url,options,body:options.body?JSON.parse(options.body):null});
+  if(url.endsWith('/models'))return new Response(JSON.stringify({data:catalog}),{status:200,headers:{'content-type':'application/json'}});
+  const {status,payload}=completion(calls.at(-1));
+  return new Response(JSON.stringify(payload),{status,headers:{'content-type':'application/json'}});
+ };
+ return {calls,fetchImpl};
+}
+
+test('live-model checker mock: exact zero-priced :free catalog IDs send only synthetic, privacy-restricted requests',async()=>{
+ const mock=mockOpenRouterCheck({completion:({body})=>({status:200,payload:{model:body.model,usage:{cost:'0'},choices:[{message:{content:JSON.stringify({answer:'Three coins.',citations:['synthetic-lesson-1'],outOfScope:false})}}]}})});
+ const result=await checkOpenRouterModels({apiKey:'sk-or-test',fetchImpl:mock.fetchImpl});
+ assert.equal(result.status,'passed');
+ assert.deepEqual(result.results.map(item=>item.status),OPENROUTER_FREE_MODEL_IDS.map(()=>'passed'));
+ const requests=mock.calls.filter(call=>call.options.method==='POST');
+ assert.deepEqual(requests.map(call=>call.body.model),OPENROUTER_FREE_MODEL_IDS);
+ for(const request of requests){
+  assert.deepEqual(request.body.provider,{data_collection:'deny'});
+  assert.equal('models' in request.body,false,'there is no alternate-model fallback');
+  assert.match(request.body.messages[1].content,/Synthetic lesson/);
+  assert.doesNotMatch(request.body.messages[1].content,/Fenna|Jansen|Karim|ABCD-EFGH|example\.test/);
+  assert.equal(request.options.headers.authorization,'Bearer sk-or-test');
+ }
+});
+
+test('live-model checker mock: any nonzero catalog price, including request fees, blocks inference',async()=>{
+ const id=OPENROUTER_FREE_MODEL_IDS[0];
+ const mock=mockOpenRouterCheck({catalog:[{id,pricing:{prompt:'0',completion:'0',request:'0.0001'}}]});
+ const result=await checkOpenRouterModels({apiKey:'sk-or-test',modelIds:[id],fetchImpl:mock.fetchImpl});
+ assert.equal(result.results[0].status,'price-gate-failed');
+ assert.equal(mock.calls.filter(call=>call.options.method==='POST').length,0);
+});
+
+test('live-model checker mock: classifies rate limits and data-policy rejection without relaxing privacy',async()=>{
+ const id=OPENROUTER_FREE_MODEL_IDS[0];
+ for(const [status,message,expected] of [[429,'rate limit exceeded','rate-limited'],[404,'No endpoints found matching your data policy','policy-unavailable']]){
+  const mock=mockOpenRouterCheck({catalog:[{id,canonical_slug:'nvidia/nemotron-3-ultra-550b-a55b',pricing:{prompt:'0',completion:'0'}}],completion:()=>({status,payload:{error:{code:status,message}}})});
+  const result=await checkOpenRouterModels({apiKey:'sk-or-test',modelIds:[id],fetchImpl:mock.fetchImpl});
+  assert.equal(result.results[0].status,expected);
+  const request=mock.calls.find(call=>call.options.method==='POST');
+  assert.deepEqual(request.body.provider,{data_collection:'deny'});
+  assert.equal(request.body.model,id);
+ }
+});
+
+test('live-model checker mock: rejects a reported non-free route or nonzero completion cost',async()=>{
+ const id=OPENROUTER_FREE_MODEL_IDS[0];
+ for(const [payload,status] of [
+  [{model:'openai/gpt-5',usage:{cost:'0'},choices:[{message:{content:'{}'}}]},'non-free-route-rejected'],
+  [{model:id,usage:{cost:'0.01'},choices:[{message:{content:'{}'}}]},'non-zero-cost-rejected']
+ ]){
+  const mock=mockOpenRouterCheck({catalog:[{id,canonical_slug:'nvidia/nemotron-3-ultra-550b-a55b',pricing:{prompt:'0',completion:'0'}}],completion:()=>({status:200,payload})});
+  const result=await checkOpenRouterModels({apiKey:'sk-or-test',modelIds:[id],fetchImpl:mock.fetchImpl});
+  assert.equal(result.results[0].status,status);
+ }
+});
+
+ test('synthetic probe can explicitly relax data collection without altering the normal coach',async()=>{
+ const mock=mockOpenRouterCheck();
+ const result=await checkOpenRouterModels({apiKey:'test',fetchImpl:mock.fetchImpl,allowDataCollection:true});
+ assert.equal(result.status,'passed');
+ assert.ok(mock.calls.filter(call=>call.options.method==='POST').every(call=>!('data_collection' in call.body.provider)));
+ });
