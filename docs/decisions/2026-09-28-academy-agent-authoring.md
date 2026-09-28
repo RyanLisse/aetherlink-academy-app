@@ -37,3 +37,6 @@ New content and interface copy default to English. Preserve authored content and
 - Existing [AET-25](https://linear.app/aetherlink/issue/AET-25), [AET-30](https://linear.app/aetherlink/issue/AET-30), and [AET-31](https://linear.app/aetherlink/issue/AET-31) retain publication/chat/coach work; updated requirements supersede historical contradictory paragraphs.
 
 No dates or production completion are inferred from issue status. First slice acceptance distinguishes adapter/transport tests, real Claude Code/hosted model use, browser evidence and deployed acceptance.
+
+
+See also: [AET-120 first slice](../aet-120-first-slice.md).

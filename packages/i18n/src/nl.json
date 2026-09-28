@@ -828,5 +828,12 @@
   "coach.eyebrowClaude": "Jouw eigen Claude Code",
   "coach.eyebrowCodex": "Jouw eigen Codex",
   "coach.facilitatorLedeClaude": "Gebruik je eigen Claude Code om slidedecks voor deze kamer te maken en te bewerken. Lees elke slide terug vóór een wijziging en controleer het resultaat vóór het presenteren.",
-  "coach.facilitatorLedeCodex": "Gebruik je eigen Codex om slidedecks voor deze kamer te maken en te bewerken. Lees elke slide terug vóór een wijziging en controleer het resultaat vóór het presenteren."
+  "coach.facilitatorLedeCodex": "Gebruik je eigen Codex om slidedecks voor deze kamer te maken en te bewerken. Lees elke slide terug vóór een wijziging en controleer het resultaat vóór het presenteren.",
+  "chat.emptyTitle": "Nog geen vragen",
+  "chat.emptyBody": "Vraag iets over het dagpakket van vandaag: waar je opdracht staat, hoe je bewijs inlevert, wat de volgende stap is.",
+  "chat.scrollLatest": "Naar het laatste antwoord",
+  "coach.statusBadge.configured": "Niet verbonden",
+  "coach.statusBadge.waiting": "Wachten",
+  "coach.statusBadge.verified": "Geverifieerd",
+  "coach.statusBadge.expired": "Verlopen"
 }

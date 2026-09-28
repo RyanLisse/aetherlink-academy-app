@@ -302,3 +302,27 @@
 .connection-status.status-waiting strong{color:var(--cyan)}
 .connection-status.status-expired strong{color:#e4aa5a}
 .connection-status.status-configured strong{color:var(--muted)}
+
+/* AET-120: shadcn/ui + AI Elements chrome inside the Academy shell. */
+/* Coach Connect — Claude|Codex selector is a real radiogroup now, so the segmented-button CSS goes. */
+.client-selector-options{display:inline-flex;flex-direction:row;align-items:center;gap:22px;border:0;border-radius:0;overflow:visible;padding:2px 0}
+.client-option{display:flex;flex-direction:row;align-items:center;gap:8px}
+.client-option label{flex-direction:row;margin:0;font-size:12px;color:var(--text);cursor:pointer}
+.connection-status-title{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 6px}
+.connection-status .connection-status-title strong{font-size:13px}
+.coach-copy{margin-top:4px}
+.coach-error{margin:12px 0}
+.coach-instructions{display:flex;flex-direction:column;gap:7px;margin:14px 0}
+.coach-instructions label{flex-direction:row;margin:0;color:var(--muted)}
+/* Conversation owns its own scroller, so the log needs a bounded height instead of max-height. */
+.chat-log{display:block;height:clamp(210px,40vh,360px);max-height:none;overflow:hidden;margin-bottom:10px;gap:0}
+.chat-conversation{gap:14px;padding:2px 4px}
+.chat-empty{color:var(--muted)}
+.chat-empty h3{font-size:13px}
+.chat-question{font-weight:600}
+.chat-input-label{display:block;flex-direction:row;margin:0 0 6px;font-size:12px;color:var(--muted)}
+.chat-form{margin:0}
+.chat-form-footer{gap:10px}
+.chat-quota-badge{font-weight:550}
+.chat-alert{margin:10px 0}
+.chat-action{min-height:32px}

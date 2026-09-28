@@ -7,6 +7,14 @@ import {ConceptSimSlot} from './ConceptSim';
 import {StatusState,RemoteStatus,useRemote} from './status';
 import {ClassroomExercises} from './exercises';
 import {OfficialDocs} from './official-docs';
+// AET-120: Coach Connect status chrome runs on shadcn/ui primitives; the testids,
+// data-status contract and verified-after-tool-call behaviour (AET-126) are unchanged.
+import {Alert,AlertDescription,AlertTitle} from '@/components/ui/alert';
+import {Badge} from '@/components/ui/badge';
+import {Button} from '@/components/ui/button';
+import {Label} from '@/components/ui/label';
+import {RadioGroup,RadioGroupItem} from '@/components/ui/radio-group';
+import {Textarea} from '@/components/ui/textarea';
 
 export const coursePosition=room=>room.course?room.course.days.findIndex(entry=>entry.day===room.day)+1:room.day;
 
@@ -22,6 +30,9 @@ export function Knowledge(){
   useEffect(()=>{let active=true;api('knowledge?q='+encodeURIComponent(query)).then(d=>{if(active)setLessons(d.lessons);}).catch(e=>setError(e.message));return()=>{active=false;};},[query]);
   return <div className="knowledge"><label className="search"><Search size={18}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder={t('knowledge.search')} aria-label={t('knowledge.searchLabel')}/></label>{error&&<p role="alert">{error}</p>}<div className="lesson-list">{lessons.map(l=><details key={l.id}><summary><BookOpen size={18}/><span>{l.title}<small>{l.id}</small></span><span className="detail-plus">+</span></summary><p>{l.body}</p><div className="exercise"><strong>{t('knowledge.try')}</strong><p>{l.exercise}</p></div><small className="muted">{l.source}</small></details>)}{!lessons.length&&<p>{t('knowledge.empty')}</p>}</div></div>;
 }
+
+// Badge tone per connection status. `verified` is the only state that means a tool call landed.
+const STATUS_BADGE={verified:'default',waiting:'secondary',expired:'destructive',configured:'outline'};
 
 export function Coach({room}){
   const t=useT();
@@ -57,7 +68,33 @@ export function Coach({room}){
   const pasteBody=client==='codex'?t('coach.pasteBodyCodex'):t('coach.pasteBodyClaude');
   const eyebrow=client==='codex'?t('coach.eyebrowCodex'):t('coach.eyebrowClaude');
   const facilitatorLede=client==='codex'?t('coach.facilitatorLedeCodex'):t('coach.facilitatorLedeClaude');
-  return <section className="panel content-panel"><p className="cyan"><Sparkles size={16}/>{eyebrow}</p><h2>{t(facilitator?'coach.facilitatorTitle':'coach.title')}</h2><p className="lede">{facilitator?facilitatorLede:t('coach.lede')}</p><fieldset className="client-selector"><legend>{t('coach.clientLabel')}</legend><div role="radiogroup" aria-label={t('coach.clientLabel')} className="client-selector-options"><button type="button" role="radio" aria-checked={client==='claude'} className={client==='claude'?'selected':''} onClick={()=>setClient('claude')}>{t('coach.clientClaude')}</button><button type="button" role="radio" aria-checked={client==='codex'} className={client==='codex'?'selected':''} onClick={()=>setClient('codex')}>{t('coach.clientCodex')}</button></div></fieldset><div className={`notice connection-status status-${status}`} data-testid="agent-connection-status" data-status={status}><strong>{statusText}</strong><p>{t('coach.mcpNote')}</p><p className="muted">{t('coach.wrongRoomHelp')}</p></div><button className="gradient" type="button" disabled={busy} onClick={copyForAgent}><Copy size={19}/>{copied?t('coach.copied'):copyLabel}</button>{error&&<p className="error" role="alert">{error}</p>}{setup&&<details open={Boolean(error)}><summary>{t('coach.viewInstructions')}</summary><label>{instructionsLabel}<textarea readOnly rows={Math.min(16,Math.max(5,setup.instructions.split('\n').length))} value={setup.instructions} onFocus={event=>event.currentTarget.select()} aria-label={instructionsLabel}/></label></details>}<p className="muted">{t('coach.privateNote')}</p><div className="coach-context"><span><Target size={17}/>{t('coach.ctx.repo')}</span><span><FileText size={17}/>{t('coach.ctx.intent')}</span><span><BookOpen size={17}/>{t('coach.ctx.lessons')}</span></div><div className="prompt"><strong>{pasteTitle}</strong><p>{pasteBody}</p></div><h3>{t('coach.searchHeading')}</h3><Knowledge/></section>;
+  return <section className="panel content-panel academy-ui">
+    <p className="cyan"><Sparkles size={16}/>{eyebrow}</p>
+    <h2>{t(facilitator?'coach.facilitatorTitle':'coach.title')}</h2>
+    <p className="lede">{facilitator?facilitatorLede:t('coach.lede')}</p>
+    <fieldset className="client-selector">
+      <legend>{t('coach.clientLabel')}</legend>
+      <RadioGroup className="client-selector-options" aria-label={t('coach.clientLabel')} value={client} onValueChange={setClient}>
+        <div className="client-option"><RadioGroupItem value="claude" id="agent-client-claude"/><Label htmlFor="agent-client-claude">{t('coach.clientClaude')}</Label></div>
+        <div className="client-option"><RadioGroupItem value="codex" id="agent-client-codex"/><Label htmlFor="agent-client-codex">{t('coach.clientCodex')}</Label></div>
+      </RadioGroup>
+    </fieldset>
+    <Alert role="status" className={`notice connection-status status-${status}`} data-testid="agent-connection-status" data-status={status}>
+      <AlertTitle className="connection-status-title"><Badge variant={STATUS_BADGE[status]} className="connection-status-badge">{t(`coach.statusBadge.${status}`)}</Badge><strong>{statusText}</strong></AlertTitle>
+      <AlertDescription>
+        <p>{t('coach.mcpNote')}</p>
+        <p className="muted">{t('coach.wrongRoomHelp')}</p>
+      </AlertDescription>
+    </Alert>
+    <Button className="gradient coach-copy" type="button" disabled={busy} onClick={copyForAgent}><Copy size={19}/>{copied?t('coach.copied'):copyLabel}</Button>
+    {error&&<Alert role="alert" variant="destructive" className="coach-error"><AlertDescription>{error}</AlertDescription></Alert>}
+    {setup&&<details open={Boolean(error)}><summary>{t('coach.viewInstructions')}</summary><div className="coach-instructions"><Label htmlFor="coach-instructions">{instructionsLabel}</Label><Textarea id="coach-instructions" readOnly rows={Math.min(16,Math.max(5,setup.instructions.split('\n').length))} value={setup.instructions} onFocus={event=>event.currentTarget.select()} aria-label={instructionsLabel}/></div></details>}
+    <p className="muted">{t('coach.privateNote')}</p>
+    <div className="coach-context"><span><Target size={17}/>{t('coach.ctx.repo')}</span><span><FileText size={17}/>{t('coach.ctx.intent')}</span><span><BookOpen size={17}/>{t('coach.ctx.lessons')}</span></div>
+    <div className="prompt"><strong>{pasteTitle}</strong><p>{pasteBody}</p></div>
+    <h3>{t('coach.searchHeading')}</h3>
+    <Knowledge/>
+  </section>;
 }
 
 export function CopyConfiguration({value,label}){

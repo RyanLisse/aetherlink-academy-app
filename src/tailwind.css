@@ -1,0 +1,38 @@
+/*
+ * AET-120 — Tailwind entry for shadcn/ui + AI Elements.
+ *
+ * Loaded *before* src/style.css on purpose: preflight is off (tailwind.config.mjs) and the
+ * hand-written Academy sheet stays the higher-priority source for anything it already styles.
+ * Utilities still beat bare element selectors (`button{}`, `input{}`), which is exactly the
+ * coexistence we want: generated components look like shadcn, the Academy shell is untouched.
+ */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* shadcn radius + the two semantic colours the Academy sheet never named. */
+    --radius: 9px;
+    --danger: #c17b55;
+    --danger-fg: #f6ded2;
+    --success: #45cba2;
+  }
+  :root[data-theme='light'] {
+    --danger: #8a3d15;
+    --danger-fg: #fff;
+    --success: #0d7b5c;
+  }
+
+  /*
+   * Preflight normally supplies `border-style: solid` for every element so Tailwind's
+   * `border` (width-only) utility renders. Instead of resetting the whole document we scope
+   * it to generated components: their own `[data-slot]` markers plus `.academy-ui` panels.
+   */
+  [data-slot],
+  [data-slot] *,
+  .academy-ui,
+  .academy-ui * {
+    border-style: solid;
+  }
+}
