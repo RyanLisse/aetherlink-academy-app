@@ -1,4 +1,4 @@
-import React,{useEffect,useState,useRef,useCallback} from 'react';
+import React,{useEffect,useState,useRef,useCallback,lazy,Suspense} from 'react';
 import {createRoot} from 'react-dom/client';
 import {Library,Users,BookOpen,Compass,Target,Sparkles,ClipboardCheck,Sun,Moon,ArrowRight,Clock,Play,Pause,RotateCw,Shuffle,HelpCircle,Check,LogOut,Copy,FileText,ExternalLink,Presentation,FlaskConical,X,LayoutGrid,Link,Columns3,Plus,Download,Award,ListOrdered,MessageSquare,Mail,StickyNote,Type,Wrench,MoreHorizontal} from 'lucide-react';
 import {api,authApi,getToken,getParticipantAccess,saveParticipantAccess,forgetParticipantAccess,participantAccessUrl,saveSession} from './api';
@@ -604,4 +604,5 @@ function Board({room,action,busy,onBoard}){
     {board&&<><div className="document-status" data-testid="board-sync"><i/>{t(closed&&sync==='synced'?'board.sync.readonly':'board.sync.'+sync)}</div><div className="board-columns">{columns.map((column,index)=><section className="board-column" key={index} aria-label={column.title}><h3>{column.title}<span>{column.cards.length}</span></h3><ul>{column.cards.map((card,cardIndex)=><li key={cardIndex}>{card}</li>)}</ul>{!column.cards.length&&<p className="muted">{t('board.noCards')}</p>}{!closed&&<form onSubmit={event=>add(event,index)}><label className="sr-only" htmlFor={'card-'+index}>{t('board.addLabel',{column:column.title})}</label><textarea id={'card-'+index} ref={index===0?firstCard:undefined} rows={2} maxLength={280} value={drafts[index]||''} placeholder={tool==='text'?t('board.placeholderText'):t('board.placeholder')} onChange={event=>setDrafts(current=>({...current,[index]:event.target.value}))} onKeyDown={event=>{if(event.key==='Enter'&&!event.shiftKey)add(event,index);}}/><button type="submit" disabled={sync!=='synced'||!(drafts[index]||'').trim()}><Plus size={15}/>{t('board.add')}</button></form>}</section>)}</div><div className="document-foot"><span>{t(closed?'board.footClosed':'board.footOpen')}</span><small>{t('board.columnsPlaceholder')}</small></div></>}
   </section>;
 }
-createRoot(document.getElementById('root')).render(<I18nProvider><App/></I18nProvider>);
+const LearnCourse=lazy(()=>import('./learn-course').then(module=>({default:module.LearnCourse})));
+createRoot(document.getElementById('root')).render(<I18nProvider>{new URLSearchParams(location.search).has('learn')?<Suspense fallback={<p role="status">Loading course…</p>}><LearnCourse/></Suspense>:<App/>}</I18nProvider>);

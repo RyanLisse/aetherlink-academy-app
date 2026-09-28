@@ -1,0 +1,7 @@
+.official-docs{margin:24px 0;padding:16px 0;border-block:1px solid var(--border);font-size:13px}
+.official-docs summary{cursor:pointer;font-weight:600;color:var(--text)}
+.official-docs p{color:var(--muted);margin:12px 0}
+.official-docs ul{padding-left:20px}
+.official-docs li{margin:8px 0}
+.official-docs a{color:var(--cyan);text-underline-offset:3px}
+.official-docs small{display:block;color:var(--muted);margin-top:12px}

@@ -1,0 +1,1514 @@
+{
+  "title": "Learn Claude Code English content import",
+  "source": "https://github.com/shareAI-lab/learn-claude-code",
+  "revision": "ce8f9f186058939da54c9d6fead78dfb5d0fd6c3",
+  "license": "MIT",
+  "licenseUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/LICENSE",
+  "selection": "English educational content, examples, diagrams, skills, and web course data; translated ja/zh files and application implementation are excluded.",
+  "counts": {
+    "canonicalChapters": 17,
+    "archivedEnglishChapters": 12,
+    "referenceDocuments": 8,
+    "importedFiles": 214
+  },
+  "files": [
+    {
+      "path": ".env.example",
+      "url": "/learn-claude-code/files/.env.example",
+      "bytes": 2945,
+      "sha256": "491e0eab6cc6acb713bc9d4c461715cc4da058d2c8bab649c82e404f428ed067",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/.env.example"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "url": "/learn-claude-code/files/CONTRIBUTING.md",
+      "bytes": 2940,
+      "sha256": "5ccb9d7cecd111fbe4353c1b0c02442253ade22eb75c5f93bf7886aa11917063",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/CONTRIBUTING.md"
+    },
+    {
+      "path": "LICENSE",
+      "url": "/learn-claude-code/files/LICENSE",
+      "bytes": 1068,
+      "sha256": "204ff5ee216c8f895268a23b66d959f82aa4d868e871e0690fbf2844eff8a26b",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/LICENSE"
+    },
+    {
+      "path": "README.md",
+      "url": "/learn-claude-code/files/README.md",
+      "bytes": 25596,
+      "sha256": "dd04e477feecf3c186ff9e97db12b26af3e0dfb0320f174b593463feb837998f",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/README.md"
+    },
+    {
+      "path": "agents/__init__.py",
+      "url": "/learn-claude-code/files/agents/__init__.py",
+      "bytes": 203,
+      "sha256": "13c7c74a2105c252e981134bf850182958655c688a66d2e07adf4f9322d2cd0d",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/agents/__init__.py"
+    },
+    {
+      "path": "agents/s01_agent_loop.py",
+      "url": "/learn-claude-code/files/agents/s01_agent_loop.py",
+      "bytes": 4167,
+      "sha256": "917236e90da9ff57d9127bab48fad93321ef757fd9fbf39be7538915ad44790b",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/agents/s01_agent_loop.py"
+    },
+    {
+      "path": "agents/s02_tool_use.py",
+      "url": "/learn-claude-code/files/agents/s02_tool_use.py",
+      "bytes": 5946,
+      "sha256": "f6bfa457001ceaa5c89ad62451944254b56524ce811b99af1f540501fc820684",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/agents/s02_tool_use.py"
+    },
+    {
+      "path": "agents/s03_todo_write.py",
+      "url": "/learn-claude-code/files/agents/s03_todo_write.py",
+      "bytes": 8826,
+      "sha256": "03f33e3506174c57a0b9297a56091368de26d5ccb1a5993e614922f1bb8fd7bb",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/agents/s03_todo_write.py"
+    },
+    {
+      "path": "agents/s04_subagent.py",
+      "url": "/learn-claude-code/files/agents/s04_subagent.py",
+      "bytes": 8195,
+      "sha256": "02bda349db246a5d6037c56871806807653d982f064c8d77d05c2cda9aae7975",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/agents/s04_subagent.py"
+    },
+    {
+      "path": "agents/s05_skill_loading.py",
+      "url": "/learn-claude-code/files/agents/s05_skill_loading.py",
+      "bytes": 8839,
+      "sha256": "041daaa51fca980192e7936ed72da8cff3299f4b3bacac36a0435a08e60af844",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/agents/s05_skill_loading.py"
+    },
+    {
+      "path": "agents/s06_context_compact.py",
+      "url": "/learn-claude-code/files/agents/s06_context_compact.py",
+      "bytes": 10760,
+      "sha256": "4258eb737500b5ab64edafca0a0cd59359f7a65b97fe7f9b822777fd24f6c606",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/agents/s06_context_compact.py"
+    },
+    {
+      "path": "agents/s07_task_system.py",
+      "url": "/learn-claude-code/files/agents/s07_task_system.py",
+      "bytes": 10474,
+      "sha256": "3a7b79a66a4ce652c00999c5e4af7a9d6529fad115f57c0939997e331d93bb71",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/agents/s07_task_system.py"
+    },
+    {
+      "path": "agents/s08_background_tasks.py",
+      "url": "/learn-claude-code/files/agents/s08_background_tasks.py",
+      "bytes": 10539,
+      "sha256": "9df2aca06b17f3b0b5ee80722204de19c73b795bf05762ac9545943f20efd682",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/agents/s08_background_tasks.py"
+    },
+    {
+      "path": "agents/s09_agent_teams.py",
+      "url": "/learn-claude-code/files/agents/s09_agent_teams.py",
+      "bytes": 17271,
+      "sha256": "219a4699a076e7f41c3d900c2a4408b54f61351d36231bff434efb2597466520",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/agents/s09_agent_teams.py"
+    },
+    {
+      "path": "agents/s10_team_protocols.py",
+      "url": "/learn-claude-code/files/agents/s10_team_protocols.py",
+      "bytes": 21464,
+      "sha256": "edff177cbc6fad7d187883aa82249f29f74e31e267db84dddefc426864ad7064",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/agents/s10_team_protocols.py"
+    },
+    {
+      "path": "agents/s11_autonomous_agents.py",
+      "url": "/learn-claude-code/files/agents/s11_autonomous_agents.py",
+      "bytes": 25448,
+      "sha256": "30e5a8f542545a5c2a6c314fe40409905dc22d41b57ce76515a8cfcc7099a532",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/agents/s11_autonomous_agents.py"
+    },
+    {
+      "path": "agents/s12_worktree_task_isolation.py",
+      "url": "/learn-claude-code/files/agents/s12_worktree_task_isolation.py",
+      "bytes": 26392,
+      "sha256": "0f9ec66de668c1c55ab70150b1ab2d98b05b66b1b2397971add212b4959b8f9f",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/agents/s12_worktree_task_isolation.py"
+    },
+    {
+      "path": "agents/s_full.py",
+      "url": "/learn-claude-code/files/agents/s_full.py",
+      "bytes": 37785,
+      "sha256": "53f185b95025e702d9796cd3cf654ed877c475433ddfa7e7dc99537643f5b500",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/agents/s_full.py"
+    },
+    {
+      "path": "docs/en/s01-the-agent-loop.md",
+      "url": "/learn-claude-code/files/docs/en/s01-the-agent-loop.md",
+      "bytes": 3583,
+      "sha256": "6d808563ea59cbe56a03155a953f9a0c4414919f2a74904c8b51098bd24232e8",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s01-the-agent-loop.md"
+    },
+    {
+      "path": "docs/en/s02-tool-use.md",
+      "url": "/learn-claude-code/files/docs/en/s02-tool-use.md",
+      "bytes": 3423,
+      "sha256": "3c90b14bb68fabd7102d3902297912337bb8fb0ac83e006358389b6e0bd7624b",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s02-tool-use.md"
+    },
+    {
+      "path": "docs/en/s03-todo-write.md",
+      "url": "/learn-claude-code/files/docs/en/s03-todo-write.md",
+      "bytes": 3318,
+      "sha256": "be247a2e8d71bc05aeb72178364e96808c418d8e684b39dda243678f9fab9237",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s03-todo-write.md"
+    },
+    {
+      "path": "docs/en/s04-subagent.md",
+      "url": "/learn-claude-code/files/docs/en/s04-subagent.md",
+      "bytes": 3529,
+      "sha256": "69ba5b6445378d7c246b57254869a9215f34b78f1f32fc301fe559f524258bf3",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s04-subagent.md"
+    },
+    {
+      "path": "docs/en/s05-skill-loading.md",
+      "url": "/learn-claude-code/files/docs/en/s05-skill-loading.md",
+      "bytes": 3701,
+      "sha256": "910ccb443bba7ded5470306c0ac9405658dd44e5e4535b9b6b6257cf67eba6b3",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s05-skill-loading.md"
+    },
+    {
+      "path": "docs/en/s06-context-compact.md",
+      "url": "/learn-claude-code/files/docs/en/s06-context-compact.md",
+      "bytes": 4316,
+      "sha256": "23c6d49a9818fa8a4f3de291bdb3f46e80956f3e0375981bdf871a82e0a19e5f",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s06-context-compact.md"
+    },
+    {
+      "path": "docs/en/s07-task-system.md",
+      "url": "/learn-claude-code/files/docs/en/s07-task-system.md",
+      "bytes": 5163,
+      "sha256": "f66d205e4cd71f0cc9424fc10135bc819144b72a9f8470f6ea95549ede4ecc60",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s07-task-system.md"
+    },
+    {
+      "path": "docs/en/s08-background-tasks.md",
+      "url": "/learn-claude-code/files/docs/en/s08-background-tasks.md",
+      "bytes": 3638,
+      "sha256": "1d0f8242b213bfd543b43448a9010def49abde0daf16d447a19dd61b2c34b69a",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s08-background-tasks.md"
+    },
+    {
+      "path": "docs/en/s09-agent-teams.md",
+      "url": "/learn-claude-code/files/docs/en/s09-agent-teams.md",
+      "bytes": 4508,
+      "sha256": "f1e7255ee57b04e65b776b9d7be0983facaf9f021195cc2dc2f35f76e11c02ac",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s09-agent-teams.md"
+    },
+    {
+      "path": "docs/en/s10-team-protocols.md",
+      "url": "/learn-claude-code/files/docs/en/s10-team-protocols.md",
+      "bytes": 3964,
+      "sha256": "fb6e97971abfdaed132b234120fb74d1a5a57c894c0c1a59cf64d398ee1c6791",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s10-team-protocols.md"
+    },
+    {
+      "path": "docs/en/s11-autonomous-agents.md",
+      "url": "/learn-claude-code/files/docs/en/s11-autonomous-agents.md",
+      "bytes": 4723,
+      "sha256": "68db66992a6de7d05c7117bcfb3acf07ab0dabe8aab0de405600b45e343dff4b",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s11-autonomous-agents.md"
+    },
+    {
+      "path": "docs/en/s12-worktree-task-isolation.md",
+      "url": "/learn-claude-code/files/docs/en/s12-worktree-task-isolation.md",
+      "bytes": 5017,
+      "sha256": "9ed217f22ef7862cb590463247471ae6860d299ada3201ae2b79b38296626909",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s12-worktree-task-isolation.md"
+    },
+    {
+      "path": "requirements.txt",
+      "url": "/learn-claude-code/files/requirements.txt",
+      "bytes": 50,
+      "sha256": "afb62cc77dcf2c0e33a6c9ffb5cd0e416dfce9238e98356256898651aab7057c",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/requirements.txt"
+    },
+    {
+      "path": "s01_agent_loop/README.md",
+      "url": "/learn-claude-code/files/s01_agent_loop/README.md",
+      "bytes": 4832,
+      "sha256": "6d43508a6898ed4cf1176443ff8518d999d1041e887f40c89854e175651c9d10",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s01_agent_loop/README.md"
+    },
+    {
+      "path": "s01_agent_loop/code.py",
+      "url": "/learn-claude-code/files/s01_agent_loop/code.py",
+      "bytes": 4796,
+      "sha256": "abe71cd04d1b63aaf6f4e7c6220aa831779d25fd00f6eec1abd3f12c742b0d16",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s01_agent_loop/code.py"
+    },
+    {
+      "path": "s01_agent_loop/images/agent-loop.en.svg",
+      "url": "/learn-claude-code/files/s01_agent_loop/images/agent-loop.en.svg",
+      "bytes": 5535,
+      "sha256": "72fa276fe3f270dc0cd3e113d840b8dc2e587c4d7c646eba3d50de90488d1101",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s01_agent_loop/images/agent-loop.en.svg"
+    },
+    {
+      "path": "s01_agent_loop/images/agent-loop.svg",
+      "url": "/learn-claude-code/files/s01_agent_loop/images/agent-loop.svg",
+      "bytes": 5593,
+      "sha256": "7c7576798ae6f81defbbf5c384cd756701834f238dd68aef2e282e4b6dcd5f2d",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s01_agent_loop/images/agent-loop.svg"
+    },
+    {
+      "path": "s02_tool_use/README.md",
+      "url": "/learn-claude-code/files/s02_tool_use/README.md",
+      "bytes": 5081,
+      "sha256": "39617883abfc0530e32d948399736554d115431478783e7d57d0740e262bdcf4",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s02_tool_use/README.md"
+    },
+    {
+      "path": "s02_tool_use/code.py",
+      "url": "/learn-claude-code/files/s02_tool_use/code.py",
+      "bytes": 7599,
+      "sha256": "fa6fdaa4e75ae4304507a96cb22adf98854f115509bec2ecc400f31c202ff19e",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s02_tool_use/code.py"
+    },
+    {
+      "path": "s02_tool_use/images/tool-dispatch.en.svg",
+      "url": "/learn-claude-code/files/s02_tool_use/images/tool-dispatch.en.svg",
+      "bytes": 6790,
+      "sha256": "1ae8a04810be84696e332613af3747ce605942357e0cc7f36dabf8f420b1aed3",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s02_tool_use/images/tool-dispatch.en.svg"
+    },
+    {
+      "path": "s02_tool_use/images/tool-dispatch.svg",
+      "url": "/learn-claude-code/files/s02_tool_use/images/tool-dispatch.svg",
+      "bytes": 6783,
+      "sha256": "aec47fc21e5b2e3124d9c872e1af035ce3a8e29162947e7575c93b001da6816c",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s02_tool_use/images/tool-dispatch.svg"
+    },
+    {
+      "path": "s03_permission/README.md",
+      "url": "/learn-claude-code/files/s03_permission/README.md",
+      "bytes": 5844,
+      "sha256": "484285c232481cfb8e26be5da9976f8f36b792c0870b919b507b183f2e63c194",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s03_permission/README.md"
+    },
+    {
+      "path": "s03_permission/code.py",
+      "url": "/learn-claude-code/files/s03_permission/code.py",
+      "bytes": 9788,
+      "sha256": "6854e6b2ad0b5343a8abc0213e80c010cd7c39dd501c396797e1aecb6c6c1a80",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s03_permission/code.py"
+    },
+    {
+      "path": "s03_permission/images/permission-overview.en.svg",
+      "url": "/learn-claude-code/files/s03_permission/images/permission-overview.en.svg",
+      "bytes": 6236,
+      "sha256": "c099deba8de52cc4f9c0ed66cb4e7309dd3a5432b85e3c54e9293031f49f1d48",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s03_permission/images/permission-overview.en.svg"
+    },
+    {
+      "path": "s03_permission/images/permission-overview.svg",
+      "url": "/learn-claude-code/files/s03_permission/images/permission-overview.svg",
+      "bytes": 6258,
+      "sha256": "b6d73c093972ec4c97f705e4ec24a31ba16c7b3d6498d269721a87823f53c070",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s03_permission/images/permission-overview.svg"
+    },
+    {
+      "path": "s03_permission/images/permission-pipeline.en.svg",
+      "url": "/learn-claude-code/files/s03_permission/images/permission-pipeline.en.svg",
+      "bytes": 4159,
+      "sha256": "857574ce16a466e633304fefbd3f8ccea3b632397109adedcd75bf2d6e72c0b1",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s03_permission/images/permission-pipeline.en.svg"
+    },
+    {
+      "path": "s03_permission/images/permission-pipeline.svg",
+      "url": "/learn-claude-code/files/s03_permission/images/permission-pipeline.svg",
+      "bytes": 4236,
+      "sha256": "fc69aa4106f45d39734b47fa29d4e01b43aa9c1998d3a44f884bd8a888f1dbe3",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s03_permission/images/permission-pipeline.svg"
+    },
+    {
+      "path": "s04_hooks/README.md",
+      "url": "/learn-claude-code/files/s04_hooks/README.md",
+      "bytes": 8223,
+      "sha256": "a2d47610398dc2ccc31d063443e5ca4d0505695445b351af9daa4a0222943b71",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s04_hooks/README.md"
+    },
+    {
+      "path": "s04_hooks/code.py",
+      "url": "/learn-claude-code/files/s04_hooks/code.py",
+      "bytes": 10708,
+      "sha256": "5a3b8e174390e388d9da010aa04bf5094090f62ceb2862784bf2baf4e1c4d593",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s04_hooks/code.py"
+    },
+    {
+      "path": "s04_hooks/images/hooks-overview.en.svg",
+      "url": "/learn-claude-code/files/s04_hooks/images/hooks-overview.en.svg",
+      "bytes": 6752,
+      "sha256": "15fbacc829b3a1725c76064ccad6b38e10739e2924772aa20f73294beab005aa",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s04_hooks/images/hooks-overview.en.svg"
+    },
+    {
+      "path": "s04_hooks/images/hooks-overview.svg",
+      "url": "/learn-claude-code/files/s04_hooks/images/hooks-overview.svg",
+      "bytes": 6747,
+      "sha256": "d5645a4312727b003fc4904422ba81723bb8c448d9df9f9c4fd8b776c8515b94",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s04_hooks/images/hooks-overview.svg"
+    },
+    {
+      "path": "s05_todo_write/README.md",
+      "url": "/learn-claude-code/files/s05_todo_write/README.md",
+      "bytes": 5504,
+      "sha256": "c17cc19a0f95e47fd56da0e9912d6057800faedaab4017bab26d4a445e354f26",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s05_todo_write/README.md"
+    },
+    {
+      "path": "s05_todo_write/code.py",
+      "url": "/learn-claude-code/files/s05_todo_write/code.py",
+      "bytes": 13961,
+      "sha256": "cee9aa4cbc5682658c9708f784e32abc06cf1b778c43da26d0355342e38a0593",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s05_todo_write/code.py"
+    },
+    {
+      "path": "s05_todo_write/example/hello.py",
+      "url": "/learn-claude-code/files/s05_todo_write/example/hello.py",
+      "bytes": 85,
+      "sha256": "ed15cd965a373932041088f6a9cac7058cc2e55ffe26da730013fd9643ce8731",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s05_todo_write/example/hello.py"
+    },
+    {
+      "path": "s05_todo_write/images/todo-overview.en.svg",
+      "url": "/learn-claude-code/files/s05_todo_write/images/todo-overview.en.svg",
+      "bytes": 5710,
+      "sha256": "8eb3c70e1d86db9c00e5021b41c5cb77dbbf481f596136dcad508710216d4d8e",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s05_todo_write/images/todo-overview.en.svg"
+    },
+    {
+      "path": "s05_todo_write/images/todo-overview.svg",
+      "url": "/learn-claude-code/files/s05_todo_write/images/todo-overview.svg",
+      "bytes": 5736,
+      "sha256": "1282ae19d54747af6c9ed9ab666da6f5096869c73d801115907baa65ad4639f3",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s05_todo_write/images/todo-overview.svg"
+    },
+    {
+      "path": "s06_subagent/README.md",
+      "url": "/learn-claude-code/files/s06_subagent/README.md",
+      "bytes": 4583,
+      "sha256": "faa50d0945a5ec3630c15bfac432d27616320282e09aaa126ac808ca8cbe8211",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s06_subagent/README.md"
+    },
+    {
+      "path": "s06_subagent/code.py",
+      "url": "/learn-claude-code/files/s06_subagent/code.py",
+      "bytes": 12899,
+      "sha256": "a3624441fa658ea61881e2181accb43950972f459f36739b28857cf86fe43cfe",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s06_subagent/code.py"
+    },
+    {
+      "path": "s06_subagent/images/subagent-overview.en.svg",
+      "url": "/learn-claude-code/files/s06_subagent/images/subagent-overview.en.svg",
+      "bytes": 8262,
+      "sha256": "9bbe119546f9a15f9b086ef152b1b89cf3b9fda75a2114f273c6006d17ac8623",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s06_subagent/images/subagent-overview.en.svg"
+    },
+    {
+      "path": "s06_subagent/images/subagent-overview.svg",
+      "url": "/learn-claude-code/files/s06_subagent/images/subagent-overview.svg",
+      "bytes": 8330,
+      "sha256": "655ad317e0537aafaac43e746ffbcf8be145989b63720da2eb0222fc1c4dd9c5",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s06_subagent/images/subagent-overview.svg"
+    },
+    {
+      "path": "s07_skill_loading/README.md",
+      "url": "/learn-claude-code/files/s07_skill_loading/README.md",
+      "bytes": 5185,
+      "sha256": "441eccdc0b62b04346e2abe11057b8d658c656d21803a908c034b1a8bddf9e8f",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s07_skill_loading/README.md"
+    },
+    {
+      "path": "s07_skill_loading/code.py",
+      "url": "/learn-claude-code/files/s07_skill_loading/code.py",
+      "bytes": 13663,
+      "sha256": "5f1b74246274b277ee47d239400c6ce70d92d5f8234193433f293a4dd004546a",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s07_skill_loading/code.py"
+    },
+    {
+      "path": "s07_skill_loading/images/skill-overview.en.svg",
+      "url": "/learn-claude-code/files/s07_skill_loading/images/skill-overview.en.svg",
+      "bytes": 4765,
+      "sha256": "0908ede8ce1b82124d938273171ae5d3fd4a2e4cd1cf63b7d42344553aeb9d45",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s07_skill_loading/images/skill-overview.en.svg"
+    },
+    {
+      "path": "s07_skill_loading/images/skill-overview.svg",
+      "url": "/learn-claude-code/files/s07_skill_loading/images/skill-overview.svg",
+      "bytes": 4778,
+      "sha256": "b3d41062948810e63f313e09f1766f70babf7e60264c265839f390ef910561d9",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s07_skill_loading/images/skill-overview.svg"
+    },
+    {
+      "path": "s08_context_compact/README.md",
+      "url": "/learn-claude-code/files/s08_context_compact/README.md",
+      "bytes": 14776,
+      "sha256": "bbe45fd0c1c1353188e10273ff122ab979f77d4591f498a27817fe66e84f25ee",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s08_context_compact/README.md"
+    },
+    {
+      "path": "s08_context_compact/code.py",
+      "url": "/learn-claude-code/files/s08_context_compact/code.py",
+      "bytes": 24096,
+      "sha256": "4eeedf2e3edeb526b88830d5ffc4c6cf928fe5a8178885a389f91a2eb88b1e15",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s08_context_compact/code.py"
+    },
+    {
+      "path": "s08_context_compact/images/auto-compact.en.svg",
+      "url": "/learn-claude-code/files/s08_context_compact/images/auto-compact.en.svg",
+      "bytes": 5828,
+      "sha256": "72cb8af4f69e48cd5d8168051526fa5bbb23e5dca1488b1877043bb6e1156d87",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s08_context_compact/images/auto-compact.en.svg"
+    },
+    {
+      "path": "s08_context_compact/images/auto-compact.svg",
+      "url": "/learn-claude-code/files/s08_context_compact/images/auto-compact.svg",
+      "bytes": 5785,
+      "sha256": "6991b4cc41547d370ac069d7eaa1cb88568605117db846a8e425621afef532fb",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s08_context_compact/images/auto-compact.svg"
+    },
+    {
+      "path": "s08_context_compact/images/compact-overview.en.svg",
+      "url": "/learn-claude-code/files/s08_context_compact/images/compact-overview.en.svg",
+      "bytes": 9194,
+      "sha256": "79ac4213fa3df821b0920d958a27cb3bfc24eed6eadcf30021bd2583c1dc04c9",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s08_context_compact/images/compact-overview.en.svg"
+    },
+    {
+      "path": "s08_context_compact/images/compact-overview.svg",
+      "url": "/learn-claude-code/files/s08_context_compact/images/compact-overview.svg",
+      "bytes": 9283,
+      "sha256": "8003ebe488d04d0bf7d87605938200e2596dbb3552a6f7639a7d0a132dc084b7",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s08_context_compact/images/compact-overview.svg"
+    },
+    {
+      "path": "s08_context_compact/images/compaction-layers.en.svg",
+      "url": "/learn-claude-code/files/s08_context_compact/images/compaction-layers.en.svg",
+      "bytes": 6773,
+      "sha256": "ec62bdda2cf76e852709872d012e6be71258a67c3ff65b66e5f1b298767256d5",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s08_context_compact/images/compaction-layers.en.svg"
+    },
+    {
+      "path": "s08_context_compact/images/compaction-layers.svg",
+      "url": "/learn-claude-code/files/s08_context_compact/images/compaction-layers.svg",
+      "bytes": 6795,
+      "sha256": "5e8c4e53c9f001732e8216f7e454f64ce7f6fb54ef88936e7d1cf9ba38e8f05a",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s08_context_compact/images/compaction-layers.svg"
+    },
+    {
+      "path": "s08_context_compact/images/layer1-budget.en.svg",
+      "url": "/learn-claude-code/files/s08_context_compact/images/layer1-budget.en.svg",
+      "bytes": 3616,
+      "sha256": "e8afd28edaeceadd2a5aa72def284f3b27215717957715752d0e36342d0a1cdc",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s08_context_compact/images/layer1-budget.en.svg"
+    },
+    {
+      "path": "s08_context_compact/images/layer1-budget.svg",
+      "url": "/learn-claude-code/files/s08_context_compact/images/layer1-budget.svg",
+      "bytes": 3602,
+      "sha256": "6d07b074a75903e4e7a2702e6b05a666e30f9858c0b207ff2a04c15e14863ada",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s08_context_compact/images/layer1-budget.svg"
+    },
+    {
+      "path": "s08_context_compact/images/micro-compact.en.svg",
+      "url": "/learn-claude-code/files/s08_context_compact/images/micro-compact.en.svg",
+      "bytes": 4443,
+      "sha256": "a107ae22d3632b1f59e875f4087f88cbf440eab9b738b8e1be13690cee9ae108",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s08_context_compact/images/micro-compact.en.svg"
+    },
+    {
+      "path": "s08_context_compact/images/micro-compact.svg",
+      "url": "/learn-claude-code/files/s08_context_compact/images/micro-compact.svg",
+      "bytes": 4425,
+      "sha256": "853b08e41b32556c77d09ac7ab5e552b6de02477fe27f21e2a66490366ccb8d2",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s08_context_compact/images/micro-compact.svg"
+    },
+    {
+      "path": "s09_memory/README.md",
+      "url": "/learn-claude-code/files/s09_memory/README.md",
+      "bytes": 8631,
+      "sha256": "9dd803872c333fdfd4ec6418c580af53236d3a8496b332c02b91ea34f2cbbe49",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s09_memory/README.md"
+    },
+    {
+      "path": "s09_memory/code.py",
+      "url": "/learn-claude-code/files/s09_memory/code.py",
+      "bytes": 27544,
+      "sha256": "b36a04297641b06a228305f4298366b1ea58894b17276ecb924116dcc2dec4e3",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s09_memory/code.py"
+    },
+    {
+      "path": "s09_memory/images/memory-overview.en.svg",
+      "url": "/learn-claude-code/files/s09_memory/images/memory-overview.en.svg",
+      "bytes": 7220,
+      "sha256": "6e2a8456b888fd88e22591d356a650b2b8fa0c5f0b4f14b7b3736fd4f3f32be4",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s09_memory/images/memory-overview.en.svg"
+    },
+    {
+      "path": "s09_memory/images/memory-overview.svg",
+      "url": "/learn-claude-code/files/s09_memory/images/memory-overview.svg",
+      "bytes": 7207,
+      "sha256": "29a65e1be5c23626e2d10dbe248413fdcec68a24883110554b40539541db79fc",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s09_memory/images/memory-overview.svg"
+    },
+    {
+      "path": "s09_memory/images/memory-subsystems.en.svg",
+      "url": "/learn-claude-code/files/s09_memory/images/memory-subsystems.en.svg",
+      "bytes": 4624,
+      "sha256": "852ca88b14cebfe23bb10a798124af67e717d647b1b7010e492b394abceb5b93",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s09_memory/images/memory-subsystems.en.svg"
+    },
+    {
+      "path": "s09_memory/images/memory-subsystems.svg",
+      "url": "/learn-claude-code/files/s09_memory/images/memory-subsystems.svg",
+      "bytes": 4623,
+      "sha256": "27279c8efb646b9ea7eefe86abee932e2bf18dee4f81dbd45adf45627c00dec5",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s09_memory/images/memory-subsystems.svg"
+    },
+    {
+      "path": "s10_task_system/README.md",
+      "url": "/learn-claude-code/files/s10_task_system/README.md",
+      "bytes": 9368,
+      "sha256": "23baa86316deb68ce55655847294290f241a6b1764a0b2b453784aaf80c7ae70",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s10_task_system/README.md"
+    },
+    {
+      "path": "s10_task_system/code.py",
+      "url": "/learn-claude-code/files/s10_task_system/code.py",
+      "bytes": 20726,
+      "sha256": "fa5c52f1bb22c8a24eb21fc02ee8e9d012e9487348f5ea137234f4a06028c865",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s10_task_system/code.py"
+    },
+    {
+      "path": "s10_task_system/images/task-dag.en.svg",
+      "url": "/learn-claude-code/files/s10_task_system/images/task-dag.en.svg",
+      "bytes": 4043,
+      "sha256": "c689db27e1bfd46c07a07fa5cf89e79295d41cba4a639cf5790205784d22cd84",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s10_task_system/images/task-dag.en.svg"
+    },
+    {
+      "path": "s10_task_system/images/task-dag.svg",
+      "url": "/learn-claude-code/files/s10_task_system/images/task-dag.svg",
+      "bytes": 4042,
+      "sha256": "888923ee0be24bfe390941a44c6fd03e09faa003b4b587cd827fcfdbd5e5e7b8",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s10_task_system/images/task-dag.svg"
+    },
+    {
+      "path": "s10_task_system/images/task-system-overview.en.svg",
+      "url": "/learn-claude-code/files/s10_task_system/images/task-system-overview.en.svg",
+      "bytes": 6926,
+      "sha256": "3216b6303f2e217e2d0e91db6a99e82db11abf2ab8c17559aa03676db351439f",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s10_task_system/images/task-system-overview.en.svg"
+    },
+    {
+      "path": "s10_task_system/images/task-system-overview.svg",
+      "url": "/learn-claude-code/files/s10_task_system/images/task-system-overview.svg",
+      "bytes": 6921,
+      "sha256": "a13b0caeeab9c072f4e3c8ae1901d3ce69fb3ae4e3da5076b96ef1d03f587bf0",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s10_task_system/images/task-system-overview.svg"
+    },
+    {
+      "path": "s11_background_tasks/README.md",
+      "url": "/learn-claude-code/files/s11_background_tasks/README.md",
+      "bytes": 7395,
+      "sha256": "eaac859e963538a7c0060c84daf60d658f241bc1f66708308103ece97d2af8b2",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s11_background_tasks/README.md"
+    },
+    {
+      "path": "s11_background_tasks/code.py",
+      "url": "/learn-claude-code/files/s11_background_tasks/code.py",
+      "bytes": 17723,
+      "sha256": "2942a4adccf981a57557fe77572eac74b27d97fc5c7e3105348e2129d113e0dc",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s11_background_tasks/code.py"
+    },
+    {
+      "path": "s11_background_tasks/images/background-tasks-overview.en.svg",
+      "url": "/learn-claude-code/files/s11_background_tasks/images/background-tasks-overview.en.svg",
+      "bytes": 7656,
+      "sha256": "037db8cbe769f2f1c784d74b72415219b1f32e4482622cf7b1445d5f2a00dc08",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s11_background_tasks/images/background-tasks-overview.en.svg"
+    },
+    {
+      "path": "s11_background_tasks/images/background-tasks-overview.svg",
+      "url": "/learn-claude-code/files/s11_background_tasks/images/background-tasks-overview.svg",
+      "bytes": 7609,
+      "sha256": "ee50ca9a3e8f2aba6c50c80962a73ac7634795cd250e898b49aa4ac2613e831c",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s11_background_tasks/images/background-tasks-overview.svg"
+    },
+    {
+      "path": "s12_cron_scheduler/README.md",
+      "url": "/learn-claude-code/files/s12_cron_scheduler/README.md",
+      "bytes": 6245,
+      "sha256": "ece56ede2d2cf1d3eaa8e9342f977c43ceee144456d123d7c8014635250619be",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s12_cron_scheduler/README.md"
+    },
+    {
+      "path": "s12_cron_scheduler/code.py",
+      "url": "/learn-claude-code/files/s12_cron_scheduler/code.py",
+      "bytes": 25439,
+      "sha256": "51302e94bb5b05f4f9813c17754e5b0aef530962096e266dc73c7be2f26cb9f0",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s12_cron_scheduler/code.py"
+    },
+    {
+      "path": "s12_cron_scheduler/images/cron-scheduler-overview.en.svg",
+      "url": "/learn-claude-code/files/s12_cron_scheduler/images/cron-scheduler-overview.en.svg",
+      "bytes": 9043,
+      "sha256": "0e42358f1e28f08e29ddb9d76452497f407559ddbbbcb17670b8f647f9e4cafb",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s12_cron_scheduler/images/cron-scheduler-overview.en.svg"
+    },
+    {
+      "path": "s12_cron_scheduler/images/cron-scheduler-overview.svg",
+      "url": "/learn-claude-code/files/s12_cron_scheduler/images/cron-scheduler-overview.svg",
+      "bytes": 9012,
+      "sha256": "5d6ce9d058c872d8eefd605b30ec64893fef81a52dbea20327c0112a54b0dd51",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s12_cron_scheduler/images/cron-scheduler-overview.svg"
+    },
+    {
+      "path": "s13_agent_teams/README.md",
+      "url": "/learn-claude-code/files/s13_agent_teams/README.md",
+      "bytes": 20302,
+      "sha256": "b74581d695eb1715291dfa6b823dd69f955908d5f86e93e14dc21d8cac220ded",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s13_agent_teams/README.md"
+    },
+    {
+      "path": "s13_agent_teams/code.py",
+      "url": "/learn-claude-code/files/s13_agent_teams/code.py",
+      "bytes": 70961,
+      "sha256": "405dbd53657fdebc2dce8df185bb3ee19c856d108505e37359e61d96e8b3d1c4",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s13_agent_teams/code.py"
+    },
+    {
+      "path": "s13_agent_teams/images/agent-teams-overview.en.svg",
+      "url": "/learn-claude-code/files/s13_agent_teams/images/agent-teams-overview.en.svg",
+      "bytes": 8691,
+      "sha256": "3e5067217a73997634d2a777a9c0fb29d78a742a20a8a78643dafb7bae955fc2",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s13_agent_teams/images/agent-teams-overview.en.svg"
+    },
+    {
+      "path": "s13_agent_teams/images/agent-teams-overview.svg",
+      "url": "/learn-claude-code/files/s13_agent_teams/images/agent-teams-overview.svg",
+      "bytes": 8638,
+      "sha256": "650838da3f74fe207f3131f7f2495111561a770e3f739dc69632e21d244d2910",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s13_agent_teams/images/agent-teams-overview.svg"
+    },
+    {
+      "path": "s13_agent_teams/images/team-protocols-overview.en.svg",
+      "url": "/learn-claude-code/files/s13_agent_teams/images/team-protocols-overview.en.svg",
+      "bytes": 11449,
+      "sha256": "d75af2a02b4790beb30c01e0e600ad201f3950e42d0ef1eb8e5144a8171bcabb",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s13_agent_teams/images/team-protocols-overview.en.svg"
+    },
+    {
+      "path": "s13_agent_teams/images/team-protocols-overview.svg",
+      "url": "/learn-claude-code/files/s13_agent_teams/images/team-protocols-overview.svg",
+      "bytes": 11444,
+      "sha256": "ee472888233ff0fbedacbe3d8f98b70606a6689464abd797911e7fffd0d150ca",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s13_agent_teams/images/team-protocols-overview.svg"
+    },
+    {
+      "path": "s13_agent_teams/images/team-topology.en.svg",
+      "url": "/learn-claude-code/files/s13_agent_teams/images/team-topology.en.svg",
+      "bytes": 4653,
+      "sha256": "e2071b48b554392fdbd1b5ce65d779996d3d48022abc3b0419dbf020b1c91df0",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s13_agent_teams/images/team-topology.en.svg"
+    },
+    {
+      "path": "s13_agent_teams/images/team-topology.svg",
+      "url": "/learn-claude-code/files/s13_agent_teams/images/team-topology.svg",
+      "bytes": 5240,
+      "sha256": "0e10800c387237b5fddf65e9c4ec738635100bff7731fe7b80dbe662514cb715",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s13_agent_teams/images/team-topology.svg"
+    },
+    {
+      "path": "s14_mcp_plugin/README.md",
+      "url": "/learn-claude-code/files/s14_mcp_plugin/README.md",
+      "bytes": 6853,
+      "sha256": "bb8a05cda876cc5a9544e71cc9a17ade1c7ea20467261265b4f5e34952267076",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s14_mcp_plugin/README.md"
+    },
+    {
+      "path": "s14_mcp_plugin/code.py",
+      "url": "/learn-claude-code/files/s14_mcp_plugin/code.py",
+      "bytes": 18674,
+      "sha256": "a6f94c655d050a5393a38a0a279bfaed3cb48223fdbb732d4168012d79e13705",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s14_mcp_plugin/code.py"
+    },
+    {
+      "path": "s14_mcp_plugin/images/mcp-architecture.en.svg",
+      "url": "/learn-claude-code/files/s14_mcp_plugin/images/mcp-architecture.en.svg",
+      "bytes": 7834,
+      "sha256": "a3e3290b0b83108d699cd4e7061de17360cdae2c6a66813c59b787f07ee1c953",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s14_mcp_plugin/images/mcp-architecture.en.svg"
+    },
+    {
+      "path": "s14_mcp_plugin/images/mcp-architecture.svg",
+      "url": "/learn-claude-code/files/s14_mcp_plugin/images/mcp-architecture.svg",
+      "bytes": 7835,
+      "sha256": "797607aaae1dcd1b500560aa6a4937f731778d43328b412172af79b7ebdc7cef",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s14_mcp_plugin/images/mcp-architecture.svg"
+    },
+    {
+      "path": "s15_integrated_harness/README.md",
+      "url": "/learn-claude-code/files/s15_integrated_harness/README.md",
+      "bytes": 13154,
+      "sha256": "18b930080e0dcfd2de2289df469bd608d055693d943d35569bd0abaf85c708bf",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s15_integrated_harness/README.md"
+    },
+    {
+      "path": "s15_integrated_harness/code.py",
+      "url": "/learn-claude-code/files/s15_integrated_harness/code.py",
+      "bytes": 128018,
+      "sha256": "e24ee72b8c06b907a504cca46cb99b3e96618a24ad6ee07ca933724fbf27fe5a",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s15_integrated_harness/code.py"
+    },
+    {
+      "path": "s15_integrated_harness/images/system-architecture.en.svg",
+      "url": "/learn-claude-code/files/s15_integrated_harness/images/system-architecture.en.svg",
+      "bytes": 7821,
+      "sha256": "1c0be2007c8e6c5910abd4448e8456a72b1803db07f464459936800b8762667c",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s15_integrated_harness/images/system-architecture.en.svg"
+    },
+    {
+      "path": "s15_integrated_harness/images/system-architecture.svg",
+      "url": "/learn-claude-code/files/s15_integrated_harness/images/system-architecture.svg",
+      "bytes": 7977,
+      "sha256": "039fd87d8a50ce4d25884d01b1102eed663c2cf3950019f269efa8d860385a5c",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s15_integrated_harness/images/system-architecture.svg"
+    },
+    {
+      "path": "s16_workflow_runtime/README.md",
+      "url": "/learn-claude-code/files/s16_workflow_runtime/README.md",
+      "bytes": 14707,
+      "sha256": "cf1983c7b772a4838fbb5318116ae88a0c06ce5306243f120575f83c9919e9d2",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s16_workflow_runtime/README.md"
+    },
+    {
+      "path": "s16_workflow_runtime/code.py",
+      "url": "/learn-claude-code/files/s16_workflow_runtime/code.py",
+      "bytes": 32913,
+      "sha256": "c6aea09fe2abdb09681f291f44d404499c432239e68901b2753bc7c64e8d810e",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s16_workflow_runtime/code.py"
+    },
+    {
+      "path": "s16_workflow_runtime/images/workflow-runtime-overview.svg",
+      "url": "/learn-claude-code/files/s16_workflow_runtime/images/workflow-runtime-overview.svg",
+      "bytes": 9635,
+      "sha256": "8cad5dc5cffcb2d7408cd0ad3519eae382b9eea1926b6b61f979391279b97615",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s16_workflow_runtime/images/workflow-runtime-overview.svg"
+    },
+    {
+      "path": "s17_goal_loop/README.md",
+      "url": "/learn-claude-code/files/s17_goal_loop/README.md",
+      "bytes": 9905,
+      "sha256": "c07feeba8cebcc9da9aca04cc5e7d9e15450b6dc1f58af157ed81863fbd64c4a",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s17_goal_loop/README.md"
+    },
+    {
+      "path": "s17_goal_loop/code.py",
+      "url": "/learn-claude-code/files/s17_goal_loop/code.py",
+      "bytes": 30835,
+      "sha256": "ecce68f327aef9b564d41c50068d7a2a72a23ae780d81c32a0c00fd59a3d31f5",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s17_goal_loop/code.py"
+    },
+    {
+      "path": "s17_goal_loop/images/goal-loop-overview.svg",
+      "url": "/learn-claude-code/files/s17_goal_loop/images/goal-loop-overview.svg",
+      "bytes": 5869,
+      "sha256": "c1eaf0ec03d5072e39b9c763c8ca6329b89af80d84f688493e9c7e62f10bb57a",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s17_goal_loop/images/goal-loop-overview.svg"
+    },
+    {
+      "path": "skills/agent-builder/SKILL.md",
+      "url": "/learn-claude-code/files/skills/agent-builder/SKILL.md",
+      "bytes": 4713,
+      "sha256": "4b88e0f4c19caf58f38ca6bd27e55d8ab94ebf0ad54d4ffb7da83559e020dbc7",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/skills/agent-builder/SKILL.md"
+    },
+    {
+      "path": "skills/agent-builder/references/agent-philosophy.md",
+      "url": "/learn-claude-code/files/skills/agent-builder/references/agent-philosophy.md",
+      "bytes": 8030,
+      "sha256": "41287bef444626c478e9bebb4681f54e4f152b93a3f4f211e1a70226d57e19c1",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/skills/agent-builder/references/agent-philosophy.md"
+    },
+    {
+      "path": "skills/agent-builder/references/minimal-agent.py",
+      "url": "/learn-claude-code/files/skills/agent-builder/references/minimal-agent.py",
+      "bytes": 4200,
+      "sha256": "22a4d020bbe5e0e417e91f7a1e5dcaae0b9e0d4e61b817c41422c391a9a18cf1",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/skills/agent-builder/references/minimal-agent.py"
+    },
+    {
+      "path": "skills/agent-builder/references/subagent-pattern.py",
+      "url": "/learn-claude-code/files/skills/agent-builder/references/subagent-pattern.py",
+      "bytes": 7773,
+      "sha256": "8278721a64e37c424ef25ce66bf214085b66b7fbcd6e4247ff55876db101139f",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/skills/agent-builder/references/subagent-pattern.py"
+    },
+    {
+      "path": "skills/agent-builder/references/tool-templates.py",
+      "url": "/learn-claude-code/files/skills/agent-builder/references/tool-templates.py",
+      "bytes": 7967,
+      "sha256": "eb24039bfe8dab5887f2c4428a6edf49f5f708706eaf127028a83077e8abc91c",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/skills/agent-builder/references/tool-templates.py"
+    },
+    {
+      "path": "skills/agent-builder/scripts/init_agent.py",
+      "url": "/learn-claude-code/files/skills/agent-builder/scripts/init_agent.py",
+      "bytes": 10138,
+      "sha256": "00d22b636576cf7fcc587624bf796a502c5c253a3a247a7e4c50599272845c94",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/skills/agent-builder/scripts/init_agent.py"
+    },
+    {
+      "path": "skills/code-review/SKILL.md",
+      "url": "/learn-claude-code/files/skills/code-review/SKILL.md",
+      "bytes": 4266,
+      "sha256": "a64c8c43b4962f2600aa97fba826b615f9c3e8d1bf3656abbeadd148f65f8f25",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/skills/code-review/SKILL.md"
+    },
+    {
+      "path": "skills/mcp-builder/SKILL.md",
+      "url": "/learn-claude-code/files/skills/mcp-builder/SKILL.md",
+      "bytes": 4918,
+      "sha256": "1f0d78f420282374f87b9c6f0dfaad97397d840c7e47f4c878f01d00ab905b9a",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/skills/mcp-builder/SKILL.md"
+    },
+    {
+      "path": "skills/pdf/SKILL.md",
+      "url": "/learn-claude-code/files/skills/pdf/SKILL.md",
+      "bytes": 2581,
+      "sha256": "b143723126a9951c556063edbdf15fce252a505e11c85a3fdbaa221f1116d178",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/skills/pdf/SKILL.md"
+    },
+    {
+      "path": "web/README.md",
+      "url": "/learn-claude-code/files/web/README.md",
+      "bytes": 1450,
+      "sha256": "60b55ff7df79af72590f9524208e46642bc32bdc175cdad41349681c0e2f958f",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/README.md"
+    },
+    {
+      "path": "web/public/course-assets/s01_agent_loop/agent-loop.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s01_agent_loop/agent-loop.en.svg",
+      "bytes": 5535,
+      "sha256": "72fa276fe3f270dc0cd3e113d840b8dc2e587c4d7c646eba3d50de90488d1101",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s01_agent_loop/agent-loop.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s01_agent_loop/agent-loop.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s01_agent_loop/agent-loop.svg",
+      "bytes": 5593,
+      "sha256": "7c7576798ae6f81defbbf5c384cd756701834f238dd68aef2e282e4b6dcd5f2d",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s01_agent_loop/agent-loop.svg"
+    },
+    {
+      "path": "web/public/course-assets/s02_tool_use/tool-dispatch.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s02_tool_use/tool-dispatch.en.svg",
+      "bytes": 6790,
+      "sha256": "1ae8a04810be84696e332613af3747ce605942357e0cc7f36dabf8f420b1aed3",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s02_tool_use/tool-dispatch.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s02_tool_use/tool-dispatch.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s02_tool_use/tool-dispatch.svg",
+      "bytes": 6783,
+      "sha256": "aec47fc21e5b2e3124d9c872e1af035ce3a8e29162947e7575c93b001da6816c",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s02_tool_use/tool-dispatch.svg"
+    },
+    {
+      "path": "web/public/course-assets/s03_permission/permission-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s03_permission/permission-overview.en.svg",
+      "bytes": 6236,
+      "sha256": "c099deba8de52cc4f9c0ed66cb4e7309dd3a5432b85e3c54e9293031f49f1d48",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s03_permission/permission-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s03_permission/permission-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s03_permission/permission-overview.svg",
+      "bytes": 6258,
+      "sha256": "b6d73c093972ec4c97f705e4ec24a31ba16c7b3d6498d269721a87823f53c070",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s03_permission/permission-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s03_permission/permission-pipeline.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s03_permission/permission-pipeline.en.svg",
+      "bytes": 4159,
+      "sha256": "857574ce16a466e633304fefbd3f8ccea3b632397109adedcd75bf2d6e72c0b1",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s03_permission/permission-pipeline.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s03_permission/permission-pipeline.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s03_permission/permission-pipeline.svg",
+      "bytes": 4236,
+      "sha256": "fc69aa4106f45d39734b47fa29d4e01b43aa9c1998d3a44f884bd8a888f1dbe3",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s03_permission/permission-pipeline.svg"
+    },
+    {
+      "path": "web/public/course-assets/s04_hooks/hooks-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s04_hooks/hooks-overview.en.svg",
+      "bytes": 6752,
+      "sha256": "15fbacc829b3a1725c76064ccad6b38e10739e2924772aa20f73294beab005aa",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s04_hooks/hooks-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s04_hooks/hooks-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s04_hooks/hooks-overview.svg",
+      "bytes": 6747,
+      "sha256": "d5645a4312727b003fc4904422ba81723bb8c448d9df9f9c4fd8b776c8515b94",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s04_hooks/hooks-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s05_todo_write/todo-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s05_todo_write/todo-overview.en.svg",
+      "bytes": 5710,
+      "sha256": "8eb3c70e1d86db9c00e5021b41c5cb77dbbf481f596136dcad508710216d4d8e",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s05_todo_write/todo-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s05_todo_write/todo-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s05_todo_write/todo-overview.svg",
+      "bytes": 5736,
+      "sha256": "1282ae19d54747af6c9ed9ab666da6f5096869c73d801115907baa65ad4639f3",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s05_todo_write/todo-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s06_subagent/subagent-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s06_subagent/subagent-overview.en.svg",
+      "bytes": 8262,
+      "sha256": "9bbe119546f9a15f9b086ef152b1b89cf3b9fda75a2114f273c6006d17ac8623",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s06_subagent/subagent-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s06_subagent/subagent-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s06_subagent/subagent-overview.svg",
+      "bytes": 8330,
+      "sha256": "655ad317e0537aafaac43e746ffbcf8be145989b63720da2eb0222fc1c4dd9c5",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s06_subagent/subagent-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s07_skill_loading/skill-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s07_skill_loading/skill-overview.en.svg",
+      "bytes": 4765,
+      "sha256": "0908ede8ce1b82124d938273171ae5d3fd4a2e4cd1cf63b7d42344553aeb9d45",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s07_skill_loading/skill-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s07_skill_loading/skill-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s07_skill_loading/skill-overview.svg",
+      "bytes": 4778,
+      "sha256": "b3d41062948810e63f313e09f1766f70babf7e60264c265839f390ef910561d9",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s07_skill_loading/skill-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s08_context_compact/auto-compact.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s08_context_compact/auto-compact.en.svg",
+      "bytes": 5828,
+      "sha256": "72cb8af4f69e48cd5d8168051526fa5bbb23e5dca1488b1877043bb6e1156d87",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s08_context_compact/auto-compact.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s08_context_compact/auto-compact.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s08_context_compact/auto-compact.svg",
+      "bytes": 5785,
+      "sha256": "6991b4cc41547d370ac069d7eaa1cb88568605117db846a8e425621afef532fb",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s08_context_compact/auto-compact.svg"
+    },
+    {
+      "path": "web/public/course-assets/s08_context_compact/compact-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s08_context_compact/compact-overview.en.svg",
+      "bytes": 9194,
+      "sha256": "79ac4213fa3df821b0920d958a27cb3bfc24eed6eadcf30021bd2583c1dc04c9",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s08_context_compact/compact-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s08_context_compact/compact-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s08_context_compact/compact-overview.svg",
+      "bytes": 9283,
+      "sha256": "8003ebe488d04d0bf7d87605938200e2596dbb3552a6f7639a7d0a132dc084b7",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s08_context_compact/compact-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s08_context_compact/compaction-layers.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s08_context_compact/compaction-layers.en.svg",
+      "bytes": 6773,
+      "sha256": "ec62bdda2cf76e852709872d012e6be71258a67c3ff65b66e5f1b298767256d5",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s08_context_compact/compaction-layers.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s08_context_compact/compaction-layers.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s08_context_compact/compaction-layers.svg",
+      "bytes": 6795,
+      "sha256": "5e8c4e53c9f001732e8216f7e454f64ce7f6fb54ef88936e7d1cf9ba38e8f05a",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s08_context_compact/compaction-layers.svg"
+    },
+    {
+      "path": "web/public/course-assets/s08_context_compact/layer1-budget.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s08_context_compact/layer1-budget.en.svg",
+      "bytes": 3616,
+      "sha256": "e8afd28edaeceadd2a5aa72def284f3b27215717957715752d0e36342d0a1cdc",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s08_context_compact/layer1-budget.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s08_context_compact/layer1-budget.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s08_context_compact/layer1-budget.svg",
+      "bytes": 3602,
+      "sha256": "6d07b074a75903e4e7a2702e6b05a666e30f9858c0b207ff2a04c15e14863ada",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s08_context_compact/layer1-budget.svg"
+    },
+    {
+      "path": "web/public/course-assets/s08_context_compact/micro-compact.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s08_context_compact/micro-compact.en.svg",
+      "bytes": 4443,
+      "sha256": "a107ae22d3632b1f59e875f4087f88cbf440eab9b738b8e1be13690cee9ae108",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s08_context_compact/micro-compact.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s08_context_compact/micro-compact.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s08_context_compact/micro-compact.svg",
+      "bytes": 4425,
+      "sha256": "853b08e41b32556c77d09ac7ab5e552b6de02477fe27f21e2a66490366ccb8d2",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s08_context_compact/micro-compact.svg"
+    },
+    {
+      "path": "web/public/course-assets/s09_memory/memory-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s09_memory/memory-overview.en.svg",
+      "bytes": 7220,
+      "sha256": "6e2a8456b888fd88e22591d356a650b2b8fa0c5f0b4f14b7b3736fd4f3f32be4",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s09_memory/memory-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s09_memory/memory-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s09_memory/memory-overview.svg",
+      "bytes": 7207,
+      "sha256": "29a65e1be5c23626e2d10dbe248413fdcec68a24883110554b40539541db79fc",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s09_memory/memory-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s09_memory/memory-subsystems.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s09_memory/memory-subsystems.en.svg",
+      "bytes": 4624,
+      "sha256": "852ca88b14cebfe23bb10a798124af67e717d647b1b7010e492b394abceb5b93",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s09_memory/memory-subsystems.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s09_memory/memory-subsystems.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s09_memory/memory-subsystems.svg",
+      "bytes": 4623,
+      "sha256": "27279c8efb646b9ea7eefe86abee932e2bf18dee4f81dbd45adf45627c00dec5",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s09_memory/memory-subsystems.svg"
+    },
+    {
+      "path": "web/public/course-assets/s10_task_system/task-dag.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s10_task_system/task-dag.en.svg",
+      "bytes": 4043,
+      "sha256": "c689db27e1bfd46c07a07fa5cf89e79295d41cba4a639cf5790205784d22cd84",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s10_task_system/task-dag.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s10_task_system/task-dag.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s10_task_system/task-dag.svg",
+      "bytes": 4042,
+      "sha256": "888923ee0be24bfe390941a44c6fd03e09faa003b4b587cd827fcfdbd5e5e7b8",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s10_task_system/task-dag.svg"
+    },
+    {
+      "path": "web/public/course-assets/s10_task_system/task-system-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s10_task_system/task-system-overview.en.svg",
+      "bytes": 6926,
+      "sha256": "3216b6303f2e217e2d0e91db6a99e82db11abf2ab8c17559aa03676db351439f",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s10_task_system/task-system-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s10_task_system/task-system-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s10_task_system/task-system-overview.svg",
+      "bytes": 6921,
+      "sha256": "a13b0caeeab9c072f4e3c8ae1901d3ce69fb3ae4e3da5076b96ef1d03f587bf0",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s10_task_system/task-system-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s11_background_tasks/background-tasks-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s11_background_tasks/background-tasks-overview.en.svg",
+      "bytes": 7656,
+      "sha256": "037db8cbe769f2f1c784d74b72415219b1f32e4482622cf7b1445d5f2a00dc08",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s11_background_tasks/background-tasks-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s11_background_tasks/background-tasks-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s11_background_tasks/background-tasks-overview.svg",
+      "bytes": 7609,
+      "sha256": "ee50ca9a3e8f2aba6c50c80962a73ac7634795cd250e898b49aa4ac2613e831c",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s11_background_tasks/background-tasks-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s12_cron_scheduler/cron-scheduler-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s12_cron_scheduler/cron-scheduler-overview.en.svg",
+      "bytes": 9043,
+      "sha256": "0e42358f1e28f08e29ddb9d76452497f407559ddbbbcb17670b8f647f9e4cafb",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s12_cron_scheduler/cron-scheduler-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s12_cron_scheduler/cron-scheduler-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s12_cron_scheduler/cron-scheduler-overview.svg",
+      "bytes": 9012,
+      "sha256": "5d6ce9d058c872d8eefd605b30ec64893fef81a52dbea20327c0112a54b0dd51",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s12_cron_scheduler/cron-scheduler-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s13_agent_teams/agent-teams-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s13_agent_teams/agent-teams-overview.en.svg",
+      "bytes": 8691,
+      "sha256": "3e5067217a73997634d2a777a9c0fb29d78a742a20a8a78643dafb7bae955fc2",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s13_agent_teams/agent-teams-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s13_agent_teams/agent-teams-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s13_agent_teams/agent-teams-overview.svg",
+      "bytes": 8638,
+      "sha256": "650838da3f74fe207f3131f7f2495111561a770e3f739dc69632e21d244d2910",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s13_agent_teams/agent-teams-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s13_agent_teams/team-protocols-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s13_agent_teams/team-protocols-overview.en.svg",
+      "bytes": 11449,
+      "sha256": "d75af2a02b4790beb30c01e0e600ad201f3950e42d0ef1eb8e5144a8171bcabb",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s13_agent_teams/team-protocols-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s13_agent_teams/team-protocols-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s13_agent_teams/team-protocols-overview.svg",
+      "bytes": 11444,
+      "sha256": "ee472888233ff0fbedacbe3d8f98b70606a6689464abd797911e7fffd0d150ca",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s13_agent_teams/team-protocols-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s13_agent_teams/team-topology.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s13_agent_teams/team-topology.en.svg",
+      "bytes": 4653,
+      "sha256": "e2071b48b554392fdbd1b5ce65d779996d3d48022abc3b0419dbf020b1c91df0",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s13_agent_teams/team-topology.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s13_agent_teams/team-topology.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s13_agent_teams/team-topology.svg",
+      "bytes": 5240,
+      "sha256": "0e10800c387237b5fddf65e9c4ec738635100bff7731fe7b80dbe662514cb715",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s13_agent_teams/team-topology.svg"
+    },
+    {
+      "path": "web/public/course-assets/s14_mcp_plugin/mcp-architecture.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s14_mcp_plugin/mcp-architecture.en.svg",
+      "bytes": 7834,
+      "sha256": "a3e3290b0b83108d699cd4e7061de17360cdae2c6a66813c59b787f07ee1c953",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s14_mcp_plugin/mcp-architecture.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s14_mcp_plugin/mcp-architecture.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s14_mcp_plugin/mcp-architecture.svg",
+      "bytes": 7835,
+      "sha256": "797607aaae1dcd1b500560aa6a4937f731778d43328b412172af79b7ebdc7cef",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s14_mcp_plugin/mcp-architecture.svg"
+    },
+    {
+      "path": "web/public/course-assets/s15_integrated_harness/system-architecture.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s15_integrated_harness/system-architecture.en.svg",
+      "bytes": 7821,
+      "sha256": "1c0be2007c8e6c5910abd4448e8456a72b1803db07f464459936800b8762667c",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s15_integrated_harness/system-architecture.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s15_integrated_harness/system-architecture.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s15_integrated_harness/system-architecture.svg",
+      "bytes": 7977,
+      "sha256": "039fd87d8a50ce4d25884d01b1102eed663c2cf3950019f269efa8d860385a5c",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s15_integrated_harness/system-architecture.svg"
+    },
+    {
+      "path": "web/public/course-assets/s16_workflow_runtime/workflow-runtime-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s16_workflow_runtime/workflow-runtime-overview.svg",
+      "bytes": 9635,
+      "sha256": "8cad5dc5cffcb2d7408cd0ad3519eae382b9eea1926b6b61f979391279b97615",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s16_workflow_runtime/workflow-runtime-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s17_goal_loop/goal-loop-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s17_goal_loop/goal-loop-overview.svg",
+      "bytes": 5869,
+      "sha256": "c1eaf0ec03d5072e39b9c763c8ca6329b89af80d84f688493e9c7e62f10bb57a",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/public/course-assets/s17_goal_loop/goal-loop-overview.svg"
+    },
+    {
+      "path": "web/src/data/annotations/s01.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s01.json",
+      "bytes": 6505,
+      "sha256": "07a8650f82f61b81b52a5df5a89e3ec414f55c0b654c525702b04ccc86816cd4",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/annotations/s01.json"
+    },
+    {
+      "path": "web/src/data/annotations/s02.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s02.json",
+      "bytes": 6713,
+      "sha256": "252275ea949957d0009659c29d909445f61d381724c0ecd9bd7f2a35d2217f0c",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/annotations/s02.json"
+    },
+    {
+      "path": "web/src/data/annotations/s03.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s03.json",
+      "bytes": 2976,
+      "sha256": "f561ecc7d73c3994dec5982c561fb809aefd761adc126b5414cb6edb80c9323a",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/annotations/s03.json"
+    },
+    {
+      "path": "web/src/data/annotations/s04.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s04.json",
+      "bytes": 2705,
+      "sha256": "bf6a41d3524a62a576ce5ea2ce949907b910f3a4a679eaaea6d5131b070d4129",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/annotations/s04.json"
+    },
+    {
+      "path": "web/src/data/annotations/s05.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s05.json",
+      "bytes": 2754,
+      "sha256": "dfa0e1e7d4edbaf131f4d05d6ecabe638280848a147477124e055d456bb3b8b6",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/annotations/s05.json"
+    },
+    {
+      "path": "web/src/data/annotations/s06.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s06.json",
+      "bytes": 2587,
+      "sha256": "271bd7302b029ac74959c22b6c55dc5d976b367ccb98599895fd2c89d8dbfe1f",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/annotations/s06.json"
+    },
+    {
+      "path": "web/src/data/annotations/s07.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s07.json",
+      "bytes": 2819,
+      "sha256": "807194d06497b55ccbf04192bd5df1ee731d787cc7716e01afb9009976c14893",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/annotations/s07.json"
+    },
+    {
+      "path": "web/src/data/annotations/s08.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s08.json",
+      "bytes": 2702,
+      "sha256": "cecb60822667070dbb583b3a44379c528abe1d30d7db0bfa8c54d7ce21650501",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/annotations/s08.json"
+    },
+    {
+      "path": "web/src/data/annotations/s09.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s09.json",
+      "bytes": 2668,
+      "sha256": "398f69e75c0b0e7c15431f8039d45a12c1d9157fbeb183221f992fc0e9aa508d",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/annotations/s09.json"
+    },
+    {
+      "path": "web/src/data/annotations/s10.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s10.json",
+      "bytes": 3722,
+      "sha256": "d8a2a5c1ced34bbb1d14a9e5aed44f7607ff4c10773789f66e0e8d4e8bb74651",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/annotations/s10.json"
+    },
+    {
+      "path": "web/src/data/annotations/s11.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s11.json",
+      "bytes": 3949,
+      "sha256": "b0dd45dc26be6f5b2d9060fc61d4e1f67ed9bb76ce06f35019ab124fd9787690",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/annotations/s11.json"
+    },
+    {
+      "path": "web/src/data/annotations/s12.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s12.json",
+      "bytes": 3319,
+      "sha256": "b84958141c2a938abb647a836426de159b69d837c8acae8714b96a4b5bcb80ff",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/annotations/s12.json"
+    },
+    {
+      "path": "web/src/data/annotations/s13.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s13.json",
+      "bytes": 7562,
+      "sha256": "b3be15e360a71b77a0e17b79b5a70ea8ecbf48760e4032ae683df7c2baa95128",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/annotations/s13.json"
+    },
+    {
+      "path": "web/src/data/annotations/s14.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s14.json",
+      "bytes": 3036,
+      "sha256": "2a2c08ff4c1019af0a05f13129f7931288cd6cd2d9375e1e8f66fe59fa5660f2",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/annotations/s14.json"
+    },
+    {
+      "path": "web/src/data/annotations/s15.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s15.json",
+      "bytes": 3292,
+      "sha256": "bc78c79a14b7f515eaf7d51b929228a17e2d3384ca05935594dc6ae7b0df638c",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/annotations/s15.json"
+    },
+    {
+      "path": "web/src/data/annotations/s16.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s16.json",
+      "bytes": 2961,
+      "sha256": "f76ee29a220d9cc4d4229abec0d354c5a11f47724021990c64c461fc6ee3ed8d",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/annotations/s16.json"
+    },
+    {
+      "path": "web/src/data/annotations/s17.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s17.json",
+      "bytes": 3352,
+      "sha256": "1f84c4df4ed0a1989bfee2ad015bf3cbcd1bdd49e4ab96e9f10cfbb9f9faa821",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/annotations/s17.json"
+    },
+    {
+      "path": "web/src/data/execution-flows.ts",
+      "url": "/learn-claude-code/files/web/src/data/execution-flows.ts",
+      "bytes": 24422,
+      "sha256": "9a2973ec618a901f0b42e5463ec9ebd771ff88126d0704a49429f9671ad83a59",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/execution-flows.ts"
+    },
+    {
+      "path": "web/src/data/generated/docs.json",
+      "url": "/learn-claude-code/files/web/src/data/generated/docs.json",
+      "bytes": 483530,
+      "sha256": "887f0a1dd5c0b21ffc36ae7be697812868666c4effb98d616e3b930c30d1605f",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/generated/docs.json"
+    },
+    {
+      "path": "web/src/data/generated/versions.json",
+      "url": "/learn-claude-code/files/web/src/data/generated/versions.json",
+      "bytes": 597587,
+      "sha256": "ff5d0eff0ac3835379066989ddd8e9397e9056353ea8cfd226f921717ef1f351",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/generated/versions.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s01.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s01.json",
+      "bytes": 1589,
+      "sha256": "ad45e429361d69c95e2b95a5152bde9b7f724bf8a4a3adb9e544dc5e8965eac4",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/scenarios/s01.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s02.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s02.json",
+      "bytes": 1428,
+      "sha256": "7fcc8f9db64f508bd5cd47397abe3d144823ac96552c312c8f105d0f4073e94e",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/scenarios/s02.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s03.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s03.json",
+      "bytes": 1407,
+      "sha256": "641c51c4136ddf06b5681f882f1652435dc70f2b4673dd1ad872eebe9d24006b",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/scenarios/s03.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s04.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s04.json",
+      "bytes": 1554,
+      "sha256": "6fb3843a1e195ba446031c6b5afa4b701baae94fef1794454712d1ec62ee7507",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/scenarios/s04.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s05.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s05.json",
+      "bytes": 1574,
+      "sha256": "f9bd7669a0081d4795e7f36bd916ab037abc49c08a6bcf304cc99b152ecdbd92",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/scenarios/s05.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s06.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s06.json",
+      "bytes": 1532,
+      "sha256": "fdf08d24894f3322ec5f910d39129a3f7e8cd1779ec70c250ef59a7c20ddc6be",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/scenarios/s06.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s07.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s07.json",
+      "bytes": 1257,
+      "sha256": "564743e212eb99795ff3c0259e25849be91988f16fb47ce0ca561d19249d9c4b",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/scenarios/s07.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s08.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s08.json",
+      "bytes": 1336,
+      "sha256": "9b5805fb298537c4d90852b1fcc626ebbe9191bb2945211982dd0e001934b04b",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/scenarios/s08.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s09.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s09.json",
+      "bytes": 1151,
+      "sha256": "1a506b4c23cef54618e589c37d7af979911bb4aaad0d6cad5426023b4ececb79",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/scenarios/s09.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s10.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s10.json",
+      "bytes": 2885,
+      "sha256": "4379a30439b6a1b0ce8db557bb1a8cf1d4dda7363b75c7445f7b4e6784b5cd81",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/scenarios/s10.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s11.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s11.json",
+      "bytes": 1711,
+      "sha256": "c91522aa14415d660ecb4a32af9031a6409f328221d97337732b2d40b0f329f5",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/scenarios/s11.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s12.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s12.json",
+      "bytes": 1809,
+      "sha256": "68d80d945de456dc760222347bed794fbb24329828b23028ba9be8614e76ac4b",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/scenarios/s12.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s13.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s13.json",
+      "bytes": 6232,
+      "sha256": "f614b27917e53836af78133535f323e38bb02550141519305a661c5dd0150281",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/scenarios/s13.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s14.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s14.json",
+      "bytes": 1633,
+      "sha256": "1e4496ffad9a281e669504c3979b3abdcc83c45d8af666aa518fa5fdaeb8def9",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/scenarios/s14.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s15.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s15.json",
+      "bytes": 4392,
+      "sha256": "b16d14a3e6810c8f93238148d64dc80ef6232d5851b793df3ce88c85b0cb5f16",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/scenarios/s15.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s16.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s16.json",
+      "bytes": 4943,
+      "sha256": "ffbecc7ce0ef468d72b2bc2a4821a60e8673c3d6c7173a573533241cecfd9e10",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/scenarios/s16.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s17.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s17.json",
+      "bytes": 1830,
+      "sha256": "f9887307afe74069cd730c853b9ed74ed46781aaf998951cba6ca4449307c98e",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/data/scenarios/s17.json"
+    },
+    {
+      "path": "web/src/i18n/messages/en.json",
+      "url": "/learn-claude-code/files/web/src/i18n/messages/en.json",
+      "bytes": 4763,
+      "sha256": "bb839c2aee33a0d7a965f3d304f9782c66911e58670db14bbd39c029301fa0fe",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/src/i18n/messages/en.json"
+    }
+  ]
+}

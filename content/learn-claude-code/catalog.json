@@ -1,0 +1,1625 @@
+{
+  "title": "Learn Claude Code",
+  "revision": "ce8f9f186058939da54c9d6fead78dfb5d0fd6c3",
+  "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/tree/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3",
+  "licenseUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/LICENSE",
+  "licenseFileUrl": "/learn-claude-code/files/LICENSE",
+  "sourceFilesManifestUrl": "/learn-claude-code/manifest.json",
+  "filePaths": [
+    ".env.example",
+    "CONTRIBUTING.md",
+    "LICENSE",
+    "README.md",
+    "agents/__init__.py",
+    "agents/s01_agent_loop.py",
+    "agents/s02_tool_use.py",
+    "agents/s03_todo_write.py",
+    "agents/s04_subagent.py",
+    "agents/s05_skill_loading.py",
+    "agents/s06_context_compact.py",
+    "agents/s07_task_system.py",
+    "agents/s08_background_tasks.py",
+    "agents/s09_agent_teams.py",
+    "agents/s10_team_protocols.py",
+    "agents/s11_autonomous_agents.py",
+    "agents/s12_worktree_task_isolation.py",
+    "agents/s_full.py",
+    "docs/en/s01-the-agent-loop.md",
+    "docs/en/s02-tool-use.md",
+    "docs/en/s03-todo-write.md",
+    "docs/en/s04-subagent.md",
+    "docs/en/s05-skill-loading.md",
+    "docs/en/s06-context-compact.md",
+    "docs/en/s07-task-system.md",
+    "docs/en/s08-background-tasks.md",
+    "docs/en/s09-agent-teams.md",
+    "docs/en/s10-team-protocols.md",
+    "docs/en/s11-autonomous-agents.md",
+    "docs/en/s12-worktree-task-isolation.md",
+    "requirements.txt",
+    "s01_agent_loop/README.md",
+    "s01_agent_loop/code.py",
+    "s01_agent_loop/images/agent-loop.en.svg",
+    "s01_agent_loop/images/agent-loop.svg",
+    "s02_tool_use/README.md",
+    "s02_tool_use/code.py",
+    "s02_tool_use/images/tool-dispatch.en.svg",
+    "s02_tool_use/images/tool-dispatch.svg",
+    "s03_permission/README.md",
+    "s03_permission/code.py",
+    "s03_permission/images/permission-overview.en.svg",
+    "s03_permission/images/permission-overview.svg",
+    "s03_permission/images/permission-pipeline.en.svg",
+    "s03_permission/images/permission-pipeline.svg",
+    "s04_hooks/README.md",
+    "s04_hooks/code.py",
+    "s04_hooks/images/hooks-overview.en.svg",
+    "s04_hooks/images/hooks-overview.svg",
+    "s05_todo_write/README.md",
+    "s05_todo_write/code.py",
+    "s05_todo_write/example/hello.py",
+    "s05_todo_write/images/todo-overview.en.svg",
+    "s05_todo_write/images/todo-overview.svg",
+    "s06_subagent/README.md",
+    "s06_subagent/code.py",
+    "s06_subagent/images/subagent-overview.en.svg",
+    "s06_subagent/images/subagent-overview.svg",
+    "s07_skill_loading/README.md",
+    "s07_skill_loading/code.py",
+    "s07_skill_loading/images/skill-overview.en.svg",
+    "s07_skill_loading/images/skill-overview.svg",
+    "s08_context_compact/README.md",
+    "s08_context_compact/code.py",
+    "s08_context_compact/images/auto-compact.en.svg",
+    "s08_context_compact/images/auto-compact.svg",
+    "s08_context_compact/images/compact-overview.en.svg",
+    "s08_context_compact/images/compact-overview.svg",
+    "s08_context_compact/images/compaction-layers.en.svg",
+    "s08_context_compact/images/compaction-layers.svg",
+    "s08_context_compact/images/layer1-budget.en.svg",
+    "s08_context_compact/images/layer1-budget.svg",
+    "s08_context_compact/images/micro-compact.en.svg",
+    "s08_context_compact/images/micro-compact.svg",
+    "s09_memory/README.md",
+    "s09_memory/code.py",
+    "s09_memory/images/memory-overview.en.svg",
+    "s09_memory/images/memory-overview.svg",
+    "s09_memory/images/memory-subsystems.en.svg",
+    "s09_memory/images/memory-subsystems.svg",
+    "s10_task_system/README.md",
+    "s10_task_system/code.py",
+    "s10_task_system/images/task-dag.en.svg",
+    "s10_task_system/images/task-dag.svg",
+    "s10_task_system/images/task-system-overview.en.svg",
+    "s10_task_system/images/task-system-overview.svg",
+    "s11_background_tasks/README.md",
+    "s11_background_tasks/code.py",
+    "s11_background_tasks/images/background-tasks-overview.en.svg",
+    "s11_background_tasks/images/background-tasks-overview.svg",
+    "s12_cron_scheduler/README.md",
+    "s12_cron_scheduler/code.py",
+    "s12_cron_scheduler/images/cron-scheduler-overview.en.svg",
+    "s12_cron_scheduler/images/cron-scheduler-overview.svg",
+    "s13_agent_teams/README.md",
+    "s13_agent_teams/code.py",
+    "s13_agent_teams/images/agent-teams-overview.en.svg",
+    "s13_agent_teams/images/agent-teams-overview.svg",
+    "s13_agent_teams/images/team-protocols-overview.en.svg",
+    "s13_agent_teams/images/team-protocols-overview.svg",
+    "s13_agent_teams/images/team-topology.en.svg",
+    "s13_agent_teams/images/team-topology.svg",
+    "s14_mcp_plugin/README.md",
+    "s14_mcp_plugin/code.py",
+    "s14_mcp_plugin/images/mcp-architecture.en.svg",
+    "s14_mcp_plugin/images/mcp-architecture.svg",
+    "s15_integrated_harness/README.md",
+    "s15_integrated_harness/code.py",
+    "s15_integrated_harness/images/system-architecture.en.svg",
+    "s15_integrated_harness/images/system-architecture.svg",
+    "s16_workflow_runtime/README.md",
+    "s16_workflow_runtime/code.py",
+    "s16_workflow_runtime/images/workflow-runtime-overview.svg",
+    "s17_goal_loop/README.md",
+    "s17_goal_loop/code.py",
+    "s17_goal_loop/images/goal-loop-overview.svg",
+    "skills/agent-builder/SKILL.md",
+    "skills/agent-builder/references/agent-philosophy.md",
+    "skills/agent-builder/references/minimal-agent.py",
+    "skills/agent-builder/references/subagent-pattern.py",
+    "skills/agent-builder/references/tool-templates.py",
+    "skills/agent-builder/scripts/init_agent.py",
+    "skills/code-review/SKILL.md",
+    "skills/mcp-builder/SKILL.md",
+    "skills/pdf/SKILL.md",
+    "web/README.md",
+    "web/public/course-assets/s01_agent_loop/agent-loop.en.svg",
+    "web/public/course-assets/s01_agent_loop/agent-loop.svg",
+    "web/public/course-assets/s02_tool_use/tool-dispatch.en.svg",
+    "web/public/course-assets/s02_tool_use/tool-dispatch.svg",
+    "web/public/course-assets/s03_permission/permission-overview.en.svg",
+    "web/public/course-assets/s03_permission/permission-overview.svg",
+    "web/public/course-assets/s03_permission/permission-pipeline.en.svg",
+    "web/public/course-assets/s03_permission/permission-pipeline.svg",
+    "web/public/course-assets/s04_hooks/hooks-overview.en.svg",
+    "web/public/course-assets/s04_hooks/hooks-overview.svg",
+    "web/public/course-assets/s05_todo_write/todo-overview.en.svg",
+    "web/public/course-assets/s05_todo_write/todo-overview.svg",
+    "web/public/course-assets/s06_subagent/subagent-overview.en.svg",
+    "web/public/course-assets/s06_subagent/subagent-overview.svg",
+    "web/public/course-assets/s07_skill_loading/skill-overview.en.svg",
+    "web/public/course-assets/s07_skill_loading/skill-overview.svg",
+    "web/public/course-assets/s08_context_compact/auto-compact.en.svg",
+    "web/public/course-assets/s08_context_compact/auto-compact.svg",
+    "web/public/course-assets/s08_context_compact/compact-overview.en.svg",
+    "web/public/course-assets/s08_context_compact/compact-overview.svg",
+    "web/public/course-assets/s08_context_compact/compaction-layers.en.svg",
+    "web/public/course-assets/s08_context_compact/compaction-layers.svg",
+    "web/public/course-assets/s08_context_compact/layer1-budget.en.svg",
+    "web/public/course-assets/s08_context_compact/layer1-budget.svg",
+    "web/public/course-assets/s08_context_compact/micro-compact.en.svg",
+    "web/public/course-assets/s08_context_compact/micro-compact.svg",
+    "web/public/course-assets/s09_memory/memory-overview.en.svg",
+    "web/public/course-assets/s09_memory/memory-overview.svg",
+    "web/public/course-assets/s09_memory/memory-subsystems.en.svg",
+    "web/public/course-assets/s09_memory/memory-subsystems.svg",
+    "web/public/course-assets/s10_task_system/task-dag.en.svg",
+    "web/public/course-assets/s10_task_system/task-dag.svg",
+    "web/public/course-assets/s10_task_system/task-system-overview.en.svg",
+    "web/public/course-assets/s10_task_system/task-system-overview.svg",
+    "web/public/course-assets/s11_background_tasks/background-tasks-overview.en.svg",
+    "web/public/course-assets/s11_background_tasks/background-tasks-overview.svg",
+    "web/public/course-assets/s12_cron_scheduler/cron-scheduler-overview.en.svg",
+    "web/public/course-assets/s12_cron_scheduler/cron-scheduler-overview.svg",
+    "web/public/course-assets/s13_agent_teams/agent-teams-overview.en.svg",
+    "web/public/course-assets/s13_agent_teams/agent-teams-overview.svg",
+    "web/public/course-assets/s13_agent_teams/team-protocols-overview.en.svg",
+    "web/public/course-assets/s13_agent_teams/team-protocols-overview.svg",
+    "web/public/course-assets/s13_agent_teams/team-topology.en.svg",
+    "web/public/course-assets/s13_agent_teams/team-topology.svg",
+    "web/public/course-assets/s14_mcp_plugin/mcp-architecture.en.svg",
+    "web/public/course-assets/s14_mcp_plugin/mcp-architecture.svg",
+    "web/public/course-assets/s15_integrated_harness/system-architecture.en.svg",
+    "web/public/course-assets/s15_integrated_harness/system-architecture.svg",
+    "web/public/course-assets/s16_workflow_runtime/workflow-runtime-overview.svg",
+    "web/public/course-assets/s17_goal_loop/goal-loop-overview.svg",
+    "web/src/data/annotations/s01.json",
+    "web/src/data/annotations/s02.json",
+    "web/src/data/annotations/s03.json",
+    "web/src/data/annotations/s04.json",
+    "web/src/data/annotations/s05.json",
+    "web/src/data/annotations/s06.json",
+    "web/src/data/annotations/s07.json",
+    "web/src/data/annotations/s08.json",
+    "web/src/data/annotations/s09.json",
+    "web/src/data/annotations/s10.json",
+    "web/src/data/annotations/s11.json",
+    "web/src/data/annotations/s12.json",
+    "web/src/data/annotations/s13.json",
+    "web/src/data/annotations/s14.json",
+    "web/src/data/annotations/s15.json",
+    "web/src/data/annotations/s16.json",
+    "web/src/data/annotations/s17.json",
+    "web/src/data/execution-flows.ts",
+    "web/src/data/generated/docs.json",
+    "web/src/data/generated/versions.json",
+    "web/src/data/scenarios/s01.json",
+    "web/src/data/scenarios/s02.json",
+    "web/src/data/scenarios/s03.json",
+    "web/src/data/scenarios/s04.json",
+    "web/src/data/scenarios/s05.json",
+    "web/src/data/scenarios/s06.json",
+    "web/src/data/scenarios/s07.json",
+    "web/src/data/scenarios/s08.json",
+    "web/src/data/scenarios/s09.json",
+    "web/src/data/scenarios/s10.json",
+    "web/src/data/scenarios/s11.json",
+    "web/src/data/scenarios/s12.json",
+    "web/src/data/scenarios/s13.json",
+    "web/src/data/scenarios/s14.json",
+    "web/src/data/scenarios/s15.json",
+    "web/src/data/scenarios/s16.json",
+    "web/src/data/scenarios/s17.json",
+    "web/src/i18n/messages/en.json"
+  ],
+  "chapters": [
+    {
+      "id": "s01",
+      "title": "The Agent Loop — One Loop Is All You Need",
+      "kind": "chapter",
+      "path": "s01_agent_loop/README.md",
+      "markdownUrl": "/learn-claude-code/files/s01_agent_loop/README.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s01_agent_loop/README.md",
+      "code": [
+        {
+          "label": "Chapter example",
+          "url": "/learn-claude-code/files/s01_agent_loop/code.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "s02",
+      "title": "Tool Use — Add a Tool, Add Just One Line",
+      "kind": "chapter",
+      "path": "s02_tool_use/README.md",
+      "markdownUrl": "/learn-claude-code/files/s02_tool_use/README.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s02_tool_use/README.md",
+      "code": [
+        {
+          "label": "Chapter example",
+          "url": "/learn-claude-code/files/s02_tool_use/code.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "s03",
+      "title": "Permission — Check Permissions Before Execution",
+      "kind": "chapter",
+      "path": "s03_permission/README.md",
+      "markdownUrl": "/learn-claude-code/files/s03_permission/README.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s03_permission/README.md",
+      "code": [
+        {
+          "label": "Chapter example",
+          "url": "/learn-claude-code/files/s03_permission/code.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "s04",
+      "title": "Hooks — Hang on the Loop, Don't Write into It",
+      "kind": "chapter",
+      "path": "s04_hooks/README.md",
+      "markdownUrl": "/learn-claude-code/files/s04_hooks/README.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s04_hooks/README.md",
+      "code": [
+        {
+          "label": "Chapter example",
+          "url": "/learn-claude-code/files/s04_hooks/code.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "s05",
+      "title": "TodoWrite — An Agent Without a Plan Drifts Off Course",
+      "kind": "chapter",
+      "path": "s05_todo_write/README.md",
+      "markdownUrl": "/learn-claude-code/files/s05_todo_write/README.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s05_todo_write/README.md",
+      "code": [
+        {
+          "label": "Chapter example",
+          "url": "/learn-claude-code/files/s05_todo_write/code.py",
+          "language": "python"
+        },
+        {
+          "label": "hello.py",
+          "url": "/learn-claude-code/files/s05_todo_write/example/hello.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "s06",
+      "title": "Subagent — Give a Subtask Its Own Context",
+      "kind": "chapter",
+      "path": "s06_subagent/README.md",
+      "markdownUrl": "/learn-claude-code/files/s06_subagent/README.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s06_subagent/README.md",
+      "code": [
+        {
+          "label": "Chapter example",
+          "url": "/learn-claude-code/files/s06_subagent/code.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "s07",
+      "title": "Skill Loading — Load Skills When Needed",
+      "kind": "chapter",
+      "path": "s07_skill_loading/README.md",
+      "markdownUrl": "/learn-claude-code/files/s07_skill_loading/README.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s07_skill_loading/README.md",
+      "code": [
+        {
+          "label": "Chapter example",
+          "url": "/learn-claude-code/files/s07_skill_loading/code.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "s08",
+      "title": "Context Compact: Make Room Before the Context Fills Up",
+      "kind": "chapter",
+      "path": "s08_context_compact/README.md",
+      "markdownUrl": "/learn-claude-code/files/s08_context_compact/README.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s08_context_compact/README.md",
+      "code": [
+        {
+          "label": "Chapter example",
+          "url": "/learn-claude-code/files/s08_context_compact/code.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "s09",
+      "title": "Memory — Keep Useful Knowledge Across Sessions",
+      "kind": "chapter",
+      "path": "s09_memory/README.md",
+      "markdownUrl": "/learn-claude-code/files/s09_memory/README.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s09_memory/README.md",
+      "code": [
+        {
+          "label": "Chapter example",
+          "url": "/learn-claude-code/files/s09_memory/code.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "s10",
+      "title": "Task System — From an Execution Checklist to Coordinated Task State",
+      "kind": "chapter",
+      "path": "s10_task_system/README.md",
+      "markdownUrl": "/learn-claude-code/files/s10_task_system/README.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s10_task_system/README.md",
+      "code": [
+        {
+          "label": "Chapter example",
+          "url": "/learn-claude-code/files/s10_task_system/code.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "s11",
+      "title": "Background Tasks — Slow Operations Go to the Background",
+      "kind": "chapter",
+      "path": "s11_background_tasks/README.md",
+      "markdownUrl": "/learn-claude-code/files/s11_background_tasks/README.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s11_background_tasks/README.md",
+      "code": [
+        {
+          "label": "Chapter example",
+          "url": "/learn-claude-code/files/s11_background_tasks/code.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "s12",
+      "title": "Cron Scheduler — Start Work on a Schedule",
+      "kind": "chapter",
+      "path": "s12_cron_scheduler/README.md",
+      "markdownUrl": "/learn-claude-code/files/s12_cron_scheduler/README.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s12_cron_scheduler/README.md",
+      "code": [
+        {
+          "label": "Chapter example",
+          "url": "/learn-claude-code/files/s12_cron_scheduler/code.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "s13",
+      "title": "Agent Teams — Runtime and Coordination Protocols",
+      "kind": "chapter",
+      "path": "s13_agent_teams/README.md",
+      "markdownUrl": "/learn-claude-code/files/s13_agent_teams/README.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s13_agent_teams/README.md",
+      "code": [
+        {
+          "label": "Chapter example",
+          "url": "/learn-claude-code/files/s13_agent_teams/code.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "s14",
+      "title": "MCP Tools — Discover and Invoke External Tools",
+      "kind": "chapter",
+      "path": "s14_mcp_plugin/README.md",
+      "markdownUrl": "/learn-claude-code/files/s14_mcp_plugin/README.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s14_mcp_plugin/README.md",
+      "code": [
+        {
+          "label": "Chapter example",
+          "url": "/learn-claude-code/files/s14_mcp_plugin/code.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "s15",
+      "title": "Integrated Harness — Many Mechanisms, One Loop",
+      "kind": "chapter",
+      "path": "s15_integrated_harness/README.md",
+      "markdownUrl": "/learn-claude-code/files/s15_integrated_harness/README.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s15_integrated_harness/README.md",
+      "code": [
+        {
+          "label": "Chapter example",
+          "url": "/learn-claude-code/files/s15_integrated_harness/code.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "s16",
+      "title": "Workflow Runtime — The Model Decides Each Step; a Script Decides the Orchestration",
+      "kind": "chapter",
+      "path": "s16_workflow_runtime/README.md",
+      "markdownUrl": "/learn-claude-code/files/s16_workflow_runtime/README.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s16_workflow_runtime/README.md",
+      "code": [
+        {
+          "label": "Chapter example",
+          "url": "/learn-claude-code/files/s16_workflow_runtime/code.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "s17",
+      "title": "Goal Loop: The Model Proposes a Stop; an Independent Evaluator Decides Whether to Continue",
+      "kind": "chapter",
+      "path": "s17_goal_loop/README.md",
+      "markdownUrl": "/learn-claude-code/files/s17_goal_loop/README.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/s17_goal_loop/README.md",
+      "code": [
+        {
+          "label": "Chapter example",
+          "url": "/learn-claude-code/files/s17_goal_loop/code.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "legacy-s01",
+      "title": "The Agent Loop",
+      "kind": "archive",
+      "path": "docs/en/s01-the-agent-loop.md",
+      "markdownUrl": "/learn-claude-code/files/docs/en/s01-the-agent-loop.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s01-the-agent-loop.md",
+      "code": [
+        {
+          "label": "Legacy chapter example",
+          "url": "/learn-claude-code/files/agents/s01_agent_loop.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "legacy-s02",
+      "title": "Tool Use",
+      "kind": "archive",
+      "path": "docs/en/s02-tool-use.md",
+      "markdownUrl": "/learn-claude-code/files/docs/en/s02-tool-use.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s02-tool-use.md",
+      "code": [
+        {
+          "label": "Legacy chapter example",
+          "url": "/learn-claude-code/files/agents/s02_tool_use.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "legacy-s03",
+      "title": "TodoWrite",
+      "kind": "archive",
+      "path": "docs/en/s03-todo-write.md",
+      "markdownUrl": "/learn-claude-code/files/docs/en/s03-todo-write.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s03-todo-write.md",
+      "code": [
+        {
+          "label": "Legacy chapter example",
+          "url": "/learn-claude-code/files/agents/s03_todo_write.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "legacy-s04",
+      "title": "Subagents",
+      "kind": "archive",
+      "path": "docs/en/s04-subagent.md",
+      "markdownUrl": "/learn-claude-code/files/docs/en/s04-subagent.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s04-subagent.md",
+      "code": [
+        {
+          "label": "Legacy chapter example",
+          "url": "/learn-claude-code/files/agents/s04_subagent.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "legacy-s05",
+      "title": "Skills",
+      "kind": "archive",
+      "path": "docs/en/s05-skill-loading.md",
+      "markdownUrl": "/learn-claude-code/files/docs/en/s05-skill-loading.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s05-skill-loading.md",
+      "code": [
+        {
+          "label": "Legacy chapter example",
+          "url": "/learn-claude-code/files/agents/s05_skill_loading.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "legacy-s06",
+      "title": "Context Compact",
+      "kind": "archive",
+      "path": "docs/en/s06-context-compact.md",
+      "markdownUrl": "/learn-claude-code/files/docs/en/s06-context-compact.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s06-context-compact.md",
+      "code": [
+        {
+          "label": "Legacy chapter example",
+          "url": "/learn-claude-code/files/agents/s06_context_compact.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "legacy-s07",
+      "title": "Task System",
+      "kind": "archive",
+      "path": "docs/en/s07-task-system.md",
+      "markdownUrl": "/learn-claude-code/files/docs/en/s07-task-system.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s07-task-system.md",
+      "code": [
+        {
+          "label": "Legacy chapter example",
+          "url": "/learn-claude-code/files/agents/s07_task_system.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "legacy-s08",
+      "title": "Background Tasks",
+      "kind": "archive",
+      "path": "docs/en/s08-background-tasks.md",
+      "markdownUrl": "/learn-claude-code/files/docs/en/s08-background-tasks.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s08-background-tasks.md",
+      "code": [
+        {
+          "label": "Legacy chapter example",
+          "url": "/learn-claude-code/files/agents/s08_background_tasks.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "legacy-s09",
+      "title": "Agent Teams",
+      "kind": "archive",
+      "path": "docs/en/s09-agent-teams.md",
+      "markdownUrl": "/learn-claude-code/files/docs/en/s09-agent-teams.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s09-agent-teams.md",
+      "code": [
+        {
+          "label": "Legacy chapter example",
+          "url": "/learn-claude-code/files/agents/s09_agent_teams.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "legacy-s10",
+      "title": "Team Protocols",
+      "kind": "archive",
+      "path": "docs/en/s10-team-protocols.md",
+      "markdownUrl": "/learn-claude-code/files/docs/en/s10-team-protocols.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s10-team-protocols.md",
+      "code": [
+        {
+          "label": "Legacy chapter example",
+          "url": "/learn-claude-code/files/agents/s10_team_protocols.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "legacy-s11",
+      "title": "Autonomous Agents",
+      "kind": "archive",
+      "path": "docs/en/s11-autonomous-agents.md",
+      "markdownUrl": "/learn-claude-code/files/docs/en/s11-autonomous-agents.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s11-autonomous-agents.md",
+      "code": [
+        {
+          "label": "Legacy chapter example",
+          "url": "/learn-claude-code/files/agents/s11_autonomous_agents.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "legacy-s12",
+      "title": "Worktree + Task Isolation",
+      "kind": "archive",
+      "path": "docs/en/s12-worktree-task-isolation.md",
+      "markdownUrl": "/learn-claude-code/files/docs/en/s12-worktree-task-isolation.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/docs/en/s12-worktree-task-isolation.md",
+      "code": [
+        {
+          "label": "Legacy chapter example",
+          "url": "/learn-claude-code/files/agents/s12_worktree_task_isolation.py",
+          "language": "python"
+        }
+      ]
+    },
+    {
+      "id": "reference-contributing",
+      "title": "Contributing",
+      "kind": "reference",
+      "path": "CONTRIBUTING.md",
+      "markdownUrl": "/learn-claude-code/files/CONTRIBUTING.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/CONTRIBUTING.md",
+      "code": []
+    },
+    {
+      "id": "reference-project-readme",
+      "title": "Learn Claude Code -- Harness Engineering for Real Agents",
+      "kind": "reference",
+      "path": "README.md",
+      "markdownUrl": "/learn-claude-code/files/README.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/README.md",
+      "code": []
+    },
+    {
+      "id": "reference-skills-agent-builder-references-agent-philosophy",
+      "title": "The Philosophy of Agent Harness Engineering",
+      "kind": "reference",
+      "path": "skills/agent-builder/references/agent-philosophy.md",
+      "markdownUrl": "/learn-claude-code/files/skills/agent-builder/references/agent-philosophy.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/skills/agent-builder/references/agent-philosophy.md",
+      "code": []
+    },
+    {
+      "id": "reference-skills-agent-builder-skill",
+      "title": "Agent Builder",
+      "kind": "reference",
+      "path": "skills/agent-builder/SKILL.md",
+      "markdownUrl": "/learn-claude-code/files/skills/agent-builder/SKILL.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/skills/agent-builder/SKILL.md",
+      "code": []
+    },
+    {
+      "id": "reference-skills-code-review-skill",
+      "title": "Code Review Skill",
+      "kind": "reference",
+      "path": "skills/code-review/SKILL.md",
+      "markdownUrl": "/learn-claude-code/files/skills/code-review/SKILL.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/skills/code-review/SKILL.md",
+      "code": []
+    },
+    {
+      "id": "reference-skills-mcp-builder-skill",
+      "title": "MCP Server Building Skill",
+      "kind": "reference",
+      "path": "skills/mcp-builder/SKILL.md",
+      "markdownUrl": "/learn-claude-code/files/skills/mcp-builder/SKILL.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/skills/mcp-builder/SKILL.md",
+      "code": []
+    },
+    {
+      "id": "reference-skills-pdf-skill",
+      "title": "PDF Processing Skill",
+      "kind": "reference",
+      "path": "skills/pdf/SKILL.md",
+      "markdownUrl": "/learn-claude-code/files/skills/pdf/SKILL.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/skills/pdf/SKILL.md",
+      "code": []
+    },
+    {
+      "id": "reference-web-setup",
+      "title": "Web course setup guide",
+      "kind": "reference",
+      "path": "web/README.md",
+      "markdownUrl": "/learn-claude-code/files/web/README.md",
+      "sourceUrl": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/web/README.md",
+      "code": []
+    }
+  ],
+  "resources": [
+    {
+      "path": ".env.example",
+      "url": "https://github.com/shareAI-lab/learn-claude-code/blob/ce8f9f186058939da54c9d6fead78dfb5d0fd6c3/.env.example",
+      "label": ".env.example"
+    },
+    {
+      "path": "LICENSE",
+      "url": "/learn-claude-code/files/LICENSE",
+      "label": "LICENSE"
+    },
+    {
+      "path": "agents/__init__.py",
+      "url": "/learn-claude-code/files/agents/__init__.py",
+      "label": "agents/__init__.py"
+    },
+    {
+      "path": "agents/s01_agent_loop.py",
+      "url": "/learn-claude-code/files/agents/s01_agent_loop.py",
+      "label": "agents/s01_agent_loop.py"
+    },
+    {
+      "path": "agents/s02_tool_use.py",
+      "url": "/learn-claude-code/files/agents/s02_tool_use.py",
+      "label": "agents/s02_tool_use.py"
+    },
+    {
+      "path": "agents/s03_todo_write.py",
+      "url": "/learn-claude-code/files/agents/s03_todo_write.py",
+      "label": "agents/s03_todo_write.py"
+    },
+    {
+      "path": "agents/s04_subagent.py",
+      "url": "/learn-claude-code/files/agents/s04_subagent.py",
+      "label": "agents/s04_subagent.py"
+    },
+    {
+      "path": "agents/s05_skill_loading.py",
+      "url": "/learn-claude-code/files/agents/s05_skill_loading.py",
+      "label": "agents/s05_skill_loading.py"
+    },
+    {
+      "path": "agents/s06_context_compact.py",
+      "url": "/learn-claude-code/files/agents/s06_context_compact.py",
+      "label": "agents/s06_context_compact.py"
+    },
+    {
+      "path": "agents/s07_task_system.py",
+      "url": "/learn-claude-code/files/agents/s07_task_system.py",
+      "label": "agents/s07_task_system.py"
+    },
+    {
+      "path": "agents/s08_background_tasks.py",
+      "url": "/learn-claude-code/files/agents/s08_background_tasks.py",
+      "label": "agents/s08_background_tasks.py"
+    },
+    {
+      "path": "agents/s09_agent_teams.py",
+      "url": "/learn-claude-code/files/agents/s09_agent_teams.py",
+      "label": "agents/s09_agent_teams.py"
+    },
+    {
+      "path": "agents/s10_team_protocols.py",
+      "url": "/learn-claude-code/files/agents/s10_team_protocols.py",
+      "label": "agents/s10_team_protocols.py"
+    },
+    {
+      "path": "agents/s11_autonomous_agents.py",
+      "url": "/learn-claude-code/files/agents/s11_autonomous_agents.py",
+      "label": "agents/s11_autonomous_agents.py"
+    },
+    {
+      "path": "agents/s12_worktree_task_isolation.py",
+      "url": "/learn-claude-code/files/agents/s12_worktree_task_isolation.py",
+      "label": "agents/s12_worktree_task_isolation.py"
+    },
+    {
+      "path": "agents/s_full.py",
+      "url": "/learn-claude-code/files/agents/s_full.py",
+      "label": "agents/s_full.py"
+    },
+    {
+      "path": "requirements.txt",
+      "url": "/learn-claude-code/files/requirements.txt",
+      "label": "requirements.txt"
+    },
+    {
+      "path": "s01_agent_loop/code.py",
+      "url": "/learn-claude-code/files/s01_agent_loop/code.py",
+      "label": "s01_agent_loop/code.py"
+    },
+    {
+      "path": "s01_agent_loop/images/agent-loop.en.svg",
+      "url": "/learn-claude-code/files/s01_agent_loop/images/agent-loop.en.svg",
+      "label": "s01_agent_loop/images/agent-loop.en.svg"
+    },
+    {
+      "path": "s01_agent_loop/images/agent-loop.svg",
+      "url": "/learn-claude-code/files/s01_agent_loop/images/agent-loop.svg",
+      "label": "s01_agent_loop/images/agent-loop.svg"
+    },
+    {
+      "path": "s02_tool_use/code.py",
+      "url": "/learn-claude-code/files/s02_tool_use/code.py",
+      "label": "s02_tool_use/code.py"
+    },
+    {
+      "path": "s02_tool_use/images/tool-dispatch.en.svg",
+      "url": "/learn-claude-code/files/s02_tool_use/images/tool-dispatch.en.svg",
+      "label": "s02_tool_use/images/tool-dispatch.en.svg"
+    },
+    {
+      "path": "s02_tool_use/images/tool-dispatch.svg",
+      "url": "/learn-claude-code/files/s02_tool_use/images/tool-dispatch.svg",
+      "label": "s02_tool_use/images/tool-dispatch.svg"
+    },
+    {
+      "path": "s03_permission/code.py",
+      "url": "/learn-claude-code/files/s03_permission/code.py",
+      "label": "s03_permission/code.py"
+    },
+    {
+      "path": "s03_permission/images/permission-overview.en.svg",
+      "url": "/learn-claude-code/files/s03_permission/images/permission-overview.en.svg",
+      "label": "s03_permission/images/permission-overview.en.svg"
+    },
+    {
+      "path": "s03_permission/images/permission-overview.svg",
+      "url": "/learn-claude-code/files/s03_permission/images/permission-overview.svg",
+      "label": "s03_permission/images/permission-overview.svg"
+    },
+    {
+      "path": "s03_permission/images/permission-pipeline.en.svg",
+      "url": "/learn-claude-code/files/s03_permission/images/permission-pipeline.en.svg",
+      "label": "s03_permission/images/permission-pipeline.en.svg"
+    },
+    {
+      "path": "s03_permission/images/permission-pipeline.svg",
+      "url": "/learn-claude-code/files/s03_permission/images/permission-pipeline.svg",
+      "label": "s03_permission/images/permission-pipeline.svg"
+    },
+    {
+      "path": "s04_hooks/code.py",
+      "url": "/learn-claude-code/files/s04_hooks/code.py",
+      "label": "s04_hooks/code.py"
+    },
+    {
+      "path": "s04_hooks/images/hooks-overview.en.svg",
+      "url": "/learn-claude-code/files/s04_hooks/images/hooks-overview.en.svg",
+      "label": "s04_hooks/images/hooks-overview.en.svg"
+    },
+    {
+      "path": "s04_hooks/images/hooks-overview.svg",
+      "url": "/learn-claude-code/files/s04_hooks/images/hooks-overview.svg",
+      "label": "s04_hooks/images/hooks-overview.svg"
+    },
+    {
+      "path": "s05_todo_write/code.py",
+      "url": "/learn-claude-code/files/s05_todo_write/code.py",
+      "label": "s05_todo_write/code.py"
+    },
+    {
+      "path": "s05_todo_write/example/hello.py",
+      "url": "/learn-claude-code/files/s05_todo_write/example/hello.py",
+      "label": "s05_todo_write/example/hello.py"
+    },
+    {
+      "path": "s05_todo_write/images/todo-overview.en.svg",
+      "url": "/learn-claude-code/files/s05_todo_write/images/todo-overview.en.svg",
+      "label": "s05_todo_write/images/todo-overview.en.svg"
+    },
+    {
+      "path": "s05_todo_write/images/todo-overview.svg",
+      "url": "/learn-claude-code/files/s05_todo_write/images/todo-overview.svg",
+      "label": "s05_todo_write/images/todo-overview.svg"
+    },
+    {
+      "path": "s06_subagent/code.py",
+      "url": "/learn-claude-code/files/s06_subagent/code.py",
+      "label": "s06_subagent/code.py"
+    },
+    {
+      "path": "s06_subagent/images/subagent-overview.en.svg",
+      "url": "/learn-claude-code/files/s06_subagent/images/subagent-overview.en.svg",
+      "label": "s06_subagent/images/subagent-overview.en.svg"
+    },
+    {
+      "path": "s06_subagent/images/subagent-overview.svg",
+      "url": "/learn-claude-code/files/s06_subagent/images/subagent-overview.svg",
+      "label": "s06_subagent/images/subagent-overview.svg"
+    },
+    {
+      "path": "s07_skill_loading/code.py",
+      "url": "/learn-claude-code/files/s07_skill_loading/code.py",
+      "label": "s07_skill_loading/code.py"
+    },
+    {
+      "path": "s07_skill_loading/images/skill-overview.en.svg",
+      "url": "/learn-claude-code/files/s07_skill_loading/images/skill-overview.en.svg",
+      "label": "s07_skill_loading/images/skill-overview.en.svg"
+    },
+    {
+      "path": "s07_skill_loading/images/skill-overview.svg",
+      "url": "/learn-claude-code/files/s07_skill_loading/images/skill-overview.svg",
+      "label": "s07_skill_loading/images/skill-overview.svg"
+    },
+    {
+      "path": "s08_context_compact/code.py",
+      "url": "/learn-claude-code/files/s08_context_compact/code.py",
+      "label": "s08_context_compact/code.py"
+    },
+    {
+      "path": "s08_context_compact/images/auto-compact.en.svg",
+      "url": "/learn-claude-code/files/s08_context_compact/images/auto-compact.en.svg",
+      "label": "s08_context_compact/images/auto-compact.en.svg"
+    },
+    {
+      "path": "s08_context_compact/images/auto-compact.svg",
+      "url": "/learn-claude-code/files/s08_context_compact/images/auto-compact.svg",
+      "label": "s08_context_compact/images/auto-compact.svg"
+    },
+    {
+      "path": "s08_context_compact/images/compact-overview.en.svg",
+      "url": "/learn-claude-code/files/s08_context_compact/images/compact-overview.en.svg",
+      "label": "s08_context_compact/images/compact-overview.en.svg"
+    },
+    {
+      "path": "s08_context_compact/images/compact-overview.svg",
+      "url": "/learn-claude-code/files/s08_context_compact/images/compact-overview.svg",
+      "label": "s08_context_compact/images/compact-overview.svg"
+    },
+    {
+      "path": "s08_context_compact/images/compaction-layers.en.svg",
+      "url": "/learn-claude-code/files/s08_context_compact/images/compaction-layers.en.svg",
+      "label": "s08_context_compact/images/compaction-layers.en.svg"
+    },
+    {
+      "path": "s08_context_compact/images/compaction-layers.svg",
+      "url": "/learn-claude-code/files/s08_context_compact/images/compaction-layers.svg",
+      "label": "s08_context_compact/images/compaction-layers.svg"
+    },
+    {
+      "path": "s08_context_compact/images/layer1-budget.en.svg",
+      "url": "/learn-claude-code/files/s08_context_compact/images/layer1-budget.en.svg",
+      "label": "s08_context_compact/images/layer1-budget.en.svg"
+    },
+    {
+      "path": "s08_context_compact/images/layer1-budget.svg",
+      "url": "/learn-claude-code/files/s08_context_compact/images/layer1-budget.svg",
+      "label": "s08_context_compact/images/layer1-budget.svg"
+    },
+    {
+      "path": "s08_context_compact/images/micro-compact.en.svg",
+      "url": "/learn-claude-code/files/s08_context_compact/images/micro-compact.en.svg",
+      "label": "s08_context_compact/images/micro-compact.en.svg"
+    },
+    {
+      "path": "s08_context_compact/images/micro-compact.svg",
+      "url": "/learn-claude-code/files/s08_context_compact/images/micro-compact.svg",
+      "label": "s08_context_compact/images/micro-compact.svg"
+    },
+    {
+      "path": "s09_memory/code.py",
+      "url": "/learn-claude-code/files/s09_memory/code.py",
+      "label": "s09_memory/code.py"
+    },
+    {
+      "path": "s09_memory/images/memory-overview.en.svg",
+      "url": "/learn-claude-code/files/s09_memory/images/memory-overview.en.svg",
+      "label": "s09_memory/images/memory-overview.en.svg"
+    },
+    {
+      "path": "s09_memory/images/memory-overview.svg",
+      "url": "/learn-claude-code/files/s09_memory/images/memory-overview.svg",
+      "label": "s09_memory/images/memory-overview.svg"
+    },
+    {
+      "path": "s09_memory/images/memory-subsystems.en.svg",
+      "url": "/learn-claude-code/files/s09_memory/images/memory-subsystems.en.svg",
+      "label": "s09_memory/images/memory-subsystems.en.svg"
+    },
+    {
+      "path": "s09_memory/images/memory-subsystems.svg",
+      "url": "/learn-claude-code/files/s09_memory/images/memory-subsystems.svg",
+      "label": "s09_memory/images/memory-subsystems.svg"
+    },
+    {
+      "path": "s10_task_system/code.py",
+      "url": "/learn-claude-code/files/s10_task_system/code.py",
+      "label": "s10_task_system/code.py"
+    },
+    {
+      "path": "s10_task_system/images/task-dag.en.svg",
+      "url": "/learn-claude-code/files/s10_task_system/images/task-dag.en.svg",
+      "label": "s10_task_system/images/task-dag.en.svg"
+    },
+    {
+      "path": "s10_task_system/images/task-dag.svg",
+      "url": "/learn-claude-code/files/s10_task_system/images/task-dag.svg",
+      "label": "s10_task_system/images/task-dag.svg"
+    },
+    {
+      "path": "s10_task_system/images/task-system-overview.en.svg",
+      "url": "/learn-claude-code/files/s10_task_system/images/task-system-overview.en.svg",
+      "label": "s10_task_system/images/task-system-overview.en.svg"
+    },
+    {
+      "path": "s10_task_system/images/task-system-overview.svg",
+      "url": "/learn-claude-code/files/s10_task_system/images/task-system-overview.svg",
+      "label": "s10_task_system/images/task-system-overview.svg"
+    },
+    {
+      "path": "s11_background_tasks/code.py",
+      "url": "/learn-claude-code/files/s11_background_tasks/code.py",
+      "label": "s11_background_tasks/code.py"
+    },
+    {
+      "path": "s11_background_tasks/images/background-tasks-overview.en.svg",
+      "url": "/learn-claude-code/files/s11_background_tasks/images/background-tasks-overview.en.svg",
+      "label": "s11_background_tasks/images/background-tasks-overview.en.svg"
+    },
+    {
+      "path": "s11_background_tasks/images/background-tasks-overview.svg",
+      "url": "/learn-claude-code/files/s11_background_tasks/images/background-tasks-overview.svg",
+      "label": "s11_background_tasks/images/background-tasks-overview.svg"
+    },
+    {
+      "path": "s12_cron_scheduler/code.py",
+      "url": "/learn-claude-code/files/s12_cron_scheduler/code.py",
+      "label": "s12_cron_scheduler/code.py"
+    },
+    {
+      "path": "s12_cron_scheduler/images/cron-scheduler-overview.en.svg",
+      "url": "/learn-claude-code/files/s12_cron_scheduler/images/cron-scheduler-overview.en.svg",
+      "label": "s12_cron_scheduler/images/cron-scheduler-overview.en.svg"
+    },
+    {
+      "path": "s12_cron_scheduler/images/cron-scheduler-overview.svg",
+      "url": "/learn-claude-code/files/s12_cron_scheduler/images/cron-scheduler-overview.svg",
+      "label": "s12_cron_scheduler/images/cron-scheduler-overview.svg"
+    },
+    {
+      "path": "s13_agent_teams/code.py",
+      "url": "/learn-claude-code/files/s13_agent_teams/code.py",
+      "label": "s13_agent_teams/code.py"
+    },
+    {
+      "path": "s13_agent_teams/images/agent-teams-overview.en.svg",
+      "url": "/learn-claude-code/files/s13_agent_teams/images/agent-teams-overview.en.svg",
+      "label": "s13_agent_teams/images/agent-teams-overview.en.svg"
+    },
+    {
+      "path": "s13_agent_teams/images/agent-teams-overview.svg",
+      "url": "/learn-claude-code/files/s13_agent_teams/images/agent-teams-overview.svg",
+      "label": "s13_agent_teams/images/agent-teams-overview.svg"
+    },
+    {
+      "path": "s13_agent_teams/images/team-protocols-overview.en.svg",
+      "url": "/learn-claude-code/files/s13_agent_teams/images/team-protocols-overview.en.svg",
+      "label": "s13_agent_teams/images/team-protocols-overview.en.svg"
+    },
+    {
+      "path": "s13_agent_teams/images/team-protocols-overview.svg",
+      "url": "/learn-claude-code/files/s13_agent_teams/images/team-protocols-overview.svg",
+      "label": "s13_agent_teams/images/team-protocols-overview.svg"
+    },
+    {
+      "path": "s13_agent_teams/images/team-topology.en.svg",
+      "url": "/learn-claude-code/files/s13_agent_teams/images/team-topology.en.svg",
+      "label": "s13_agent_teams/images/team-topology.en.svg"
+    },
+    {
+      "path": "s13_agent_teams/images/team-topology.svg",
+      "url": "/learn-claude-code/files/s13_agent_teams/images/team-topology.svg",
+      "label": "s13_agent_teams/images/team-topology.svg"
+    },
+    {
+      "path": "s14_mcp_plugin/code.py",
+      "url": "/learn-claude-code/files/s14_mcp_plugin/code.py",
+      "label": "s14_mcp_plugin/code.py"
+    },
+    {
+      "path": "s14_mcp_plugin/images/mcp-architecture.en.svg",
+      "url": "/learn-claude-code/files/s14_mcp_plugin/images/mcp-architecture.en.svg",
+      "label": "s14_mcp_plugin/images/mcp-architecture.en.svg"
+    },
+    {
+      "path": "s14_mcp_plugin/images/mcp-architecture.svg",
+      "url": "/learn-claude-code/files/s14_mcp_plugin/images/mcp-architecture.svg",
+      "label": "s14_mcp_plugin/images/mcp-architecture.svg"
+    },
+    {
+      "path": "s15_integrated_harness/code.py",
+      "url": "/learn-claude-code/files/s15_integrated_harness/code.py",
+      "label": "s15_integrated_harness/code.py"
+    },
+    {
+      "path": "s15_integrated_harness/images/system-architecture.en.svg",
+      "url": "/learn-claude-code/files/s15_integrated_harness/images/system-architecture.en.svg",
+      "label": "s15_integrated_harness/images/system-architecture.en.svg"
+    },
+    {
+      "path": "s15_integrated_harness/images/system-architecture.svg",
+      "url": "/learn-claude-code/files/s15_integrated_harness/images/system-architecture.svg",
+      "label": "s15_integrated_harness/images/system-architecture.svg"
+    },
+    {
+      "path": "s16_workflow_runtime/code.py",
+      "url": "/learn-claude-code/files/s16_workflow_runtime/code.py",
+      "label": "s16_workflow_runtime/code.py"
+    },
+    {
+      "path": "s16_workflow_runtime/images/workflow-runtime-overview.svg",
+      "url": "/learn-claude-code/files/s16_workflow_runtime/images/workflow-runtime-overview.svg",
+      "label": "s16_workflow_runtime/images/workflow-runtime-overview.svg"
+    },
+    {
+      "path": "s17_goal_loop/code.py",
+      "url": "/learn-claude-code/files/s17_goal_loop/code.py",
+      "label": "s17_goal_loop/code.py"
+    },
+    {
+      "path": "s17_goal_loop/images/goal-loop-overview.svg",
+      "url": "/learn-claude-code/files/s17_goal_loop/images/goal-loop-overview.svg",
+      "label": "s17_goal_loop/images/goal-loop-overview.svg"
+    },
+    {
+      "path": "skills/agent-builder/references/minimal-agent.py",
+      "url": "/learn-claude-code/files/skills/agent-builder/references/minimal-agent.py",
+      "label": "skills/agent-builder/references/minimal-agent.py"
+    },
+    {
+      "path": "skills/agent-builder/references/subagent-pattern.py",
+      "url": "/learn-claude-code/files/skills/agent-builder/references/subagent-pattern.py",
+      "label": "skills/agent-builder/references/subagent-pattern.py"
+    },
+    {
+      "path": "skills/agent-builder/references/tool-templates.py",
+      "url": "/learn-claude-code/files/skills/agent-builder/references/tool-templates.py",
+      "label": "skills/agent-builder/references/tool-templates.py"
+    },
+    {
+      "path": "skills/agent-builder/scripts/init_agent.py",
+      "url": "/learn-claude-code/files/skills/agent-builder/scripts/init_agent.py",
+      "label": "skills/agent-builder/scripts/init_agent.py"
+    },
+    {
+      "path": "web/public/course-assets/s01_agent_loop/agent-loop.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s01_agent_loop/agent-loop.en.svg",
+      "label": "web/public/course-assets/s01_agent_loop/agent-loop.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s01_agent_loop/agent-loop.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s01_agent_loop/agent-loop.svg",
+      "label": "web/public/course-assets/s01_agent_loop/agent-loop.svg"
+    },
+    {
+      "path": "web/public/course-assets/s02_tool_use/tool-dispatch.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s02_tool_use/tool-dispatch.en.svg",
+      "label": "web/public/course-assets/s02_tool_use/tool-dispatch.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s02_tool_use/tool-dispatch.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s02_tool_use/tool-dispatch.svg",
+      "label": "web/public/course-assets/s02_tool_use/tool-dispatch.svg"
+    },
+    {
+      "path": "web/public/course-assets/s03_permission/permission-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s03_permission/permission-overview.en.svg",
+      "label": "web/public/course-assets/s03_permission/permission-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s03_permission/permission-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s03_permission/permission-overview.svg",
+      "label": "web/public/course-assets/s03_permission/permission-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s03_permission/permission-pipeline.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s03_permission/permission-pipeline.en.svg",
+      "label": "web/public/course-assets/s03_permission/permission-pipeline.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s03_permission/permission-pipeline.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s03_permission/permission-pipeline.svg",
+      "label": "web/public/course-assets/s03_permission/permission-pipeline.svg"
+    },
+    {
+      "path": "web/public/course-assets/s04_hooks/hooks-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s04_hooks/hooks-overview.en.svg",
+      "label": "web/public/course-assets/s04_hooks/hooks-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s04_hooks/hooks-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s04_hooks/hooks-overview.svg",
+      "label": "web/public/course-assets/s04_hooks/hooks-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s05_todo_write/todo-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s05_todo_write/todo-overview.en.svg",
+      "label": "web/public/course-assets/s05_todo_write/todo-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s05_todo_write/todo-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s05_todo_write/todo-overview.svg",
+      "label": "web/public/course-assets/s05_todo_write/todo-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s06_subagent/subagent-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s06_subagent/subagent-overview.en.svg",
+      "label": "web/public/course-assets/s06_subagent/subagent-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s06_subagent/subagent-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s06_subagent/subagent-overview.svg",
+      "label": "web/public/course-assets/s06_subagent/subagent-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s07_skill_loading/skill-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s07_skill_loading/skill-overview.en.svg",
+      "label": "web/public/course-assets/s07_skill_loading/skill-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s07_skill_loading/skill-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s07_skill_loading/skill-overview.svg",
+      "label": "web/public/course-assets/s07_skill_loading/skill-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s08_context_compact/auto-compact.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s08_context_compact/auto-compact.en.svg",
+      "label": "web/public/course-assets/s08_context_compact/auto-compact.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s08_context_compact/auto-compact.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s08_context_compact/auto-compact.svg",
+      "label": "web/public/course-assets/s08_context_compact/auto-compact.svg"
+    },
+    {
+      "path": "web/public/course-assets/s08_context_compact/compact-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s08_context_compact/compact-overview.en.svg",
+      "label": "web/public/course-assets/s08_context_compact/compact-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s08_context_compact/compact-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s08_context_compact/compact-overview.svg",
+      "label": "web/public/course-assets/s08_context_compact/compact-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s08_context_compact/compaction-layers.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s08_context_compact/compaction-layers.en.svg",
+      "label": "web/public/course-assets/s08_context_compact/compaction-layers.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s08_context_compact/compaction-layers.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s08_context_compact/compaction-layers.svg",
+      "label": "web/public/course-assets/s08_context_compact/compaction-layers.svg"
+    },
+    {
+      "path": "web/public/course-assets/s08_context_compact/layer1-budget.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s08_context_compact/layer1-budget.en.svg",
+      "label": "web/public/course-assets/s08_context_compact/layer1-budget.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s08_context_compact/layer1-budget.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s08_context_compact/layer1-budget.svg",
+      "label": "web/public/course-assets/s08_context_compact/layer1-budget.svg"
+    },
+    {
+      "path": "web/public/course-assets/s08_context_compact/micro-compact.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s08_context_compact/micro-compact.en.svg",
+      "label": "web/public/course-assets/s08_context_compact/micro-compact.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s08_context_compact/micro-compact.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s08_context_compact/micro-compact.svg",
+      "label": "web/public/course-assets/s08_context_compact/micro-compact.svg"
+    },
+    {
+      "path": "web/public/course-assets/s09_memory/memory-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s09_memory/memory-overview.en.svg",
+      "label": "web/public/course-assets/s09_memory/memory-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s09_memory/memory-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s09_memory/memory-overview.svg",
+      "label": "web/public/course-assets/s09_memory/memory-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s09_memory/memory-subsystems.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s09_memory/memory-subsystems.en.svg",
+      "label": "web/public/course-assets/s09_memory/memory-subsystems.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s09_memory/memory-subsystems.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s09_memory/memory-subsystems.svg",
+      "label": "web/public/course-assets/s09_memory/memory-subsystems.svg"
+    },
+    {
+      "path": "web/public/course-assets/s10_task_system/task-dag.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s10_task_system/task-dag.en.svg",
+      "label": "web/public/course-assets/s10_task_system/task-dag.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s10_task_system/task-dag.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s10_task_system/task-dag.svg",
+      "label": "web/public/course-assets/s10_task_system/task-dag.svg"
+    },
+    {
+      "path": "web/public/course-assets/s10_task_system/task-system-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s10_task_system/task-system-overview.en.svg",
+      "label": "web/public/course-assets/s10_task_system/task-system-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s10_task_system/task-system-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s10_task_system/task-system-overview.svg",
+      "label": "web/public/course-assets/s10_task_system/task-system-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s11_background_tasks/background-tasks-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s11_background_tasks/background-tasks-overview.en.svg",
+      "label": "web/public/course-assets/s11_background_tasks/background-tasks-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s11_background_tasks/background-tasks-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s11_background_tasks/background-tasks-overview.svg",
+      "label": "web/public/course-assets/s11_background_tasks/background-tasks-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s12_cron_scheduler/cron-scheduler-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s12_cron_scheduler/cron-scheduler-overview.en.svg",
+      "label": "web/public/course-assets/s12_cron_scheduler/cron-scheduler-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s12_cron_scheduler/cron-scheduler-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s12_cron_scheduler/cron-scheduler-overview.svg",
+      "label": "web/public/course-assets/s12_cron_scheduler/cron-scheduler-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s13_agent_teams/agent-teams-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s13_agent_teams/agent-teams-overview.en.svg",
+      "label": "web/public/course-assets/s13_agent_teams/agent-teams-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s13_agent_teams/agent-teams-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s13_agent_teams/agent-teams-overview.svg",
+      "label": "web/public/course-assets/s13_agent_teams/agent-teams-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s13_agent_teams/team-protocols-overview.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s13_agent_teams/team-protocols-overview.en.svg",
+      "label": "web/public/course-assets/s13_agent_teams/team-protocols-overview.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s13_agent_teams/team-protocols-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s13_agent_teams/team-protocols-overview.svg",
+      "label": "web/public/course-assets/s13_agent_teams/team-protocols-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s13_agent_teams/team-topology.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s13_agent_teams/team-topology.en.svg",
+      "label": "web/public/course-assets/s13_agent_teams/team-topology.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s13_agent_teams/team-topology.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s13_agent_teams/team-topology.svg",
+      "label": "web/public/course-assets/s13_agent_teams/team-topology.svg"
+    },
+    {
+      "path": "web/public/course-assets/s14_mcp_plugin/mcp-architecture.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s14_mcp_plugin/mcp-architecture.en.svg",
+      "label": "web/public/course-assets/s14_mcp_plugin/mcp-architecture.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s14_mcp_plugin/mcp-architecture.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s14_mcp_plugin/mcp-architecture.svg",
+      "label": "web/public/course-assets/s14_mcp_plugin/mcp-architecture.svg"
+    },
+    {
+      "path": "web/public/course-assets/s15_integrated_harness/system-architecture.en.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s15_integrated_harness/system-architecture.en.svg",
+      "label": "web/public/course-assets/s15_integrated_harness/system-architecture.en.svg"
+    },
+    {
+      "path": "web/public/course-assets/s15_integrated_harness/system-architecture.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s15_integrated_harness/system-architecture.svg",
+      "label": "web/public/course-assets/s15_integrated_harness/system-architecture.svg"
+    },
+    {
+      "path": "web/public/course-assets/s16_workflow_runtime/workflow-runtime-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s16_workflow_runtime/workflow-runtime-overview.svg",
+      "label": "web/public/course-assets/s16_workflow_runtime/workflow-runtime-overview.svg"
+    },
+    {
+      "path": "web/public/course-assets/s17_goal_loop/goal-loop-overview.svg",
+      "url": "/learn-claude-code/files/web/public/course-assets/s17_goal_loop/goal-loop-overview.svg",
+      "label": "web/public/course-assets/s17_goal_loop/goal-loop-overview.svg"
+    },
+    {
+      "path": "web/src/data/annotations/s01.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s01.json",
+      "label": "web/src/data/annotations/s01.json"
+    },
+    {
+      "path": "web/src/data/annotations/s02.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s02.json",
+      "label": "web/src/data/annotations/s02.json"
+    },
+    {
+      "path": "web/src/data/annotations/s03.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s03.json",
+      "label": "web/src/data/annotations/s03.json"
+    },
+    {
+      "path": "web/src/data/annotations/s04.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s04.json",
+      "label": "web/src/data/annotations/s04.json"
+    },
+    {
+      "path": "web/src/data/annotations/s05.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s05.json",
+      "label": "web/src/data/annotations/s05.json"
+    },
+    {
+      "path": "web/src/data/annotations/s06.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s06.json",
+      "label": "web/src/data/annotations/s06.json"
+    },
+    {
+      "path": "web/src/data/annotations/s07.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s07.json",
+      "label": "web/src/data/annotations/s07.json"
+    },
+    {
+      "path": "web/src/data/annotations/s08.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s08.json",
+      "label": "web/src/data/annotations/s08.json"
+    },
+    {
+      "path": "web/src/data/annotations/s09.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s09.json",
+      "label": "web/src/data/annotations/s09.json"
+    },
+    {
+      "path": "web/src/data/annotations/s10.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s10.json",
+      "label": "web/src/data/annotations/s10.json"
+    },
+    {
+      "path": "web/src/data/annotations/s11.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s11.json",
+      "label": "web/src/data/annotations/s11.json"
+    },
+    {
+      "path": "web/src/data/annotations/s12.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s12.json",
+      "label": "web/src/data/annotations/s12.json"
+    },
+    {
+      "path": "web/src/data/annotations/s13.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s13.json",
+      "label": "web/src/data/annotations/s13.json"
+    },
+    {
+      "path": "web/src/data/annotations/s14.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s14.json",
+      "label": "web/src/data/annotations/s14.json"
+    },
+    {
+      "path": "web/src/data/annotations/s15.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s15.json",
+      "label": "web/src/data/annotations/s15.json"
+    },
+    {
+      "path": "web/src/data/annotations/s16.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s16.json",
+      "label": "web/src/data/annotations/s16.json"
+    },
+    {
+      "path": "web/src/data/annotations/s17.json",
+      "url": "/learn-claude-code/files/web/src/data/annotations/s17.json",
+      "label": "web/src/data/annotations/s17.json"
+    },
+    {
+      "path": "web/src/data/execution-flows.ts",
+      "url": "/learn-claude-code/files/web/src/data/execution-flows.ts",
+      "label": "web/src/data/execution-flows.ts"
+    },
+    {
+      "path": "web/src/data/generated/docs.json",
+      "url": "/learn-claude-code/files/web/src/data/generated/docs.json",
+      "label": "web/src/data/generated/docs.json"
+    },
+    {
+      "path": "web/src/data/generated/versions.json",
+      "url": "/learn-claude-code/files/web/src/data/generated/versions.json",
+      "label": "web/src/data/generated/versions.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s01.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s01.json",
+      "label": "web/src/data/scenarios/s01.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s02.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s02.json",
+      "label": "web/src/data/scenarios/s02.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s03.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s03.json",
+      "label": "web/src/data/scenarios/s03.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s04.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s04.json",
+      "label": "web/src/data/scenarios/s04.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s05.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s05.json",
+      "label": "web/src/data/scenarios/s05.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s06.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s06.json",
+      "label": "web/src/data/scenarios/s06.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s07.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s07.json",
+      "label": "web/src/data/scenarios/s07.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s08.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s08.json",
+      "label": "web/src/data/scenarios/s08.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s09.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s09.json",
+      "label": "web/src/data/scenarios/s09.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s10.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s10.json",
+      "label": "web/src/data/scenarios/s10.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s11.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s11.json",
+      "label": "web/src/data/scenarios/s11.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s12.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s12.json",
+      "label": "web/src/data/scenarios/s12.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s13.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s13.json",
+      "label": "web/src/data/scenarios/s13.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s14.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s14.json",
+      "label": "web/src/data/scenarios/s14.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s15.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s15.json",
+      "label": "web/src/data/scenarios/s15.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s16.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s16.json",
+      "label": "web/src/data/scenarios/s16.json"
+    },
+    {
+      "path": "web/src/data/scenarios/s17.json",
+      "url": "/learn-claude-code/files/web/src/data/scenarios/s17.json",
+      "label": "web/src/data/scenarios/s17.json"
+    },
+    {
+      "path": "web/src/i18n/messages/en.json",
+      "url": "/learn-claude-code/files/web/src/i18n/messages/en.json",
+      "label": "web/src/i18n/messages/en.json"
+    }
+  ]
+}

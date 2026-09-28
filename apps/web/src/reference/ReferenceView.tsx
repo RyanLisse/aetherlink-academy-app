@@ -1,6 +1,7 @@
 import {useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent} from 'react';
 import type {SearchHit} from '@academy/actions';
 import {Deck} from '@academy/deck';
+import officialDocumentation from '../../../../content/official-documentation.json' with {type: 'json'};
 import {LanguageToggle, useI18n} from '../i18n.tsx';
 import {dayPath, REFERENCE_DAYS, slideAnchor, type ReferenceDay} from './days.ts';
 import {bundledSearch, snippetRuns, type ReferenceSearch} from './search.ts';
@@ -12,6 +13,9 @@ const COPY = {
     title: 'Reference',
     days: 'Days',
     glossary: 'Glossary',
+    glossaryIntro: 'Course terms with links to primary documentation from Claude Code, Anthropic, the Model Context Protocol, and n8n.',
+    glossarySearch: 'Filter glossary terms',
+    glossaryNoMatches: 'No matching terms.',
     day: 'Day',
     slides: 'slides',
     searchLabel: 'Search lessons, slides and assignments',
@@ -19,12 +23,14 @@ const COPY = {
     results: 'Results',
     noResults: 'No results.',
     bundledNotice: 'Searches the course text bundled with this page.',
-    glossaryEmpty: 'No glossary has been imported for this course yet. Terms appear here once the curriculum importer provides them.',
   },
   nl: {
     title: 'Naslag',
     days: 'Dagen',
     glossary: 'Woordenlijst',
+    glossaryIntro: 'Cursusbegrippen met links naar primaire documentatie van Claude Code, Anthropic, het Model Context Protocol en n8n.',
+    glossarySearch: 'Filter woordenlijstbegrippen',
+    glossaryNoMatches: 'Geen overeenkomende begrippen.',
     day: 'Dag',
     slides: 'slides',
     searchLabel: 'Zoek in lessen, slides en opdrachten',
@@ -32,9 +38,53 @@ const COPY = {
     results: 'Resultaten',
     noResults: 'Geen resultaten.',
     bundledNotice: 'Zoekt in de cursustekst die met deze pagina is meegeleverd.',
-    glossaryEmpty: 'Voor deze cursus is nog geen woordenlijst geïmporteerd. Termen verschijnen hier zodra de curriculum-importer ze levert.',
   },
 } as const;
+
+export interface OfficialGlossarySource {
+  readonly title: string;
+  readonly url: string;
+}
+
+export interface OfficialGlossaryTerm {
+  readonly id: string;
+  readonly term: string;
+  readonly definition: string;
+  readonly sources: ReadonlyArray<OfficialGlossarySource>;
+  readonly chapterIds: ReadonlyArray<string>;
+  readonly days: ReadonlyArray<number>;
+}
+
+const GLOSSARY_TERMS = officialDocumentation.terms as ReadonlyArray<OfficialGlossaryTerm>;
+
+export function filterGlossaryTerms(terms: ReadonlyArray<OfficialGlossaryTerm>, query: string): ReadonlyArray<OfficialGlossaryTerm> {
+  const normalized = query.trim().toLocaleLowerCase('en');
+  if (!normalized) return terms;
+  return terms.filter((entry) => [entry.term, entry.definition, ...entry.sources.map((source) => source.title)]
+    .some((value) => value.toLocaleLowerCase('en').includes(normalized)));
+}
+
+export function OfficialGlossaryEntries({terms}: {readonly terms: ReadonlyArray<OfficialGlossaryTerm>}) {
+  return (
+    <dl className="reference-glossary-list">
+      {terms.map((entry) => (
+        <div className="reference-glossary-entry" key={entry.id}>
+          <dt>{entry.term}</dt>
+          <dd>
+            <p>{entry.definition}</p>
+            <ul aria-label={`${entry.term} documentation`}>
+              {entry.sources.map((source) => (
+                <li key={source.url}>
+                  <a href={source.url} target="_blank" rel="noopener noreferrer">{source.title}</a>
+                </li>
+              ))}
+            </ul>
+          </dd>
+        </div>
+      ))}
+    </dl>
+  );
+}
 
 export type ReferencePage = {readonly kind: 'index'} | {readonly kind: 'day'; readonly day: ReferenceDay} | {readonly kind: 'glossary'};
 
@@ -59,7 +109,9 @@ export function ReferenceView({page, navigate, search, anchor = null}: Reference
   const copy = COPY[locale];
   const runSearch = useMemo(() => search ?? bundledSearch(REFERENCE_DAYS), [search]);
   const [query, setQuery] = useState('');
+  const [glossaryQuery, setGlossaryQuery] = useState('');
   const [hits, setHits] = useState<ReadonlyArray<SearchHit> | null>(null);
+  const glossaryTerms = useMemo(() => filterGlossaryTerms(GLOSSARY_TERMS, glossaryQuery), [glossaryQuery]);
 
   const submit = async (value: string) => {
     const trimmed = value.trim();
@@ -144,7 +196,14 @@ export function ReferenceView({page, navigate, search, anchor = null}: Reference
       {page.kind === 'glossary' && (
         <section className="reference-glossary" aria-label={copy.glossary}>
           <h1>{copy.glossary}</h1>
-          <p>{copy.glossaryEmpty}</p>
+          <p className="reference-glossary-intro">{copy.glossaryIntro}</p>
+          <label className="reference-glossary-search" htmlFor="glossary-query">{copy.glossarySearch}</label>
+          <input id="glossary-query" type="search" value={glossaryQuery} onChange={(event) => setGlossaryQuery(event.target.value)} />
+          {glossaryTerms.length === 0 ? (
+            <p className="reference-glossary-empty">{copy.glossaryNoMatches}</p>
+          ) : (
+            <OfficialGlossaryEntries terms={glossaryTerms} />
+          )}
         </section>
       )}
       {page.kind === 'day' && <ReferenceDayReader day={page.day} anchor={anchor} />}

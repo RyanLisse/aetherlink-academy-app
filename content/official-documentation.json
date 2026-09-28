@@ -1,0 +1,433 @@
+{
+  "checkedOn": "2026-09-28",
+  "terms": [
+    {
+      "id": "agent-loop",
+      "term": "Agent loop",
+      "definition": "A repeated cycle in which an agent gathers context, takes an action with a tool, reads the result, and continues until it stops or the task is complete.",
+      "sources": [
+        {
+          "title": "How Claude Code works: the agentic loop",
+          "url": "https://code.claude.com/docs/en/how-claude-code-works"
+        }
+      ],
+      "chapterIds": [
+        "s01",
+        "legacy-s01"
+      ],
+      "days": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": "tool-use",
+      "term": "Tool use",
+      "definition": "The model requests a named tool with structured input; the host runs it and returns the result so the model can choose what to do next.",
+      "sources": [
+        {
+          "title": "Claude API: tool use overview",
+          "url": "https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview"
+        }
+      ],
+      "chapterIds": [
+        "s02",
+        "legacy-s02"
+      ],
+      "days": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": "permission-rule",
+      "term": "Permission rule",
+      "definition": "A rule that controls which tool actions can proceed automatically, require approval, or are denied.",
+      "sources": [
+        {
+          "title": "Claude Code: configure permissions",
+          "url": "https://code.claude.com/docs/en/permissions"
+        }
+      ],
+      "chapterIds": [
+        "s03"
+      ],
+      "days": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": "hook",
+      "term": "Hook",
+      "definition": "A configured command, prompt, or other handler that runs at a Claude Code lifecycle event, such as before or after a tool call.",
+      "sources": [
+        {
+          "title": "Claude Code: automate actions with hooks",
+          "url": "https://code.claude.com/docs/en/hooks-guide"
+        }
+      ],
+      "chapterIds": [
+        "s04"
+      ],
+      "days": [
+        2
+      ]
+    },
+    {
+      "id": "task-list",
+      "term": "Task list",
+      "definition": "A structured checklist of work items that an agent can use to plan, track progress, and see what remains.",
+      "sources": [
+        {
+          "title": "Claude Agent SDK: track todos",
+          "url": "https://code.claude.com/docs/en/agent-sdk/todo-tracking"
+        }
+      ],
+      "chapterIds": [
+        "s05",
+        "legacy-s03"
+      ],
+      "days": []
+    },
+    {
+      "id": "subagent",
+      "term": "Subagent",
+      "definition": "A specialized agent that handles a focused task in its own context and returns its findings or result to the coordinating agent.",
+      "sources": [
+        {
+          "title": "Claude Code: create custom subagents",
+          "url": "https://code.claude.com/docs/en/sub-agents"
+        }
+      ],
+      "chapterIds": [
+        "s06",
+        "legacy-s04"
+      ],
+      "days": [
+        2
+      ]
+    },
+    {
+      "id": "skill",
+      "term": "Skill",
+      "definition": "Reusable instructions or reference material that Claude Code can load when relevant or when a user invokes it.",
+      "sources": [
+        {
+          "title": "Claude Code: extend Claude with skills",
+          "url": "https://code.claude.com/docs/en/skills"
+        }
+      ],
+      "chapterIds": [
+        "s07",
+        "legacy-s05"
+      ],
+      "days": [
+        2
+      ]
+    },
+    {
+      "id": "context-window",
+      "term": "Context window",
+      "definition": "The working space for the current model interaction, including conversation history, instructions, tool results, and other loaded material.",
+      "sources": [
+        {
+          "title": "Claude Code: explore the context window",
+          "url": "https://code.claude.com/docs/en/context-window"
+        }
+      ],
+      "chapterIds": [
+        "s08",
+        "legacy-s06"
+      ],
+      "days": []
+    },
+    {
+      "id": "compaction",
+      "term": "Compaction",
+      "definition": "Summarizing earlier conversation context to make room for more work while retaining information judged useful for continuing.",
+      "sources": [
+        {
+          "title": "Claude Code: how context is managed",
+          "url": "https://code.claude.com/docs/en/how-claude-code-works"
+        }
+      ],
+      "chapterIds": [
+        "s08",
+        "legacy-s06"
+      ],
+      "days": []
+    },
+    {
+      "id": "claude-md",
+      "term": "CLAUDE.md",
+      "definition": "A Markdown instruction file that Claude Code reads to get project or personal context, conventions, and guidance for a session.",
+      "sources": [
+        {
+          "title": "Claude Code: how Claude remembers your project",
+          "url": "https://code.claude.com/docs/en/memory"
+        }
+      ],
+      "chapterIds": [
+        "s09",
+        "s15"
+      ],
+      "days": [
+        1,
+        2
+      ]
+    },
+    {
+      "id": "auto-memory",
+      "term": "Auto memory",
+      "definition": "Notes Claude Code saves from a project session and can load in later sessions; it is separate from the instructions in CLAUDE.md.",
+      "sources": [
+        {
+          "title": "Claude Code: how Claude remembers your project",
+          "url": "https://code.claude.com/docs/en/memory"
+        }
+      ],
+      "chapterIds": [
+        "s09"
+      ],
+      "days": []
+    },
+    {
+      "id": "session",
+      "term": "Session",
+      "definition": "A Claude Code conversation with its own history and context that can be resumed or forked.",
+      "sources": [
+        {
+          "title": "Claude Code: manage sessions",
+          "url": "https://code.claude.com/docs/en/sessions"
+        }
+      ],
+      "chapterIds": [
+        "s09",
+        "s13"
+      ],
+      "days": []
+    },
+    {
+      "id": "task-graph",
+      "term": "Task graph",
+      "definition": "A set of tasks connected by dependencies, where a task can become ready when its prerequisites are complete.",
+      "sources": [
+        {
+          "title": "Claude Code: orchestrate teams of sessions",
+          "url": "https://code.claude.com/docs/en/agent-teams"
+        }
+      ],
+      "chapterIds": [
+        "s10",
+        "legacy-s07",
+        "s13"
+      ],
+      "days": []
+    },
+    {
+      "id": "background-task",
+      "term": "Background task",
+      "definition": "Work that continues while the main interaction proceeds, with a later result or status available to the caller.",
+      "sources": [
+        {
+          "title": "Claude Code: automatic backgrounding of long tool calls",
+          "url": "https://code.claude.com/docs/en/mcp#automatic-backgrounding-of-long-tool-calls"
+        }
+      ],
+      "chapterIds": [
+        "s11",
+        "legacy-s08"
+      ],
+      "days": []
+    },
+    {
+      "id": "scheduled-task",
+      "term": "Scheduled task",
+      "definition": "A prompt configured to run again at a chosen time or interval; the exact scheduling behavior depends on the host product.",
+      "sources": [
+        {
+          "title": "Claude Code: run prompts on a schedule",
+          "url": "https://code.claude.com/docs/en/scheduled-tasks"
+        }
+      ],
+      "chapterIds": [
+        "s12"
+      ],
+      "days": []
+    },
+    {
+      "id": "agent-team",
+      "term": "Agent team",
+      "definition": "A group of separate Claude Code sessions coordinated through shared tasks and messages to work on related parts of a project.",
+      "sources": [
+        {
+          "title": "Claude Code: orchestrate teams of sessions",
+          "url": "https://code.claude.com/docs/en/agent-teams"
+        }
+      ],
+      "chapterIds": [
+        "s13",
+        "legacy-s09",
+        "legacy-s10"
+      ],
+      "days": []
+    },
+    {
+      "id": "mcp",
+      "term": "Model Context Protocol (MCP)",
+      "definition": "An open protocol for connecting AI applications to external tools and data sources through a common client-server interface.",
+      "sources": [
+        {
+          "title": "Model Context Protocol: introduction",
+          "url": "https://modelcontextprotocol.io/docs/2026-07-28/getting-started/intro"
+        },
+        {
+          "title": "Claude Code: connect to tools via MCP",
+          "url": "https://code.claude.com/docs/en/mcp"
+        }
+      ],
+      "chapterIds": [
+        "s14"
+      ],
+      "days": [
+        2,
+        4
+      ]
+    },
+    {
+      "id": "mcp-tool",
+      "term": "MCP tool",
+      "definition": "A server-exposed function that an MCP client can discover and call to read information or perform an operation.",
+      "sources": [
+        {
+          "title": "Model Context Protocol: server features",
+          "url": "https://modelcontextprotocol.io/specification/2026-07-28/server"
+        }
+      ],
+      "chapterIds": [
+        "s02",
+        "s14"
+      ],
+      "days": [
+        2,
+        4
+      ]
+    },
+    {
+      "id": "agentic-harness",
+      "term": "Agentic harness",
+      "definition": "The surrounding software layer that provides an agent's tools and manages the context it sees. This is a general architecture term, not a claim that every harness works the same way.",
+      "sources": [
+        {
+          "title": "How Claude Code works: the harness layer",
+          "url": "https://code.claude.com/docs/en/how-claude-code-works"
+        }
+      ],
+      "chapterIds": [
+        "s01",
+        "s15"
+      ],
+      "days": []
+    },
+    {
+      "id": "integrated-harness",
+      "term": "Integrated harness (course model)",
+      "definition": "The Learn Claude Code course's assembled example runtime. Its implementation is a teaching model and should not be assumed to match Claude Code internals.",
+      "sources": [
+        {
+          "title": "Claude Code: how the product works",
+          "url": "https://code.claude.com/docs/en/how-claude-code-works"
+        }
+      ],
+      "chapterIds": [
+        "s15"
+      ],
+      "days": []
+    },
+    {
+      "id": "workflow",
+      "term": "Workflow",
+      "definition": "A defined sequence or graph of steps that moves data or work from a trigger through operations to an outcome.",
+      "sources": [
+        {
+          "title": "n8n: build your first workflow",
+          "url": "https://docs.n8n.io/build-your-first-workflow"
+        }
+      ],
+      "chapterIds": [
+        "s16"
+      ],
+      "days": [
+        3
+      ]
+    },
+    {
+      "id": "workflow-runtime",
+      "term": "Workflow runtime (course model)",
+      "definition": "The course's framework layer for coordinating scripted workflow steps and task state. This is a teaching abstraction, not a description of Claude Code's internal runtime.",
+      "sources": [
+        {
+          "title": "Claude Code: dynamic workflows",
+          "url": "https://code.claude.com/docs/en/workflows"
+        }
+      ],
+      "chapterIds": [
+        "s16"
+      ],
+      "days": [
+        2,
+        4
+      ]
+    },
+    {
+      "id": "goal-loop",
+      "term": "Goal loop (course model)",
+      "definition": "The course's pattern of checking an explicit completion condition after a turn and continuing when the condition is unmet; it is a teaching model, not a claim that Claude Code uses the same mechanism.",
+      "sources": [
+        {
+          "title": "Claude Code: keep working toward a goal",
+          "url": "https://code.claude.com/docs/en/goal"
+        }
+      ],
+      "chapterIds": [
+        "s17",
+        "legacy-s11"
+      ],
+      "days": []
+    },
+    {
+      "id": "git-worktree",
+      "term": "Git worktree",
+      "definition": "A separate working directory linked to the same Git repository, allowing branches to be checked out and edited side by side.",
+      "sources": [
+        {
+          "title": "Claude Code: run parallel sessions with worktrees",
+          "url": "https://code.claude.com/docs/en/worktrees"
+        }
+      ],
+      "chapterIds": [
+        "s13",
+        "legacy-s12"
+      ],
+      "days": []
+    },
+    {
+      "id": "n8n",
+      "term": "n8n",
+      "definition": "A workflow automation platform where workflows connect triggers, data transformations, logic, and integrations as nodes.",
+      "sources": [
+        {
+          "title": "n8n: build your first workflow",
+          "url": "https://docs.n8n.io/build-your-first-workflow"
+        }
+      ],
+      "chapterIds": [
+        "s16"
+      ],
+      "days": [
+        3
+      ]
+    }
+  ]
+}
