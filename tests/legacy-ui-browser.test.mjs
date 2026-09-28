@@ -92,13 +92,30 @@ test('participant views: loading, empty, error and offline states are visible an
     await page.goto(`${fixture.base}/#access=${fixture.participantAccess}`);
     await page.getByRole('heading',{name:'Squad Noord'}).waitFor();
     const nav=name=>page.getByRole('navigation',{name:'Hoofdnavigatie'}).getByRole('button',{name,exact:true});
-    for(const [label,ready] of [['Mijn route','Vijf dagen. Echte voortgang.'],['Les & quick check',null],['Solo-missie',null],['Naslag','Alles wat al vrijgegeven is, om na te lezen'],['Review & overdracht','Alles klaar voor overdracht?']]){
+    for(const [label,ready] of [['Mijn route','Vijf dagen. Echte voortgang.'],['Les',null],['Solo-missie',null],['Naslag','Alles wat al vrijgegeven is, om na te lezen'],['Review & overdracht','Alles klaar voor overdracht?']]){
       await nav(label).click();
       await page.waitForFunction(()=>!document.querySelector('.primary [data-status="loading"]'),null,{timeout:10000});
       assert.equal(await page.locator('.primary').innerText().then(text=>text.trim().length>0),true,`${label} is never blank`);
       assert.deepEqual(await blockingViolations(page),[],label);
       if(ready)assert.ok(await page.locator('.primary').getByText(ready).first().isVisible(),`${label} shows ${ready}`);
     }
+
+    await nav('Les').click();
+    await page.getByTestId('course-pages').waitFor();
+    const courseNav=page.getByRole('navigation',{name:"Cursuspagina's"});
+    assert.ok(await courseNav.isVisible(),'participants can reach the course pages from Lesson');
+    assert.equal(await page.getByTestId('lesson-panel').getByTestId('classroom-exercises').count(),0,'assignments are not embedded in Lesson');
+    await courseNav.getByRole('button',{name:'Quiz',exact:true}).click();
+    assert.ok(await page.getByTestId('quiz-page').isVisible(),'quiz has its own course page');
+    const answer=page.locator('[data-testid="quiz-page"] input[type="radio"]').first();
+    await answer.check();
+    await courseNav.getByRole('button',{name:'Opdrachten',exact:true}).click();
+    assert.ok(await page.getByTestId('assignments-page').getByTestId('classroom-exercises').isVisible(),'assignments have their own course page');
+    assert.equal(await page.locator('[data-testid="quiz-page"] form').isVisible(),false,'quiz is hidden while Assignments is open');
+    assert.deepEqual(await blockingViolations(page),[],'assignment page passes axe');
+    await courseNav.getByRole('button',{name:'Quiz',exact:true}).click();
+    assert.equal(await answer.isChecked(),true,'switching pages preserves the in-progress quiz answers');
+    assert.deepEqual(await blockingViolations(page),[],'quiz page passes axe');
 
     assert.equal(await nav('Debriefbord').count(),0,'participants only see the board once it exists');
 
@@ -166,6 +183,9 @@ test('facilitator workshop landing keeps settings tucked away and exposes usable
     await page.getByRole('button',{name:/Reflecteer samen/}).click();
     await page.getByRole('heading',{name:'Squad Noord · dag 2'}).waitFor();
     assert.ok(await page.getByText('Voortgang van de huidige dag.',{exact:false}).isVisible(),'workshop agenda opens the facilitator debrief for the selected day');
+    await page.locator('.simple-more > summary').click();
+    await page.getByRole('button',{name:'Les',exact:true}).click();
+    assert.ok(await page.getByRole('navigation',{name:"Cursuspagina's"}).isVisible(),'facilitators see the same Lesson, Assignments, and Quiz navigation');
   });
 });
 

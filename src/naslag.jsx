@@ -44,7 +44,7 @@ export function Naslag({room,action,busy,onNavigate}){
     <p className="naslag-links"><a href="/reference" target="_blank" rel="noopener noreferrer"><BookText size={15} aria-hidden="true"/>{t('naslag.deckReference')}<ExternalLink size={12} aria-hidden="true"/></a><a href="/reference/glossary" target="_blank" rel="noopener noreferrer">{t('naslag.glossary')}<ExternalLink size={12} aria-hidden="true"/></a></p>
     {open&&<div className="naslag-day">
       <p className="naslag-links"><a href={`/reference/day/${open.day}`} target="_blank" rel="noopener noreferrer">{t('naslag.dayDeck',{day:open.day})}<ExternalLink size={12} aria-hidden="true"/></a></p>
-      <Lesson key={open.day} room={room} action={action} busy={busy} day={open.day}/>
+      <Lesson key={open.day} room={room} action={action} busy={busy} day={open.day} onNavigate={onNavigate}/>
     </div>}
   </section>;
 }
