@@ -44,11 +44,11 @@ const en = {
  demo:{
   slides:DEMO_SLIDES,
   script:[
-   'Show the agency-ladder diagram: L1 Switch (no LLM) → L2 Agent + memory → L3 Reply + Risk, one human gate; labels stay fixed.',
-   'Step the ConceptSim (WL-1026 climbs L1→L2→L3 as high) — no API key required.',
    'L1 (slide 6): import n8n-triage-l1-switch.json, open the Switch, show the branches, run fixture tickets and compare each label.',
    'L2 (slide 9): show the AI Agent with memory, the proposed priority, and the pause for human review. This is the solo bar.',
    'L3 (slide 12, stretch): name the two roles Customer Reply and Risk and the one human gate.',
+   'Show the agency-ladder diagram: L1 Switch (no LLM) → L2 Agent + memory → L3 Reply + Risk, one human gate; labels stay fixed.',
+   'Step the ConceptSim (WL-1026 climbs L1→L2→L3 as high) — no API key required.',
   ]
  },
  solo:[
@@ -121,11 +121,11 @@ const nl = {
  demo:{
   slides:DEMO_SLIDES,
   script:[
-   'Toon het agency-ladderdiagram: L1 Switch (geen LLM) → L2 Agent + memory → L3 Reply + Risk, één menselijke gate; labels blijven vast.',
-   'Stap de ConceptSim (WL-1026 klimt L1→L2→L3 als high) — geen API-sleutel nodig.',
    'L1 (dia 6): importeer n8n-triage-l1-switch.json, open de Switch, laat de takken zien, run de fixture-tickets en vergelijk elk label met de fixture.',
    'L2 (dia 9): toon de AI Agent met memory, de voorgestelde prioriteit en de pauze voor menselijke review. Dit is de solo-lat.',
    'L3 (dia 12, stretch): benoem de twee rollen Customer Reply en Risk en de ene menselijke gate.',
+   'Toon het agency-ladderdiagram: L1 Switch (geen LLM) → L2 Agent + memory → L3 Reply + Risk, één menselijke gate; labels blijven vast.',
+   'Stap de ConceptSim (WL-1026 klimt L1→L2→L3 als high) — geen API-sleutel nodig.',
   ]
  },
  solo:[
