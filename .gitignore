@@ -18,3 +18,7 @@ vendor/proof-sdk/.git/
 .DS_Store
 **/dist-server/
 .crabbox/
+
+# verify-academy local state + proof (never commit screenshots)
+.cursor/skills/verify-academy/.run/
+.cursor/skills/verify-academy/artifacts/
