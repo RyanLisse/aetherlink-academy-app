@@ -15,6 +15,7 @@ import {connectBoard} from './board-doc';
 import {ArcadeApp, isArcadePath} from './arcade/ArcadeApp.jsx';
 import {StatusState} from './status';
 import {classifyJoinError} from './join-errors.mjs';
+import './tailwind.css';
 import './style.css';
 import {FacilitatorWorkspace} from './facilitator-workspace';
 

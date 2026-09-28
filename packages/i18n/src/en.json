@@ -828,5 +828,12 @@
   "coach.eyebrowClaude": "Your own Claude Code",
   "coach.eyebrowCodex": "Your own Codex",
   "coach.facilitatorLedeClaude": "Use your own Claude Code to create and edit slide decks for this room. Read each slide before editing; review the result before presenting.",
-  "coach.facilitatorLedeCodex": "Use your own Codex to create and edit slide decks for this room. Read each slide before editing; review the result before presenting."
+  "coach.facilitatorLedeCodex": "Use your own Codex to create and edit slide decks for this room. Read each slide before editing; review the result before presenting.",
+  "chat.emptyTitle": "No questions yet",
+  "chat.emptyBody": "Ask about today’s day pack: where to find your assignment, how to hand in evidence, what the next step is.",
+  "chat.scrollLatest": "Jump to the latest answer",
+  "coach.statusBadge.configured": "Not connected",
+  "coach.statusBadge.waiting": "Waiting",
+  "coach.statusBadge.verified": "Verified",
+  "coach.statusBadge.expired": "Expired"
 }
