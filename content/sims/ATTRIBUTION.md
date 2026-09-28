@@ -48,3 +48,12 @@ Diagrams under `public/diagrams/harness/*.svg` are the EN SVGs from the same ups
 `fixture-agent-loop.json` is an Academy **surface** fixture for Slice 0. It
 demonstrates the player only; it is **not** a Harness Engineering chapter.
 Classroom day 1 still references it for surface proof.
+
+## Workshop retrofit sims (AET-118)
+
+| Id | Notes |
+|---|---|
+| `w5-sdlc-loop.json` | Academy-authored Plan→gate step-through for Workshop 5 / AET-77 (P0). Scenario shape compatible with learn-claude-code; **not** an upstream chapter port. Real `locales:{en,nl}`. |
+
+Diagram: `public/diagrams/workshop/w5-harness-loop.svg` (Academy-authored).
+

@@ -40,3 +40,5 @@ Failing the bar = **REJECT** until fixed.
 ## Retrofit priority (Must B · not Slice 0)
 
 P0 Workshop 5 (AET-77) → P1 Workshop 4 (AET-80) → P2 Workshop 3 (AET-79). W6/W7 not forced. See PRODUCT-ACCEPT for the epic.
+
+**P0 status:** Workshop 5 ships harness-loop diagram (`public/diagrams/workshop/w5-harness-loop.svg`) + ConceptSim `w5-sdlc-loop` (EN+NL) while keeping Apple bar / Uitleg→Voordoen→Zelf doen and the daily-brief lab vehicle. Do not start P1 until CoS poteto.
