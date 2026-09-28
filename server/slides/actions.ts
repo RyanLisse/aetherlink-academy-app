@@ -32,7 +32,8 @@ const buildSlides=(inputs:readonly SlideInput[])=>Effect.map(Effect.forEach(inpu
 
 const summary=(deck:Deck)=>({id:deck.id,title:deck.title,aspectRatio:deck.aspectRatio,slideCount:deck.slides.length,revision:deck.revision,createdBy:deck.createdBy,createdAt:deck.createdAt,updatedAt:deck.updatedAt,hasDesignSystem:Boolean(deck.designSystem)});
 const compactSlide=(slide:Slide,index:number)=>({slideNumber:index+1,id:slide.id,layout:slide.layout,contentHash:hashSlideContent(slide.content),textPreview:textPreview(slide.content),hasNotes:Boolean(slide.notes),transition:slide.transition,background:slide.background});
-const fullSlide=(slide:Slide,index:number)=>({...compactSlide(slide,index),content:slide.content,notes:slide.notes});
+const fullSlide=(slide:Slide,index:number,includeNotes:boolean)=>({...compactSlide(slide,index),content:slide.content,...(includeNotes?{notes:slide.notes}:{})});
+const canReadNotes=(actor:Actor,deck:Deck)=>actor.role==='facilitator'||deck.createdBy.id===actor.id;
 const slideIndex=(deck:Deck,slideId:string)=>{const index=deck.slides.findIndex(slide=>slide.id===slideId);return index===-1?Effect.fail(new SlideNotFound({deckId:deck.id,slideId})):Effect.succeed(index);};
 const insertAt=(slides:readonly Slide[],slide:Slide,afterSlideId:string|undefined)=>{const at=afterSlideId?slides.findIndex(candidate=>candidate.id===afterSlideId):-1;const next=[...slides];next.splice(at===-1?next.length:at+1,0,slide);return next;};
 const revisionGuard=(deck:Deck,expected:number|undefined)=>expected!==undefined&&expected!==deck.revision?Effect.fail(new RevisionConflict({deckId:deck.id,expected,actual:deck.revision})):Effect.void;
@@ -56,9 +57,10 @@ export const makeDeckActions=Effect.gen(function*(){
  const getDeck=(actor:Actor,raw:unknown)=>Effect.gen(function*(){
   const input=yield* parse(GetDeckInput)(raw);
   const deck=yield* owned(actor,input.deckId);
-  if(input.slideId){const index=yield* slideIndex(deck,input.slideId);return {deckId:deck.id,revision:deck.revision,aspectRatio:deck.aspectRatio,slide:fullSlide(deck.slides[index]!,index)};}
+  const includeNotes=actor.role==='facilitator'||deck.createdBy.id===actor.id;
+  if(input.slideId){const index=yield* slideIndex(deck,input.slideId);return {deckId:deck.id,revision:deck.revision,aspectRatio:deck.aspectRatio,slide:fullSlide(deck.slides[index]!,index,includeNotes)};}
   const compact=input.compact??false;
-  return {...summary(deck),designSystem:deck.designSystem,slides:deck.slides.map(compact?compactSlide:fullSlide)};
+  return {...summary(deck),designSystem:deck.designSystem,slides:deck.slides.map((slide,index)=>compact?compactSlide(slide,index):fullSlide(slide,index,includeNotes))};
  });
 
  const addSlide=(actor:Actor,raw:unknown)=>Effect.gen(function*(){
@@ -66,6 +68,7 @@ export const makeDeckActions=Effect.gen(function*(){
   let added:Slide|undefined;
   const deck=yield* modifyOwned(actor,input.deckId,deck=>Effect.gen(function*(){
    yield* revisionGuard(deck,input.expectedRevision);
+   if(input.notes!==undefined&&!canReadNotes(actor,deck))return yield* Effect.fail(new Forbidden({reason:'Only the facilitator or deck owner can read or edit presenter notes.'}));
    if(input.afterSlideId)yield* slideIndex(deck,input.afterSlideId);
    const existing=new Set(deck.slides.map(slide=>slide.id));
    const slide=yield* buildSlide({...input,id:input.id&&!existing.has(input.id)?input.id:undefined});
@@ -85,6 +88,7 @@ export const makeDeckActions=Effect.gen(function*(){
   const deck=yield* modifyOwned(actor,input.deckId,deck=>Effect.gen(function*(){
    const index=yield* slideIndex(deck,input.slideId);
    const slide=deck.slides[index]!;
+   if(input.notes!==undefined&&!canReadNotes(actor,deck))return yield* Effect.fail(new Forbidden({reason:'Only the facilitator or deck owner can read or edit presenter notes.'}));
    previousHash=hashSlideContent(slide.content);
    if(input.baseContentHash!==undefined&&input.baseContentHash!==previousHash)return yield* Effect.fail(new StaleContent({deckId:deck.id,slideId:slide.id,currentHash:previousHash}));
    let content=slide.content;
@@ -119,6 +123,7 @@ export const makeDeckActions=Effect.gen(function*(){
   let before=new Map<string,string>();
   const deck=yield* modifyOwned(actor,input.deckId,deck=>Effect.gen(function*(){
    yield* revisionGuard(deck,input.expectedRevision);
+   if(!canReadNotes(actor,deck)&&input.operations.some(operation=>(operation.op==='patch-slide'&&operation.fields.notes!==undefined)||(operation.op==='add-slide'&&operation.slide.notes!==undefined)))return yield* Effect.fail(new Forbidden({reason:'Only the facilitator or deck owner can read or edit presenter notes.'}));
    before=new Map(deck.slides.map(slide=>[slide.id,hashSlideContent(slide.content)]));
    return yield* Effect.reduce(input.operations,deck,applyOperation);
   }));
@@ -145,7 +150,7 @@ export const makeDeckActions=Effect.gen(function*(){
   const {deckId}=yield* parse(DeckIdInput)(raw);
   const source=yield* owned(actor,deckId);
   const now=new Date().toISOString();
-  const copy=yield* repo.insert(new Deck({...source,id:randomUUID(),title:`${source.title} (kopie)`,slides:source.slides.map(slide=>new Slide({...slide,id:newSlideId()})),revision:1,createdBy:{id:actor.id,name:actor.name},createdAt:now,updatedAt:now}));
+  const copy=yield* repo.insert(new Deck({...source,id:randomUUID(),title:`${source.title} (kopie)`,slides:source.slides.map(slide=>new Slide({...slide,id:newSlideId(),...(!canReadNotes(actor,source)?{notes:''}:{})})),revision:1,createdBy:{id:actor.id,name:actor.name},createdAt:now,updatedAt:now}));
   return {...summary(copy),sourceDeckId:source.id};
  });
 

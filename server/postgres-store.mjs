@@ -153,9 +153,10 @@ export class PostgresStore {
  async rotateMcpToken(token) {
   return this.transaction(async client=>{
    const {r,p,s}=writable(await this.authenticated(client,token,'browser',true));
-   if (!p) fail(403,'Gebruik hiervoor een deelnemerssessie.');
-   await client.query("DELETE FROM sessions WHERE room_id=$1 AND person_id=$2 AND kind='mcp'",[r.id,p.id]);
-   return {token:await this.session(client,r.id,p.id,'mcp',undefined,p.cohortMemberId?{expiresAt:s.expiresAt}:undefined)};
+   if (!p&&s.personId!=='facilitator') fail(403,'Gebruik hiervoor een facilitator- of deelnemerssessie.');
+   const personId=p?.id??'facilitator';
+   await client.query("DELETE FROM sessions WHERE room_id=$1 AND person_id=$2 AND kind='mcp'",[r.id,personId]);
+   return {token:await this.session(client,r.id,personId,'mcp',p?undefined:s.displayName,{expiresAt:s.expiresAt})};
   });
  }
  async control(token,action,value) {

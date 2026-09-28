@@ -1,5 +1,7 @@
 # AetherLink Academy
 
+Current delivery direction: [incremental refactor and agent authoring](docs/decisions/2026-09-28-academy-agent-authoring.md). This decision describes planned changes; existing runtime behavior below is not a claim that hosted chat is already delivered.
+
 Nederlandse leeromgeving met een echt, doorlopend Proof-document, flexibele squads (standaard ~4–5, soft max ~12), één driver, facilitatorbediening, privé-quiz, brongebonden kennisbank en bewijs/review/handoff. Eigen Claude Code werkt via een beperkte MCP-bridge. De app bevat geen modelchat en vraagt geen Anthropic API-key.
 
 Zie [de vijf supportdagen](docs/LEARNING-ROUTE.md) voor inhoud, voortgang en de grenzen van de oefeningen. Squads bewaren bestanden in [objectopslag](docs/OBJECT-STORAGE.md) en bouwen en presenteren ook [slidedecks](docs/SLIDES.md) via de UI of via de eigen Claude Code (MCP-tools `create_deck`, `add_slide`, `update_slide`, `patch_deck`, `export_deck_html`).

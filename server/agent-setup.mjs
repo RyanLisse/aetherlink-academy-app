@@ -1,4 +1,21 @@
 const quote=value=>"'"+value.replaceAll("'","'\\''")+"'";
+export function facilitatorAgentInstructions({origin,roomId,accessToken}) {
+ const name=`academy-facilitator-${roomId.slice(0,8)}`;
+ const command=`claude mcp add --transport http --scope local ${name} ${quote(origin+'/mcp')} --header ${quote('Authorization: Bearer '+accessToken)}`;
+ return `Connect my own Claude Code as facilitator to my AetherLink Academy room.
+
+Use my existing Claude Code login. Do not ask for an Anthropic API key. This private instruction contains temporary room access; do not put it in shared intent, git, logs, or a reply.
+
+Run this configuration command locally in my current project:
+${command}
+
+If this exact MCP configuration already exists, replace only ${name}. Use local scope and do not share the configuration through .mcp.json. Load the connection with /mcp; restart Claude Code once in this project if the tools do not appear.
+
+Call get_mission on ${name} and verify session.roomId=${roomId} and session.role=facilitator. Work only in this room. Use list_decks, get_deck, create_deck, add_slide, update_slide, patch_deck, and export_deck_html for squad decks. Call pin_classroom_deck only when an explicit facilitator instruction asks to show a deck for the classroom day; this changes the active Classroom overlay. Do not ask participants for access tokens or submit evidence on their behalf. Speaker notes on facilitator-owned decks are private; do not repeat them to participants. Claim a connection only after a successful MCP tool call.
+
+Academy does not start a model or take over my Claude account. When access expires, I will copy this instruction again from my facilitator room session.`;
+}
+
 export function agentInstructions({origin,roomId,participantId,accessToken}) {
  const name=`academy-${roomId.slice(0,8)}-${participantId.slice(0,8)}`;
  const command=`claude mcp add --transport http --scope local ${name} ${quote(origin+'/mcp')} --header ${quote('Authorization: Bearer '+accessToken)}`;
