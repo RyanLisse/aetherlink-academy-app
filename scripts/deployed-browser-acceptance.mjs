@@ -158,6 +158,25 @@ async function waitForRoom(page, squadName) {
   await expect(page.locator('h1')).toHaveText(squadName, { timeout });
 }
 
+async function participantNavButton(page, label) {
+  const navigation = page.getByRole('navigation', { name: 'Hoofdnavigatie' });
+  const button = navigation.getByRole('button', { name: label, exact: true });
+  if (await button.isVisible()) return button;
+  await navigation.getByRole('button', { name: 'Meer', exact: true }).click();
+  await expect(button).toBeVisible({ timeout });
+  return button;
+}
+
+async function selectParticipantNav(page, label) {
+  await (await participantNavButton(page, label)).click();
+}
+
+async function openParticipantSquad(page) {
+  await selectParticipantNav(page, 'Squad-room');
+  const support = page.getByRole('button', { name: 'Squad en hulp', exact: true });
+  if (await support.getAttribute('aria-expanded') !== 'true') await support.click();
+}
+
 async function waitForJoinResponse(page) {
   const responsePromise = page.waitForResponse(
     response => {
@@ -373,6 +392,7 @@ async function main() {
           }
           for (const [name, page] of participantTuples()) {
             await waitForRoom(page, 'Squad Orion');
+            await openParticipantSquad(page);
             for (const memberName of participantNames) {
               await expect(page.locator('.member').filter({ hasText: memberName })).toHaveCount(1, { timeout });
             }
@@ -666,7 +686,7 @@ async function main() {
           p2Page,
           'knowledge-search.png',
           async () => {
-            await p2Page.getByRole('button', { name: 'Mijn leercoach', exact: true }).click();
+            await selectParticipantNav(p2Page, 'Mijn leercoach');
             const search = p2Page.getByLabel('Zoek in de kennisbank', { exact: true });
             await expect(search).toBeVisible({ timeout });
             await search.fill('MCP');
@@ -682,7 +702,7 @@ async function main() {
           p2Page,
           'quiz-result.png',
           async () => {
-            await p2Page.getByRole('button', { name: 'Les', exact: true }).click();
+            await selectParticipantNav(p2Page, 'Les');
               await p2Page.getByRole('navigation', {name: "Cursuspagina's"}).getByRole('button', {name: 'Quiz', exact: true}).click();
             const correctOptions = [
               'Een begrensd doel met een controle',
@@ -712,7 +732,7 @@ async function main() {
             p3Page,
             null,
             async () => {
-              await p3Page.getByRole('button', { name: 'Les', exact: true }).click();
+              await selectParticipantNav(p3Page, 'Les');
               await p3Page.getByRole('navigation', {name: "Cursuspagina's"}).getByRole('button', {name: 'Quiz', exact: true}).click();
               await expect(p3Page.locator('body')).not.toContainText('3/3', { timeout });
               const p2Result = await p2Page.getByRole('status').innerText();
@@ -728,7 +748,7 @@ async function main() {
           'evidence-submitted.png',
           async () => {
             findingFixture = 'Fixture finding: README.md documents a check that package.json does not expose.';
-            await p2Page.getByRole('button', { name: 'Solo-missie', exact: true }).click();
+            await selectParticipantNav(p2Page, 'Solo-missie');
             const fields = {
               'Bevinding en bestandsverwijzing': findingFixture,
               'Werkelijk uitgevoerd commando': 'node --test starter/status.test.mjs',
@@ -768,7 +788,7 @@ async function main() {
               if (!result.response.ok()) throw new Error(responseError(result.response, result.data));
               await p2Page.reload({ waitUntil: 'domcontentloaded' });
               await waitForRoom(p2Page, 'Squad Orion');
-              await p2Page.getByRole('button', { name: 'Review & overdracht', exact: true }).click();
+              await selectParticipantNav(p2Page, 'Review & overdracht');
               const p2Article = p2Page.getByRole('article').filter({ hasText: findingFixture });
               await expect(p2Article).toHaveCount(1, { timeout });
               await expect(p2Article).toContainText('Menselijk beoordeeld', { timeout });
@@ -827,6 +847,7 @@ async function main() {
           async () => {
             await p1Page.reload({ waitUntil: 'domcontentloaded' });
             await waitForRoom(p1Page, 'Squad Orion');
+            await openParticipantSquad(p1Page);
             await expect(p1Page.locator('.sdlc div.active span')).toHaveText(phaseForPersistence, { timeout });
             await expect(p1Page.locator('.member').filter({ hasText: 'Driver' })).toHaveCount(1, { timeout });
             await proofFrameHeading(p1Page);
@@ -885,10 +906,11 @@ async function main() {
             await freshPage.getByLabel('Kamercode', { exact: true }).fill(squadCode);
             await waitForJoinResponse(freshPage);
             await waitForRoom(freshPage, 'Squad Orion');
+            await openParticipantSquad(freshPage);
             await expect(freshPage.getByRole('heading', { name: 'Jouw squad (5/5)', exact: true })).toBeVisible({ timeout });
             await expect(freshPage.locator('.member')).toHaveCount(5, { timeout });
             await expect(freshPage.locator('.sdlc div.active span')).toHaveText(phaseForPersistence, { timeout });
-            await freshPage.getByRole('button', { name: 'Review & overdracht', exact: true }).click();
+            await selectParticipantNav(freshPage, 'Review & overdracht');
             await expect(freshPage.getByRole('article').filter({ hasText: findingFixture })).toBeVisible({ timeout });
             return { detail: 'fresh context reflects phase and submitted evidence' };
           }

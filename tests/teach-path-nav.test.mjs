@@ -9,13 +9,15 @@ const main = readFileSync(join(root, 'src/main.jsx'), 'utf8');
 const css = readFileSync(join(root, 'src/style.css'), 'utf8');
 const en = JSON.parse(readFileSync(join(root, 'src/i18n/en.json'), 'utf8'));
 const nl = JSON.parse(readFileSync(join(root, 'src/i18n/nl.json'), 'utf8'));
+const packageEn = JSON.parse(readFileSync(join(root, 'packages/i18n/src/en.json'), 'utf8'));
+const packageNl = JSON.parse(readFileSync(join(root, 'packages/i18n/src/nl.json'), 'utf8'));
 
 function teachOrder() {
   const block = main.slice(main.indexOf('teachNavIds=['), main.indexOf('];', main.indexOf('teachNavIds=[')) + 2);
   return [...block.matchAll(/\['(\w+)'/g)].map((m) => m[1]);
 }
 
-test('F1 primary teach order Squad→…→Debrief (exactly 7)', () => {
+test('facilitator teach order remains unchanged', () => {
   assert.deepEqual(teachOrder(), ['squad', 'route', 'lesson', 'solo', 'coach', 'review', 'debrief']);
   assert.match(main, /data-testid="nav-primary"/);
   assert.match(main, /data-nav-tier="teach"/);
@@ -86,4 +88,13 @@ test('AET-115 i18n EN+NL for teach/tools/portal/learner debrief', () => {
   assert.doesNotMatch(en['nav.apps'], /^Apps$/);
   assert.match(en['nav.tools'], /Tools/i);
   assert.match(nl['nav.tools'], /Tools/i);
+});
+
+test('participant navigation labels are translated in EN and NL', () => {
+  for (const key of ['participant.more', 'participant.squadHelp']) {
+    assert.ok(en[key], `missing EN ${key}`);
+    assert.ok(nl[key], `missing NL ${key}`);
+    assert.equal(packageEn[key], en[key], `package translation differs for EN ${key}`);
+    assert.equal(packageNl[key], nl[key], `package translation differs for NL ${key}`);
+  }
 });

@@ -34,7 +34,7 @@ test('a real Arcade lesson embedded in the day-1 lesson reports completion into 
   const page=await context.newPage();
   const state=()=>page.evaluate(async()=>(await fetch('/game/state',{headers:{authorization:`Bearer ${sessionStorage.getItem('academy-token')}`}})).json());
   await page.goto(`${base}/#access=${resumeToken}`);
-  await page.getByRole('button',{name:'Les',exact:true}).click();
+  await page.getByRole('navigation',{name:'Hoofdnavigatie'}).getByRole('button',{name:'Les',exact:true}).click();
   const embed=page.locator('article.lab-embed[data-lab-id="sample-counter"]');
   await embed.getByTestId('lab-play').click();
   const chip=embed.getByRole('status');
@@ -70,7 +70,7 @@ test('a real Arcade lesson embedded in the day-1 lesson reports completion into 
   await assert.doesNotReject(page.locator('.progress-chip.on',{hasText:'Labs 1/1'}).waitFor({timeout:10000}),'route shows the lab chip');
 
   await page.setViewportSize({width:390,height:844});
-  await page.getByRole('button',{name:'Les',exact:true}).click();
+  await page.getByRole('navigation',{name:'Hoofdnavigatie'}).getByRole('button',{name:'Les',exact:true}).click();
   await embed.scrollIntoViewIfNeeded();
   await chip.filter({hasText:'Afgerond'}).waitFor();
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
@@ -101,7 +101,7 @@ test('graded Arcade stops are checked by the server before the lab can complete'
   const state=()=>page.evaluate(async()=>(await fetch('/game/state',{headers:{authorization:`Bearer ${sessionStorage.getItem('academy-token')}`}})).json());
   const stops=async()=>(await state()).me.progressByDay['1']?.labStops?.['ws-2-eve-state'];
   await page.goto(`${base}/#access=${resumeToken}`);
-  await page.getByRole('button',{name:'Les',exact:true}).click();
+  await page.getByRole('navigation',{name:'Hoofdnavigatie'}).getByRole('button',{name:'Les',exact:true}).click();
   const embed=page.locator('article.lab-embed[data-lab-id="ws-2-eve-state"]');
   await embed.getByTestId('lab-play').click();
   const chip=embed.getByRole('status');

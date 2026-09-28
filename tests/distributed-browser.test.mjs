@@ -431,6 +431,9 @@ test('browser Proof receives canonical changes in place without merging stale Yj
     page = await context.newPage();
     const webSocketTracker = observeCollabWebSockets(page, slug);
     const p1 = await joinThroughUi(page, bases[0], 'P1', host.code);
+    const mainNavigation=page.getByRole('navigation',{name:'Main navigation'});
+    await mainNavigation.getByRole('button',{name:'Squad room',exact:true}).click();
+    await page.getByRole('button',{name:'Squad & help',exact:true}).click();
     assert.equal(await page.locator('.member').count(), 5, 'Browser roster shows all five participants after P1 joins');
 
     const frame = page.frameLocator('iframe[title="Gedeelde Proof-intent"]');
