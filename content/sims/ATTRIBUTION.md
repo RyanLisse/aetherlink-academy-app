@@ -54,6 +54,7 @@ Classroom day 1 still references it for surface proof.
 | Id | Notes |
 |---|---|
 | `w5-sdlc-loop.json` | Academy-authored Plan→gate step-through for Workshop 5 / AET-77 (P0). Scenario shape compatible with learn-claude-code; **not** an upstream chapter port. Real `locales:{en,nl}`. |
+| `w4-ticket-priority.json` | Academy-authored ticket→tool_use→priority step-through for Workshop 4 / AET-80 (P1). s01–s02 territory; **not** an upstream chapter port. Real `locales:{en,nl}`. |
 
-Diagram: `public/diagrams/workshop/w5-harness-loop.svg` (Academy-authored).
+Diagrams: `public/diagrams/workshop/w5-harness-loop.svg`, `public/diagrams/workshop/w4-ticket-tool-priority.svg` (Academy-authored).
 

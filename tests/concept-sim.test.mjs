@@ -225,3 +225,50 @@ test('AET-118 P0 W5 retrofit: diagram + ConceptSim + locale-complete; Apple bar 
   assert.equal(getSim('w5-sdlc-loop', 'en')?.title, simEn.title);
   assert.equal(getSim('w5-sdlc-loop', 'nl')?.title, simNl.title);
 });
+
+test('AET-118 P1 W4 retrofit: diagram + ConceptSim + locale-complete; SOLO 0–4 kept', async () => {
+  const {DAY_PACKS} = await import('../content/days/index.mjs');
+  const {projectPackLocale} = await import('../content/days/locale.mjs');
+  const {parseLocalizedScenario, projectScenario, assertScenarioLocaleComplete} = await import('../packages/concept-sim/src/index.ts');
+  const pack = DAY_PACKS.find((p) => p.day === 4);
+  assert.ok(pack, 'day 4 pack');
+  assert.equal(pack.kind, 'workshop');
+  assert.equal(pack.localeComplete, true);
+  assert.ok(pack.copy?.en && pack.copy?.nl, 'W4 copy en+nl');
+
+  const en = projectPackLocale(pack, 'en');
+  const nl = projectPackLocale(pack, 'nl');
+  assert.notEqual(en.lesson.narrative[0], nl.lesson.narrative[0]);
+  assert.match(en.lesson.motto || '', /Ticket → tool_use → priority/i);
+  assert.match(nl.lesson.motto || '', /Ticket → tool_use → prioriteit/i);
+  assert.ok(en.diagrams?.some((d) => d.src === '/diagrams/workshop/w4-ticket-tool-priority.svg'));
+  assert.ok(existsSync(join(root, 'public/diagrams/workshop/w4-ticket-tool-priority.svg')));
+  assert.ok(en.sims?.some((s) => s.id === 'w4-ticket-priority'));
+  assert.ok(nl.sims?.some((s) => s.id === 'w4-ticket-priority'));
+
+  // Apple bar / SOLO 0–4 pedagogy kept
+  assert.equal(en.demo?.slides?.length, 4);
+  assert.equal(en.steps?.length, 5);
+  assert.deepEqual(en.steps.map((s) => `${s.badge}:${s.level}`), ['S0:required','S1:required','S2:required','S3:stretch','S4:required']);
+  assert.ok(en.materials?.some((m) => /aetherlink-day5-n8n-to-agent/.test(m.href || '')));
+  assert.ok(nl.materials?.some((m) => /aetherlink-day5-n8n-to-agent/.test(m.href || '')));
+  assert.equal(en.mission?.id, 'TRIAGE-CLAUDE-04');
+  assert.ok(pack.triage, 'shared triage acceptance kept');
+
+  const raw = JSON.parse(readFileSync(join(root, 'content/sims/w4-ticket-priority.json'), 'utf8'));
+  const localized = parseLocalizedScenario(raw, 'w4-ticket-priority');
+  assertScenarioLocaleComplete(localized, 'w4-ticket-priority');
+  const simEn = projectScenario(localized, 'en');
+  const simNl = projectScenario(localized, 'nl');
+  assert.ok(simEn.steps.length >= 8);
+  assert.ok(simNl.steps.length >= 8);
+  assert.notEqual(
+    JSON.stringify(simEn.steps.map((s) => s.content + s.annotation)),
+    JSON.stringify(simNl.steps.map((s) => s.content + s.annotation)),
+  );
+  assert.ok(simEn.steps.some((s) => s.type === 'tool_call' && s.toolName === 'keyword_priority'));
+  assert.ok(simEn.steps.some((s) => s.type === 'system_event' && /HUMAN GATE/i.test(s.content)));
+  assert.ok(simNl.steps.some((s) => s.type === 'system_event' && /MENSELIJKE GATE/i.test(s.content)));
+  assert.equal(getSim('w4-ticket-priority', 'en')?.title, simEn.title);
+  assert.equal(getSim('w4-ticket-priority', 'nl')?.title, simNl.title);
+});
