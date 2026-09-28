@@ -108,9 +108,10 @@ Stap voor stap door AetherLink Academy als squadlid. Alle labels komen letterlij
    De beschrijvingen staan in de applicatie bij de titels.
 3. Lees de notitie "Eerste werkende missie".
    De applicatie meldt dat volledige n8n- en transfermissies nog niet zijn uitgewerkt.
-4. Open "Les & quick check".
+4. Open "Les".
    Je ziet "Les 1 · Van intent naar bewijs", "Maak de opdracht helder" en de lus "Intent", "Plan", "Uitvoering", "Controle".
-5. Beantwoord de drie scenario's.
+5. Open binnen de cursus **Quiz** en beantwoord de drie scenario's.
+   De classroom-opdrachten staan apart onder **Opdrachten**.
    Onder "Quick check" staat: "Privé hulpkeuze. De facilitator ziet je score; je squad ziet geen ranglijst.".
 6. Klik op "Verstuur antwoorden".
    Je ziet een resultaat zoals "{score}/3 · {Met begeleiding|Standaard praktijk|Extra uitdaging}" en de melding dat dit geen vaardigheidsbewijs of permanent label is.

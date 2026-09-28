@@ -682,7 +682,8 @@ async function main() {
           p2Page,
           'quiz-result.png',
           async () => {
-            await p2Page.getByRole('button', { name: 'Les & quick check', exact: true }).click();
+            await p2Page.getByRole('button', { name: 'Les', exact: true }).click();
+              await p2Page.getByRole('navigation', {name: "Cursuspagina's"}).getByRole('button', {name: 'Quiz', exact: true}).click();
             const correctOptions = [
               'Een begrensd doel met een controle',
               'Stoppen en de noodzaak bespreken',
@@ -711,7 +712,8 @@ async function main() {
             p3Page,
             null,
             async () => {
-              await p3Page.getByRole('button', { name: 'Les & quick check', exact: true }).click();
+              await p3Page.getByRole('button', { name: 'Les', exact: true }).click();
+              await p3Page.getByRole('navigation', {name: "Cursuspagina's"}).getByRole('button', {name: 'Quiz', exact: true}).click();
               await expect(p3Page.locator('body')).not.toContainText('3/3', { timeout });
               const p2Result = await p2Page.getByRole('status').innerText();
               await expect(p3Page.locator('body')).not.toContainText(p2Result, { timeout });

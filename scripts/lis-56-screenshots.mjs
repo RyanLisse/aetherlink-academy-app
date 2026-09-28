@@ -42,7 +42,7 @@ async function openView(page,label){
 const shots=[];
 await setDay(3);
 await withPage(1440,async page=>{
- await openView(page,'Les & quick check');
+ await openView(page,'Les');
  await page.waitForSelector('.progressive-path');
  await page.waitForSelector('text=Van nul naar multi-agent in n8n');
  for(const w of widths){

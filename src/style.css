@@ -241,3 +241,8 @@
 .lesson-diagram figcaption{margin-top:.6rem;font-size:.9rem;opacity:.8}
 .lesson-attribution{margin-top:1rem;font-size:.85rem}
 .course-templates{flex-wrap:wrap;gap:.75rem}
+.course-page-nav{display:flex;flex-direction:row;gap:8px;flex-wrap:wrap;margin:-4px 0 24px;border-bottom:1px solid var(--border);padding-bottom:12px}
+.course-page-nav button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:120px;padding:10px 15px;color:var(--muted);background:var(--surface2);border:1px solid var(--border);border-radius:7px;font-size:13px}
+.course-page-nav button[aria-current="page"]{color:var(--cyan);border-color:var(--cyan);background:var(--selected)}
+.course-page-nav button:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+.course-quiz-page[hidden]{display:none}

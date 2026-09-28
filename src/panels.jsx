@@ -1,5 +1,5 @@
 import React,{useEffect,useState,useRef} from 'react';
-import {Search,Sparkles,ArrowRight,BookOpen,FileText,Check,Copy,Download,Target,Columns3} from 'lucide-react';
+import {Search,Sparkles,ArrowRight,BookOpen,FileText,Check,Copy,Download,Target,Columns3,ClipboardList} from 'lucide-react';
 import {api} from './api';
 import {useT,useI18n} from './i18n';
 import {LabEmbed,LabSlotEmpty} from './LabEmbed';
@@ -117,18 +117,39 @@ function QuickCheck({room,action,busy,practice,shownDay,chosen,questions,quizErr
   </section>;
 }
 
-export function Lesson({room,action,busy,day}){
+export function Lesson({room,action,busy,day,onNavigate}){
   const t=useT();
   const {locale}=useI18n();
   const [pack,setPack]=useState(null);
   const [error,setError]=useState('');
+  const [page,setPage]=useState('lesson');
   const chosen=day===undefined?{}:{day};
   const shownDay=day??room.day,practice=shownDay!==room.day;
+  useEffect(()=>{setPage('lesson');},[room.day,day]);
   useEffect(()=>{let active=true;setPack(null);setError('');const q=new URLSearchParams({locale});if(day!==undefined)q.set('day',String(day));api(`day-pack?${q}`).then(d=>{if(active)setPack(d);}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[room.day,day,locale]);
-  if(error)return <section className="panel content-panel"><p className="cyan">{t('lesson.eyebrow')}</p><h2>{t('lesson.noneTitle')}</h2><StatusState kind="error" title={t('status.errorTitle')}>{error}<p>{t('lesson.noneHint')}</p></StatusState></section>;
-  if(!pack)return <section className="panel content-panel"><StatusState kind="loading" title={t('lesson.loading')}/></section>;
+  if(error)return <section className="panel content-panel" data-testid="course-pages" data-course-day={shownDay}><nav className="course-page-nav" aria-label={t('coursePages.nav')}>{['lesson','assignments','quiz'].map(id=><button key={id} type="button" aria-current={page===id?'page':undefined} onClick={()=>setPage(id)}>{id==='lesson'?<BookOpen size={17}/>:id==='assignments'?<ClipboardList size={17}/>:<Check size={17}/>}<span>{t(`coursePages.${id}`)}</span></button>)}</nav><p className="cyan">{t('lesson.eyebrow')}</p><h2>{t('lesson.noneTitle')}</h2><StatusState kind="error" title={t('status.errorTitle')}>{error}<p>{t('lesson.noneHint')}</p></StatusState></section>;
+  if(!pack)return <section className="panel content-panel" data-testid="course-pages" data-course-day={shownDay}><nav className="course-page-nav" aria-label={t('coursePages.nav')}>{['lesson','assignments','quiz'].map(id=><button key={id} type="button" aria-current={page===id?'page':undefined} onClick={()=>setPage(id)}>{id==='lesson'?<BookOpen size={17}/>:id==='assignments'?<ClipboardList size={17}/>:<Check size={17}/>}<span>{t(`coursePages.${id}`)}</span></button>)}</nav><StatusState kind="loading" title={t('lesson.loading')}/></section>;
   const lesson=pack.lesson,questions=pack.quiz?.questions;
-  return <section className="panel content-panel" data-testid="lesson-panel"><p className="cyan">{lesson.kicker}</p><h2>{lesson.title}</h2>{lesson.motto&&<p className="lesson-motto" data-testid="lesson-motto"><em>{lesson.motto}</em></p>}<p className="lede">{lesson.lede}</p>{lesson.narrative?.length>0&&<div className="lesson-narrative" data-testid="lesson-narrative">{lesson.narrative.map((para,i)=><p key={i}>{para}</p>)}</div>}{pack.steps?.length>0&&<><p className="cyan">{t('path.label')}</p><ProgressivePath steps={pack.steps}/></>}<div className="learning-loop">{lesson.loop.map((s,i)=><div key={s.label}><span>0{i+1}</span><strong>{s.label}</strong><small>{s.prompt}</small></div>)}</div><div className="worked"><BookOpen size={20}/><div><h3>{t('lesson.explained')}</h3><p>{lesson.workedExample}</p></div></div>{(shownDay===1||shownDay===2)&&<ClassroomExercises day={shownDay}/>}{pack.diagrams?.length>0&&<section className="lesson-diagrams" aria-label={t('lesson.diagrams')} data-testid="lesson-diagrams">{pack.diagrams.map(d=><figure key={d.src} className="lesson-diagram"><img src={d.src} alt={d.alt||d.title} loading="lazy"/><figcaption>{d.title}</figcaption></figure>)}</section>}{pack.materials?.length>0&&<><h3>{t('lesson.materials')}</h3><ul className="materials">{pack.materials.map(m=><li key={m.label}>{m.href?<a href={m.href} target={m.href.startsWith('http')?'_blank':undefined} rel="noreferrer">{m.label}</a>:<span>{m.label}: <strong>OPEN</strong> · {m.open}</span>}{m.note&&<small className="muted"> · {m.note}</small>}</li>)}</ul></>}{pack.sims?.length>0&&<ConceptSimSlot sims={pack.sims}/>}{pack.attribution&&<p className="muted lesson-attribution" data-testid="lesson-attribution">{pack.attribution}</p>}{pack.labs?.length>0?<section className="lab-slot" aria-label={t('lab.heading')}><h3>{t('lab.heading')}</h3>{pack.labs.map(lab=><LabEmbed key={lab.id} lab={lab} preview={room.me.role==='Facilitator'} saved={room.me.progressByDay?.[String(shownDay)]?.labs?.[lab.id]}/>)}</section>:(room.me.role==='Facilitator'||room.lab)?<LabSlotEmpty facilitator={room.me.role==='Facilitator'}/>:null}<QuickCheck room={room} action={action} busy={busy} practice={practice} shownDay={shownDay} chosen={chosen} questions={questions} quizError={pack.quizError}/></section>;
+  const lessonPage=<>
+    <p className="cyan">{lesson.kicker}</p><h2>{lesson.title}</h2>{lesson.motto&&<p className="lesson-motto" data-testid="lesson-motto"><em>{lesson.motto}</em></p>}<p className="lede">{lesson.lede}</p>
+    {lesson.narrative?.length>0&&<div className="lesson-narrative" data-testid="lesson-narrative">{lesson.narrative.map((para,i)=><p key={i}>{para}</p>)}</div>}
+    {pack.steps?.length>0&&<><p className="cyan">{t('path.label')}</p><ProgressivePath steps={pack.steps}/></>}
+    <div className="learning-loop">{lesson.loop.map((s,i)=><div key={s.label}><span>0{i+1}</span><strong>{s.label}</strong><small>{s.prompt}</small></div>)}</div>
+    <div className="worked"><BookOpen size={20}/><div><h3>{t('lesson.explained')}</h3><p>{lesson.workedExample}</p></div></div>
+    {pack.diagrams?.length>0&&<section className="lesson-diagrams" aria-label={t('lesson.diagrams')} data-testid="lesson-diagrams">{pack.diagrams.map(d=><figure key={d.src} className="lesson-diagram"><img src={d.src} alt={d.alt||d.title} loading="lazy"/><figcaption>{d.title}</figcaption></figure>)}</section>}
+    {pack.materials?.length>0&&<><h3>{t('lesson.materials')}</h3><ul className="materials">{pack.materials.map(m=><li key={m.label}>{m.href?<a href={m.href} target={m.href.startsWith('http')?'_blank':undefined} rel="noreferrer">{m.label}</a>:<span>{m.label}: <strong>OPEN</strong> · {m.open}</span>}{m.note&&<small className="muted"> · {m.note}</small>}</li>)}</ul></>}
+    {pack.sims?.length>0&&<ConceptSimSlot sims={pack.sims}/>}
+    {pack.attribution&&<p className="muted lesson-attribution" data-testid="lesson-attribution">{pack.attribution}</p>}
+    {pack.labs?.length>0?<section className="lab-slot" aria-label={t('lab.heading')}><h3>{t('lab.heading')}</h3>{pack.labs.map(lab=><LabEmbed key={lab.id} lab={lab} preview={room.me.role==='Facilitator'} saved={room.me.progressByDay?.[String(shownDay)]?.labs?.[lab.id]}/>)}</section>:(room.me.role==='Facilitator'||room.lab)?<LabSlotEmpty facilitator={room.me.role==='Facilitator'}/>:null}
+  </>;
+  return <section className="panel content-panel" data-testid="course-pages" data-course-day={shownDay}>
+    <nav className="course-page-nav" aria-label={t('coursePages.nav')}>
+      {['lesson','assignments','quiz'].map(id=><button key={id} type="button" aria-current={page===id?'page':undefined} onClick={()=>setPage(id)}>{id==='lesson'?<BookOpen size={17}/>:id==='assignments'?<ClipboardList size={17}/>:<Check size={17}/>}<span>{t(`coursePages.${id}`)}</span></button>)}
+    </nav>
+    {page==='lesson'&&<div data-testid="lesson-panel">{lessonPage}</div>}
+    {page==='assignments'&&<section data-testid="assignments-page"><p className="cyan">{t('coursePages.day',{day:coursePosition({...room,day:shownDay})})}</p><h2>{t('coursePages.assignments')}</h2>{shownDay===1||shownDay===2?<ClassroomExercises day={shownDay}/>:pack.mission?<div className="notice"><h3>{pack.mission.title}</h3><p>{pack.mission.goal}</p>{pack.steps?.length>0&&<ProgressivePath steps={pack.steps} compact/>}{!practice&&onNavigate&&<button type="button" onClick={()=>onNavigate('solo')}>{t('coursePages.openSolo')}<ArrowRight size={16}/></button>}</div>:<StatusState kind="empty" title={t('coursePages.noAssignments')}/>}</section>}
+    <section className="course-quiz-page" hidden={page!=='quiz'} aria-label={t('coursePages.quiz')} data-testid="quiz-page"><p className="cyan">{t('coursePages.day',{day:coursePosition({...room,day:shownDay})})}</p><h2>{t('coursePages.quiz')}</h2><QuickCheck room={room} action={action} busy={busy} practice={practice} shownDay={shownDay} chosen={chosen} questions={questions} quizError={pack.quizError}/></section>
+  </section>;
 }
 
 export function Solo({room,action,busy,onNavigate}){
