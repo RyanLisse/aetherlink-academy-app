@@ -31,3 +31,7 @@ test('day filtering is safe for unsupported days',()=>{
   assert.deepEqual(exercisesForDay(3),[]);
   assert.deepEqual(exercisesForDay('1').map(item=>item.assignment),[1,2,3,4]);
 });
+
+test("assignment slide mapping matches the pinned classroom deck",()=>{
+ assert.deepEqual(classroomExercises.map(item=>item.sourceSlide),[35,37,40,41,52,55,57,61,66,69,76,81,84]);
+});

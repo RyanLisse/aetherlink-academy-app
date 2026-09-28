@@ -103,7 +103,7 @@ type ConceptCard = {
     "relatedConcepts": ["Related term"],
     "resources": [{"label": "Official source", "url": "https://example.com"}],
 }` }),
-  exercise('a5-design-library', 2, 5, 'Design your Library', 50,
+  exercise('a5-design-library', 2, 5, 'Design your Library', 52,
     'The starter has a shared visual system and a light/dark switch. Make the Library and AetherBOT feel intentional and personal while preserving readability and working navigation.',
     'Start with design choices, not CSS edits. Name the mood, colors, typography, and bot voice; inspect how the current theme is stored and applied. Then plan a third palette that survives reload, restyle the Library and bot, and verify contrast and every route in the browser.',
     ['Describe look and voice', 'Inspect theme + styles', 'Plan three palettes', 'Implement and persist', 'Review every page'],
