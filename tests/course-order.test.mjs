@@ -109,9 +109,9 @@ test('participants cannot read the composer or change the course',async()=>{
  const composer=await invoke(app,'/game/course',host);
  assert.equal(composer.statusCode,200);
  assert.equal(composer.body.course,null);
- assert.deepEqual(composer.body.packs.map(pack=>pack.day),[1,2,3,4,5,6,7,8,9,10]);
+ assert.deepEqual(composer.body.packs.map(pack=>pack.day),Array.from({length:24},(_,i)=>i+1));
  assert.deepEqual(composer.body.template.days.map(d=>d.day),[1,2,3,4,5,6,7]);
- assert.ok(composer.body.templates.some(t=>t.name==='Harness Engineering'&&t.days.map(d=>d.day).join()==='8,9,10'));
+ assert.ok(composer.body.templates.some(t=>t.name==='Harness Engineering'&&t.days.map(d=>d.day).join()===Array.from({length:17},(_,i)=>8+i).join()));
 });
 
 test('an invalid course is rejected and leaves the room unchanged',async()=>{
@@ -141,14 +141,14 @@ test('a course survives a committed cross-instance Postgres round trip',{skip:!p
  }finally{await pool.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);await pool.end();}
 });
 
-test('Harness Engineering course exposes s01–s03 day packs on the route',async()=>{
+test('Harness Engineering course exposes s01–s17 day packs on the route',async()=>{
  const {app,host,participant}=fixture();
- const harness={name:'Harness Engineering',days:[{day:8},{day:9},{day:10}]};
+ const harness={name:'Harness Engineering',days:Array.from({length:17},(_,i)=>({day:8+i}))};
  const saved=await invoke(app,'/game/control',{...host,method:'post',body:{action:'course',value:harness}});
  assert.equal(saved.statusCode,200);
  assert.equal(saved.body.day,8);
  const route=await invoke(app,'/game/day-route',participant);
- assert.deepEqual(route.body.days.map(d=>[d.position,d.day]),[[1,8],[2,9],[3,10]]);
+ assert.deepEqual(route.body.days.map(d=>[d.position,d.day]),Array.from({length:17},(_,i)=>[i+1,8+i]));
  const packEn=await invoke(app,'/game/day-pack',{...participant,query:{locale:'en'}});
  assert.equal(packEn.statusCode,200);
  assert.equal(packEn.body.day,8);
@@ -167,4 +167,13 @@ test('Harness Engineering course exposes s01–s03 day packs on the route',async
  const s02=await invoke(app,'/game/day-pack',{...participant,query:{locale:'nl'}});
  assert.ok(s02.body.sims?.some(s=>s.id==='s02'));
  assert.match(s02.body.lesson.title,/Toolgebruik/i);
+
+ assert.equal((await invoke(app,'/game/control',{...host,method:'post',body:{action:'day',value:14}})).body.day,14);
+ const s07=await invoke(app,'/game/day-pack',{...participant,query:{locale:'nl'}});
+ assert.ok(s07.body.sims?.some(s=>s.id==='s07'));
+ assert.match(s07.body.lesson.title,/Skill/i);
+ assert.equal((await invoke(app,'/game/control',{...host,method:'post',body:{action:'day',value:24}})).body.day,24);
+ const s17=await invoke(app,'/game/day-pack',{...participant,query:{locale:'en'}});
+ assert.ok(s17.body.sims?.some(s=>s.id==='s17'));
+ assert.match(s17.body.lesson.title,/Goal Loop/i);
 });

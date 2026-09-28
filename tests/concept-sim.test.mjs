@@ -133,9 +133,10 @@ test('catalog loader rejects path-traversal filenames via isValidSimId gate', ()
   assert.equal(loadSimCatalog(dir).size, 0);
 });
 
-test('Slice 1 harness sims s01–s03 parse and catalog in EN+NL', async () => {
+test('Harness sims s01–s17 parse and catalog in EN+NL', async () => {
   const {parseLocalizedScenario, projectScenario, assertScenarioLocaleComplete} = await import('../packages/concept-sim/src/index.ts');
-  for (const id of ['s01', 's02', 's03']) {
+  const ids = Array.from({length: 17}, (_, i) => `s${String(i + 1).padStart(2, '0')}`);
+  for (const id of ids) {
     const raw = JSON.parse(readFileSync(join(root, `content/sims/${id}.json`), 'utf8'));
     const localized = parseLocalizedScenario(raw, id);
     assertScenarioLocaleComplete(localized, id);
@@ -144,20 +145,25 @@ test('Slice 1 harness sims s01–s03 parse and catalog in EN+NL', async () => {
     assert.equal(en.version, id);
     assert.ok(en.steps.length >= 4, id);
     assert.ok(nl.steps.length >= 4, id);
-    assert.notEqual(en.title, nl.title, `${id} title localized`);
-    assert.notEqual(en.steps[0].content, nl.steps[0].content, `${id} step copy localized`);
+    // Titles may share English mechanism names (Hooks); step/annotation copy must differ.
+    assert.notEqual(
+      JSON.stringify(en.steps.map((s) => s.content + s.annotation)),
+      JSON.stringify(nl.steps.map((s) => s.content + s.annotation)),
+      `${id} step copy localized`,
+    );
     assert.match(en.attribution || '', /shareAI-lab\/learn-claude-code/);
     assert.equal(getSim(id, 'en')?.title, en.title);
     assert.equal(getSim(id, 'nl')?.title, nl.title);
   }
-  assert.equal(listSims('nl').filter((s) => /^s0[123]$/.test(s.id) && s.localeComplete).length, 3);
+  assert.equal(listSims('nl').filter((s) => /^s\d{2}$/.test(s.id) && s.localeComplete).length, 17);
 });
 
-test('Slice 1 harness day packs declare diagram + sim + MIT + real EN/NL', async () => {
+test('Harness day packs declare diagram + sim + MIT + real EN/NL', async () => {
   const {DAY_PACKS} = await import('../content/days/index.mjs');
   const {projectPackLocale} = await import('../content/days/locale.mjs');
   const byDay = Object.fromEntries(DAY_PACKS.map((p) => [p.day, p]));
-  for (const [day, simId] of [[8, 's01'], [9, 's02'], [10, 's03']]) {
+  const pairs = Array.from({length: 17}, (_, i) => [8 + i, `s${String(i + 1).padStart(2, '0')}`]);
+  for (const [day, simId] of pairs) {
     const pack = byDay[day];
     assert.ok(pack, `missing day ${day}`);
     assert.equal(pack.localeComplete, true);
