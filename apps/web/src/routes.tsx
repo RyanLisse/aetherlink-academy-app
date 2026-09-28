@@ -11,6 +11,7 @@ import {workshop3SourceSlides} from './deck/workshop3-slides.js';
 import {workshop4SourceSlides} from './deck/workshop4-slides.js';
 import {workshop6SourceSlides} from './deck/workshop6-slides.js';
 import {workshop7SourceSlides} from './deck/workshop7-slides.js';
+import {harnessSourceSlides} from './deck/harness-slides.ts';
 import {normalizeSlides} from './deck/normalize.js';
 import {matchReference, ReferenceView} from './reference/index.ts';
 import {matchArchive} from './archive/archive.ts';
@@ -215,7 +216,7 @@ export function AppRoutes({children}: {readonly children?: ReactNode}) {
   const [referencePath = '', referenceAnchor] = pathname.split('#');
   const reference = matchReference(referencePath);
   const archive = matchArchive(referencePath);
-  const deckLike = reference !== null || archive !== null || pathname === '/deck' || isClassroom1Path(pathname) || isClassroom2Path(pathname) || isWorkshop5Path(pathname) || isWorkshop3Path(pathname) || isWorkshop4Path(pathname) || isWorkshop6Path(pathname) || isWorkshop7Path(pathname) || pathname === '/authoring';
+  const deckLike = reference !== null || archive !== null || pathname === '/deck' || isClassroom1Path(pathname) || isClassroom2Path(pathname) || isWorkshop5Path(pathname) || isWorkshop3Path(pathname) || isWorkshop4Path(pathname) || isWorkshop6Path(pathname) || isWorkshop7Path(pathname) || isHarnessPath(pathname) || pathname === '/authoring';
   const connection = useConnection(fetchConnection, 5000, !deckLike);
   if (reference) return <ReferenceView page={reference} navigate={navigate} anchor={referenceAnchor ?? (window.location.hash.slice(1) || null)} />;
   if (archive) return <ArchiveView page={archive} navigate={navigate} anchor={referenceAnchor ?? (window.location.hash.slice(1) || null)} />;
@@ -228,6 +229,7 @@ export function AppRoutes({children}: {readonly children?: ReactNode}) {
   if (isWorkshop4Path(pathname)) return <DeckDemo slides={WORKSHOP_4_SLIDES} />;
   if (isWorkshop6Path(pathname)) return <DeckDemo slides={WORKSHOP_6_SLIDES} />;
   if (isWorkshop7Path(pathname)) return <DeckDemo slides={WORKSHOP_7_SLIDES} />;
+  if (isHarnessPath(pathname)) return <DeckDemo slides={HARNESS_SLIDES} />;
   if (pathname.startsWith('/live/')) return <LiveRoute pathname={pathname} />;
   return (
     <>
@@ -254,7 +256,7 @@ export function isClassroom2Path(pathname: string): boolean {
  */
 export function matchProductDeck(
   pathname: string,
-): 'deck' | 'authoring' | 'classroom-1' | 'classroom-2' | 'workshop-3' | 'workshop-4' | 'workshop-5' | 'workshop-6' | 'workshop-7' | 'live' | null {
+): 'deck' | 'authoring' | 'classroom-1' | 'classroom-2' | 'workshop-3' | 'workshop-4' | 'workshop-5' | 'workshop-6' | 'workshop-7' | 'harness' | 'live' | null {
   if (pathname === '/deck') return 'deck';
   if (pathname === '/authoring') return 'authoring';
   if (isClassroom1Path(pathname)) return 'classroom-1';
@@ -264,6 +266,7 @@ export function matchProductDeck(
   if (isWorkshop4Path(pathname)) return 'workshop-4';
   if (isWorkshop6Path(pathname)) return 'workshop-6';
   if (isWorkshop7Path(pathname)) return 'workshop-7';
+  if (isHarnessPath(pathname)) return 'harness';
   if (pathname.startsWith('/live/')) return 'live';
   return null;
 }
@@ -293,6 +296,11 @@ export function isWorkshop7Path(pathname: string): boolean {
   return pathname === '/workshop/7' || pathname === '/lesson/workshop-7';
 }
 
+/** Facilitator Harness Engineering deck (AET-116 Slice 1 · s01–s03). */
+export function isHarnessPath(pathname: string): boolean {
+  return pathname === '/harness' || pathname === '/lesson/harness';
+}
+
 const DECK_SLIDES = normalizeSlides(sourceSlides);
 /** Classroom 1 product route: Teaching Day 1 only (SoT slides before the "TEACHING DAY 2" divider).
  *  Headroom only (AET-86 backlog — do not build here): Arcade postMessage embed slot,
@@ -311,6 +319,7 @@ const WORKSHOP_4_SLIDES = normalizeSlides(workshop4SourceSlides);
 const WORKSHOP_6_SLIDES = normalizeSlides(workshop6SourceSlides);
 /** Workshop 7 product route: eigen opdracht finish + present (AET-85). Separate module — not Classroom/W5/W3/W4/W6 cut. */
 const WORKSHOP_7_SLIDES = normalizeSlides(workshop7SourceSlides);
+const HARNESS_SLIDES = normalizeSlides(harnessSourceSlides);
 function DeckDemo({slides}: {readonly slides: typeof DECK_SLIDES}) {
   useEffect(() => {
     const surfaces = [document.documentElement, document.body];

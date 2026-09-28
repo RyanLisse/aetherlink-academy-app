@@ -1,0 +1,106 @@
+{
+  "version": "s01",
+  "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code",
+  "locales": {
+    "en": {
+      "title": "The Agent Loop",
+      "description": "A minimal agent that uses only bash to accomplish tasks",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Create a file called hello.py that prints 'Hello, World!'",
+          "annotation": "User sends a task to the agent"
+        },
+        {
+          "type": "assistant_text",
+          "content": "I'll create that file for you using bash.",
+          "annotation": "The model decides to use its only tool: bash"
+        },
+        {
+          "type": "tool_call",
+          "content": "echo 'print(\"Hello, World!\")' > hello.py",
+          "toolName": "bash",
+          "annotation": "Tool call: the model generates a bash command"
+        },
+        {
+          "type": "tool_result",
+          "content": "",
+          "toolName": "bash",
+          "annotation": "Bash returns empty output (success)"
+        },
+        {
+          "type": "assistant_text",
+          "content": "Let me verify the file was created correctly.",
+          "annotation": "The loop continues: model sees the result and decides next action"
+        },
+        {
+          "type": "tool_call",
+          "content": "cat hello.py",
+          "toolName": "bash",
+          "annotation": "Another bash call to verify"
+        },
+        {
+          "type": "tool_result",
+          "content": "print(\"Hello, World!\")",
+          "toolName": "bash",
+          "annotation": "File contents confirmed"
+        },
+        {
+          "type": "assistant_text",
+          "content": "Done! I've created hello.py with the print statement. You can run it with `python hello.py`.",
+          "annotation": "stop_reason != 'tool_use' -> loop breaks, agent responds to user"
+        }
+      ]
+    },
+    "nl": {
+      "title": "De agent-loop",
+      "description": "Een minimale agent die alleen bash gebruikt om taken uit te voeren",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Maak een bestand hello.py dat 'Hello, World!' print",
+          "annotation": "De gebruiker stuurt een taak naar de agent"
+        },
+        {
+          "type": "assistant_text",
+          "content": "Ik maak dat bestand met bash.",
+          "annotation": "Het model kiest zijn enige tool: bash"
+        },
+        {
+          "type": "tool_call",
+          "content": "echo 'print(\"Hello, World!\")' > hello.py",
+          "toolName": "bash",
+          "annotation": "Tool-aanroep: het model genereert een bash-commando"
+        },
+        {
+          "type": "tool_result",
+          "content": "",
+          "toolName": "bash",
+          "annotation": "Bash geeft lege uitvoer terug (geslaagd)"
+        },
+        {
+          "type": "assistant_text",
+          "content": "Even controleren of het bestand klopt.",
+          "annotation": "De loop gaat door: het model ziet het resultaat en kiest de volgende stap"
+        },
+        {
+          "type": "tool_call",
+          "content": "cat hello.py",
+          "toolName": "bash",
+          "annotation": "Nog een bash-aanroep ter verificatie"
+        },
+        {
+          "type": "tool_result",
+          "content": "print(\"Hello, World!\")",
+          "toolName": "bash",
+          "annotation": "Bestandsinhoud bevestigd"
+        },
+        {
+          "type": "assistant_text",
+          "content": "Klaar — hello.py staat er. Je kunt het draaien met `python hello.py`.",
+          "annotation": "Geen tool_use meer → de loop stopt en de agent antwoordt de gebruiker"
+        }
+      ]
+    }
+  }
+}

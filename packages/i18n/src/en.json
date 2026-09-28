@@ -770,5 +770,8 @@
   "sim.type.assistant": "Assistant",
   "sim.type.toolCall": "Tool call",
   "sim.type.toolResult": "Tool result",
-  "sim.type.system": "System"
+  "sim.type.system": "System",
+  "lesson.diagrams": "Diagrams",
+  "lesson.motto": "Motto",
+  "course.fromNamedTemplate": "Start from {name}"
 }

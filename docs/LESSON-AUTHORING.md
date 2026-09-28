@@ -1,8 +1,8 @@
 # Academy Lesson Authoring checklist (Must B bar)
 
-**SoT for new lessons:** every new Academy lesson (workshop day, course lesson, Arcade-taught concept stop) must include **all four** elements below before merge. Facilitators and Herdr gate PRs against this list ([AET-116](https://linear.app/aetherlink/issue/AET-116) · [AET-118](https://linear.app/aetherlink/issue/AET-118)).
+**SoT for new lessons:** every new Academy lesson (workshop day, course lesson, Arcade-taught concept stop) must include **all five** elements below before merge. Facilitators and Herdr gate PRs against this list ([AET-116](https://linear.app/aetherlink/issue/AET-116) · [AET-118](https://linear.app/aetherlink/issue/AET-118)).
 
-Pattern inspired by [shareAI-lab/learn-claude-code](https://github.com/shareAI-lab/learn-claude-code) (MIT) — one mechanism, narrative first, diagrams, step-through sim. **Do not** iframe `learn.shareai.run` in production.
+Pattern inspired by [shareAI-lab/learn-claude-code](https://github.com/shareAI-lab/learn-claude-code) (MIT) — one mechanism, narrative first, diagrams, step-through sim, locale-complete. **Do not** iframe `learn.shareai.run` in production.
 
 ## Required elements (reject if any missing)
 
@@ -12,26 +12,28 @@ Pattern inspired by [shareAI-lab/learn-claude-code](https://github.com/shareAI-l
 | **2** | **Mental-model narrative** | Short prose or speaker spine that explains *why* before slides/code (`lesson.lede` / worked example / README beat). | Dumping a blog post as a deck |
 | **3** | **≥1 explanatory diagram** | SVG or interactive diagram that teaches structure (not decorative stock only). | Screenshot-only “Voordoen” with no diagram |
 | **4** | **Concept simulation or step-through** | Learner can step a **preauthored** scenario (messages → tool_use → results, workflow beat, etc.) **without live API keys** for the concept path. Use Academy `ConceptSim` / `content/sims/*.json` (see below) or an in-room Lab that is itself a concept sim. | Hosted LLM required for the concept beat; production iframe to learn.shareai.run |
+| **5** | **Locale-complete content** | For every UI locale Academy ships (`en` and `nl`), learner-facing narrative + sim copy match that locale. Content language = UI locale. | EN-only lessons under `nl` chrome (silent EN leak); placeholder/`TODO` NL; identical EN dump under `nl` |
 
 Keep Apple bar / Uitleg → Voordoen → Zelf doen rhythm when retrofitting workshop days — **add** diagram + sim; do not delete pedagogy vehicles.
 
 ## Attaching a step-through sim (Slice 0 surface)
 
-1. Add scenario JSON under `content/sims/<id>.json` matching `@academy/concept-sim` (`version`, `title`, `description`, `steps[]`). Keep MIT `attribution` when porting from learn-claude-code.
+1. Add scenario JSON under `content/sims/<id>.json` matching `@academy/concept-sim`. Prefer `locales:{en,nl}` with real copy in both (required for Harness s01–s17). Flat EN-only fixtures are allowed only for surface proofs (e.g. Slice 0 `fixture-agent-loop`). Keep MIT `attribution` when porting from learn-claude-code.
 2. Reference it from the day pack: `sims:[{id:'<id>',title:'…'}]` (see `content/days/model.mjs` — passed through `projectDayPack`).
 3. Lesson panel renders `ConceptSimSlot` in-room (Academy-native; **not** LabEmbed iframe). Labs (Arcade) stay a separate slot under Lesson ([AET-87](https://linear.app/aetherlink/issue/AET-87) / [AET-115](https://linear.app/aetherlink/issue/AET-115)).
-4. Catalog: authenticated `GET /game/sim-catalog`.
+4. Catalog: authenticated `GET /game/sim-catalog?locale=en|nl`. Day pack: `GET /game/day-pack?locale=en|nl`.
 
-Future Harness Engineering chapters **s01–s17** attach the same way (Slice 1+). Filename id should match chapter id (`s01`, …).
+Harness Engineering chapters attach the same way. Slice 1 ships **s01–s03** as day packs 8–10 under the **Harness Engineering** course template (`harnessCourseTemplate()` in `content/days/course.mjs`) with **real EN + real NL** (`copy:{en,nl}` + sim `locales`). Diagrams live under `public/diagrams/harness/` and are declared on the day pack as `diagrams:[{src,title,alt}]`.
 
 ## PR DoD (B2)
 
 New lesson / day-pack PRs must:
 
 - [ ] Link this checklist (`docs/LESSON-AUTHORING.md`)
-- [ ] Call out the four elements (mechanism · narrative · diagram · concept sim) with file paths
+- [ ] Call out the five elements (mechanism · narrative · diagram · concept sim · locale-complete) with file paths
 - [ ] Confirm no production iframe to `learn.shareai.run`
 - [ ] Retain MIT attribution on ported scenario/diagram assets
+- [ ] Soft-live both `en` and `nl` chrome for any new Harness / locale-complete lesson
 
 Failing the bar = **REJECT** until fixed.
 

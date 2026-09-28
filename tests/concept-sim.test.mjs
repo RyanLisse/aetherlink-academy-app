@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFileSync,mkdtempSync} from 'node:fs';
+import {readFileSync,mkdtempSync,existsSync} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
@@ -20,13 +20,15 @@ const authoring = readFileSync(join(root, 'docs/LESSON-AUTHORING.md'), 'utf8');
 const prTemplate = readFileSync(join(root, '.github/PULL_REQUEST_TEMPLATE.md'), 'utf8');
 const fixture = JSON.parse(readFileSync(join(root, 'content/sims/fixture-agent-loop.json'), 'utf8'));
 
-test('B1 authoring checklist lists four required elements', () => {
+test('B1 authoring checklist lists five required elements incl. locale-complete', () => {
   assert.match(authoring, /One mechanism/i);
   assert.match(authoring, /Mental-model narrative/i);
   assert.match(authoring, /explanatory diagram/i);
   assert.match(authoring, /Concept simulation|step-through/i);
+  assert.match(authoring, /Locale-complete content/i);
   assert.match(authoring, /learn\.shareai\.run/);
   assert.match(authoring, /content\/sims/);
+  assert.match(authoring, /silent EN leak/i);
 });
 
 test('B2 PR template references lesson authoring checklist', () => {
@@ -129,4 +131,48 @@ test('catalog loader rejects path-traversal filenames via isValidSimId gate', ()
   const dir = mkdtempSync(path.join(os.tmpdir(), 'academy-bad-sims-'));
   // empty dir loads fine
   assert.equal(loadSimCatalog(dir).size, 0);
+});
+
+test('Slice 1 harness sims s01–s03 parse and catalog in EN+NL', async () => {
+  const {parseLocalizedScenario, projectScenario, assertScenarioLocaleComplete} = await import('../packages/concept-sim/src/index.ts');
+  for (const id of ['s01', 's02', 's03']) {
+    const raw = JSON.parse(readFileSync(join(root, `content/sims/${id}.json`), 'utf8'));
+    const localized = parseLocalizedScenario(raw, id);
+    assertScenarioLocaleComplete(localized, id);
+    const en = projectScenario(localized, 'en');
+    const nl = projectScenario(localized, 'nl');
+    assert.equal(en.version, id);
+    assert.ok(en.steps.length >= 4, id);
+    assert.ok(nl.steps.length >= 4, id);
+    assert.notEqual(en.title, nl.title, `${id} title localized`);
+    assert.notEqual(en.steps[0].content, nl.steps[0].content, `${id} step copy localized`);
+    assert.match(en.attribution || '', /shareAI-lab\/learn-claude-code/);
+    assert.equal(getSim(id, 'en')?.title, en.title);
+    assert.equal(getSim(id, 'nl')?.title, nl.title);
+  }
+  assert.equal(listSims('nl').filter((s) => /^s0[123]$/.test(s.id) && s.localeComplete).length, 3);
+});
+
+test('Slice 1 harness day packs declare diagram + sim + MIT + real EN/NL', async () => {
+  const {DAY_PACKS} = await import('../content/days/index.mjs');
+  const {projectPackLocale} = await import('../content/days/locale.mjs');
+  const byDay = Object.fromEntries(DAY_PACKS.map((p) => [p.day, p]));
+  for (const [day, simId] of [[8, 's01'], [9, 's02'], [10, 's03']]) {
+    const pack = byDay[day];
+    assert.ok(pack, `missing day ${day}`);
+    assert.equal(pack.localeComplete, true);
+    assert.ok(pack.copy?.en && pack.copy?.nl, `day ${day} copy`);
+    const en = projectPackLocale(pack, 'en');
+    const nl = projectPackLocale(pack, 'nl');
+    assert.notEqual(en.lesson.title, nl.lesson.title);
+    assert.notEqual(en.lesson.narrative[0], nl.lesson.narrative[0]);
+    assert.ok(en.diagrams?.length >= 1);
+    assert.ok(en.sims?.some((s) => s.id === simId));
+    assert.match(en.attribution || '', /MIT/);
+    for (const d of en.diagrams) {
+      assert.ok(d.src.startsWith('/diagrams/harness/'));
+      assert.ok(existsSync(join(root, 'public', d.src.replace(/^\//, ''))), d.src);
+    }
+  }
+  assert.ok(byDay[1].sims?.some((s) => s.id === 'fixture-agent-loop'));
 });

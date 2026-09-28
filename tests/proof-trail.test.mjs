@@ -62,7 +62,8 @@ test('tasks come from day-pack ids: the mission, or the progressive steps when a
  assert.deepEqual(dayTasks(1).map(t=>t.id),['c1-setup','c1-a1','c1-a2','c1-a3','c1-a4']);
  assert.deepEqual(dayTasks(1)[0],{id:'c1-setup',title:'Oefenrepository opzetten'});
  assert.deepEqual(dayTasks(3).map(t=>t.id),['w3-l1','w3-l2','w3-l3','w3-proof']);
- assert.deepEqual(dayTasks(9),[]);
+ assert.deepEqual(dayTasks(9).map(t=>t.id),['s02-dispatch','s02-two-steps','s02-sim']);
+ assert.deepEqual(dayTasks(99),[]);
 });
 
 test('task → submit → changes requested → resubmit → approved, visible to participant and facilitator',async()=>{

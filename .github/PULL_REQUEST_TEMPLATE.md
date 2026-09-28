@@ -17,3 +17,5 @@ Required for **new** lessons / day-pack content PRs (AET-116 / AET-118). Skip wi
 
 - [ ] Targeted `node --test` / package vitest listed below
 - [ ] CI green
+
+- [ ] Locale-complete (`en` + `nl`) for learner-facing narrative + sim copy

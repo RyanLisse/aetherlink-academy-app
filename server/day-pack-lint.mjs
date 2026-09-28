@@ -3,6 +3,7 @@ import path from 'node:path';
 import {decodeDayQuiz} from '../packages/schema/src/day-quiz.ts';
 import {GRADER_IDS} from './autograde.mjs';
 import {resolvePackSims} from './sims.mjs';
+import {assertLocaleComplete} from '../content/days/locale.mjs';
 
 export function dayPackIssues(packs,{starterDir,starterFileNames}){
  const issues=[],questionDays=new Map();
@@ -19,7 +20,8 @@ export function dayPackIssues(packs,{starterDir,starterFileNames}){
    if(!starterFileNames.includes(file))issues.push(`${at}: starter file "${file}" is not a served starter file`);
    else if(!existsSync(path.join(starterDir,file)))issues.push(`${at}: starter file "${file}" is missing from ${starterDir}`);
   }
-  try{resolvePackSims(pack.sims,{at:`${at} sims`});}catch(error){issues.push(`${at}: sims ${error.message}`);}
+  try{resolvePackSims(pack.sims,{at:`${at} sims`,locale:'en'});resolvePackSims(pack.sims,{at:`${at} sims.nl`,locale:'nl'});}catch(error){issues.push(`${at}: sims ${error.message}`);}
+  if(pack.requireLocales||pack.kind==='harness'){try{assertLocaleComplete(pack,at);}catch(error){issues.push(String(error.message));}}
  }
  return issues;
 }

@@ -1,0 +1,82 @@
+{
+  "version": "s03",
+  "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code",
+  "locales": {
+    "en": {
+      "title": "Permission",
+      "description": "Tool calls pass through hard denies, rule checks, and optional user approval before execution.",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Delete the temporary build directory.",
+          "annotation": "The user asks for a filesystem action that may be safe or dangerous depending on the path."
+        },
+        {
+          "type": "assistant_text",
+          "content": "I'll check the target before running the command.",
+          "annotation": "The model can propose a tool call, but the harness decides whether execution is allowed."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "bash",
+          "content": "rm -rf /tmp/build-cache",
+          "annotation": "A destructive-looking command enters the permission pipeline."
+        },
+        {
+          "type": "system_event",
+          "content": "Gate 1 hard deny: pass\nGate 2 rule match: destructive command -> ask user",
+          "annotation": "The command is not absolutely forbidden, but it requires confirmation."
+        },
+        {
+          "type": "system_event",
+          "content": "User approval: allowed",
+          "annotation": "The runtime pauses before execution and resumes only after approval."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "bash",
+          "content": "(no output)",
+          "annotation": "Allowed commands continue through the normal tool result path."
+        }
+      ]
+    },
+    "nl": {
+      "title": "Permissies",
+      "description": "Tool-aanroepen gaan eerst door harde weigering, regelchecks en optionele gebruikersgoedkeuring.",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Verwijder de tijdelijke build-map.",
+          "annotation": "De gebruiker vraagt om een bestandsactie die veilig of gevaarlijk kan zijn, afhankelijk van het pad."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Ik controleer het doel voordat ik het commando uitvoer.",
+          "annotation": "Het model mag een tool voorstellen; de harness beslist of uitvoering mag."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "bash",
+          "content": "rm -rf /tmp/build-cache",
+          "annotation": "Een destructief ogend commando komt in de permissie-pijplijn."
+        },
+        {
+          "type": "system_event",
+          "content": "Poort 1 harde weigering: ok\nPoort 2 regelmatch: destructief commando → vraag gebruiker",
+          "annotation": "Niet absoluut verboden, maar wel bevestiging vereist."
+        },
+        {
+          "type": "system_event",
+          "content": "Gebruikersgoedkeuring: toegestaan",
+          "annotation": "De runtime pauzeert vóór uitvoering en gaat pas door na goedkeuring."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "bash",
+          "content": "(geen uitvoer)",
+          "annotation": "Toegestane commando's volgen daarna het gewone tool-resultaatpad."
+        }
+      ]
+    }
+  }
+}

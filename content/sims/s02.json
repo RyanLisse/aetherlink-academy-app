@@ -1,0 +1,96 @@
+{
+  "version": "s02",
+  "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code",
+  "locales": {
+    "en": {
+      "title": "Tool Use",
+      "description": "Agent with read, write, edit, and bash tools",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Add a function called greet(name) to hello.py",
+          "annotation": "User requests a code modification"
+        },
+        {
+          "type": "assistant_text",
+          "content": "Let me read the current file first.",
+          "annotation": "Model chooses read_file instead of bash cat"
+        },
+        {
+          "type": "tool_call",
+          "content": "hello.py",
+          "toolName": "read_file",
+          "annotation": "Dedicated read tool provides cleaner file access"
+        },
+        {
+          "type": "tool_result",
+          "content": "print(\"Hello, World!\")",
+          "toolName": "read_file",
+          "annotation": "File contents returned to the model"
+        },
+        {
+          "type": "tool_call",
+          "content": "hello.py\n---\ndef greet(name):\n    print(f\"Hello, {name}!\")\n\ngreet(\"World\")",
+          "toolName": "write_file",
+          "annotation": "write_file replaces the entire file content"
+        },
+        {
+          "type": "tool_result",
+          "content": "File written successfully",
+          "toolName": "write_file",
+          "annotation": "Write confirmed"
+        },
+        {
+          "type": "assistant_text",
+          "content": "I've updated hello.py with a greet(name) function that takes a name parameter.",
+          "annotation": "4 tools beat 1: each tool has a clear, focused purpose"
+        }
+      ]
+    },
+    "nl": {
+      "title": "Toolgebruik",
+      "description": "Agent met read-, write-, edit- en bash-tools",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Voeg een functie greet(name) toe aan hello.py",
+          "annotation": "De gebruiker vraagt om een codewijziging"
+        },
+        {
+          "type": "assistant_text",
+          "content": "Ik lees eerst het huidige bestand.",
+          "annotation": "Het model kiest read_file in plaats van bash cat"
+        },
+        {
+          "type": "tool_call",
+          "content": "hello.py",
+          "toolName": "read_file",
+          "annotation": "Een dedicated read-tool geeft schonere bestands-toegang"
+        },
+        {
+          "type": "tool_result",
+          "content": "print(\"Hello, World!\")",
+          "toolName": "read_file",
+          "annotation": "Bestandsinhoud keert terug naar het model"
+        },
+        {
+          "type": "tool_call",
+          "content": "hello.py\n---\ndef greet(name):\n    print(f\"Hello, {name}!\")\n\ngreet(\"World\")",
+          "toolName": "write_file",
+          "annotation": "write_file vervangt de volledige bestandsinhoud"
+        },
+        {
+          "type": "tool_result",
+          "content": "Bestand succesvol geschreven",
+          "toolName": "write_file",
+          "annotation": "Schrijven bevestigd"
+        },
+        {
+          "type": "assistant_text",
+          "content": "hello.py heeft nu een functie greet(name) met een naamparameter.",
+          "annotation": "Meerdere tools winnen van alleen bash: elke tool heeft een scherp doel"
+        }
+      ]
+    }
+  }
+}
