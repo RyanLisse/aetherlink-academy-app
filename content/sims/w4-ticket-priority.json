@@ -1,0 +1,116 @@
+{
+  "version": "w4-ticket-priority",
+  "attribution": "Academy-authored ConceptSim for Workshop 4 / AET-80 (n8n → Claude Agent SDK). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches ticket→tool_use→priority (s01–s02 territory). Not a port of an upstream chapter.",
+  "locales": {
+    "en": {
+      "title": "Ticket → tool_use → priority",
+      "description": "Step one support ticket through the Claude Agent SDK loop: messages, tool_use, tool_result, then a priority label — without API keys.",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Triage fixture ticket WL-1026: \"I was charged twice. I need this fixed today or I will file a complaint.\" Return low, medium, or high — same labels as the n8n path.",
+          "annotation": "Ticket enters the agent loop. Labels stay fixed to the shared fixture."
+        },
+        {
+          "type": "assistant_text",
+          "content": "I will classify WL-1026 with the keyword_priority tool, then propose a label for human review before accept.",
+          "annotation": "s01 beat — model plans to call a tool; does not invent a new label set."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "keyword_priority",
+          "content": "{\"ticket_id\":\"WL-1026\",\"message\":\"I was charged twice. I need this fixed today or I will file a complaint.\"}",
+          "annotation": "s02 tool_use — TOOL_HANDLERS dispatch keyword_priority."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "keyword_priority",
+          "content": "{\"priority\":\"high\",\"hits\":[\"charged twice\",\"today\",\"complaint\"],\"rule\":\"support-triage-v1\"}",
+          "annotation": "tool_result returns signals. Exit path matches n8n L1 keyword rule."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Proposed priority for WL-1026: **high**. Duplicate charge + same-day urgency + complaint threat. Awaiting human review.",
+          "annotation": "Model maps tool_result → priority. Solo bar = SOLO 2."
+        },
+        {
+          "type": "system_event",
+          "content": "HUMAN GATE · Review — facilitator checks proposed high against the acceptance table (ticket → expected n8n → Claude). Mismatch → fix prompt/tools, never invent a label.",
+          "annotation": "Human decides before accept. Offline dry-run alone is not model proof."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "write_acceptance_row",
+          "content": "{\"ticket_id\":\"WL-1026\",\"expected_n8n\":\"high\",\"claude\":\"high\",\"match\":true}",
+          "annotation": "Acceptance table row — same fixture as Workshop 3."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "write_acceptance_row",
+          "content": "Row recorded. gradeTriage so far: 1/1 match. Continue remaining fixtures for SOLO 4.",
+          "annotation": "Proof stays on the shared fixture; SOLO 0–4 pedagogy unchanged."
+        },
+        {
+          "type": "assistant_text",
+          "content": "WL-1026 accepted as high. Next: run the remaining fixture tickets; keep the human gate before you claim ship.",
+          "annotation": "Loop closes for one ticket. Stretch SOLO 3 can split Reply/Risk specialists."
+        }
+      ]
+    },
+    "nl": {
+      "title": "Ticket → tool_use → prioriteit",
+      "description": "Stap één supportticket door de Claude Agent SDK-lus: messages, tool_use, tool_result en daarna een prioriteitslabel — zonder API-sleutels.",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Triage fixture-ticket WL-1026: \"I was charged twice. I need this fixed today or I will file a complaint.\" Geef low, medium of high terug — dezelfde labels als het n8n-pad.",
+          "annotation": "Het ticket komt in de agent-lus. Labels blijven vast op de gedeelde fixture."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Ik classificeer WL-1026 met de keyword_priority-tool en stel daarna een label voor ter menselijke review vóór acceptatie.",
+          "annotation": "s01-beat — het model plant een tool-aanroep; verzint geen nieuwe labelset."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "keyword_priority",
+          "content": "{\"ticket_id\":\"WL-1026\",\"message\":\"I was charged twice. I need this fixed today or I will file a complaint.\"}",
+          "annotation": "s02 tool_use — TOOL_HANDLERS dispatchen keyword_priority."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "keyword_priority",
+          "content": "{\"priority\":\"high\",\"hits\":[\"charged twice\",\"today\",\"complaint\"],\"rule\":\"support-triage-v1\"}",
+          "annotation": "tool_result levert signalen. Pad komt overeen met de n8n L1-keywordregel."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Voorstelprioriteit voor WL-1026: **high**. Dubbele afschrijving + same-day urgentie + klachtdreiging. Wacht op menselijke review.",
+          "annotation": "Model koppelt tool_result → prioriteit. Solo-lat = SOLO 2."
+        },
+        {
+          "type": "system_event",
+          "content": "MENSELIJKE GATE · Review — facilitator checkt voorgesteld high tegen de acceptatietabel (ticket → verwacht n8n → Claude). Mismatch → prompt/tools verbeteren, nooit een nieuw label verzinnen.",
+          "annotation": "De mens beslist vóór acceptatie. Alleen een offline dry-run is geen modelbewijs."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "write_acceptance_row",
+          "content": "{\"ticket_id\":\"WL-1026\",\"expected_n8n\":\"high\",\"claude\":\"high\",\"match\":true}",
+          "annotation": "Rij in de acceptatietabel — dezelfde fixture als Workshop 3."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "write_acceptance_row",
+          "content": "Rij vastgelegd. gradeTriage tot nu toe: 1/1 match. Ga door met de overige fixtures voor SOLO 4.",
+          "annotation": "Bewijs blijft op de gedeelde fixture; SOLO 0–4-pedagogie ongewijzigd."
+        },
+        {
+          "type": "assistant_text",
+          "content": "WL-1026 geaccepteerd als high. Volgende: de overige fixture-tickets; houd de menselijke gate vóór je ship claimt.",
+          "annotation": "Lus sluit voor één ticket. Stretch SOLO 3 kan Reply/Risk-specialisten afsplitsen."
+        }
+      ]
+    }
+  }
+}

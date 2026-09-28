@@ -41,4 +41,6 @@ Failing the bar = **REJECT** until fixed.
 
 P0 Workshop 5 (AET-77) → P1 Workshop 4 (AET-80) → P2 Workshop 3 (AET-79). W6/W7 not forced. See PRODUCT-ACCEPT for the epic.
 
-**P0 status:** Workshop 5 ships harness-loop diagram (`public/diagrams/workshop/w5-harness-loop.svg`) + ConceptSim `w5-sdlc-loop` (EN+NL) while keeping Apple bar / Uitleg→Voordoen→Zelf doen and the daily-brief lab vehicle. Do not start P1 until CoS poteto.
+**P0 status:** Workshop 5 ships harness-loop diagram (`public/diagrams/workshop/w5-harness-loop.svg`) + ConceptSim `w5-sdlc-loop` (EN+NL) while keeping Apple bar / Uitleg→Voordoen→Zelf doen and the daily-brief lab vehicle.
+
+**P1 status:** Workshop 4 ships ticket→tool_use→priority diagram (`public/diagrams/workshop/w4-ticket-tool-priority.svg`) + ConceptSim `w4-ticket-priority` (EN+NL) while keeping Apple bar / Uitleg→Voordoen→Zelf doen and SOLO 0–4 on aetherlink-day5-n8n-to-agent. Do not start P2 W3 until CoS poteto.
