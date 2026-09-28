@@ -272,3 +272,52 @@ test('AET-118 P1 W4 retrofit: diagram + ConceptSim + locale-complete; SOLO 0–4
   assert.equal(getSim('w4-ticket-priority', 'en')?.title, simEn.title);
   assert.equal(getSim('w4-ticket-priority', 'nl')?.title, simNl.title);
 });
+
+test('AET-118 P2 W3 retrofit: ladder diagram + ConceptSim + locale-complete; L1–L3 pedagogy kept', async () => {
+  const {DAY_PACKS} = await import('../content/days/index.mjs');
+  const {projectPackLocale} = await import('../content/days/locale.mjs');
+  const {parseLocalizedScenario, projectScenario, assertScenarioLocaleComplete} = await import('../packages/concept-sim/src/index.ts');
+  const pack = DAY_PACKS.find((p) => p.day === 3);
+  assert.ok(pack, 'day 3 pack');
+  assert.equal(pack.kind, 'workshop');
+  assert.equal(pack.localeComplete, true);
+  assert.ok(pack.copy?.en && pack.copy?.nl, 'W3 copy en+nl');
+
+  const en = projectPackLocale(pack, 'en');
+  const nl = projectPackLocale(pack, 'nl');
+  assert.notEqual(en.lesson.narrative[0], nl.lesson.narrative[0]);
+  assert.match(en.lesson.motto || '', /Same tickets · more agency/i);
+  assert.match(nl.lesson.motto || '', /Zelfde tickets · meer agency/i);
+  assert.ok(en.diagrams?.some((d) => d.src === '/diagrams/workshop/w3-agency-ladder.svg'));
+  assert.ok(existsSync(join(root, 'public/diagrams/workshop/w3-agency-ladder.svg')));
+  assert.ok(en.sims?.some((s) => s.id === 'w3-agency-ladder'));
+  assert.ok(nl.sims?.some((s) => s.id === 'w3-agency-ladder'));
+
+  // Apple bar / L1–L3 pedagogy kept
+  assert.equal(en.demo?.slides?.length, 3);
+  assert.equal(en.steps?.length, 4);
+  assert.deepEqual(en.steps.map((s) => `${s.badge}:${s.level}`), ['L1:required','L2:required','L3:stretch','P:required']);
+  assert.ok(en.materials?.some((m) => /n8n-triage-l1-switch/.test(m.file || m.href || '')));
+  assert.ok(nl.materials?.some((m) => /n8n-triage-l2-agent-memory/.test(m.file || m.href || '')));
+  assert.equal(en.mission?.id, 'TRIAGE-N8N-03');
+  assert.ok(pack.triage, 'shared triage acceptance kept');
+
+  const raw = JSON.parse(readFileSync(join(root, 'content/sims/w3-agency-ladder.json'), 'utf8'));
+  const localized = parseLocalizedScenario(raw, 'w3-agency-ladder');
+  assertScenarioLocaleComplete(localized, 'w3-agency-ladder');
+  const simEn = projectScenario(localized, 'en');
+  const simNl = projectScenario(localized, 'nl');
+  assert.ok(simEn.steps.length >= 10);
+  assert.ok(simNl.steps.length >= 10);
+  assert.notEqual(
+    JSON.stringify(simEn.steps.map((s) => s.content + s.annotation)),
+    JSON.stringify(simNl.steps.map((s) => s.content + s.annotation)),
+  );
+  assert.ok(simEn.steps.some((s) => s.type === 'tool_call' && s.toolName === 'switch_route'));
+  assert.ok(simEn.steps.some((s) => s.type === 'tool_call' && s.toolName === 'ai_agent_priority'));
+  assert.ok(simEn.steps.some((s) => s.type === 'tool_call' && s.toolName === 'orchestrate_specialists'));
+  assert.ok(simEn.steps.some((s) => s.type === 'system_event' && /HUMAN GATE/i.test(s.content)));
+  assert.ok(simNl.steps.some((s) => s.type === 'system_event' && /MENSELIJKE GATE/i.test(s.content)));
+  assert.equal(getSim('w3-agency-ladder', 'en')?.title, simEn.title);
+  assert.equal(getSim('w3-agency-ladder', 'nl')?.title, simNl.title);
+});
