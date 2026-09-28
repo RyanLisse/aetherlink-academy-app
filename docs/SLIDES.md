@@ -49,16 +49,25 @@ syntax is used (no enums, namespaces or parameter properties).
 `PATCH /game/decks/:id`, `POST /game/decks/:id/duplicate`, `DELETE /game/decks/:id`,
 `GET /game/decks/:id/export.html`.
 
-**MCP tools (participant token):** `list_decks`, `get_deck`, `create_deck`,
+**MCP tools (participant or facilitator token):** `list_decks`, `get_deck`, `create_deck`,
 `add_slide`, `update_slide`, `patch_deck`, `export_deck_html`. The Claude
 instructions in `server/agent-setup.mjs` name them. Recommended agent loop, as
 upstream: `create_deck` with an empty list, then `add_slide` per slide, read a
 slide with `get_deck slideId` before `update_slide` and pass its `contentHash`
 as `baseContentHash`.
 
+Facilitators open **My learning coach → Copy for your Claude** from their room
+on the public HTTPS app, then use the instructions in their own Claude Code.
+`get_mission` confirms the room and facilitator role. `pin_classroom_deck`
+selects an existing room deck for a classroom day and requires facilitator
+access. It changes a mutable room overlay, not an immutable curriculum publication.
+Copying fresh connection instructions revokes that room principal's previous MCP
+token; access expires with the issuing browser session. This feature does not
+start an embedded model or require an Anthropic API key.
+
 **UI:** sidebar entry "Slide decks": list / create / duplicate / delete, slide
 rail, scaled stage, keyboard navigation, fullscreen present, HTML export,
-speaker notes for facilitator and driver. Decks refresh every few seconds so a
+speaker notes subject to the server's facilitator/creator permissions. Decks refresh every few seconds so a
 squad watches Claude's slides land.
 
 ## Authorisation
@@ -69,6 +78,14 @@ and `participant` otherwise, `source` is `ai` for MCP calls. Decks from another
 room answer 404. Delete requires facilitator or creator. Stored HTML is
 sanitised on every write (scripts, iframes, handlers, `javascript:` URLs,
 `<style>`).
+
+Full deck and single-slide responses include notes only for the facilitator or
+deck creator. Other room participants may collaborate on slide content, but may
+not edit existing notes; duplicating a deck removes notes they cannot read.
+Participant exports omit notes; facilitator exports retain them and should be
+treated as presenter material. This does not make squad deck content a private
+curriculum draft; curriculum publication and hosted chat adapters remain separate
+work tracked in AET-119.
 
 ## Storage
 

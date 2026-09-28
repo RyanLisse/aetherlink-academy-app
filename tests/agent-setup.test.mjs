@@ -5,12 +5,17 @@ import os from 'node:os';
 import path from 'node:path';
 import {createApp} from '../server/app.mjs';
 async function call(app,route,token,params={}){const response={status:200};await app.router.stack.find(l=>l.route?.path===route).route.stack[0].handle({headers:{authorization:'Bearer '+token},body:{},params},{json(body){response.body=body;}},e=>{response.status=e.status||500;});return response;}
-test('one-click setup binds the agent to its participant and squad, never facilitator or browser access',async()=>{
+test('one-click setup binds participant and facilitator agents to their room role, never browser access',async()=>{
  const dir=mkdtempSync(path.join(os.tmpdir(),'academy-agent-'));
  try{
  const {app,store}=createApp({dir,hostKey:'test',publicBaseUrl:'https://academy.example.test'});
  const host=store.create('Squad',{slug:'intent'}),alice=store.join(host.code,'Alice'),bob=store.join(host.code,'Bob');
- assert.equal((await call(app,'/game/agent-setup',host.token)).status,403);
+ const facilitatorSetup=await call(app,'/game/agent-setup',host.token);assert.equal(facilitatorSetup.status,200);
+ assert.equal(facilitatorSetup.body.participantId,'facilitator');assert.equal(facilitatorSetup.body.role,'facilitator');assert.equal(facilitatorSetup.body.roomId,host.roomId);
+ assert.match(facilitatorSetup.body.instructions,/session\.role=facilitator/);assert.match(facilitatorSetup.body.instructions,/pin_classroom_deck/);
+ const facilitatorAccess=facilitatorSetup.body.instructions.match(/Authorization: Bearer ([a-f0-9]{64})/)[1];
+ const facilitatorIdentity=store.auth(facilitatorAccess,'mcp');assert.equal(facilitatorIdentity.s.personId,'facilitator');assert.equal(facilitatorIdentity.r.id,host.roomId);assert.equal(facilitatorIdentity.p,undefined);
+ const facilitatorMission=await call(app,'/game/mcp/:tool',facilitatorAccess,{tool:'get_mission'});assert.equal(facilitatorMission.body.session.role,'facilitator');assert.equal(facilitatorMission.body.session.roomId,host.roomId);
  const setup=await call(app,'/game/agent-setup',alice.token);assert.equal(setup.status,200);
  const access=setup.body.instructions.match(/Authorization: Bearer ([a-f0-9]{64})/)[1];
  const identity=store.auth(access,'mcp');assert.equal(identity.p.name,'Alice');assert.equal(identity.r.id,setup.body.roomId);assert.equal(identity.p.id,setup.body.participantId);

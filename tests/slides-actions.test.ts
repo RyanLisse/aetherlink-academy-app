@@ -66,6 +66,31 @@ test('decks are invisible outside their room; delete needs facilitator or creato
  }finally{await svc.close();}
 });
 
+test('facilitator deck notes stay private while participant-owned squad notes remain available to their owner',async()=>{
+ const svc=createSlidesService();
+ try{
+  const deck=await svc.run('createDeck',facilitator,{title:'Facilitator notes',slides:[{heading:'Lesson',notes:'private speaker notes'}]}) as any;
+  const learnerRead=await svc.run('getDeck',ryan,{deckId:deck.id}) as any;
+  assert.equal('notes' in learnerRead.slides[0],false);
+  await rejects(svc.run('addSlide',ryan,{deckId:deck.id,heading:'Injected notes',notes:'overwrite'}),403,/presenter notes/);
+  await rejects(svc.run('patchDeck',ryan,{deckId:deck.id,operations:[{op:'add-slide',slide:{heading:'Injected notes',notes:'overwrite'}}]}),403,/presenter notes/);
+  const afterDenied=await svc.run('getDeck',facilitator,{deckId:deck.id}) as any;
+  assert.equal(afterDenied.revision,learnerRead.revision);
+  assert.equal(afterDenied.slides.length,1);
+  await svc.run('addSlide',ryan,{deckId:deck.id,heading:'Shared content without notes'});
+  await rejects(svc.run('updateSlide',ryan,{deckId:deck.id,slideId:learnerRead.slides[0].id,notes:'overwrite'}),403,/presenter notes/);
+  await rejects(svc.run('patchDeck',ryan,{deckId:deck.id,operations:[{op:'patch-slide',slideId:learnerRead.slides[0].id,fields:{notes:'overwrite'}}]}),403,/presenter notes/);
+  const copy=await svc.run('duplicateDeck',ryan,{deckId:deck.id}) as any;
+  const copied=await svc.run('getDeck',ryan,{deckId:copy.id}) as any;
+  assert.equal(copied.slides[0].notes,'');
+  const ownerRead=await svc.run('getDeck',facilitator,{deckId:deck.id}) as any;
+  assert.equal(ownerRead.slides[0].notes,'private speaker notes');
+  const participantDeck=await svc.run('createDeck',ryan,{title:'My notes',slides:[{heading:'My slide',notes:'my presenter notes'}]}) as any;
+  const participantRead=await svc.run('getDeck',ryan,{deckId:participantDeck.id}) as any;
+  assert.equal(participantRead.slides[0].notes,'my presenter notes');
+ }finally{await svc.close();}
+});
+
 test('memory repository persists decks to the data dir and reloads them',async()=>{
  const dir=mkdtempSync(path.join(os.tmpdir(),'academy-decks-'));
  const first=createSlidesService({dir});

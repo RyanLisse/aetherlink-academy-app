@@ -37,6 +37,14 @@ test('Postgres Academy state survives independent concurrent instances', {skip:!
   const second=await two.rotateMcpToken(participant.token);
   await assert.rejects(one.auth(first.token,'mcp'),error=>error.status===401);
   assert.equal((await one.auth(second.token,'mcp')).s.kind,'mcp');
+  const facilitatorBrowser=await one.auth(room.token,'browser');
+  const facilitatorFirst=await one.rotateMcpToken(room.token);
+  const facilitatorContext=await two.auth(facilitatorFirst.token,'mcp');
+  assert.equal(facilitatorContext.s.personId,'facilitator');assert.equal(facilitatorContext.p,undefined);
+  assert.equal(facilitatorContext.s.expiresAt,facilitatorBrowser.s.expiresAt);
+  const facilitatorSecond=await two.rotateMcpToken(room.token);
+  await assert.rejects(one.auth(facilitatorFirst.token,'mcp'),error=>error.status===401);
+  assert.equal((await one.auth(facilitatorSecond.token,'mcp')).s.personId,'facilitator');
   await assert.rejects(one.withSession(room.token,'browser',({r})=>{r.name='Rollback';throw Error('rollback sentinel');}),/rollback sentinel/);
   assert.equal((await two.auth(room.token)).r.name,'Concurrency');
   await one.transaction(async client=>{

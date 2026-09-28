@@ -1,5 +1,5 @@
 import express from 'express';
-import {agentInstructions} from './agent-setup.mjs';
+import {agentInstructions,facilitatorAgentInstructions} from './agent-setup.mjs';
 import {dayProgress,debrief,exportDebrief} from './progress.mjs';
 import {findTask,taskStatus,taskTrail,reviewQueue,peerQueue,transition,reviewEvent,reviewerRole,authorizeTaskReview,submitAutograde} from './proof-trail.mjs';
 import {PARTICIPANT_FIXTURES} from '../content/triage/grade.mjs';
@@ -178,7 +178,7 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
  app.post('/game/quiz/start',wrap(async(req,res)=>res.json(await store.withSession(token(req),'browser',context=>{const day=quizDay(context,req.body);requireDayQuiz(getDayPack(day).quiz);return openQuizAttempt(context.p,day,Date.now());}))));
  app.post('/game/quiz',wrap(async(req,res)=>res.json(await store.withSession(token(req),'browser',context=>{const day=quizDay(context,req.body);return submitQuizAttempt(context.p,day,getDayPack(day).quiz,req.body,Date.now(),context.r.day);}))));
  app.post('/game/route',wrap(async(req,res)=>{if(!['guided','standard','stretch'].includes(req.body.route))fail(400,'Ongeldige hulpkeuze.');await store.withSession(token(req),'browser',({r,p})=>{if(!p)fail(400,'Alleen deelnemers.');p.route=req.body.route;p.progressByDay??={};p.progressByDay[String(r.day)]={...p.progressByDay[String(r.day)],route:p.route};});res.json({ok:true});}));
- app.post('/game/agent-setup',wrap(async(req,res)=>{const {r,p}=await browser(req);if(!p)fail(403,'Neem als deelnemer deel om je eigen Claude te verbinden.');if(publicUrl.protocol!=='https:')fail(409,'De agentkoppeling is beschikbaar op de publieke HTTPS-versie.');const access=await store.rotateMcpToken(token(req));res.json({instructions:agentInstructions({origin:publicUrl.origin,roomId:r.id,participantId:p.id,accessToken:access.token}),expiresAt:Date.now()+12*60*60*1000,participantId:p.id,roomId:r.id});}));
+ app.post('/game/agent-setup',wrap(async(req,res)=>{const {r,p,s}=await browser(req);const facilitator=s.personId==='facilitator';if(!p&&!facilitator)fail(403,'Neem als facilitator of deelnemer deel om je eigen Claude te verbinden.');if(publicUrl.protocol!=='https:')fail(409,'De agentkoppeling is beschikbaar op de publieke HTTPS-versie.');const access=await store.rotateMcpToken(token(req));const principalId=p?.id??'facilitator';res.json({instructions:facilitator?facilitatorAgentInstructions({origin:publicUrl.origin,roomId:r.id,accessToken:access.token}):agentInstructions({origin:publicUrl.origin,roomId:r.id,participantId:principalId,accessToken:access.token}),expiresAt:s.expiresAt,participantId:principalId,role:facilitator?'facilitator':'participant',roomId:r.id});}));
  app.post('/game/mcp-token',wrap(async(req,res)=>res.json(await store.rotateMcpToken(token(req)))));
  app.get('/game/chat/embed',wrap(async(req,res)=>{
   const {r,p,s}=await browser(req);
@@ -277,16 +277,17 @@ export function createApp({dir,repository,presence,proofBase='http://127.0.0.1:4
   res.set('Cache-Control','private, no-store').send(Buffer.from(file.bytes));
  }));
  app.delete('/game/files/:fileId',wrap(async(req,res)=>res.json(await files.run('deleteFile',deckActor(await browser(req)),{fileId:fileId(req)}))));
- async function executeMcp(token,tool,input){const a=await store.auth(token,'mcp');const {r,p}=a;if(!p)fail(403,'Geen deelnemer.');let result;
-  switch(tool){case 'get_mission':{const pack=getDayPack(r.day);result={session:{roomId:r.id,participantId:p.id,participantName:p.name,squadName:r.name},mission:pack?.mission||mission,day:r.day,phase:r.phase,route:p.route,role:r.members[r.driver]?.id===p.id?'Driver':'Navigator',tasks:taskTrail(r,p.id,r.day),coach:'Leg begrippen uit, citeer les-IDs, pas hints aan de hulpkeuze aan. Lees eerst de gedeelde intent. Geen browserchat of model-API vanuit de game.'};break;}
-  case 'get_document':result=await proof.state(r);break;
-  case 'get_screen_state':result=await readScreenState(a,screens);break;
+ async function executeMcp(token,tool,input){const a=await store.auth(token,'mcp');const {r,p,s}=a;const facilitator=s.personId==='facilitator';if(!p&&!facilitator)fail(403,'Geen geldige Academy-rol.');const requireParticipant=()=>{if(!p)fail(403,'Deze MCP-actie is alleen beschikbaar voor deelnemers.');};let result;
+  switch(tool){case 'get_mission':{const pack=getDayPack(r.day);result=facilitator?{session:{roomId:r.id,role:'facilitator',squadName:r.name},mission:pack?.mission||mission,day:r.day,phase:r.phase,coach:'You are the facilitator for this room. Manage lesson decks and pin one as the active classroom overlay only when explicitly asked. Academy does not start a model or submit evidence on behalf of participants.'}:{session:{roomId:r.id,participantId:p.id,participantName:p.name,squadName:r.name},mission:pack?.mission||mission,day:r.day,phase:r.phase,route:p.route,role:r.members[r.driver]?.id===p.id?'Driver':'Navigator',tasks:taskTrail(r,p.id,r.day),coach:'Leg begrippen uit, citeer les-IDs, pas hints aan de hulpkeuze aan. Lees eerst de gedeelde intent. Geen browserchat of model-API vanuit de game.'};break;}
+  case 'get_document':requireParticipant();result=await proof.state(r);break;
+  case 'get_screen_state':requireParticipant();result=await readScreenState(a,screens);break;
   case 'search_knowledge':result={lessons:searchKnowledge(String(input.query||''))};break;
-  case 'submit_evidence':result=await evidence(token,input);break;
+  case 'submit_evidence':requireParticipant();result=await evidence(token,input);break;
   case 'list_decks':case 'get_deck':case 'create_deck':case 'add_slide':case 'update_slide':case 'patch_deck':case 'export_deck_html':{const action={list_decks:'listDecks',get_deck:'getDeck',create_deck:'createDeck',add_slide:'addSlide',update_slide:'updateSlide',patch_deck:'patchDeck',export_deck_html:'exportHtml'}[tool];result=await slides.run(action,deckActor(a),input||{});break;}
-  case 'suggest_document':result=await proof.suggest(r,`ai:${p.name}:${p.id}`,text(input.quote),text(input.content),`${p.id}:${text(input.requestId,100)}`);break;
+  case 'suggest_document':requireParticipant();result=await proof.suggest(r,`ai:${p.name}:${p.id}`,text(input.quote),text(input.content),`${p.id}:${text(input.requestId,100)}`);break;
+  case 'pin_classroom_deck':{if(!facilitator)fail(403,'Only the facilitator can pin the Classroom overlay.');const deckIdValue=uuid(input?.deckId);const day=overlayDay(r,input?.day);await slides.run('getDeck',deckActor(a),{deckId:deckIdValue,compact:true});result=await store.withSession(token,'mcp',({r,s})=>{if(s.personId!=='facilitator')fail(403,'Only the facilitator can pin the Classroom overlay.');r.classroomOverlayByDay={...(r.classroomOverlayByDay||{}),[String(day)]:deckIdValue};r.version++;return {deckId:deckIdValue,day,pinned:true};});break;}
   default:fail(404,'Onbekende MCP-tool.');}
-  await store.withSession(token,'mcp',({p})=>{p.lastMcp=new Date().toISOString();});return result;}
+  if(p)await store.withSession(token,'mcp',({p})=>{if(p)p.lastMcp=new Date().toISOString();});return result;}
  app.post('/game/mcp/:tool',wrap(async(req,res)=>res.json(await executeMcp(bearer(req),req.params.tool,req.body))));
  app.get('/game/connection',wrap(async(req,res)=>{await browser(req);res.json({transport:'streamable-http',mcpUrl:publicUrl.origin+'/mcp',remoteConfigured:publicUrl.protocol==='https:',status:publicUrl.protocol==='https:'?'Remote-adres geconfigureerd; externe bereikbaarheid nog te controleren.':'Lokale preview. Er is nog geen publieke remote MCP uitgerold.'});}));
  const mcpHandler=createMcpHandler(()=>createAcademyMcpServer((tool,input,ctx)=>{const auth=ctx.http?.req?.headers.get('authorization')||'';return executeMcp(auth.startsWith('Bearer ')?auth.slice(7):'',tool,input);}),{legacy:'stateless',responseMode:'json'});
