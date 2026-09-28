@@ -296,7 +296,7 @@ export function isWorkshop7Path(pathname: string): boolean {
   return pathname === '/workshop/7' || pathname === '/lesson/workshop-7';
 }
 
-/** Facilitator Harness Engineering deck (AET-116 Slice 1 · s01–s03). */
+/** Facilitator Harness Engineering deck (AET-116 · s01–s17). */
 export function isHarnessPath(pathname: string): boolean {
   return pathname === '/harness' || pathname === '/lesson/harness';
 }

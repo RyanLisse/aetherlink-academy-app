@@ -1,0 +1,92 @@
+{
+  "version": "s04",
+  "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code",
+  "locales": {
+    "en": {
+      "title": "Hooks",
+      "description": "Lifecycle hooks attach logging, permission, and output handling around the same stable agent loop.",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Read package.json and summarize the scripts.",
+          "annotation": "UserPromptSubmit hooks run before the prompt enters the LLM call."
+        },
+        {
+          "type": "system_event",
+          "content": "trigger_hooks(UserPromptSubmit): log_user_prompt",
+          "annotation": "Extension logic is outside the core loop."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "read_file",
+          "content": "{\"path\":\"package.json\"}",
+          "annotation": "The LLM asks to use a tool."
+        },
+        {
+          "type": "system_event",
+          "content": "trigger_hooks(PreToolUse): permission_hook, log_hook -> allowed",
+          "annotation": "PreToolUse hooks can block, audit, or annotate the tool call."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "read_file",
+          "content": "{ \"scripts\": { \"build\": \"next build\" } }",
+          "annotation": "The handler executes only after hooks allow it."
+        },
+        {
+          "type": "system_event",
+          "content": "trigger_hooks(PostToolUse): large_output_hook",
+          "annotation": "PostToolUse hooks see the result before it returns to the model."
+        },
+        {
+          "type": "assistant_text",
+          "content": "The project exposes a build script that runs Next's production build.",
+          "annotation": "Stop hooks can run when the model no longer requests tools."
+        }
+      ]
+    },
+    "nl": {
+      "title": "Hooks",
+      "description": "Lifecycle-hooks hangen logging, permissies en uitvoerafhandeling om dezelfde stabiele agent-loop.",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Lees package.json en vat de scripts samen.",
+          "annotation": "UserPromptSubmit-hooks draaien vóór de prompt de LLM-aanroep in gaat."
+        },
+        {
+          "type": "system_event",
+          "content": "trigger_hooks(UserPromptSubmit): log_user_prompt",
+          "annotation": "Uitbreidingslogica zit buiten de kernloop."
+        },
+        {
+          "type": "tool_call",
+          "content": "{\"path\":\"package.json\"}",
+          "annotation": "Het LLM vraagt om een tool te gebruiken.",
+          "toolName": "read_file"
+        },
+        {
+          "type": "system_event",
+          "content": "trigger_hooks(PreToolUse): permission_hook, log_hook → toegestaan",
+          "annotation": "PreToolUse-hooks kunnen de toolaanroep blokkeren, auditen of annoteren."
+        },
+        {
+          "type": "tool_result",
+          "content": "{ \"scripts\": { \"build\": \"next build\" } }",
+          "annotation": "De handler draait pas nadat hooks toestaan.",
+          "toolName": "read_file"
+        },
+        {
+          "type": "system_event",
+          "content": "trigger_hooks(PostToolUse): large_output_hook",
+          "annotation": "PostToolUse-hooks zien het resultaat vóór het terugkomt bij het model."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Het project heeft een build-script dat de productiebuild van Next draait.",
+          "annotation": "Stop-hooks kunnen draaien wanneer het model geen tools meer vraagt."
+        }
+      ]
+    }
+  }
+}

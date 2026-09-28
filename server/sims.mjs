@@ -13,7 +13,7 @@ import {
 const DEFAULT_DIR = fileURLToPath(new URL('../content/sims/', import.meta.url));
 
 /** Harness chapter ids that must ship real EN+NL under the locale lock. */
-const LOCALE_COMPLETE_IDS = new Set(['s01', 's02', 's03']);
+const LOCALE_COMPLETE_IDS = new Set(['s01','s02','s03','s04','s05','s06','s07','s08','s09','s10','s11','s12','s13','s14','s15','s16','s17']);
 
 /** Load and validate every `*.json` scenario under content/sims (boot-time). */
 export function loadSimCatalog(dir = DEFAULT_DIR) {

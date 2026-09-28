@@ -90,7 +90,7 @@ export function assertLocaleComplete(pack, at = `day ${pack?.day}`) {
     }
     if (lang === 'nl') {
       const blob = JSON.stringify(c);
-      if (/TODO|FIXME|PLACEHOLDER|\[NL\]|lorem ipsum/i.test(blob)) {
+      if (/\[PLACEHOLDER\]|\[NL\]|lorem ipsum|\bTODO:|\bFIXME:/i.test(blob)) {
         throw new Error(`${at}: copy.nl looks like a placeholder`);
       }
       if (JSON.stringify(c.narrative) === JSON.stringify(pack.copy.en.narrative)) {

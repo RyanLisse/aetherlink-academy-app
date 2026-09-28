@@ -1,0 +1,83 @@
+{
+  "version": "s06",
+  "attribution": "Ported from shareAI-lab/learn-claude-code (MIT License, Copyright (c) 2024 shareAI Lab). https://github.com/shareAI-lab/learn-claude-code",
+  "locales": {
+    "en": {
+      "title": "Subagent",
+      "description": "The task tool runs a nested agent loop with fresh messages and returns its final text to the parent.",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Explore how the CLI parser works without polluting this main context.",
+          "annotation": "The user asks for exploratory work that can be isolated."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "task",
+          "content": "{\"prompt\":\"Explore the CLI parser and summarize the control flow.\"}",
+          "annotation": "The parent delegates through the task tool."
+        },
+        {
+          "type": "system_event",
+          "content": "run_subagent: messages=[{role:\"user\", content: prompt}], tools=bash/read/write/edit/glob",
+          "annotation": "The subagent receives fresh messages and no task tool."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "read_file",
+          "content": "{\"path\":\"cli.py\"}",
+          "annotation": "The tool call stays in the subagent's local message list."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "task",
+          "content": "Summary: cli.py parses args, selects a command handler, then dispatches.",
+          "annotation": "The subagent's final text becomes the parent's task result."
+        },
+        {
+          "type": "assistant_text",
+          "content": "The parser is isolated in cli.py and dispatches by command name. I'll use that summary in the main plan.",
+          "annotation": "The parent avoids carrying every exploratory detail."
+        }
+      ]
+    },
+    "nl": {
+      "title": "Subagent",
+      "description": "Een subagent start met een verse messages[]-lijst; alleen de eindtekst keert terug naar de ouder.",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Traceer de auth-aanroepketen en vat samen welke bestanden ertoe doen.",
+          "annotation": "Diep onderzoek zou de context van de ouder vervuilen."
+        },
+        {
+          "type": "tool_call",
+          "content": "{\"prompt\":\"Traceer de auth-aanroepketen; geef alleen de relevante bestanden en samenvatting terug.\"}",
+          "annotation": "De task-tool start een geneste agent-loop.",
+          "toolName": "task"
+        },
+        {
+          "type": "system_event",
+          "content": "subagent: verse messages[] · dezelfde WORKDIR · geen geneste task-tool",
+          "annotation": "Berichtisolatie, geen proces- of filesystem-isolatie."
+        },
+        {
+          "type": "tool_result",
+          "content": "Auth loopt via middleware/auth.ts → services/session.ts → db/users.ts. Kritieke check staat in session.validate().",
+          "annotation": "Alleen de eindtekst wordt het tool_result van de ouder.",
+          "toolName": "task"
+        },
+        {
+          "type": "assistant_text",
+          "content": "De auth-keten zit in drie bestanden; validate() is de kern. Ik ga daar de fix zetten.",
+          "annotation": "De ouder houdt een schone context en gaat verder met het eigenlijke werk."
+        },
+        {
+          "type": "system_event",
+          "content": "ouder-messages[] bevat geen tussentijdse subagent-toolcalls",
+          "annotation": "Tussenstappen van de subagent blijven buiten de oudercontext."
+        }
+      ]
+    }
+  }
+}
