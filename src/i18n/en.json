@@ -868,5 +868,13 @@
   "arcade.starters.pendingTitle": "PENDING — SDK starters",
   "arcade.starters.pendingBody": "Starters not ready yet ({status}). No fake repos. Hands-on SDK labs wait on Herdr AET-63. Mapping + watch/skip stay valid.",
   "arcade.demoOnly": "demo only",
-  "arcade.optional": "optional"
+  "arcade.optional": "optional",
+  "code.aria": "Illustrative code examples",
+  "code.title": "Developer deep dive · code example",
+  "code.displayOnly": "Display only. Academy does not run these snippets; use your own local repository when you choose to try them.",
+  "code.langGroup": "Code display language",
+  "code.lang.typescript": "TypeScript",
+  "code.lang.python": "Python",
+  "code.copy": "Copy",
+  "code.copied": "Copied"
 }

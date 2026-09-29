@@ -181,6 +181,38 @@ const nl = {
  ]
 };
 
+
+/** Language-neutral paired code identity (AET-122). Display only — no hosted runner. */
+const CODE_EXAMPLES = [
+  {
+    id: 'w4-tool-handler-sketch',
+    title: 'TOOL_HANDLERS sketch',
+    typescript: `// Display only — run in your local aetherlink-day5-n8n-to-agent clone.
+type Priority = 'low' | 'medium' | 'high';
+const TOOL_HANDLERS = {
+  keyword_priority: async (ticket: { subject: string }): Promise<Priority> => {
+    const text = ticket.subject.toLowerCase();
+    if (text.includes('outage') || text.includes('down')) return 'high';
+    if (text.includes('billing')) return 'medium';
+    return 'low';
+  },
+};`,
+    python: `# Display only — run in your local aetherlink-day5-n8n-to-agent clone.
+from typing import Literal
+Priority = Literal['low', 'medium', 'high']
+
+async def keyword_priority(ticket: dict) -> Priority:
+    text = ticket['subject'].lower()
+    if 'outage' in text or 'down' in text:
+        return 'high'
+    if 'billing' in text:
+        return 'medium'
+    return 'low'
+
+TOOL_HANDLERS = {'keyword_priority': keyword_priority}`,
+  },
+];
+
 export default {
  day:4,
  kind:'workshop',
@@ -192,4 +224,5 @@ export default {
  ...nl,
  triage:TRIAGE_ACCEPTANCE,
  sims:[{id:'w4-ticket-priority',title:'Concept-sim · Ticket → prioriteit'}],
+ codeExamples:CODE_EXAMPLES,
 };

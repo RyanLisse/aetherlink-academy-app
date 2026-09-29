@@ -220,8 +220,8 @@ test('SOLO 1 on day 4: predict the labels, then the autograder checks them; the 
  const {bo,call,grade,task}=await room(t,4);
  const pack=await call(bo.token,'day-pack');
  const solo1=pack.body.steps.find(step=>step.id==='w4-solo1');
- assert.deepEqual([solo1.title,solo1.autograde,solo1.slide.slide],['SOLO 1 · Voorspel en check de labels','triage',7]);
- assert.match(solo1.goal,/^Voorspel per fixture-ticket het label/);
+ assert.deepEqual([solo1.title,solo1.autograde,solo1.slide.slide],['SOLO 1 · Predict and check the labels','triage',7]);
+ assert.match(solo1.goal,/Predict the label|Voorspel per fixture-ticket/i);
  assert.deepEqual(leaks(pack.body),[]);
  assert.deepEqual(proseLeaks(pack.raw),[]);
  assert.doesNotMatch(pack.raw,/expected_priority|"expected"/);

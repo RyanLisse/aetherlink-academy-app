@@ -1,5 +1,6 @@
 import {fileURLToPath} from 'node:url';
 import {DAY_PACKS} from '../content/days/index.mjs';
+import {projectPackLocale} from '../content/days/locale.mjs';
 import {assertValidDayPacks} from './day-pack-lint.mjs';
 import {courseOrder} from '../content/days/course.mjs';
 export const lessons = [
@@ -21,7 +22,7 @@ export function searchKnowledge(query=''){const words=query.toLowerCase().trim()
 
 const dayPacks=Object.fromEntries(DAY_PACKS.map(pack=>[pack.day,pack]));
 export function getDayPack(day){return dayPacks[day]??null;}
-export function listDaySummaries(){return DAY_PACKS.map(({day,title,tag,blurb})=>({day,title,tag,blurb}));}
+export function listDaySummaries(){return DAY_PACKS.map(pack=>{const projected=projectPackLocale(pack,'en');return {day:pack.day,title:projected.title,tag:projected.tag,blurb:projected.blurb};});}
 export function listRouteDays(course=null){const summaries=Object.fromEntries(listDaySummaries().map(summary=>[summary.day,summary]));return courseOrder(course).map(({position,day,title,date})=>({...summaries[day],title:title??summaries[day].title,position,date,hasLesson:true}));}
 export function courseEntry(course,day){return course?courseOrder(course).find(entry=>entry.day===day)??null:null;}
 export const starterFileNames=['README.md','CLAUDE.md','package.json','status.mjs','status.test.mjs','n8n-repository-review.json','n8n-review-README.md','claude-code-review-README.md','day5-fictional-issue.md','n8n-triage-l1-switch.json','n8n-triage-l2-agent-memory.json','n8n-triage-l3-multi-agent.json','triage-fixtures.json'];

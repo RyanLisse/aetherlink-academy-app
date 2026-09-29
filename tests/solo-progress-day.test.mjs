@@ -109,7 +109,7 @@ test('day pack exposes mission and reviewCriteria for Solo/Review UI',async()=>{
  const {instance,host,participant}=fixture();
  const d1=await invoke(instance.app,'/game/day-pack',{cookies:{academy:participant.token}});
  assert.equal(d1.body.mission.id,'CLASSROOM-01');
- assert.equal(d1.body.reviewCriteria[0],'Repository-kaart met bewijs uit de bestanden; geen code gewijzigd en onbekenden als OPEN (opdracht 1, dia 35).');
+ assert.equal(d1.body.reviewCriteria[0],'Repository card with evidence from the files; no code changed and unknowns marked OPEN (assignment 1, slide 35).');
  assert.deepEqual(d1.body.mission.starterFiles,[]);
  await invoke(instance.app,'/game/control',{body:{action:'day',value:2},cookies:{academy:host.token}});
  const d2=await invoke(instance.app,'/game/day-pack',{cookies:{academy:participant.token}});

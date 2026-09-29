@@ -7,11 +7,11 @@
 export const CONTENT_LOCALES = ['en', 'nl'];
 
 export function normalizeContentLocale(raw) {
-  return raw === 'en' ? 'en' : 'nl';
+  return raw === 'nl' ? 'nl' : 'en';
 }
 
 /** Merge locale copy onto a projected pack (returns new object). */
-export function projectPackLocale(pack, locale = 'nl') {
+export function projectPackLocale(pack, locale = 'en') {
   const lang = normalizeContentLocale(locale);
   const copy = pack?.copy?.[lang] || pack?.copy?.en || null;
   if (!copy) {

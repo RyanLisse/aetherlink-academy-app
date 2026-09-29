@@ -76,7 +76,7 @@ test('with a course the day route, day control and day pack follow the course or
 
  const route=await invoke(app,'/game/day-route',participant);
  assert.deepEqual(route.body.course,{name:'Wave 2 · synthetische testcursus'});
- assert.deepEqual(route.body.days.map(d=>[d.position,d.day,d.title,d.date]),[[1,5,'Start met SDLC','2026-10-05'],[2,3,'Workshop 3 · Agents in n8n',null],[3,1,'Classroom 1 · AI en Claude Code',null]]);
+ assert.deepEqual(route.body.days.map(d=>[d.position,d.day,d.title,d.date]),[[1,5,'Start met SDLC','2026-10-05'],[2,3,'Workshop 3 · Agents in n8n',null],[3,1,'Classroom 1 · AI and Claude Code',null]]);
 
  const first=await invoke(app,'/game/day-pack',participant);
  assert.equal(first.body.day,5);
@@ -133,7 +133,7 @@ test('a course survives a committed cross-instance Postgres round trip',{skip:!p
   await control(one,host.token,'course',SYNTHETIC_COURSE);
   const {r}=await two.auth(person.token,'browser');
   assert.equal(r.day,1,'day 1 stays current because the course includes it');
-  assert.deepEqual(listRouteDays(r.course).map(d=>[d.position,d.day,d.title]),[[1,5,'Start met SDLC'],[2,3,'Workshop 3 · Agents in n8n'],[3,1,'Classroom 1 · AI en Claude Code']]);
+  assert.deepEqual(listRouteDays(r.course).map(d=>[d.position,d.day,d.title]),[[1,5,'Start met SDLC'],[2,3,'Workshop 3 · Agents in n8n'],[3,1,'Classroom 1 · AI and Claude Code']]);
   await assert.rejects(control(two,host.token,'day',6),{status:400,message:'Dag 6 zit niet in de cursus.'});
   await assert.rejects(two.control(person.token,'course',null),{status:403});
   await control(two,host.token,'course',null);
