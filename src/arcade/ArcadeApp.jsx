@@ -144,8 +144,8 @@ function SoloLessonCards({lessons, navigate, title}) {
             onClick={() => navigate(`/arcade/solo?lesson=${encodeURIComponent(s.id)}`)}
           >
             <span className="arcade-solo-card-title">{friendlySoloTitle(t, s.id, s.title)}</span>
-            {s.demoOnly ? <span className="arcade-pending-pill">demo only</span> : null}
-            {s.optional ? <span className="muted">optional</span> : null}
+            {s.demoOnly ? <span className="arcade-pending-pill">{t('arcade.demoOnly')}</span> : null}
+            {s.optional ? <span className="muted">{t('arcade.optional')}</span> : null}
             <span className="arcade-solo-cta"><Play size={14} /> {t('arcade.cta.startSolo')}</span>
           </button>
         ))}
@@ -336,25 +336,26 @@ function SoloShell({navigate, search}) {
 }
 
 function StartersReadyPanel({lesson}) {
+  const t = useT();
   const starters = lesson.starters || [];
   return (
     <div className="arcade-ready" role="status" data-starters-status="available">
-      <strong>SDK-starters klaar</strong>
-      <p>Herdr <strong>AET-63</strong> kits available. Clone, <code>pnpm i</code>, run tests without an API key, then set <code>ANTHROPIC_API_KEY</code> in env only for the live SDK path.</p>
+      <strong>{t('arcade.starters.ready')}</strong>
+      <p>{t('arcade.starters.body')}</p>
       <ul className="arcade-starter-list">
         {starters.map((s) => (
           <li key={s.id}>
             <code>{s.id}</code>
             {' — '}
             <a href={s.repoUrl || s.cloneUrl} target="_blank" rel="noreferrer">
-              open repo <ExternalLink size={14} />
+              {t('arcade.starters.openRepo')} <ExternalLink size={14} />
             </a>
-            {s.quest ? <span className="muted"> · opdracht {s.quest}</span> : null}
+            {s.quest ? <span className="muted"> · {t('arcade.starters.quest')} {s.quest}</span> : null}
             {s.htmlCourse ? (
               <>
                 {" · "}
                 <a href={s.htmlCourse} rel="noreferrer">
-                  HTML-solo
+                  {t('arcade.starters.htmlSolo')}
                 </a>
               </>
             ) : null}
@@ -362,7 +363,7 @@ function StartersReadyPanel({lesson}) {
               <>
                 {" · "}
                 <a href={s.instructions} rel="noreferrer">
-                  instructions
+                  {t('arcade.starters.instructions')}
                 </a>
               </>
             ) : null}
@@ -406,8 +407,8 @@ function LessonPlayer({lesson, markdown, navigate}) {
       <SoloLessonCards lessons={soloForLesson} navigate={navigate} title={t('arcade.cta.startSolo')} />
       {pending && (
         <div className="arcade-pending" role="status">
-          <strong>PENDING — SDK starters</strong>
-          <p>Starters nog niet klaar ({lesson.startersStatus}). Geen nep-repos. Hands-on SDK labs wachten op Herdr <strong>AET-63</strong>. Mapping + watch/skip blijven geldig.</p>
+          <strong>{t('arcade.starters.pendingTitle')}</strong>
+          <p>{t('arcade.starters.pendingBody', {status: lesson.startersStatus})}</p>
         </div>
       )}
       {available && <StartersReadyPanel lesson={lesson} />}

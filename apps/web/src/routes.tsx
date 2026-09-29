@@ -9,6 +9,7 @@ import {sourceSlides} from './deck/slides.js';
 import {workshop5SourceSlides} from './deck/workshop5-slides.js';
 import {workshop3SourceSlides} from './deck/workshop3-slides.js';
 import {workshop4SourceSlides} from './deck/workshop4-slides.js';
+import {W4_SOLO_COMPANIONS} from './deck/workshop4-companions.js';
 import {workshop6SourceSlides} from './deck/workshop6-slides.js';
 import {workshop7SourceSlides} from './deck/workshop7-slides.js';
 import {harnessSourceSlides} from './deck/harness-slides.ts';
@@ -226,7 +227,7 @@ export function AppRoutes({children}: {readonly children?: ReactNode}) {
   if (isClassroom2Path(pathname)) return <DeckDemo slides={CLASSROOM_2_SLIDES} />;
   if (isWorkshop5Path(pathname)) return <DeckDemo slides={WORKSHOP_5_SLIDES} />;
   if (isWorkshop3Path(pathname)) return <DeckDemo slides={WORKSHOP_3_SLIDES} />;
-  if (isWorkshop4Path(pathname)) return <DeckDemo slides={WORKSHOP_4_SLIDES} />;
+  if (isWorkshop4Path(pathname)) return <DeckDemo slides={WORKSHOP_4_SLIDES} companions={W4_SOLO_COMPANIONS} />;
   if (isWorkshop6Path(pathname)) return <DeckDemo slides={WORKSHOP_6_SLIDES} />;
   if (isWorkshop7Path(pathname)) return <DeckDemo slides={WORKSHOP_7_SLIDES} />;
   if (isHarnessPath(pathname)) return <DeckDemo slides={HARNESS_SLIDES} />;
@@ -320,7 +321,7 @@ const WORKSHOP_6_SLIDES = normalizeSlides(workshop6SourceSlides);
 /** Workshop 7 product route: eigen opdracht finish + present (AET-85). Separate module — not Classroom/W5/W3/W4/W6 cut. */
 const WORKSHOP_7_SLIDES = normalizeSlides(workshop7SourceSlides);
 const HARNESS_SLIDES = normalizeSlides(harnessSourceSlides);
-function DeckDemo({slides}: {readonly slides: typeof DECK_SLIDES}) {
+function DeckDemo({slides, companions}: {readonly slides: typeof DECK_SLIDES; readonly companions?: ReadonlyArray<{readonly label: string; readonly href: string}>}) {
   useEffect(() => {
     const surfaces = [document.documentElement, document.body];
     const previous = surfaces.map(({style}) => ({value: style.getPropertyValue('background-color'), priority: style.getPropertyPriority('background-color')}));
@@ -335,7 +336,7 @@ function DeckDemo({slides}: {readonly slides: typeof DECK_SLIDES}) {
   const [revealStep, setRevealStep] = useState(-1);
   const requested = new URLSearchParams(window.location.search).get('mode');
   const mode: DeckMode = requested === 'reader' || requested === 'presenter' || requested === 'follow' ? requested : 'projector';
-  return <Deck slides={slides} index={index} revealStep={revealStep} mode={mode} presence={<span>Presence slot</span>} onIndexChange={(next) => { setIndex(next); setRevealStep(-1); }} onRevealStepChange={setRevealStep}/>;
+  return <Deck slides={slides} index={index} revealStep={revealStep} mode={mode} presence={<span>Presence slot</span>} {...(companions ? {companions} : {})} onIndexChange={(next) => { setIndex(next); setRevealStep(-1); }} onRevealStepChange={setRevealStep}/>;
 }
 
 function LiveRoute({pathname}: {readonly pathname: string}) {

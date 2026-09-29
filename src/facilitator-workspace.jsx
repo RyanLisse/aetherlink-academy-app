@@ -23,7 +23,7 @@ export function FacilitatorWorkspace({room,view,onNavigate,renderContent,control
   <header className="simple-header">
    <a className="simple-brand" href="#" onClick={e=>{e.preventDefault();navigate('workshop');}}>AetherLink <span>Academy</span></a>
    <nav className="simple-nav" aria-label={t('nav.main')}>
-    {[['workshop','simple.workshop',workshop],['decks','simple.slides',view==='decks'],['naslag','simple.resources',view==='naslag']].map(([id,label,selected])=><button type="button" key={id} aria-current={selected?'page':undefined} onClick={()=>navigate(id)}>{t(label)}</button>)}
+    {[['workshop','simple.workshop',workshop],['decks','simple.deck',view==='decks'],['lesson','simple.dayPack',view==='lesson'],['naslag','simple.resources',view==='naslag']].map(([id,label,selected])=><button type="button" key={id} className={selected?'simple-nav-active':undefined} aria-current={selected?'page':undefined} data-surface={id} onClick={()=>navigate(id)}>{t(label)}</button>)}
    </nav>
    <div className="simple-utilities">
     <button ref={assistantButton} type="button" aria-label={t('simple.assistant')} aria-expanded={assistant} aria-controls="academy-assistant" onClick={()=>setAssistant(value=>!value)}><Sparkles size={17}/><span>{t('simple.assistant')}</span></button>
