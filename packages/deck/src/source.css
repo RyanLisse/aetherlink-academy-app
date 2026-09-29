@@ -1157,3 +1157,9 @@
 .academy-deck.keynote[data-opener=definition] h1{font:400 clamp(1.35rem,2.5vw,2.3rem)/1.4 Georgia,'Times New Roman',serif;letter-spacing:0;text-align:left;max-width:none;margin:0;padding-top:clamp(.8rem,2vh,1.2rem);border-top:1px solid color-mix(in srgb,var(--muted) 35%,transparent);text-wrap:pretty}
 .academy-deck.keynote[data-opener=definition] h1::before{content:"1";font-weight:700;color:var(--cyan);margin-right:.6em}
 .academy-deck.keynote[data-opener=definition] .slide-main,.academy-deck.keynote[data-opener=definition] .pop-row{align-items:flex-start;justify-content:flex-start;max-width:min(58rem,92vw)}
+
+/* AET-134 · W4 HTML Solo companion strip */
+.academy-deck .deck-companions{display:flex;flex-wrap:wrap;gap:.45rem .7rem;align-items:center;padding:.35rem 1.1rem .55rem;border-bottom:1px solid color-mix(in srgb,var(--border,#243049) 80%,transparent);background:color-mix(in srgb,#0a1628 88%,#12243a)}
+.academy-deck .deck-companions::before{content:"Solo";font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:#7f93b0;margin-right:.15rem}
+.academy-deck .deck-companion-link{font-size:.78rem;padding:.22rem .65rem;border-radius:999px;border:1px solid #3a4f73;color:#9ed7ff;text-decoration:none;background:#0d1b2e}
+.academy-deck .deck-companion-link:hover,.academy-deck .deck-companion-link:focus-visible{border-color:#5eeaf1;color:#fff;outline:none}

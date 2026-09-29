@@ -851,5 +851,22 @@
   "badge.day": "Day {day}",
   "badge.day-complete": "Day {day} complete",
   "badge.arcade-stop": "Arcade stop · {stop}",
-  "badge.proof-milestone": "Proof milestone · {task}"
+  "badge.proof-milestone": "Proof milestone · {task}",
+  "path.pedagogyLabel": "Path · pedagogy sequence",
+  "path.assignmentsCrosslink": "Done-when checklist lives on Assignments — same items, one source of truth.",
+  "path.openAssignments": "Open Assignments checklist →",
+  "path.assignmentsSoT": "This checklist is the source of truth for what to finish today. The Lesson Path shows the pedagogy sequence.",
+  "path.checklistLabel": "Checklist · Done when",
+  "simple.deck": "Deck",
+  "simple.dayPack": "Day pack",
+  "arcade.starters.ready": "SDK starters ready",
+  "arcade.starters.body": "Herdr AET-63 kits available. Clone, pnpm i, run tests without an API key, then set ANTHROPIC_API_KEY in env only for the live SDK path.",
+  "arcade.starters.openRepo": "open repo",
+  "arcade.starters.quest": "quest",
+  "arcade.starters.htmlSolo": "HTML Solo",
+  "arcade.starters.instructions": "instructions",
+  "arcade.starters.pendingTitle": "PENDING — SDK starters",
+  "arcade.starters.pendingBody": "Starters not ready yet ({status}). No fake repos. Hands-on SDK labs wait on Herdr AET-63. Mapping + watch/skip stay valid.",
+  "arcade.demoOnly": "demo only",
+  "arcade.optional": "optional"
 }

@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {workshop4SourceSlides} from '../src/deck/workshop4-slides.ts';
+import {workshop4SourceSlides, W4_SOLO_COMPANIONS} from '../src/deck/workshop4-slides.ts';
 import {normalizeSlides} from '../src/deck/normalize.ts';
 import {isWorkshop3Path, isWorkshop4Path, isWorkshop5Path} from '../src/routes.tsx';
 import {sourceSlides} from '../src/deck/slides.ts';
@@ -139,5 +139,14 @@ describe('AET-80 workshop 4 ultra-minimal n8n→Claude Agent SDK deck', () => {
     expect(workshop3SourceSlides.every((s) => s.lessonId === 'workshop-3')).toBe(true);
     expect(workshop5SourceSlides.length).toBe(48);
     expect(workshop5SourceSlides.every((s) => s.lessonId === 'workshop-5')).toBe(true);
+  });
+
+  it('AET-134 exposes clickable HTML Solo companion paths (weather · day5 · council)', () => {
+    expect(W4_SOLO_COMPANIONS).toHaveLength(3);
+    const hrefs = W4_SOLO_COMPANIONS.map((c) => c.href);
+    expect(hrefs).toContain('/courses/weather-agent-sdk/index.html');
+    expect(hrefs).toContain('/courses/aetherlink-day5-n8n-to-agent/index.html');
+    expect(hrefs).toContain('/courses/council-agent-sdk/index.html');
+    expect(W4_SOLO_COMPANIONS.every((c) => c.label && c.href.startsWith('/courses/'))).toBe(true);
   });
 });
