@@ -70,7 +70,7 @@
           "cloneUrl": "https://github.com/RyanLisse/weather-agent-sdk.git",
           "repoUrl": "https://github.com/RyanLisse/weather-agent-sdk",
           "quest": "mini-quest-clothing",
-          "htmlCourse": "/courses/weather-agent-sdk/",
+          "htmlCourse": "/courses/weather-agent-sdk/index.html",
           "instructions": "/courses/weather-agent-sdk/instructions.md"
         },
         {
@@ -79,7 +79,7 @@
           "cloneUrl": "https://github.com/RyanLisse/council-agent-sdk.git",
           "repoUrl": "https://github.com/RyanLisse/council-agent-sdk",
           "quest": "mini-quest-judge",
-          "htmlCourse": "/courses/council-agent-sdk/",
+          "htmlCourse": "/courses/council-agent-sdk/index.html",
           "instructions": "/courses/council-agent-sdk/instructions.md"
         },
         {
@@ -87,7 +87,7 @@
           "title": "Day5 n8n → Agent SDK (W3→W4 bridge)",
           "cloneUrl": "https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent.git",
           "repoUrl": "https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent",
-          "htmlCourse": "/courses/aetherlink-day5-n8n-to-agent/",
+          "htmlCourse": "/courses/aetherlink-day5-n8n-to-agent/index.html",
           "soloMd": "/courses/aetherlink-day5-n8n-to-agent/SOLO.md",
           "quest": "w3-w4-bridge"
         }

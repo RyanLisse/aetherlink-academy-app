@@ -4,9 +4,9 @@ Stable Academy paths (Vite `apps/web/public/courses/` → `/courses/...`):
 
 | id | Role | Path |
 |----|------|------|
-| `weather-agent-sdk` | L1 HTML Solo + instruction-quest | `/courses/weather-agent-sdk/` (+ `instructions.md`, Arcade artifacts) |
-| `aetherlink-day5-n8n-to-agent` | Core HTML Solo · W3→W4 bridge | `/courses/aetherlink-day5-n8n-to-agent/` (+ `SOLO.md`, `fixtures/`, `n8n/`) |
-| `council-agent-sdk` | L2 stretch HTML Solo · judge rule | `/courses/council-agent-sdk/` (+ `instructions.md`) |
+| `weather-agent-sdk` | L1 HTML Solo + instruction-quest | `/courses/weather-agent-sdk/index.html` (+ `instructions.md`, Arcade artifacts) |
+| `aetherlink-day5-n8n-to-agent` | Core HTML Solo · W3→W4 bridge | `/courses/aetherlink-day5-n8n-to-agent/index.html` (+ `SOLO.md`, `fixtures/`, `n8n/`) |
+| `council-agent-sdk` | L2 stretch HTML Solo · judge rule | `/courses/council-agent-sdk/index.html` (+ `instructions.md`) |
 
 Cited from Workshop 4 day-pack materials (`content/days/day-4-workshop-agent-sdk.mjs`) and Arcade sdk-bridge starters.
 

@@ -8,7 +8,7 @@
 
 **Starters:** **available** — `weather-agent-sdk` + `council-agent-sdk` + day5 bridge (Herdr AET-63 / AET-130).
 
-**HTML Solos (Academy, no `/start-solo` required):** [/courses/weather-agent-sdk/](/courses/weather-agent-sdk/) · [/courses/aetherlink-day5-n8n-to-agent/](/courses/aetherlink-day5-n8n-to-agent/) · [/courses/council-agent-sdk/](/courses/council-agent-sdk/)
+**HTML Solos (Academy, no `/start-solo` required):** [/courses/weather-agent-sdk/index.html](/courses/weather-agent-sdk/index.html) · [/courses/aetherlink-day5-n8n-to-agent/index.html](/courses/aetherlink-day5-n8n-to-agent/index.html) · [/courses/council-agent-sdk/index.html](/courses/council-agent-sdk/index.html)
 
 Toggle captions: **Mensentaal** | **Tech**
 
