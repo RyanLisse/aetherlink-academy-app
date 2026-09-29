@@ -96,10 +96,14 @@ function DeckContent({slides, index, revealStep, mode, onIndexChange, onRevealSt
       } catch { /* ignore */ }
     };
     window.addEventListener('storage', onStorage);
-    try {
-      const stored = JSON.parse(localStorage.getItem(PRESENTER_SYNC_KEY) || 'null') as {index?: number} | null;
-      if (stored && typeof stored.index === 'number') onMessage({type: 'slide', index: stored.index});
-    } catch { /* ignore */ }
+    // URL index wins on first paint (SoT: URL param, then storage). Avoid clobbering ?index=N.
+    const urlHasIndex = new URLSearchParams(window.location.search).has('index');
+    if (!urlHasIndex) {
+      try {
+        const stored = JSON.parse(localStorage.getItem(PRESENTER_SYNC_KEY) || 'null') as {index?: number} | null;
+        if (stored && typeof stored.index === 'number') onMessage({type: 'slide', index: stored.index});
+      } catch { /* ignore */ }
+    }
     return () => {
       channel?.close();
       window.removeEventListener('storage', onStorage);
