@@ -16,22 +16,23 @@ const contentTerms=list=>list.filter(t=>!STOPWORDS.has(t));
 // Only the participant-facing fields of a released pack become documents:
 // the quiz (and its key) and the facilitator demo script are never indexed.
 function packDocs(pack){
+ // Soft-live F1: every day-pack hit carries an explicit `day` so the UI can cite source + day.
  const day=pack.day,source={label:pack.title,href:pack.deck.route};
  const slideLink=s=>({label:`Dia ${s.slide} · ${s.title}`,href:s.href});
  const starters=pack.materials.filter(m=>m.kind==='starter');
  return [
-  {id:`d${day}:goal`,kind:'goal',title:`Leerdoel dag ${day} · ${pack.title}`,answer:pack.leerdoel,links:[{label:pack.materials[0].label,href:pack.deck.route}],source},
-  {id:`d${day}:mission`,kind:'mission',title:`Opdracht · ${pack.mission.title}`,answer:`${pack.mission.goal} (${pack.mission.minutes} min)`,links:[{view:'solo'}],source},
-  {id:`d${day}:allowed`,kind:'mission',title:'Wat mag wel en wat niet · stopregel',answer:[...pack.mission.allowed,pack.mission.stop].join(' '),links:[{view:'solo'}],source},
-  ...(pack.mission.hints?.length?[{id:`d${day}:hints`,kind:'mission',title:'Hints bij de opdracht',answer:pack.mission.hints.join(' '),links:[{view:'solo'}],source}]:[]),
-  ...(pack.mission.stretch?[{id:`d${day}:stretch`,kind:'mission',title:'Stretch',answer:pack.mission.stretch,links:[{view:'solo'}],source}]:[]),
-  ...(pack.mission.starterFiles?.length?[{id:`d${day}:starters`,kind:'material',title:'Starterbestanden',answer:pack.mission.starterFiles.join(', '),links:starters.length?starters.map(m=>({label:m.label,href:m.href})):[{view:'solo'}],source}]:[]),
-  ...pack.steps.map(s=>({id:`d${day}:step:${s.id}`,kind:'step',title:`Stap ${s.badge} · ${s.title}`,answer:[s.goal,`Klaar als: ${s.doneWhen}`,s.hint&&`Tip: ${s.hint}`].filter(Boolean).join(' '),links:[{view:'solo'},...(s.slide?[slideLink(s.slide)]:[])],source:s.slide?{label:`${pack.title} · dia ${s.slide.slide}`,href:s.slide.href}:source})),
-  ...(pack.demo?.slides||[]).map((s,i)=>({id:`d${day}:demo:${i+1}`,kind:'demo',title:`Demo · ${s.title}`,answer:`De facilitator laat dit zien op dia ${s.slide}.`,links:[slideLink(s)],source:{label:`${pack.title} · dia ${s.slide}`,href:s.href}})),
-  ...pack.materials.filter(m=>m.kind!=='starter').map((m,i)=>({id:`d${day}:material:${i+1}`,kind:'material',title:m.label,answer:m.href?(m.note||m.label):`OPEN: ${m.open}`,links:m.href?[{label:m.label,href:m.href}]:[],source,...(m.href?{}:{open:true})})),
-  {id:`d${day}:proof`,kind:'proof',title:'Wat telt als bewijs · reviewcriteria',answer:pack.reviewCriteria.join(' '),links:[{view:'review'}],source},
-  ...pack.openItems.map((item,i)=>({id:`d${day}:open:${i+1}`,kind:'open',title:item,answer:`OPEN: dit staat nog niet vast in het lesplan. Vraag je facilitator.`,links:[],source,open:true})),
-  {id:`d${day}:deep-help`,kind:'help',title:'Diepere hulp via je eigen Claude',answer:pack.deepHelp,links:[{view:'coach'}],source}
+  {id:`d${day}:goal`,kind:'goal',day,title:`Leerdoel dag ${day} · ${pack.title}`,answer:pack.leerdoel,links:[{label:pack.materials[0].label,href:pack.deck.route}],source},
+  {id:`d${day}:mission`,kind:'mission',day,title:`Opdracht · ${pack.mission.title}`,answer:`${pack.mission.goal} (${pack.mission.minutes} min)`,links:[{view:'solo'}],source},
+  {id:`d${day}:allowed`,kind:'mission',day,title:'Wat mag wel en wat niet · stopregel',answer:[...pack.mission.allowed,pack.mission.stop].join(' '),links:[{view:'solo'}],source},
+  ...(pack.mission.hints?.length?[{id:`d${day}:hints`,kind:'mission',day,title:'Hints bij de opdracht',answer:pack.mission.hints.join(' '),links:[{view:'solo'}],source}]:[]),
+  ...(pack.mission.stretch?[{id:`d${day}:stretch`,kind:'mission',day,title:'Stretch',answer:pack.mission.stretch,links:[{view:'solo'}],source}]:[]),
+  ...(pack.mission.starterFiles?.length?[{id:`d${day}:starters`,kind:'material',day,title:'Starterbestanden',answer:pack.mission.starterFiles.join(', '),links:starters.length?starters.map(m=>({label:m.label,href:m.href})):[{view:'solo'}],source}]:[]),
+  ...pack.steps.map(s=>({id:`d${day}:step:${s.id}`,kind:'step',day,title:`Stap ${s.badge} · ${s.title}`,answer:[s.goal,`Klaar als: ${s.doneWhen}`,s.hint&&`Tip: ${s.hint}`].filter(Boolean).join(' '),links:[{view:'solo'},...(s.slide?[slideLink(s.slide)]:[])],source:s.slide?{label:`${pack.title} · dia ${s.slide.slide}`,href:s.slide.href}:source})),
+  ...(pack.demo?.slides||[]).map((s,i)=>({id:`d${day}:demo:${i+1}`,kind:'demo',day,title:`Demo · ${s.title}`,answer:`De facilitator laat dit zien op dia ${s.slide}.`,links:[slideLink(s)],source:{label:`${pack.title} · dia ${s.slide}`,href:s.href}})),
+  ...pack.materials.filter(m=>m.kind!=='starter').map((m,i)=>({id:`d${day}:material:${i+1}`,kind:'material',day,title:m.label,answer:m.href?(m.note||m.label):`OPEN: ${m.open}`,links:m.href?[{label:m.label,href:m.href}]:[],source,...(m.href?{}:{open:true})})),
+  {id:`d${day}:proof`,kind:'proof',day,title:'Wat telt als bewijs · reviewcriteria',answer:pack.reviewCriteria.join(' '),links:[{view:'review'}],source},
+  ...pack.openItems.map((item,i)=>({id:`d${day}:open:${i+1}`,kind:'open',day,title:item,answer:`OPEN: dit staat nog niet vast in het lesplan. Vraag je facilitator.`,links:[],source,open:true})),
+  {id:`d${day}:deep-help`,kind:'help',day,title:'Diepere hulp via je eigen Claude',answer:pack.deepHelp,links:[{view:'coach'}],source}
  ];
 }
 
