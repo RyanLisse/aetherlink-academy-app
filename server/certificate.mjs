@@ -6,7 +6,7 @@ export const CERTIFICATE_INVALID_MESSAGE='Geen geldig certificaat gevonden voor 
 
 // Certificate eligibility reads the same pass signals as the rest of the Academy (AET-103): a quiz
 // passes with every answer right and a day task when the Proof trail approves it, by an accepted peer
-// or facilitator review or by a passing auto-grade. Nothing here waits on the facilitator.
+// or facilitator review or by a passing auto-grade.
 const safely=fn=>{try{return fn();}catch{return false;}};
 
 // Every check one member must pass for one cohort day, across all rooms of the cohort. A member can
@@ -17,6 +17,18 @@ export function memberDayChecks({rooms,memberId,progressByDay,day}){
  const graded=dayChecks(views[0],person,day).filter(check=>check.kind!=='task');
  const tasks=dayTasks(day).map(task=>({kind:'task',id:task.id,title:task.title,passed:views.some(view=>safely(()=>taskPassed(view,memberId,task.id,day)))}));
  return [...graded,...tasks];
+}
+
+// A single cohort day under the lighter rule (Ryan, 2026-09-25): quiz fully correct and at least
+// one of its tasks passed. A day without a quiz is judged on its tasks alone, a day without tasks
+// on its quiz alone, and a day with neither fails closed. Labs are not part of the rule.
+export function dayIsComplete(checks=[]){
+ const quizzes=checks.filter(check=>check.kind==='quiz');
+ const tasks=checks.filter(check=>check.kind==='task');
+ if(!quizzes.length&&!tasks.length)return false;
+ if(quizzes.some(check=>!check.passed))return false;
+ if(tasks.length&&!tasks.some(task=>task.passed))return false;
+ return true;
 }
 
 // The lighter rule (Ryan, 2026-09-25): a day counts when its quiz is fully correct and at least one
@@ -46,9 +58,10 @@ export function publicVerification(certificate){
 }
 
 const escapeHtml=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-const dutchDate=ms=>new Date(ms).toLocaleDateString('nl-NL',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
+const normalizeCertLocale=value=>value==='en'||value==='nl'?value:'nl';
+const localeDate=(ms,locale)=>new Date(ms).toLocaleDateString(locale==='en'?'en-GB':'nl-NL',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
 const PRINT_SCRIPT="document.getElementById('print').addEventListener('click',()=>print())";
-export const CERTIFICATE_CSP=`default-src 'none'; style-src 'unsafe-inline'; script-src 'sha256-${createHash('sha256').update(PRINT_SCRIPT).digest('base64')}'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'`;
+export const CERTIFICATE_CSP=`default-src 'none'; style-src 'unsafe-inline'; script-src 'sha256-${createHash('sha256').update(PRINT_SCRIPT).digest('base64')}; base-uri 'none'; form-action 'none'; frame-ancestors 'none'`;
 
 const STYLE=`:root{color-scheme:light;--ink:#14161f;--muted:#5b6070;--line:#d9dce5;--accent:#1b7f8c;--paper:#fff;--page:#eef0f4}
 *{box-sizing:border-box}body{margin:0;background:var(--page);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -68,20 +81,71 @@ button{font:inherit;padding:8px 16px;border-radius:6px;border:1px solid var(--ac
 @media(max-width:620px){.sheet{padding:32px 20px}h1{font-size:26px}.name{font-size:24px}dl{grid-template-columns:1fr}}
 @media print{body{background:#fff}main{margin:0;max-width:none;padding:0}.tools{display:none}.sheet{border:0}@page{size:A4 landscape;margin:14mm}}`;
 
-const page=(title,body)=>`<!doctype html><html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>${escapeHtml(title)}</title><style>${STYLE}</style></head><body><main>${body}</main></body></html>`;
+const COPY={
+ en:{
+  printHint:'Choose Print, then Save as PDF.',
+  print:'Print',
+  title:'Certificate of completion',
+  declare:'This certifies that',
+  finished:'has completed the Wave cohort',
+  period:'Period',
+  daysDone:'Days completed',
+  issued:'Issued',
+  verify:'Verify this certificate at',
+  code:'Verification code',
+  until:'verifiable through',
+  of:'of',
+  invalidTitle:'Certificate not valid',
+  invalidKicker:'Not valid',
+  invalidBody:'The code does not exist, was revoked, or was removed after the retention period.',
+  validTitle:'Certificate valid',
+  validKicker:'Valid certificate',
+  issuedOn:'Issued on',
+ },
+ nl:{
+  printHint:'Kies Afdrukken en dan Opslaan als PDF.',
+  print:'Afdrukken',
+  title:'Certificaat van afronding',
+  declare:'Hierbij verklaren wij dat',
+  finished:'het Wave-cohort heeft afgerond',
+  period:'Periode',
+  daysDone:'Dagen afgerond',
+  issued:'Uitgegeven',
+  verify:'Controleer dit certificaat op',
+  code:'Verificatiecode',
+  until:'verifieerbaar tot en met',
+  of:'van',
+  invalidTitle:'Certificaat niet geldig',
+  invalidKicker:'Niet geldig',
+  invalidBody:'De code bestaat niet, is ingetrokken of is na de bewaartermijn verwijderd.',
+  validTitle:'Certificaat geldig',
+  validKicker:'Geldig certificaat',
+  issuedOn:'Uitgegeven op',
+ },
+};
 
-export function renderCertificatePage(certificate,{verifyUrl,verifiableUntil}){
- const period=`${dutchDate(certificate.startsAt)} – ${dutchDate(certificate.endsAt-1)}`;
- return page(`Certificaat ${certificate.name}`,`<div class="tools"><span>Kies Afdrukken en dan Opslaan als PDF.</span><button type="button" id="print">Afdrukken</button></div>
-<article class="sheet"><p class="kicker">AetherLink Academy</p><h1>Certificaat van afronding</h1>
-<p>Hierbij verklaren wij dat</p><p class="name">${escapeHtml(certificate.name)}</p>
-<p>het Wave-cohort heeft afgerond</p><p class="cohort">${escapeHtml(certificate.cohortName)}</p>
-<dl><div><dt>Periode</dt><dd>${period}</dd></div><div><dt>Dagen afgerond</dt><dd>${certificate.days} van ${certificate.days}</dd></div><div><dt>Uitgegeven</dt><dd>${dutchDate(certificate.issuedAt)}</dd></div></dl>
-<p class="verify">Controleer dit certificaat op <code>${escapeHtml(verifyUrl)}</code><br>Verificatiecode <code>${escapeHtml(certificate.id)}</code> · verifieerbaar tot en met ${dutchDate(verifiableUntil-1)}</p></article>
-<script>${PRINT_SCRIPT}</script>`);
+const page=(title,body,locale)=>`<!doctype html><html lang="${locale}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>${escapeHtml(title)}</title><style>${STYLE}</style></head><body><main>${body}</main></body></html>`;
+
+export function renderCertificatePage(certificate,{verifyUrl,verifiableUntil,locale}={}){
+ const lang=normalizeCertLocale(locale);
+ const c=COPY[lang];
+ const period=`${localeDate(certificate.startsAt,lang)} – ${localeDate(certificate.endsAt-1,lang)}`;
+ const daysLine=`${certificate.days} ${c.of} ${certificate.days}`;
+ return page(`${c.title} · ${certificate.name}`,`<div class="tools"><span>${c.printHint}</span><button type="button" id="print">${c.print}</button></div>
+<article class="sheet"><p class="kicker">AetherLink Academy</p><h1>${c.title}</h1>
+<p>${c.declare}</p><p class="name">${escapeHtml(certificate.name)}</p>
+<p>${c.finished}</p><p class="cohort">${escapeHtml(certificate.cohortName)}</p>
+<dl><div><dt>${c.period}</dt><dd>${period}</dd></div><div><dt>${c.daysDone}</dt><dd>${daysLine}</dd></div><div><dt>${c.issued}</dt><dd>${localeDate(certificate.issuedAt,lang)}</dd></div></dl>
+<p class="verify">${c.verify} <code>${escapeHtml(verifyUrl)}</code><br>${c.code} <code>${escapeHtml(certificate.id)}</code> · ${c.until} ${localeDate(verifiableUntil-1,lang)}</p></article>
+<script>${PRINT_SCRIPT}</script>`,lang);
 }
 
-export function renderVerificationPage(verification){
- if(!verification)return page('Certificaat niet geldig',`<section class="status"><p class="kicker bad">Niet geldig</p><h1>${CERTIFICATE_INVALID_MESSAGE}</h1><p>De code bestaat niet, is ingetrokken of is na de bewaartermijn verwijderd.</p></section>`);
- return page('Certificaat geldig',`<section class="status"><p class="kicker ok">Geldig certificaat</p><h1>${escapeHtml(verification.name)}</h1><p>heeft het Wave-cohort <strong>${escapeHtml(verification.cohortName)}</strong> afgerond.</p><p>Uitgegeven op ${dutchDate(verification.issuedAt)}.</p></section>`);
+export function renderVerificationPage(verification,{locale}={}){
+ const lang=normalizeCertLocale(locale);
+ const c=COPY[lang];
+ if(!verification)return page(c.invalidTitle,`<section class="status"><p class="kicker bad">${c.invalidKicker}</p><h1>${CERTIFICATE_INVALID_MESSAGE}</h1><p>${c.invalidBody}</p></section>`,lang);
+ const completedLine=lang==='en'
+  ?`has completed the Wave cohort <strong>${escapeHtml(verification.cohortName)}</strong>.`
+  :`heeft het Wave-cohort <strong>${escapeHtml(verification.cohortName)}</strong> afgerond.`;
+ return page(c.validTitle,`<section class="status"><p class="kicker ok">${c.validKicker}</p><h1>${escapeHtml(verification.name)}</h1><p>${completedLine}</p><p>${c.issuedOn} ${localeDate(verification.issuedAt,lang)}.</p></section>`,lang);
 }

@@ -450,7 +450,8 @@ function CohortPanel({squads,hostKey,action}){
   const submit=(route,build,after)=>e=>{e.preventDefault();const form=e.currentTarget,data=Object.fromEntries(new FormData(form));action(async()=>{const result=await api(route,{hostKey,...build(data)});after(result);form.reset();await refresh();});};
   const memberAction=(route,cohortId,memberId)=>action(async()=>{const result=await api(route,{hostKey,cohortId,memberId});if(result.code)reveal([result]);await refresh();});
   const revokeCertificate=(cohortId,certificateId)=>action(async()=>{await api('facilitator/cohort/certificate/revoke',{hostKey,cohortId,certificateId});await refresh();});
-  const openCertificate=certificateId=>{const view=window.open('','_blank');if(view)view.opener=null;action(async()=>{try{const response=await fetch('/game/facilitator/cohort/certificate/view',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({hostKey,certificateId})});if(!response.ok)throw Error((await response.json()).error);const url=URL.createObjectURL(new Blob([await response.text()],{type:'text/html'}));view.location=url;setTimeout(()=>URL.revokeObjectURL(url),60000);}catch(error){view?.close();throw error;}});};
+  const issueCertificate=(cohortId,memberId)=>action(async()=>{await api('facilitator/cohort/certificate/issue',{hostKey,cohortId,memberId});await refresh();});
+  const openCertificate=certificateId=>{const view=window.open('','_blank');if(view)view.opener=null;action(async()=>{try{const response=await fetch('/game/facilitator/cohort/certificate/view',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({hostKey,certificateId,locale})});if(!response.ok)throw Error((await response.json()).error);const url=URL.createObjectURL(new Blob([await response.text()],{type:'text/html'}));view.location=url;setTimeout(()=>URL.revokeObjectURL(url),60000);}catch(error){view?.close();throw error;}});};
   const rosterCsvText=cohort=>{
     const rows=[['name','room','room_code','joined_at'],...cohort.members.map(member=>[member.name,member.room?.name||'',member.room?.code||'',member.joinedAt?new Date(member.joinedAt).toISOString():''])];
     return rows.map(row=>row.map(value=>{const text=value==null?'':String(value);return /["\n,]/.test(text)?`"${text.replaceAll('"','""')}"`:text;}).join(',')).join('\n')+'\n';
@@ -499,7 +500,7 @@ function CohortPanel({squads,hostKey,action}){
       <ul className="cohort-roster">{cohort.members.map(member=><li key={member.id}>
         <span><strong>{member.name}</strong><small className={'cohort-status '+member.status}>{t(`cohort.status.${member.status}`)}{member.seated?` · ${t('cohort.seated')}`:''}{member.room?` · ${member.room.name}`:''}{member.joinedAt?` · ${dateTime(member.joinedAt)}`:''}</small></span>
         <span className="cohort-actions">{member.status!=='revoked'&&<button type="button" onClick={()=>memberAction('facilitator/cohort/revoke',cohort.id,member.id)}>{t('cohort.revoke')}</button>}<button type="button" onClick={()=>memberAction('facilitator/cohort/reissue',cohort.id,member.id)}>{t('cohort.reissue')}</button></span>
-        <CertificateLine certificate={member.certificate} date={date} open={()=>openCertificate(member.certificate.id)} revoke={()=>revokeCertificate(cohort.id,member.certificate.id)}/>
+        <CertificateLine certificate={member.certificate} badges={member.badges} date={date} open={()=>openCertificate(member.certificate.id)} revoke={()=>revokeCertificate(cohort.id,member.certificate.id)} issue={()=>issueCertificate(cohort.id,member.id)}/>
       </li>)}</ul>
       <form className="cohort-add" onSubmit={submit('facilitator/cohort/members',data=>({cohortId:cohort.id,members:names(data.members)}),result=>reveal(result.codes))}>
         <label>{t('cohort.addMembers')}<textarea name="members" rows={2} required/></label>
@@ -516,12 +517,28 @@ function CohortPanel({squads,hostKey,action}){
     </form>
   </section>;
 }
-function CertificateLine({certificate,date,open,revoke}){
+function CertificateLine({certificate,date,open,revoke,issue,badges}){
   const t=useT();
-  if(certificate.id)return <div className="cohort-certificate"><small className="cohort-status activated">{t('cert.issued',{date:date(certificate.issuedAt)})}</small><span className="cohort-actions"><button type="button" onClick={open}>{t('cert.open')}</button><button type="button" onClick={revoke}>{t('cert.revoke')}</button></span></div>;
-  if(certificate.status==='revoked')return <div className="cohort-certificate"><small className="cohort-status revoked">{t('cert.revoked',{date:date(certificate.revokedAt)})}</small></div>;
-  const summary=certificate.reasons.map(reason=>t(`cert.reason.${reason.code}`,{day:reason.day}));
-  return <div className="cohort-certificate"><small className="muted">{t('cert.notYet')} {summary.join(' · ')}</small></div>;
+  const badgeStrip=!!badges?.length&&<ul className="cohort-badges" data-testid="facilitator-badges">{badges.map(badge=><li key={badge.id} data-badge-type={badge.type}>{t(`badge.${badge.type}`,{day:badge.day,stop:badge.stopId,task:badge.taskId||badge.title})}</li>)}</ul>;
+  if(certificate.id)return <div className="cohort-certificate"><small className="cohort-status activated">{t('cert.issued',{date:date(certificate.issuedAt)})}</small><span className="cohort-actions"><button type="button" onClick={open}>{t('cert.open')}</button><button type="button" onClick={revoke}>{t('cert.revoke')}</button></span>{badgeStrip}</div>;
+  if(certificate.status==='eligible'||(certificate.status==='revoked'&&certificate.eligible))return <div className="cohort-certificate"><small className="cohort-status activated">{certificate.status==='revoked'?t('cert.revokedEligible',{date:date(certificate.revokedAt)}):t('cert.eligible')}</small><span className="cohort-actions"><button type="button" data-testid="cert-issue" onClick={issue}>{certificate.status==='revoked'?t('cert.reissue'):t('cert.issue')}</button></span>{badgeStrip}</div>;
+  if(certificate.status==='revoked')return <div className="cohort-certificate"><small className="cohort-status revoked">{t('cert.revoked',{date:date(certificate.revokedAt)})}</small>{badgeStrip}</div>;
+  const summary=(certificate.reasons||[]).map(reason=>t(`cert.reason.${reason.code}`,{day:reason.day}));
+  return <div className="cohort-certificate"><small className="muted">{t('cert.notYet')} {summary.join(' · ')}</small>{badgeStrip}</div>;
+}
+
+function MyBadges(){
+  const t=useT();
+  const [bag,setBag]=useState(null);
+  const [error,setError]=useState('');
+  useEffect(()=>{let active=true;api('badges').then(result=>{if(active)setBag(result);}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[]);
+  return <section className="panel content-panel my-badges" aria-labelledby="my-badges-heading" data-testid="learner-badges">
+    <p className="cyan">{t('badge.eyebrow')}</p><h2 id="my-badges-heading">{t('badge.title')}</h2>
+    {error&&<StatusState kind="error" title={t('status.errorTitle')}>{error}</StatusState>}
+    {!bag&&!error&&<StatusState kind="loading" title={t('badge.loading')}/>}
+    {bag&&!bag.badges.length&&<p className="lede muted">{t('badge.empty')}</p>}
+    {!!bag?.badges?.length&&<ul className="badge-list">{bag.badges.map(badge=><li key={badge.id} data-badge-type={badge.type}><strong>{t(`badge.${badge.type}`,{day:badge.day,stop:badge.stopId,task:badge.taskId||badge.title})}</strong>{badge.day!=null&&<small className="muted"> · {t('badge.day',{day:badge.day})}</small>}</li>)}</ul>}
+  </section>;
 }
 
 function MyCertificate({room}){
@@ -531,24 +548,34 @@ function MyCertificate({room}){
   const [error,setError]=useState('');
   useEffect(()=>{let active=true;api('certificate').then(result=>{if(active)setMine(result);}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[room.version]);
   const date=ms=>new Date(ms).toLocaleDateString(locale==='nl'?'nl-NL':'en-GB',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
-  return <section className="panel content-panel my-certificate" aria-labelledby="my-certificate-heading">
+  const certHref=mine?.certificateUrl?`${mine.certificateUrl}?locale=${locale}`:null;
+  return <><section className="panel content-panel my-certificate" aria-labelledby="my-certificate-heading">
     <p className="cyan">{t('mycert.eyebrow')}</p><h2 id="my-certificate-heading">{t('mycert.title')}</h2>
     {error&&<StatusState kind="error" title={t('status.errorTitle')}>{error}</StatusState>}
     {!mine&&!error&&<StatusState kind="loading" title={t('mycert.loading')}/>}
     {mine?.status==='no-cohort'&&<p className="lede">{t('mycert.noCohort')}</p>}
     {mine?.status==='issued'&&<div className="my-certificate-issued">
       <p className="lede">{t('mycert.issued',{cohort:mine.cohortName,date:date(mine.issuedAt)})}</p>
-      <p><a className="button-link gradient" href={mine.certificateUrl} target="_blank" rel="noopener"><Award size={16}/>{t('mycert.open')}</a></p>
+      <p><a className="button-link gradient" href={certHref} target="_blank" rel="noopener"><Award size={16}/>{t('mycert.open')}</a></p>
       <dl><div><dt>{t('mycert.verificationId')}</dt><dd><code>{mine.id}</code></dd></div><div><dt>{t('mycert.verifyAt')}</dt><dd><code>{mine.verifyUrl}</code></dd></div></dl>
       <p className="muted">{t('mycert.share')}</p>
     </div>}
-    {mine?.status==='revoked'&&<p className="lede">{t('mycert.revoked')}</p>}
-    {(mine?.status==='not-eligible'||mine?.status==='due')&&<div>
+    {mine?.status==='eligible'&&<div>
+      <p className="lede">{t('mycert.eligible',{done:mine.daysCompleted,days:mine.days})}</p>
+      <p className="muted">{t('mycert.awaitFacilitator')}</p>
+    </div>}
+    {mine?.status==='revoked'&&<div>
+      <p className="lede">{t('mycert.revoked')}</p>
+      {mine.eligible&&<p className="muted">{t('mycert.awaitReissue')}</p>}
+    </div>}
+    {mine?.status==='not-eligible'&&<div>
       <p className="lede">{t('mycert.notYet',{done:mine.daysCompleted,days:mine.days})}</p>
       <ul className="my-certificate-todo">{mine.reasons.map(reason=><li key={[reason.code,reason.day,reason.id].join(':')}>{t(`mycert.reason.${reason.code}`,{day:reason.day,id:reason.id,title:reason.title})}</li>)}</ul>
-      <p className="muted">{t('mycert.automatic')}</p>
+      <p className="muted">{t('mycert.gated')}</p>
     </div>}
-  </section>;
+  </section>
+  <MyBadges/>
+  </>;
 }
 
 const formatSeconds=seconds=>`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;

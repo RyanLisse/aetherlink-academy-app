@@ -1,6 +1,8 @@
 import {randomUUID} from 'node:crypto';
 import {Store,hash,fail,writable,MAX_SQUAD_SIZE} from './store.mjs';
-import {INVALID_COHORT_CODE_MESSAGE,COHORT_NO_ROOM_MESSAGE,COHORT_RATE_LIMIT_MESSAGE,attemptKeys,nextAttempt,issueAccessCode,sessionGrant,mergeSeatProgress,seatMember,cohortView,isDueForPurge,anonymizeRoom,dueCertificates,memberCertificate} from './cohort.mjs';
+import {INVALID_COHORT_CODE_MESSAGE,COHORT_NO_ROOM_MESSAGE,COHORT_RATE_LIMIT_MESSAGE,attemptKeys,nextAttempt,issueAccessCode,sessionGrant,mergeSeatProgress,seatMember,cohortView,isDueForPurge,anonymizeRoom,draftCertificate,canIssueCertificate,memberCertificate} from './cohort.mjs';
+import {memberBadges} from './badges.mjs';
+import {DAY_COUNT} from '../content/days/index.mjs';
 import {COACH_RETENTION_MS} from './coach.mjs';
 import {EMAIL_CODE_INVALID_MESSAGE,EMAIL_PARTICIPANT_ONLY_MESSAGE,EMAIL_RATE_LIMIT_MESSAGE,challengeKey,checkChallenge,emailAttemptKeys,issueChallenge} from './email-login.mjs';
 export class LocalStore extends Store {
@@ -30,18 +32,35 @@ export class LocalStore extends Store {
  revokeCohortMember(cohortId,memberId){return this.locked(()=>{const cohort=this.cohortOr404(cohortId);this.revokeMember(cohort,memberId);return this.cohortSnapshot(cohort);});}
  reissueCohortCode(cohortId,memberId){return this.locked(()=>{const cohort=this.cohortOr404(cohortId);this.revokeMember(cohort,memberId);const member=this.memberOr404(cohort,memberId);return {memberId,name:member.name,code:this.issueCode(cohortId,memberId)};});}
  cohortFacts(cohort){return {cohort,members:cohort.members,codes:this.cohortCodes(cohort.id),rooms:this.cohortRooms(cohort.id),certificates:this.cohortCertificates(cohort.id),now:this.now()};}
- settleCertificates(cohort){for(const certificate of dueCertificates(this.cohortFacts(cohort)))this.data.certificates[certificate.id]=certificate;}
  myCertificate(token){return this.locked(()=>{
   const {r,p}=this.auth(token,'browser');
   const cohort=p?.cohortMemberId&&this.data.cohorts[r.cohortId];
   if(!cohort)return null;
-  this.settleCertificates(cohort);
   const facts=this.cohortFacts(cohort);
   return {cohortName:cohort.name,days:cohort.days,...memberCertificate({...facts,memberId:p.cohortMemberId,codes:facts.codes.filter(code=>code.memberId===p.cohortMemberId)})};
  });}
+ issueCertificate(cohortId,memberId,issuedBy=null){return this.locked(()=>{
+  const cohort=this.cohortOr404(cohortId);
+  const member=this.memberOr404(cohort,memberId);
+  const facts=this.cohortFacts(cohort);
+  const summary=memberCertificate({...facts,memberId,codes:facts.codes.filter(code=>code.memberId===memberId)});
+  if(!canIssueCertificate(summary))fail(409,summary.eligible===false?'Deelnemer voldoet nog niet aan de afrondingsregels.':'Certificaat is al uitgegeven.');
+  const certificate=draftCertificate({cohort,member,now:this.now(),issuedBy});
+  this.data.certificates[certificate.id]=certificate;
+  return this.cohortSnapshot(cohort);
+ });}
  revokeCertificate(cohortId,certificateId){return this.locked(()=>{const cohort=this.cohortOr404(cohortId),certificate=this.data.certificates[certificateId];if(!certificate||certificate.cohortId!==cohortId)fail(404,'Certificaat niet gevonden in dit cohort.');certificate.revokedAt??=this.now();return this.cohortSnapshot(cohort);});}
  async certificate(id){return this.data.certificates[id]||null;}
- cohortOverview(){return this.locked(()=>Object.values(this.data.cohorts).sort((a,b)=>b.createdAt-a.createdAt).map(cohort=>{this.settleCertificates(cohort);return this.cohortSnapshot(cohort);}));}
+ cohortOverview(){return this.locked(()=>Object.values(this.data.cohorts).sort((a,b)=>b.createdAt-a.createdAt).map(cohort=>this.cohortSnapshot(cohort)));}
+ myBadges(token){return this.locked(()=>{
+  const {r,p}=this.auth(token,'browser');
+  if(!p)return {badges:[],scope:'none'};
+  const rooms=r.cohortId?this.cohortRooms(r.cohortId):[r];
+  const memberId=p.cohortMemberId||p.id;
+  const progressByDay=r.cohortId?mergeSeatProgress(rooms,memberId):(p.progressByDay||{});
+  const days=r.cohortId?(this.data.cohorts[r.cohortId]?.days||DAY_COUNT):DAY_COUNT;
+  return {badges:memberBadges({rooms,memberId,progressByDay,days}),scope:r.cohortId?'cohort':'room'};
+ });}
  // Daily coach counters: all keys move together, and only when every one is under its cap.
  coachQuota(keys,{consume=false}={}){return this.locked(()=>{const now=this.now();for(const [key,record] of Object.entries(this.data.attempts))if(key.startsWith('coach:')&&now-record.windowStartedAt>COACH_RETENTION_MS)delete this.data.attempts[key];const counts=keys.map(([key])=>this.data.attempts[key]?.count||0),allowed=keys.every(([,max],i)=>counts[i]<max);if(!consume||!allowed)return {allowed,counts};keys.forEach(([key],i)=>{this.data.attempts[key]={windowStartedAt:this.data.attempts[key]?.windowStartedAt??now,count:counts[i]+1};});return {allowed,counts:counts.map(c=>c+1)};});}
  consumeAttempts(keys){const now=this.now();let ok=true;for(const [key,limit] of keys){const {record,allowed}=nextAttempt(this.data.attempts[key],now,limit);this.data.attempts[key]=record;ok&&=allowed;}return ok;}
