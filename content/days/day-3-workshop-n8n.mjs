@@ -63,6 +63,7 @@ const en = {
   starter('n8n-triage-l3-multi-agent.json','n8n starter L3 · Reply + Risk'),
   starter('triage-fixtures.json','Shared fixture tickets (the server checks your labels)'),
   openMaterial('vehicle','Workshop n8n instance','The deck refers to “the workshop n8n instance”; the URL is not in the lesson plan.'),
+  link('naslag','Facilitator guide · n8n L1–L3','https://github.com/RyanLisse/aetherlink-academy-app/blob/main/docs/facilitator-n8n-triage.md','docs/facilitator-n8n-triage.md · materials path · not a live n8n import'),
   link('diagram','Agency ladder diagram','/diagrams/workshop/w3-agency-ladder.svg','Workshop 3 · AET-79 P2 retrofit')
  ],
  diagrams:[DIAGRAM_EN],
@@ -140,6 +141,7 @@ const nl = {
   starter('n8n-triage-l3-multi-agent.json','n8n-starter L3 · Reply + Risk'),
   starter('triage-fixtures.json','Gedeelde fixture-tickets (de server controleert je labels)'),
   openMaterial('vehicle','Workshop-n8n-instantie','De deck verwijst naar “the workshop n8n instance”; de URL staat niet in het lesplan.'),
+  link('naslag','Facilitator-handleiding · n8n L1–L3','https://github.com/RyanLisse/aetherlink-academy-app/blob/main/docs/facilitator-n8n-triage.md','docs/facilitator-n8n-triage.md · materialenpad · geen live n8n-import'),
   link('diagram','Agency-ladderdiagram','/diagrams/workshop/w3-agency-ladder.svg','Workshop 3 · AET-79 P2-retrofit')
  ],
  diagrams:[DIAGRAM_NL],
