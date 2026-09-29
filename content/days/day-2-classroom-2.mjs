@@ -65,12 +65,15 @@ const en = {
  },
  solo:SOLO,
  materials:[
+  link('solo','Solo-in-Claude · C1–C2 concepts','/solos/c1-c2-concepts/index.html','AET-132 · clone/open → claude → /start-solo → Proof'),
+  link('assignment','Proof · artifact card','/solos/c1-c2-concepts/proof/artifact-card.html','AET-132 · paste into Academy Review'),
   link('vehicle','Practice repo aetherlink-classroom-starter','https://github.com/jyse/aetherlink-classroom-starter','Same copy as Classroom 1'),
   link('naslag','Introduction to Agent Skills','https://academy.claude.com/courses/introduction-to-agent-skills','NASLAG.md Teach Day 2 · Anthropic Academy'),
   link('naslag','Introduction to Subagents','https://academy.claude.com/courses/introduction-to-subagents','NASLAG.md Teach Day 2 · Anthropic Academy'),
   link('naslag','Agents / parallel','https://code.claude.com/docs/en/agents','NASLAG.md Teach Day 2 · code.claude.com'),
   link('naslag','Claude Code skills docs','https://code.claude.com/docs/en/skills','AET-104 in-app Naslag SoT · official docs'),
   link('naslag','Sub-agents docs','https://code.claude.com/docs/en/sub-agents','AET-104 in-app Naslag SoT · official docs'),
+  link('naslag','Claude Code concepts (Carl)','https://ccforeveryone.com/guides/claude-code-concepts-explained','Naslag only · CC BY-NC-ND · no re-host'),
   link('diagram','Customize stack diagram','/diagrams/classroom/c2-customize-stack.svg','Classroom 2 · AET-129 P3 retrofit')
  ],
  diagrams:[DIAGRAM_EN],
@@ -142,12 +145,15 @@ const nl = {
  },
  solo:SOLO_NL,
  materials:[
+  link('solo','Solo-in-Claude · C1–C2-concepten','/solos/c1-c2-concepts/index.html','AET-132 · clone/open → claude → /start-solo → Proof'),
+  link('assignment','Proof · artefactkaart','/solos/c1-c2-concepts/proof/artifact-card.html','AET-132 · plak in Academy Review'),
   link('vehicle','Oefenrepository aetherlink-classroom-starter','https://github.com/jyse/aetherlink-classroom-starter','Zelfde kopie als Classroom 1'),
   link('naslag','Introduction to Agent Skills','https://academy.claude.com/courses/introduction-to-agent-skills','NASLAG.md Teach Day 2 · Anthropic Academy'),
   link('naslag','Introduction to Subagents','https://academy.claude.com/courses/introduction-to-subagents','NASLAG.md Teach Day 2 · Anthropic Academy'),
   link('naslag','Agents / parallel','https://code.claude.com/docs/en/agents','NASLAG.md Teach Day 2 · code.claude.com'),
   link('naslag','Claude Code skills-docs','https://code.claude.com/docs/en/skills','AET-104 in-app Naslag SoT · officiële docs'),
   link('naslag','Sub-agents-docs','https://code.claude.com/docs/en/sub-agents','AET-104 in-app Naslag SoT · officiële docs'),
+  link('naslag','Claude Code-concepten (Carl)','https://ccforeveryone.com/guides/claude-code-concepts-explained','Naslag alleen · CC BY-NC-ND · niet herhosten'),
   link('diagram','Customize-stackdiagram','/diagrams/classroom/c2-customize-stack.svg','Classroom 2 · AET-129 P3-retrofit')
  ],
  diagrams:[DIAGRAM_NL],

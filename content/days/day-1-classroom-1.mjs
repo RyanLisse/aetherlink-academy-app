@@ -67,9 +67,12 @@ const en = {
  },
  solo:SOLO,
  materials:[
+  link('solo','Solo-in-Claude · C1–C2 concepts','/solos/c1-c2-concepts/index.html','AET-132 · clone/open → claude → /start-solo → Proof'),
+  link('assignment','Proof · artifact card','/solos/c1-c2-concepts/proof/artifact-card.html','AET-132 · paste into Academy Review'),
   link('vehicle','Practice repo aetherlink-classroom-starter','https://github.com/jyse/aetherlink-classroom-starter','Slide 34'),
   link('naslag','Claude Code 101','https://anthropic.skilljar.com/claude-code-101','Anthropic Academy; lesson-plan reference'),
   link('naslag','Claude Code in Action','https://anthropic.skilljar.com/claude-code-in-action','Anthropic Academy; lesson-plan reference'),
+  link('naslag','Claude Code concepts (Carl)','https://ccforeveryone.com/guides/claude-code-concepts-explained','Naslag only · CC BY-NC-ND · no re-host'),
   link('diagram','Claude Code loop diagram','/diagrams/classroom/c1-explore-plan-change-verify-commit.svg','Classroom 1 · AET-129 P3 retrofit')
  ],
  diagrams:[DIAGRAM_EN],
@@ -133,9 +136,12 @@ const nl = {
  },
  solo:SOLO_NL,
  materials:[
+  link('solo','Solo-in-Claude · C1–C2-concepten','/solos/c1-c2-concepts/index.html','AET-132 · clone/open → claude → /start-solo → Proof'),
+  link('assignment','Proof · artefactkaart','/solos/c1-c2-concepts/proof/artifact-card.html','AET-132 · plak in Academy Review'),
   link('vehicle','Oefenrepository aetherlink-classroom-starter','https://github.com/jyse/aetherlink-classroom-starter','Dia 34'),
   link('naslag','Claude Code 101','https://anthropic.skilljar.com/claude-code-101','Anthropic Academy; lesplan-naslag'),
   link('naslag','Claude Code in Action','https://anthropic.skilljar.com/claude-code-in-action','Anthropic Academy; lesplan-naslag'),
+  link('naslag','Claude Code-concepten (Carl)','https://ccforeveryone.com/guides/claude-code-concepts-explained','Naslag alleen · CC BY-NC-ND · niet herhosten'),
   link('diagram','Claude Code-loopdiagram','/diagrams/classroom/c1-explore-plan-change-verify-commit.svg','Classroom 1 · AET-129 P3-retrofit')
  ],
  diagrams:[DIAGRAM_NL],

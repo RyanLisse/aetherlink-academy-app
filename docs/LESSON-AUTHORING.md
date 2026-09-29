@@ -57,3 +57,6 @@ Workshop 4 cites `/courses/{weather-agent-sdk,aetherlink-day5-n8n-to-agent,counc
 
 ## AET-131 W5 daily-brief Assignments + SOLO
 Workshop 5 cites `/courses/aetherlink-daily-brief-lab-s1/index.html` (modules 01–06), Assignments (`intent.md` · `docs/spec.md` · `docs/gate.md`), `SOLO.md`, and rulebook companions; `/start-solo` is not required for Done.
+
+## AET-132 C1–C2 concepts Solo-in-Claude
+Classroom 1–2 cite `/solos/c1-c2-concepts/index.html` (Carl mechanism + our EN scripts for CLAUDE.md · skills vs agents · MCP · hooks) and Proof `/solos/c1-c2-concepts/proof/artifact-card.html`; Carl/Anthropic = Naslag links only.
