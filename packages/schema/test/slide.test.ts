@@ -62,4 +62,42 @@ describe('Slide schema', () => {
     const projected = participantSlide(decodeSlide({...base, notes: 'speaker', secret: 'hidden'}));
     expect(projected).toEqual(base);
   });
+
+  it("AET-121 preserves stepsHeading/detail/notes/visual across encode roundtrip (no silent flatten)", () => {
+    const slide = decodeSlide({
+      ...base,
+      id: "slide-exercise-heading",
+      layout: "exercise" as const,
+      steps: ["Do the thing"],
+      stepsHeading: "Your prompt must ask Claude Code to:",
+      detail: "Facilitator detail line",
+      expected: "A working change",
+      check: "Did it pass?",
+      notes: "Private facilitator notes",
+      prompt: "exact\nprompt",
+      visual: {reveal: "click", quiz: {answer: 1}, bot: "wave", countdown: 5, quietTimer: 3, planB: "DEMO_FALLBACK"},
+      timer: 15,
+    });
+    expect(slide.stepsHeading).toBe("Your prompt must ask Claude Code to:");
+    expect(slide.detail).toBe("Facilitator detail line");
+    expect(slide.notes).toBe("Private facilitator notes");
+    expect(slide.visual).toEqual({reveal: "click", quiz: {answer: 1}, bot: "wave", countdown: 5, quietTimer: 3, planB: "DEMO_FALLBACK"});
+    expect(encodeSlide(slide)).toEqual({
+      ...base,
+      id: "slide-exercise-heading",
+      layout: "exercise",
+      steps: ["Do the thing"],
+      stepsHeading: "Your prompt must ask Claude Code to:",
+      detail: "Facilitator detail line",
+      expected: "A working change",
+      check: "Did it pass?",
+      notes: "Private facilitator notes",
+      prompt: "exact\nprompt",
+      visual: {reveal: "click", quiz: {answer: 1}, bot: "wave", countdown: 5, quietTimer: 3, planB: "DEMO_FALLBACK"},
+      timer: 15,
+    });
+    const projected = participantSlide(slide);
+    expect("notes" in projected).toBe(false);
+    expect((projected.visual as {quiz?: {answer?: unknown}}).quiz?.answer).toBeUndefined();
+  });
 });

@@ -39,6 +39,8 @@ const PublicSlideFields = {
   items: Schema.optional(Schema.Array(Item)),
   columns: Schema.optional(Schema.Array(Column)),
   steps: Schema.optional(Schema.Array(Text)),
+  stepsHeading: Schema.optional(Text),
+  detail: Schema.optional(Text),
   expected: Schema.optional(Text),
   check: Schema.optional(Text),
   timer: Schema.optional(Schema.Int.pipe(Schema.check(Schema.isGreaterThanOrEqualTo(0)))),

@@ -8,6 +8,31 @@ import {deckNavBlockedByTarget} from './nav-keys.js';
 export type DeckMode = 'projector' | 'presenter' | 'reader' | 'follow';
 export type DeckSlide = Slide & Record<string, unknown>;
 export interface DeckProps { readonly slides: ReadonlyArray<DeckSlide>; readonly index: number; readonly revealStep: number; readonly mode: DeckMode; readonly onIndexChange: (index: number) => void; readonly onRevealStepChange: (step: number) => void; readonly presence?: ReactNode; }
+
+/** Browser-local presenter sync (AET-121) — projector drives; presenter window follows. Online follow remains optional. */
+const PRESENTER_SYNC_CHANNEL = 'academy-deck-presenter-sync';
+const PRESENTER_SYNC_KEY = 'academy-deck-presenter-index';
+
+function openPresenterWindow(index: number): void {
+  if (typeof window === 'undefined') return;
+  const url = new URL(window.location.href);
+  url.searchParams.set('mode', 'presenter');
+  url.searchParams.set('index', String(index));
+  window.open(url.toString(), 'academy-deck-presenter', 'noopener,noreferrer');
+}
+
+function publishPresenterIndex(index: number): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const channel = new BroadcastChannel(PRESENTER_SYNC_CHANNEL);
+    channel.postMessage({type: 'slide', index});
+    channel.close();
+  } catch { /* BroadcastChannel unavailable */ }
+  try {
+    localStorage.setItem(PRESENTER_SYNC_KEY, JSON.stringify({index, at: Date.now()}));
+  } catch { /* private mode */ }
+}
+
 const text = (value: unknown): string => typeof value === 'string' ? value : '';
 const array = <T,>(value: unknown): ReadonlyArray<T> => Array.isArray(value) ? value as ReadonlyArray<T> : [];
 const visual = (slide: DeckSlide): Record<string, unknown> => slide.visual && typeof slide.visual === 'object' && !Array.isArray(slide.visual) ? slide.visual as Record<string, unknown> : {};
@@ -34,7 +59,7 @@ export function Deck(props: DeckProps) {
 
 function DeckContent({slides, index, revealStep, mode, onIndexChange, onRevealStepChange, presence}: DeckProps) {
   const slide = slides[index] ?? slides[0]; const total = slides.length; if (!slide) return null; const activeSlide = slide; const type = typeLabel(activeSlide);
-  const [promptOpen, setPromptOpen] = useState(false); const [chaptersOpen, setChaptersOpen] = useState(false); const [presenterOpen, setPresenterOpen] = useState(false);
+  const [promptOpen, setPromptOpen] = useState(false); const [chaptersOpen, setChaptersOpen] = useState(false);
   const stageRef = useRef<HTMLElement>(null); const bodyRef = useRef<HTMLDivElement>(null); const mainRef = useRef<HTMLDivElement>(null); const mountRef = useRef<SourceVisualMount | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(() => typeof document !== 'undefined' && !!document.fullscreenElement);
   useEffect(() => {
@@ -46,6 +71,44 @@ function DeckContent({slides, index, revealStep, mode, onIndexChange, onRevealSt
   const fullscreenLabel = isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen';
   const revealStepChangeRef = useRef(onRevealStepChange);
   revealStepChangeRef.current = onRevealStepChange;
+  // AET-121: projector publishes index; presenter window follows via BroadcastChannel (+ localStorage fallback).
+  useEffect(() => {
+    if (mode !== 'projector') return;
+    publishPresenterIndex(index);
+  }, [mode, index]);
+  useEffect(() => {
+    if (mode !== 'presenter' || typeof window === 'undefined') return;
+    const onMessage = (data: {type?: string; index?: number}) => {
+      if (data?.type === 'slide' && typeof data.index === 'number' && Number.isInteger(data.index)) {
+        onIndexChange(Math.max(0, Math.min(data.index, total - 1)));
+      }
+    };
+    let channel: BroadcastChannel | null = null;
+    try {
+      channel = new BroadcastChannel(PRESENTER_SYNC_CHANNEL);
+      channel.onmessage = (event) => onMessage(event.data as {type?: string; index?: number});
+    } catch { channel = null; }
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== PRESENTER_SYNC_KEY || !event.newValue) return;
+      try {
+        const parsed = JSON.parse(event.newValue) as {index?: number};
+        if (typeof parsed.index === 'number') onMessage({type: 'slide', index: parsed.index});
+      } catch { /* ignore */ }
+    };
+    window.addEventListener('storage', onStorage);
+    // URL index wins on first paint (SoT: URL param, then storage). Avoid clobbering ?index=N.
+    const urlHasIndex = new URLSearchParams(window.location.search).has('index');
+    if (!urlHasIndex) {
+      try {
+        const stored = JSON.parse(localStorage.getItem(PRESENTER_SYNC_KEY) || 'null') as {index?: number} | null;
+        if (stored && typeof stored.index === 'number') onMessage({type: 'slide', index: stored.index});
+      } catch { /* ignore */ }
+    }
+    return () => {
+      channel?.close();
+      window.removeEventListener('storage', onStorage);
+    };
+  }, [mode, total, onIndexChange]);
   const next = () => { if (mode !== 'follow') onIndexChange(Math.min(index + 1, total - 1)); }; const previous = () => { if (mode !== 'follow') onIndexChange(Math.max(index - 1, 0)); };
   const revealable = (target: DeckSlide): boolean => { const v = visual(target); return v.reveal === 'click' || v.stepKeys === true || text(target.layout) === 'steps' || (text(target.layout) === 'recap' && !v.recapKeys && !v.levelUp); };
   const revealCount = (target: DeckSlide): number => Math.max(array(target.items).length, array(target.cards).length);
@@ -58,14 +121,14 @@ function DeckContent({slides, index, revealStep, mode, onIndexChange, onRevealSt
       const targetDeck = target?.closest('.academy-deck');
       if (!root || (targetDeck ? targetDeck !== root : document.querySelector('.academy-deck') !== root)) return;
       if (event.key === 'Escape') {
-        setPromptOpen(false); setChaptersOpen(false); setPresenterOpen(false);
+        setPromptOpen(false); setChaptersOpen(false);
         return;
       }
       // Nav keys (Arrow/Page/Space/Home/End) must work even when a toolbar button
       // still holds focus — Space advances, it must not activate ⛶ (AET-106).
       if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey ||
           deckNavBlockedByTarget(target, event.key) ||
-          promptOpen || chaptersOpen || presenterOpen || mode === 'follow') return;
+          promptOpen || chaptersOpen || mode === 'follow') return;
       if (event.key === 'ArrowRight' || event.key === 'PageDown' || event.key === ' ') {
         event.preventDefault(); if (!reveal()) next();
       } else if (event.key === 'ArrowLeft' || event.key === 'PageUp') {
@@ -75,7 +138,7 @@ function DeckContent({slides, index, revealStep, mode, onIndexChange, onRevealSt
       } else if (event.key === 'End') {
         event.preventDefault(); onIndexChange(total - 1);
       } else if (event.key.toLowerCase() === 's' || event.key.toLowerCase() === 'p') {
-        if (mode !== 'reader') setPresenterOpen(true);
+        if (mode === 'projector') { event.preventDefault(); openPresenterWindow(index); }
       } else if (event.key.toLowerCase() === 'b' && (visual(activeSlide).planB || activeSlide.planB)) {
         event.preventDefault(); mountRef.current?.togglePlanB();
       } else if (event.key.toLowerCase() === 'c') setChaptersOpen(true);
@@ -108,12 +171,12 @@ function DeckContent({slides, index, revealStep, mode, onIndexChange, onRevealSt
   const readerSlides = slides.filter((item) => item.lessonId === activeSlide.lessonId);
   const hasInstructionVisual = ['quiz', 'stamps', 'perCard', 'runner'].some((key) => visual(activeSlide)[key] !== undefined);
   return <div className={`academy-deck mode-${mode} deck-type-${type}${activeSlide.dark ? " spotlight" : ""}${visual(activeSlide).keynote === true ? " keynote" : ""}`} data-type={type} data-lesson={activeSlide.lessonId} data-face={visual(activeSlide).keynote === true ? "keynote" : undefined} data-opener={typeof visual(activeSlide).opener === 'string' ? visual(activeSlide).opener : ''} data-index={index} data-total={total}>
-    <a className="skip" href="#stage">Skip to presentation</a><header className="toolbar"><a className="brand" href="#1" aria-label="Aetherlink, slide 1"><img className="brand-mark" src="/aetherlink-mark.png" alt="" width="44" height="44"/>AETHER<span>LINK</span><small>WORLDLINE · CLASSROOM</small></a><div className="tools"><button type="button" id="chapters" disabled={mode === 'follow'} onClick={() => setChaptersOpen(true)}>Chapters <span>≡</span></button><button type="button" id="prompt" onClick={() => setPromptOpen(true)}>Example prompt</button><button type="button" id="presenter" className="presenter-btn" disabled={mode === 'reader' || mode === 'follow'} onClick={() => setPresenterOpen(true)}>Presenter view ↗</button><button type="button" id="fullscreen" aria-label={fullscreenLabel} title={fullscreenLabel} onClick={(event) => { const btn = event.currentTarget; const refocus = () => { btn.blur(); stageRef.current?.focus?.(); }; try { if (window !== window.top) { refocus(); return; } } catch { refocus(); return; } if (document.fullscreenElement) void document.exitFullscreen(); else void document.documentElement.requestFullscreen(); refocus(); }}>⛶</button></div></header>
+    <a className="skip" href="#stage">Skip to presentation</a><header className="toolbar"><a className="brand" href="#1" aria-label="Aetherlink, slide 1"><img className="brand-mark" src="/aetherlink-mark.png" alt="" width="44" height="44"/>AETHER<span>LINK</span><small>WORLDLINE · CLASSROOM</small></a><div className="tools"><button type="button" id="chapters" disabled={mode === 'follow'} onClick={() => setChaptersOpen(true)}>Chapters <span>≡</span></button><button type="button" id="prompt" onClick={() => setPromptOpen(true)}>Example prompt</button><button type="button" id="presenter" className="presenter-btn" disabled={mode === 'reader' || mode === 'follow'} onClick={() => { if (mode === 'projector') openPresenterWindow(index); }}>Presenter view ↗</button><button type="button" id="fullscreen" aria-label={fullscreenLabel} title={fullscreenLabel} onClick={(event) => { const btn = event.currentTarget; const refocus = () => { btn.blur(); stageRef.current?.focus?.(); }; try { if (window !== window.top) { refocus(); return; } } catch { refocus(); return; } if (document.fullscreenElement) void document.exitFullscreen(); else void document.documentElement.requestFullscreen(); refocus(); }}>⛶</button></div></header>
     <main key={`${activeSlide.id}-${mode}`} id="stage" ref={stageRef} tabIndex={-1} inert={mode === 'follow'}>{type === 'practice' && <div className="assignment-banner"><span className="dot"/>Assignment in progress</div>}{mode !== 'reader' && <><section className="heading"/><div ref={bodyRef} className={`slide-body${!hasInstructionVisual && (array<string>(activeSlide.steps).length > 0 || activeSlide.expected || activeSlide.check) && text(activeSlide.layout) !== 'steps' ? ' with-side' : ''}`}><div ref={mainRef} className="slide-main"/>{!hasInstructionVisual && text(activeSlide.layout) !== 'steps' && <Instructions slide={activeSlide}/>}</div></>}{mode === 'reader' && <section className="reader-lesson" aria-label="Lesson reading">{readerSlides.map((lessonSlide) => <article key={lessonSlide.id}><h2>{lessonSlide.title}</h2>{lessonSlide.subtitle && <p>{lessonSlide.subtitle}</p>}<LayoutRenderer slide={lessonSlide} revealStep={Number.MAX_SAFE_INTEGER}/></article>)}</section>}{mode === 'presenter' && <PresenterTools presence={presence} onPlanBToggle={() => { mountRef.current?.togglePlanB(); }} slide={activeSlide} {...(slides[index + 1] ? {next: slides[index + 1]} : {})}/>}</main>
     <footer className="controls"><div className="position"><span id="count">{`${String(index + 1).padStart(2, '0')} / ${total}`}</span><nav id="progress" className="progress" aria-label="Deck overview, one segment per slide">{progress}</nav><span className="kbd-hint"><kbd>←</kbd> <kbd>→</kbd> navigate · <kbd>S</kbd> presenter view</span></div><nav className="arrows" aria-label="Slide navigation"><button type="button" id="prev" aria-label="Previous slide" onClick={(event) => { previous(); event.currentTarget.blur(); stageRef.current?.focus?.(); }} disabled={mode === 'follow' || index === 0}>←</button><button type="button" id="next" aria-label="Next slide" onClick={(event) => { next(); event.currentTarget.blur(); stageRef.current?.focus?.(); }} disabled={mode === 'follow' || index === total - 1}>→</button></nav></footer>
     {promptOpen && <dialog open className="deck-dialog"><button type="button" onClick={() => setPromptOpen(false)}>Close</button><h2>Example prompt · {activeSlide.title}</h2>{activeSlide.prompt ? <><p>Read this aloud, or paste it into Claude Code.</p><textarea readOnly value={activeSlide.prompt} aria-label="Copy-ready example prompt"/><button type="button" onClick={() => void navigator.clipboard?.writeText(text(activeSlide.prompt))}>Copy prompt</button></> : <p>This slide has no exact read-aloud prompt.</p>}</dialog>}
     {chaptersOpen && <dialog open className="deck-dialog"><button type="button" onClick={() => setChaptersOpen(false)}>Close</button><h2>Chapters</h2><nav className="chapter-list deck-chapters" aria-label={`All ${total} slides`}>{slides.map((item, i) => <button type="button" key={item.id || i} onClick={() => { if (mode !== 'follow') onIndexChange(i); setChaptersOpen(false); }}>{String(i + 1).padStart(2, '0')} <strong>{item.title}</strong></button>)}</nav></dialog>}
-    {presenterOpen && mode !== 'reader' && mode !== 'follow' && <dialog open className="deck-dialog presenter-dialog"><button type="button" onClick={() => setPresenterOpen(false)}>Close</button><PresenterTools presence={presence} onPlanBToggle={() => { mountRef.current?.togglePlanB(); }} slide={activeSlide} {...(slides[index + 1] ? {next: slides[index + 1]} : {})}/></dialog>}
+    
   </div>;
 }
 

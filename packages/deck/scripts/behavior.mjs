@@ -183,14 +183,26 @@ try {
     if (!url) throw new Error('presenter popup had no URL');
     return {url};
   });
-  await check(checks, 'port S and P open presenter dialog', async () => {
+  await check(checks, 'port S and P open presenter window (notes stay off projector)', async () => {
     await waitProjector(port, `${portUrl}?index=0`);
+    const popupS = port.waitForEvent('popup', {timeout: 3000});
     await port.keyboard.press('s');
-    if (!(await port.locator('.presenter-dialog').count())) throw new Error('S did not open presenter dialog');
-    await port.keyboard.press('Escape');
+    const winS = await popupS;
+    await winS.waitForLoadState('domcontentloaded');
+    const urlS = new URL(winS.url());
+    await winS.close();
+    if (urlS.searchParams.get('mode') !== 'presenter') throw new Error(`S popup mode=${urlS.searchParams.get('mode')}`);
+    if (await port.locator('.presenter-dialog').count()) throw new Error('S painted presenter dialog on projector');
+    if (await port.locator('.deck-presenter-tools').count()) throw new Error('S painted presenter tools on projector');
+    const popupP = port.waitForEvent('popup', {timeout: 3000});
     await port.keyboard.press('p');
-    if (!(await port.locator('.presenter-dialog').count())) throw new Error('P did not open presenter dialog');
-    return {dialog: true};
+    const winP = await popupP;
+    await winP.waitForLoadState('domcontentloaded');
+    const urlP = new URL(winP.url());
+    await winP.close();
+    if (urlP.searchParams.get('mode') !== 'presenter') throw new Error(`P popup mode=${urlP.searchParams.get('mode')}`);
+    if (await port.locator('.presenter-dialog').count()) throw new Error('P painted presenter dialog on projector');
+    return {presenterWindow: true, mode: 'presenter'};
   });
 
   await check(checks, 'source B toggles Plan B overlay', async () => {
