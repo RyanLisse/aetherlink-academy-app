@@ -92,7 +92,7 @@ function DeckContent({slides, index, revealStep, mode, onIndexChange, onRevealSt
       if (event.key !== PRESENTER_SYNC_KEY || !event.newValue) return;
       try {
         const parsed = JSON.parse(event.newValue) as {index?: number};
-        onMessage({type: 'slide', index: parsed.index});
+        if (typeof parsed.index === 'number') onMessage({type: 'slide', index: parsed.index});
       } catch { /* ignore */ }
     };
     window.addEventListener('storage', onStorage);
