@@ -44,14 +44,14 @@ const en = {
   'The deck may lack dedicated subagent or hooks slides — the lesson plan already names them. Narrative, diagram, and ConceptSim still teach the full stack while solos A6–A13 stay the Apple bar vehicle.',
   'Keep Uitleg → Voordoen → Zelf doen. Jessy/Cons TD2 is pedagogy SoT — we add the stack diagram and ConceptSim; we do not rewrite the assignments.',
  ],
- workedExample:'Mechanism: customize stack CLAUDE.md → skills → subagents → MCP/hooks on aetherlink-classroom-starter. Motto: CLAUDE.md → skills → subagents → MCP/hooks. Step the ConceptSim without API keys, then run A6–A13 on your machine.',
+ workedExample:'Mechanism: customize stack CLAUDE.md → skills → subagents → MCP/hooks on aetherlink-classroom-starter. Motto: CLAUDE.md → skills → subagents → MCP/hooks. Step ConceptSim c2-customize-stack (Agent Capability Map / smallest useful workflow) without API keys, then run A6–A13. Proof AC for day 2: use-case one-liner that Workshop 6 starts from + Agent Capability Map + one artefact. Room deck = Academy /classroom/2.',
  loop:[
-  {label:'CLAUDE.md',prompt:'Which agreements must every new session know without briefing?'},
-  {label:'Skill',prompt:'Which method do you repeat and how do you make it reusable?'},
-  {label:'Bounded run',prompt:'Which sequence of work may Claude do, and where does it stop for approval? (subagents keep roles bounded)'},
-  {label:'MCP',prompt:'Which information do you read read-only, and which actions do you not approve? (hooks gate the rest)'},
-  {label:'Workflow',prompt:'What is the smallest useful team workflow with a human checkpoint?'},
-  {label:'Handoff',prompt:'Which use-case do you take to Workshop 6?'}
+  {label:'CLAUDE.md',prompt:'Which agreements must every new session know without briefing? (cite: slide 54 CLAUDE.md · A6–A7 slides 55/57)'},
+  {label:'Skill',prompt:'Which method do you repeat and how do you make it reusable? (cite: slide 63 skills · A9–A10 slides 66/69)'},
+  {label:'Bounded run',prompt:'Which sequence of work may Claude do, and where does it stop for approval? Subagents keep roles bounded (cite: P3 diagram /diagrams/classroom/c2-customize-stack.svg · ConceptSim c2-customize-stack — no deck slide)'},
+  {label:'MCP',prompt:'Which information do you read read-only, and which actions do you not approve? Hooks gate the rest (cite: slides 80/81 · A12)'},
+  {label:'Workflow',prompt:'What is the smallest useful team workflow with a human checkpoint? Name it on your Agent Capability Map (cite: ConceptSim c2-customize-stack · A13 slide 84)'},
+  {label:'Handoff',prompt:'Which use-case one-liner do you take to Workshop 6? Proof AC = Agent Capability Map + one artefact (feeds W6)'}
  ],
  demo:{
   slides:[],
@@ -76,9 +76,10 @@ const en = {
   'A create-concept-card skill, tested against approved cards; missing information stays OPEN (assignment 9, slide 66).',
   'Status report with READY, REVISE or OPEN per term; nothing committed (assignment 10, slide 69).',
   'One connected item fetched read-only, with no external change (assignment 12, slide 81).',
-  'A day-start workflow with skills in fixed order and a human checkpoint, tested in a fresh session (assignment 13, slide 84).',
-  'The smallest useful team workflow captured in one sentence as a Workshop 6 use-case (W6 slide 2).',
-  'Customize-stack diagram viewed; ConceptSim stepped CLAUDE.md → skills → subagents → MCP/hooks without API keys.'
+  'A day-start workflow with skills in fixed order and a human checkpoint, tested in a fresh session (assignment 13, slide 84) — candidate for the one artefact.',
+  'Proof AC — use-case one-liner: the smallest useful team workflow in one sentence that Workshop 6 starts from (W6 slide 2 · A13 slide 84).',
+  'Proof AC — expected day-2 Proof artefact: Agent Capability Map (CLAUDE.md → skills → subagents → MCP/hooks) + one artefact (CLAUDE.md, skill, or day-start workflow).',
+  'Customize-stack diagram viewed (/diagrams/classroom/c2-customize-stack.svg); ConceptSim c2-customize-stack stepped CLAUDE.md → skills → subagents → MCP/hooks without API keys.'
  ],
  quiz:[
   question('What does CLAUDE.md not control?',['Which agreements Claude follows','Access: that is permissions and technical controls','How you test a change'],1,slide(d,54,'CLAUDE.md')),
@@ -89,7 +90,7 @@ const en = {
   id:'CLASSROOM-02',
   title:'From one prompt to a team workflow',
   minutes:25,
-  goal:'Create CLAUDE.md, a skill and a read-only workflow in your own copy, and capture the smallest useful team workflow as a Workshop 6 use-case.',
+  goal:'Create CLAUDE.md, a skill and a read-only workflow in your own copy. Proof AC: the use-case one-liner Workshop 6 starts from + Agent Capability Map + one artefact from the stack.',
   allowed:['Work only in your own local copy of aetherlink-classroom-starter.','Use connected systems only read-only via the approved connection.','Submit evidence; a human decides acceptance.'],
   starterFiles:[],
   hints:['Do not repeat CLAUDE.md rules in your prompt; test whether Claude follows them.','A skill stops for human approval before it writes.','Note which instructions you kept retyping: that is your skill.'],
@@ -99,7 +100,8 @@ const en = {
   'The lesson plan names subagents and hooks for Classroom 2; the deck has no slide for them — P3 diagram + ConceptSim teach them.',
   'The lesson plan lists no reference sources for Classroom 2.',
   'The deck has no separate live-demo slide; the facilitator chooses the demo piece.',
-  'Assignments 12 and 13 need an approved Jira connection via MCP per participant (notes slide 80).'
+  'Assignments 12 and 13 need an approved Jira connection via MCP per participant (notes slide 80).',
+  'Room deck for this day = Academy /classroom/2 (AET-105 overlay out — thin pointer only).'
  ]
 };
 
@@ -116,14 +118,14 @@ const nl = {
   'De deck heeft mogelijk geen aparte subagent- of hooks-dia — het lesplan noemt ze al. Narrative, diagram en ConceptSim leren de volle stack terwijl solos A6–A13 het Apple-bar-voertuig blijven.',
   'Houd Uitleg → Voordoen → Zelf doen. Jessy/Cons TD2 is pedagogie-SoT — we voegen stackdiagram en ConceptSim toe; we herschrijven de opdrachten niet.',
  ],
- workedExample:'Mechanisme: customize-stack CLAUDE.md → skills → subagents → MCP/hooks op aetherlink-classroom-starter. Motto: CLAUDE.md → skills → subagents → MCP/hooks. Stap de ConceptSim zonder API-sleutels, daarna A6–A13 op je machine.',
+ workedExample:'Mechanisme: customize-stack CLAUDE.md → skills → subagents → MCP/hooks op aetherlink-classroom-starter. Motto: CLAUDE.md → skills → subagents → MCP/hooks. Stap ConceptSim c2-customize-stack (Agent Capability Map / kleinste nuttige workflow) zonder API-sleutels, daarna A6–A13. Proof-AC voor dag 2: use-case-one-liner waar Workshop 6 mee start + Agent Capability Map + één artefact. Room-deck = Academy /classroom/2.',
  loop:[
-  {label:'CLAUDE.md',prompt:'Welke afspraken moet elke nieuwe sessie kennen zonder uitleg?'},
-  {label:'Skill',prompt:'Welke werkwijze herhaal je en hoe maak je die herbruikbaar?'},
-  {label:'Bounded run',prompt:'Welke reeks werk mag Claude doen en waar stopt het voor akkoord? (subagents houden rollen begrensd)'},
-  {label:'MCP',prompt:'Welke informatie lees je read-only en welke acties keur je niet goed? (hooks bewaken de rest)'},
-  {label:'Workflow',prompt:'Wat is de kleinste nuttige teamworkflow met een menselijk checkpoint?'},
-  {label:'Handoff',prompt:'Welke use-case neem je mee naar Workshop 6?'}
+  {label:'CLAUDE.md',prompt:'Welke afspraken moet elke nieuwe sessie kennen zonder uitleg? (cite: dia 54 CLAUDE.md · A6–A7 dia 55/57)'},
+  {label:'Skill',prompt:'Welke werkwijze herhaal je en hoe maak je die herbruikbaar? (cite: dia 63 skills · A9–A10 dia 66/69)'},
+  {label:'Bounded run',prompt:'Welke reeks werk mag Claude doen en waar stopt het voor akkoord? Subagents houden rollen begrensd (cite: P3-diagram /diagrams/classroom/c2-customize-stack.svg · ConceptSim c2-customize-stack — geen deck-dia)'},
+  {label:'MCP',prompt:'Welke informatie lees je read-only en welke acties keur je niet goed? Hooks bewaken de rest (cite: dia 80/81 · A12)'},
+  {label:'Workflow',prompt:'Wat is de kleinste nuttige teamworkflow met een menselijk checkpoint? Benoem die op je Agent Capability Map (cite: ConceptSim c2-customize-stack · A13 dia 84)'},
+  {label:'Handoff',prompt:'Welke use-case-one-liner neem je mee naar Workshop 6? Proof-AC = Agent Capability Map + één artefact (voedt W6)'}
  ],
  demo:{
   slides:[],
@@ -148,9 +150,10 @@ const nl = {
   'Een create-concept-card-skill, getest tegen goedgekeurde kaarten; ontbrekende informatie blijft OPEN (opdracht 9, dia 66).',
   'Statusrapport met READY, REVISE of OPEN per term; niets gecommit (opdracht 10, dia 69).',
   'Eén verbonden item read-only opgehaald, zonder externe wijziging (opdracht 12, dia 81).',
-  'Een day-start-workflow met skills in vaste volgorde en een menselijk checkpoint, getest in een verse sessie (opdracht 13, dia 84).',
-  'De kleinste nuttige teamworkflow in één zin vastgelegd als use-case voor Workshop 6 (W6 dia 2).',
-  'Customize-stackdiagram bekeken; ConceptSim CLAUDE.md → skills → subagents → MCP/hooks gestapt zonder API-sleutels.'
+  'Een day-start-workflow met skills in vaste volgorde en een menselijk checkpoint, getest in een verse sessie (opdracht 13, dia 84) — kandidaat voor het ene artefact.',
+  'Proof-AC — use-case-one-liner: de kleinste nuttige teamworkflow in één zin vastgelegd als use-case waar Workshop 6 mee start (W6 dia 2 · A13 dia 84).',
+  'Proof-AC — verwacht dag-2 Proof-artefact: Agent Capability Map (CLAUDE.md → skills → subagents → MCP/hooks) + één artefact (CLAUDE.md, skill of day-start-workflow).',
+  'Customize-stackdiagram bekeken (/diagrams/classroom/c2-customize-stack.svg); ConceptSim c2-customize-stack gestapt CLAUDE.md → skills → subagents → MCP/hooks zonder API-sleutels.'
  ],
  quiz:[
   question('Wat regelt CLAUDE.md niet?',['Welke afspraken Claude volgt','Toegang: dat doen permissies en technische controles','Hoe je een wijziging test'],1,slide(d,54,'CLAUDE.md')),
@@ -161,7 +164,7 @@ const nl = {
   id:'CLASSROOM-02',
   title:'Van één prompt naar een teamworkflow',
   minutes:25,
-  goal:'Maak CLAUDE.md, een skill en een read-only workflow in je eigen kopie, en leg de kleinste nuttige teamworkflow vast als use-case voor Workshop 6.',
+  goal:'Maak CLAUDE.md, een skill en een read-only workflow in je eigen kopie. Proof-AC: de use-case-one-liner waar Workshop 6 mee start + Agent Capability Map + één artefact uit de stack.',
   allowed:['Werk alleen in je eigen lokale kopie van aetherlink-classroom-starter.','Gebruik verbonden systemen alleen read-only via de goedgekeurde verbinding.','Dien bewijs in; een mens beslist over acceptatie.'],
   starterFiles:[],
   hints:['Herhaal de regels uit CLAUDE.md niet in je prompt; test of Claude ze zelf volgt.','Een skill stopt voor menselijk akkoord vóór hij schrijft.','Noteer welke instructies je steeds opnieuw moest geven: dat is je skill.'],
@@ -171,7 +174,8 @@ const nl = {
   'Het lesplan noemt subagents en hooks voor Classroom 2; de deck heeft er geen dia voor — P3-diagram + ConceptSim leren ze.',
   'Het lesplan noemt geen naslagbronnen voor Classroom 2.',
   'De deck heeft geen aparte live-demo-dia; de facilitator kiest het demo-onderdeel.',
-  'Opdracht 12 en 13 vragen per deelnemer een goedgekeurde Jira-verbinding via MCP (notities dia 80).'
+  'Opdracht 12 en 13 vragen per deelnemer een goedgekeurde Jira-verbinding via MCP (notities dia 80).',
+  'Room-deck voor deze dag = Academy /classroom/2 (AET-105-overlay buiten scope — alleen dunne pointer).'
  ]
 };
 
