@@ -1,5 +1,6 @@
 import {describe, expect, it} from 'vitest';
-import {workshop4SourceSlides, W4_SOLO_COMPANIONS} from '../src/deck/workshop4-slides.ts';
+import {workshop4SourceSlides} from '../src/deck/workshop4-slides.ts';
+import {W4_SOLO_COMPANIONS} from '../src/deck/workshop4-companions.ts';
 import {normalizeSlides} from '../src/deck/normalize.ts';
 import {isWorkshop3Path, isWorkshop4Path, isWorkshop5Path} from '../src/routes.tsx';
 import {sourceSlides} from '../src/deck/slides.ts';

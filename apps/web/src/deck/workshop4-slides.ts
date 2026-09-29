@@ -6,13 +6,6 @@
  *  Timers/checklists → presenter notes only. Pedagogy: Uitleg → Voordoen → Zelf doen per cycle.
  *  Forbidden: Eve required; Classroom rewrite; W5 SDLC into this deck; merging W4/W5 vehicles; secrets.
  */
-/** AET-134 · clickable HTML Solo companions on /workshop/4 chrome (AET-130 paths). */
-export const W4_SOLO_COMPANIONS: ReadonlyArray<{readonly label: string; readonly href: string}> = [
-  {label: "weather", href: "/courses/weather-agent-sdk/index.html"},
-  {label: "day5 n8n→agent", href: "/courses/aetherlink-day5-n8n-to-agent/index.html"},
-  {label: "council", href: "/courses/council-agent-sdk/index.html"},
-];
-
 export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
 
 /* ========== Open ========== */
