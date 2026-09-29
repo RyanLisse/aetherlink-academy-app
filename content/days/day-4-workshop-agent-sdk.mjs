@@ -34,7 +34,7 @@ const en = {
   'The acceptance set does not move. Claude must match the n8n labels on the shared fixture. A mismatch means fix prompt or tools — never invent a new label. An offline dry-run proves the chain; it is not model proof.',
   'Keep the Apple bar rhythm — Uitleg → Voordoen → Zelf doen — on the Worldline deck. The new diagram and ConceptSim teach ticket→tool_use→priority; SOLO 0–4 and the aetherlink-day5-n8n-to-agent vehicle stay.',
  ],
- workedExample:'Mechanism: ticket→tool_use→priority on aetherlink-day5-n8n-to-agent. Motto: labels stay fixed to the shared fixture. Step the ConceptSim without API keys, then run SOLO 0–4 on your branch.',
+ workedExample:'Mechanism: ticket→tool_use→priority on aetherlink-day5-n8n-to-agent. Motto: labels stay fixed to the shared fixture. Step the ConceptSim without API keys, walk the HTML Solos under /courses/ (weather L1 · day5 bridge · council L2 stretch), then run SOLO 0–4 on your branch if you clone the vehicle.',
  loop:[
   {label:'SOLO 0',prompt:'Have you cloned the repo and can you point to Ticket Input, AI Agent, Reply, Risk, and Switch?'},
   {label:'SOLO 1',prompt:'Which label do you predict per fixture ticket, and what does the automatic check say?'},
@@ -61,6 +61,9 @@ const en = {
   {id:'w4-solo4',autograde:'triage',badge:'S4',level:'required',timerMinutes:15,title:'SOLO 4 · Acceptance table and Proof',goal:'Fill the table ticket → expected n8n label → actual Claude label. Resolve a mismatch in prompt or tools, not with new labels.',doneWhen:'Acceptance table, dry-run or trace, human gate, and achieved level (2, 3, or 4).',slide:slide(d,15,'Fill the acceptance table. Ship Proof.')}
  ],
  materials:[
+  link('solo','HTML Solo · weather-agent-sdk (L1)','/courses/weather-agent-sdk/','AET-130 · instruction-quest in instructions.md · Arcade companion'),
+  link('solo','HTML Solo · day5 n8n→agent (core W3→W4)','/courses/aetherlink-day5-n8n-to-agent/','AET-130 · SOLO.md + fixtures offline lane'),
+  link('solo','HTML Solo · council-agent-sdk (L2 stretch)','/courses/council-agent-sdk/','AET-130 · judge rule in instructions.md'),
   link('vehicle','Rebuild repo aetherlink-day5-n8n-to-agent','https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent','Slide 2; SOLO.md in the repo'),
   starter('triage-fixtures.json','Shared fixture tickets (the server checks your labels)'),
   link('naslag','Agent SDK overview','https://code.claude.com/docs/en/agent-sdk/overview','NASLAG.md Support Day 4 · code.claude.com'),
@@ -111,7 +114,7 @@ const nl = {
   'De acceptatieset beweegt niet. Claude moet de n8n-labels op de gedeelde fixture matchen. Een mismatch betekent prompt of tools verbeteren — nooit een nieuw label verzinnen. Een offline dry-run bewijst de keten; het is geen modelbewijs.',
   'Houd het Apple-bar-ritme — Uitleg → Voordoen → Zelf doen — op het Worldline-deck. Het nieuwe diagram en de ConceptSim leren ticket→tool_use→prioriteit; SOLO 0–4 en het aetherlink-day5-n8n-to-agent-voertuig blijven.',
  ],
- workedExample:'Mechanisme: ticket→tool_use→prioriteit op aetherlink-day5-n8n-to-agent. Motto: labels blijven vast op de gedeelde fixture. Stap de ConceptSim zonder API-sleutels, daarna SOLO 0–4 op je branch.',
+ workedExample:'Mechanisme: ticket→tool_use→prioriteit op aetherlink-day5-n8n-to-agent. Motto: labels blijven vast op de gedeelde fixture. Stap de ConceptSim zonder API-sleutels, loop de HTML-solo\'s onder /courses/ (weather L1 · day5-brug · council L2 verdieping), daarna SOLO 0–4 op je branch als je de repository clonet.',
  loop:[
   {label:'SOLO 0',prompt:'Heb je de repo gecloned en wijs je Ticket Input, AI Agent, Reply, Risk en Switch aan?'},
   {label:'SOLO 1',prompt:'Welk label voorspel je per fixture-ticket, en wat zegt de automatische check?'},
@@ -138,6 +141,9 @@ const nl = {
   {id:'w4-solo4',autograde:'triage',badge:'S4',level:'required',timerMinutes:15,title:'SOLO 4 · Acceptatietabel en Proof',goal:'Vul de tabel ticket → verwacht n8n-label → werkelijk Claude-label. Een verschil los je op in prompt of tools, niet met nieuwe labels.',doneWhen:'Acceptatietabel, dry-run of trace, menselijke gate en behaald niveau (2, 3 of 4).',slide:slide(d,15,'Fill the acceptance table. Ship Proof.')}
  ],
  materials:[
+  link('solo','HTML-solo · weather-agent-sdk (L1)','/courses/weather-agent-sdk/','AET-130 · instructie-opdracht in instructions.md · Arcade-companion'),
+  link('solo','HTML-solo · day5 n8n→agent (kern · W3→W4)','/courses/aetherlink-day5-n8n-to-agent/','AET-130 · SOLO.md + fixtures · offline-pad'),
+  link('solo','HTML-solo · council-agent-sdk (L2 verdieping)','/courses/council-agent-sdk/','AET-130 · juryregel in instructions.md'),
   link('vehicle','Rebuild-repository aetherlink-day5-n8n-to-agent','https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent','Dia 2; SOLO.md in de repo'),
   starter('triage-fixtures.json','Gedeelde fixture-tickets (de server controleert je labels)'),
   link('naslag','Agent SDK overview','https://code.claude.com/docs/en/agent-sdk/overview','NASLAG.md Support Day 4 · code.claude.com'),
