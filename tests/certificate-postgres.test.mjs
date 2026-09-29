@@ -66,7 +66,7 @@ test('PostgresStore: facilitator-gated issue, revoke + re-issue, retention casca
   assert.equal(await count(),2);
 
   clock.now=START+DAY+180*DAY;
-  assert.equal((await store.purgeExpiredCohorts()).purged[0].certificates,1);
+  assert.equal((await store.purgeExpiredCohorts()).purged[0].certificates,2);
   await store.purgeExpiredCohorts({dryRun:false});
   assert.equal(await store.certificate(id),null);
   assert.equal((await pool.query(`SELECT count(*)::int AS count FROM "${schema}".cohort_certificates`)).rows[0].count,0);
