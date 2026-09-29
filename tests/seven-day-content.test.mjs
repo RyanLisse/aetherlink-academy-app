@@ -70,10 +70,30 @@ test('workshop rhythm: W3 solo bar is L2 with L3 as stretch, W4 bar is SOLO 2',(
 });
 
 test('Classroom 2 Proof acceptance hands its use-case to Workshop 6 (AET-76)',()=>{
- const proof=getDayPack(2).reviewCriteria;
- assert.equal(proof.length,7);
- assert.equal(proof[5],'De kleinste nuttige teamworkflow in één zin vastgelegd als use-case voor Workshop 6 (W6 dia 2).');
- assert.match(proof[6],/Customize-stackdiagram|ConceptSim/);
+ const pack=getDayPack(2);
+ const proof=pack.reviewCriteria;
+ const blob=proof.join('\n');
+ assert.ok(proof.length>=7);
+ assert.match(blob,/Workshop 6/);
+ assert.match(blob,/use-case/i);
+ assert.match(blob,/Agent Capability Map/);
+ assert.match(blob,/artefact|artifact/i);
+ assert.match(blob,/Customize-stackdiagram|ConceptSim|c2-customize-stack/);
+ // Locale-complete: EN+NL Proof AC both name use-case→W6 + capability map + artefact
+ for(const lang of ['en','nl']){
+  const loc=pack.copy[lang].proof.join('\n');
+  assert.match(loc,/Workshop 6/,lang);
+  assert.match(loc,/use-case/i,lang);
+  assert.match(loc,/Agent Capability Map/,lang);
+  assert.match(loc,/artefact|artifact|Proof-AC|Proof AC/,lang);
+ }
+ // Loop beats cite slides and/or P3 surfaces
+ const loopBlob=[...pack.copy.en.loop,...pack.copy.nl.loop].map(s=>s.prompt).join('\n');
+ assert.match(loopBlob,/slide 54|dia 54/);
+ assert.match(loopBlob,/slide 63|dia 63/);
+ assert.match(loopBlob,/c2-customize-stack/);
+ assert.match(loopBlob,/Agent Capability Map/);
+ assert.match(loopBlob,/Workshop 6/);
  assert.equal(getDayPack(6).materials.find(m=>m.label==='Je Classroom 2-artefact').href,'/classroom/2');
 });
 
