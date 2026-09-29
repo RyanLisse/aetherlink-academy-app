@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Daily Brief Lab: How an AI-Native Workflow Works</title>
+
+  <!-- Google Fonts: Bricolage Grotesque · DM Sans · JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <!--
+    CUSTOMIZE PER COURSE — change only the three accent variables below.
+    Options:
+      vermillion  #D94F30 / #C4432A / #FDEEE9 / #E8836C  (default)
+      coral       #E06B56 / #C85A47 / #FDECEA / #E89585
+      teal        #2A7B9B / #1F6280 / #E4F2F7 / #5A9DB8
+      amber       #D4A843 / #BF9530 / #FDF5E0 / #E0C070
+      forest      #2D8B55 / #226B41 / #E8F5EE / #5AAD7A
+  -->
+  <style>
+    :root {
+      --color-accent:       #2A7B9B;
+      --color-accent-hover: #1F6280;
+      --color-accent-light: #E4F2F7;
+      --color-accent-muted: #5A9DB8;
+    }
+  </style>
+
+  <script src="main.js" defer></script>
+</head>
+<body>
+
+  <nav class="nav" id="nav">
+    <div class="progress-bar" id="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    <div class="nav-inner">
+      <span class="nav-title">The Daily Brief Lab: How an AI-Native Workflow Works</span>
+      <div class="nav-dots" id="nav-dots" role="tablist">
+                <button class="nav-dot" data-target="module-1" data-tooltip="What this lab builds" role="tab" aria-label="Module 1: What this lab builds"></button>
+        <button class="nav-dot" data-target="module-2" data-tooltip="Intent: drawing the fence" role="tab" aria-label="Module 2: Intent: drawing the fence"></button>
+        <button class="nav-dot" data-target="module-3" data-tooltip="Flight plan before takeoff" role="tab" aria-label="Module 3: Flight plan before takeoff"></button>
+        <button class="nav-dot" data-target="module-4" data-tooltip="The rulebook the AI reads" role="tab" aria-label="Module 4: The rulebook the AI reads"></button>
+        <button class="nav-dot" data-target="module-5" data-tooltip="Evidence and the gate" role="tab" aria-label="Module 5: Evidence and the gate"></button>
+        <button class="nav-dot" data-target="module-6" data-tooltip="The SOLO loop" role="tab" aria-label="Module 6: The SOLO loop"></button>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main">
+    <!-- modules/*.html content is assembled here by build.sh -->
+<section class="module" id="module-1" style="background: var(--color-bg)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">01</span>
+      <h1 class="module-title">What this lab builds</h1>
+      <p class="module-subtitle">One morning brief, seven steps, and a repository that starts out empty on purpose.</p>
+    </header>
+
+    <div class="module-body">
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Picture Tuesday, 8:00 in the morning</h2>
+        <p>You open one page. It tells you which code reviews are waiting, which tickets moved overnight, which wiki page someone edited, and what is on your calendar. You did not write it. An <span class="term" data-definition="A program that uses an AI model to decide which steps to take, calls tools to gather information, and produces a result on its own. When talking to AI, you might say: 'build an agent that reads X and writes Y.'">agent</span> did.</p>
+        <p>That is the thing this lab builds: a <strong>daily brief agent</strong>. It reads your work tools every morning and writes a one-page brief.</p>
+
+        <div class="pattern-cards stagger-children">
+          <div class="pattern-card animate-in" style="border-top: 3px solid var(--color-actor-1)">
+            <div class="pattern-icon" style="background: var(--color-actor-1)">🦊</div>
+            <h4 class="pattern-title">Code reviews</h4>
+            <p class="pattern-desc"><span class="term" data-definition="GitLab is a website where teams store code and review each other's changes. GitHub is the best-known alternative; this lab supports both.">GitLab</span> at work, or GitHub on your own.</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top: 3px solid var(--color-actor-2)">
+            <div class="pattern-icon" style="background: var(--color-actor-2)">🎫</div>
+            <h4 class="pattern-title">Tickets</h4>
+            <p class="pattern-desc"><span class="term" data-definition="Jira and Linear are ticket trackers: each piece of work is a card (a 'ticket') with a status like To Do, In Progress or Done.">Jira</span> at work, or Linear on your own.</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top: 3px solid var(--color-actor-3)">
+            <div class="pattern-icon" style="background: var(--color-actor-3)">📚</div>
+            <h4 class="pattern-title">Team wiki</h4>
+            <p class="pattern-desc"><span class="term" data-definition="Confluence and Notion are shared wikis: web pages a team writes together, like an internal encyclopedia.">Confluence</span> at work, or Notion on your own.</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top: 3px solid var(--color-actor-4)">
+            <div class="pattern-icon" style="background: var(--color-actor-4)">📅</div>
+            <h4 class="pattern-title">Calendar</h4>
+            <p class="pattern-desc">The Outlook calendar, read through Microsoft's <span class="term" data-definition="An API (Application Programming Interface) is a doorway a service opens for other programs. Instead of clicking around a website, a program sends a structured request and gets structured data back.">API</span>.</p>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-icon">🔒</div>
+          <div class="callout-content">
+            <strong class="callout-title">Read, never write</strong>
+            <p>The agent only reads these sources. It never posts a comment, closes a ticket or sends an email. You will see this rule come back in almost every document of the lab.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The surprise: there is almost no code</h2>
+        <p>Open the <span class="term" data-definition="A repository (or 'repo') is a project folder whose full history is tracked by Git, so every change can be seen, compared and undone.">repository</span> and you find documents, not software. The <span class="term" data-definition="In Git, a branch is a separate line of work. 'main' is the default branch, the shared starting point everyone builds on.">branch</span> called <code>main</code> holds <span class="term" data-definition="A template is a document with the headings already in place and the content left blank, marked TEMPLATE here, for you to fill in.">templates</span> and a package <span class="term" data-definition="A skeleton is the bare frame of a project: config files and settings, but none of the real logic yet.">skeleton</span>. Nothing else.</p>
+
+        <div class="file-tree">
+          <div class="ft-folder open">
+            <span class="ft-name">aetherlink-daily-brief-lab-s1/</span>
+            <span class="ft-desc">The whole lab</span>
+            <div class="ft-children">
+              <div class="ft-file"><span class="ft-name">README.md</span><span class="ft-desc">The seven steps, as a table</span></div>
+              <div class="ft-file"><span class="ft-name">intent.md</span><span class="ft-desc">Step 1: what the agent is for, and its fence</span></div>
+              <div class="ft-file"><span class="ft-name">CLAUDE.md · AGENTS.md</span><span class="ft-desc">Rules the AI assistant loads before touching anything</span></div>
+              <div class="ft-file"><span class="ft-name">progress.md</span><span class="ft-desc">The scoreboard: every step is OPEN until proven</span></div>
+              <div class="ft-file"><span class="ft-name">SOLO.md</span><span class="ft-desc">How to walk the lesson alone</span></div>
+              <div class="ft-folder">
+                <span class="ft-name">docs/</span>
+                <span class="ft-desc">spec · design · plan · evidence · gate · decisions/</span>
+              </div>
+              <div class="ft-folder">
+                <span class="ft-name">reference/</span>
+                <span class="ft-desc">Where the two example briefs (PDFs) go</span>
+              </div>
+              <div class="ft-file"><span class="ft-name">package.json · tsconfig.json</span><span class="ft-desc">The empty code skeleton</span></div>
+            </div>
+          </div>
+        </div>
+
+        <p>That emptiness is the lesson. You are meant to fill the documents first, and the code only after the documents say what it must do.</p>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The whole route in one table</h2>
+        <p>The README lays out every step as a row. Read it as a contract: each step names the file you write and the <strong>proof</strong> that the step is really done.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">README.md</span>
+            <pre><code><span class="code-line"><span class="code-comment">| Step | Phase | You write | Proof |</span></span>
+<span class="code-line"><span class="code-comment">| --- | --- | --- | --- |</span></span>
+<span class="code-line">| 1 | <span class="code-keyword">Plan</span> | <span class="code-string">`intent.md`</span> | A facilitator accepts the boundary |</span>
+<span class="code-line">| 2 | <span class="code-keyword">Plan</span> | <span class="code-string">`docs/spec.md`, `src/brief.ts`, `sample/brief.sample.json`, `test/schema.test.ts`</span> | <span class="code-function">`npm test`</span> green on the schema tests |</span>
+<span class="code-line">| 3 | <span class="code-keyword">Design</span> | <span class="code-string">`docs/design.md`, one ADR, `docs/plan.md`</span> | A stranger can follow the plan and name what proves completion |</span>
+<span class="code-line">| 4 | <span class="code-keyword">Build</span> | <span class="code-string">`src/render.ts`, `src/main.ts`</span> | <span class="code-function">`npm run brief:sample`</span> writes `out/latest.html` |</span>
+<span class="code-line">| 5 | <span class="code-keyword">Build</span> | <span class="code-string">`src/sources.ts`, `src/agent.ts`</span> | <span class="code-function">`npm test`</span> and <span class="code-function">`npm run typecheck`</span> green; wiring proven without a network |</span>
+<span class="code-line">| 6 | <span class="code-keyword">Test</span> | <span class="code-string">`docs/evidence.md` and one screenshot</span> | Three commands with exit codes and a reviewer |</span>
+<span class="code-line">| 7 | <span class="code-keyword">Deploy</span> | <span class="code-string">`docs/gate.md`, `gitlab-ci.example.yml`</span> | PASS / FAIL / OPEN with a quoted line |</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Four columns: which step, which phase of the work, what you produce, and how anyone can tell it is finished.</p>
+              <p class="tl">(Table divider, required by <span class="term" data-definition="Markdown is a plain-text format where symbols mean formatting: # is a heading, | draws a table, backticks mark code. Every .md file in this lab is Markdown.">Markdown</span>.)</p>
+              <p class="tl">Step 1: write down what you want. Done when a human accepts where the fence is.</p>
+              <p class="tl">Step 2: describe the brief's exact shape, then write <span class="term" data-definition="A test is a small program that checks another program's behaviour and says pass or fail. 'npm test' runs all of them; 'green' means they all passed.">tests</span> that check it. Done when those tests pass.</p>
+              <p class="tl">Step 3: design the parts, record one decision (an <span class="term" data-definition="An ADR (Architecture Decision Record) is a one-page note explaining one technical choice: the problem, the options, what was chosen, and when to revisit it.">ADR</span>), write a plan. Done when a stranger could follow it.</p>
+              <p class="tl">Step 4: the first real code. Done when a sample brief turns into an <span class="term" data-definition="HTML is the language web pages are written in. Here the brief is saved as an .html file you can open in any browser.">HTML</span> page.</p>
+              <p class="tl">Step 5: connect the real sources. Done when tests and the <span class="term" data-definition="A typecheck asks the TypeScript compiler to confirm every piece of data is used the way its declared shape allows, catching mistakes before the program runs.">typecheck</span> pass without touching the internet.</p>
+              <p class="tl">Step 6: record proof. Done when three commands, their <span class="term" data-definition="An exit code is the number a command returns when it finishes. 0 means success; anything else means something went wrong.">exit codes</span> and a second person are written down.</p>
+              <p class="tl">Step 7: a human decides whether to ship, quoting the line that convinced them.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">Every step has a "how would I know?"</strong>
+            <p>Notice that no row says "done when it feels finished." Each proof is something another person can check without you in the room. That habit is what lets you trust work an AI did for you.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Watch one idea travel the whole route</h2>
+        <p>Think of a relay race. The baton is an <span class="term" data-definition="An artifact is any concrete thing a step produces and hands on: a document, a test file, a generated page, a screenshot.">artifact</span>, and each runner only starts once the baton is in their hand. Click through to follow one idea, "a brief with no invented facts", from a sentence to a shipped decision.</p>
+
+        <div class="flow-animation" data-steps='[
+          {"highlight":"flow-actor-1","label":"Intent: you write the rule in intent.md. The model never invents a fact."},
+          {"highlight":"flow-actor-2","label":"The rule becomes a spec row and a failing test in docs/spec.md and test/schema.test.ts.","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-3","label":"Design and plan name the file that holds the rule and the command that proves it.","packet":true,"from":"actor-2","to":"actor-3"},
+          {"highlight":"flow-actor-4","label":"Build: code is written until the failing test turns green.","packet":true,"from":"actor-3","to":"actor-4"},
+          {"highlight":"flow-actor-5","label":"Evidence: the command, its exit code and a quoted output line go into docs/evidence.md. A second person reruns it.","packet":true,"from":"actor-4","to":"actor-5"},
+          {"highlight":"flow-actor-6","label":"Gate: a human reads the pull request against intent.md and writes PASS, FAIL or OPEN.","packet":true,"from":"actor-5","to":"actor-6"},
+          {"highlight":"flow-actor-1","label":"If the evidence surprised anyone, the baton goes back to intent.md. The loop closes.","packet":true,"from":"actor-6","to":"actor-1"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-1"><div class="flow-actor-icon">🎯</div><span>Intent</span></div>
+            <div class="flow-actor" id="flow-actor-2"><div class="flow-actor-icon">📐</div><span>Spec</span></div>
+            <div class="flow-actor" id="flow-actor-3"><div class="flow-actor-icon">🗺️</div><span>Design + Plan</span></div>
+            <div class="flow-actor" id="flow-actor-4"><div class="flow-actor-icon">🔨</div><span>Build</span></div>
+            <div class="flow-actor" id="flow-actor-5"><div class="flow-actor-icon">🧾</div><span>Evidence</span></div>
+            <div class="flow-actor" id="flow-actor-6"><div class="flow-actor-icon">🚦</div><span>Gate</span></div>
+          </div>
+          <div class="flow-packet" id="flow-packet"></div>
+          <div class="flow-step-label" id="flow-label">Click "Next Step" to begin</div>
+          <div class="flow-controls">
+            <button class="btn flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+
+        <p>This whole cycle has a name: the <span class="term" data-definition="SDLC (Software Development Life Cycle) is the series of phases software goes through: plan, design, build, test, deploy. 'AI-native' means an AI assistant does much of the typing inside each phase while humans decide.">AI-native SDLC</span>. The rest of this course walks it one runner at a time.</p>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your understanding</h2>
+        <div class="quiz-container" id="quiz-module1">
+          <div class="quiz-question-block"
+               data-correct="b"
+               data-explanation-right="Right. The lab wants documents first. Without intent.md and a spec, the AI has nothing to check its code against, and neither do you."
+               data-explanation-wrong="Tempting, but the lab is built the other way round. Code written before the intent and spec has nothing to be measured against, so 'working' just means 'it ran'.">
+            <h3 class="quiz-question">You clone the lab and ask your AI assistant to "build the daily brief agent." It immediately starts writing <code>src/agent.ts</code>. What should you do?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Let it run. Code is the goal, and the documents can be filled in afterwards.</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Stop it and point it at step 1: fill <code>intent.md</code> first.</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Ask it to write the tests and the code at the same time to save effort.</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="c"
+               data-explanation-right="Yes. The README's proof column is always something a third person can check: a command, an exit code, a quoted line. 'Looks good' is a feeling, not proof."
+               data-explanation-wrong="Look again at the Proof column. Every entry is something someone else can re-check without trusting you. A feeling or a promise does not qualify.">
+            <h3 class="quiz-question">A teammate says step 4 is done because "the page looks good." Which reply matches how this lab works?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>"Great, mark it done."</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>"Send me a screenshot and I will take your word for it."</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>"Does <code>npm run brief:sample</code> write <code>out/latest.html</code>? Let me run it too."</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="a"
+               data-explanation-right="Correct. Read-only access is the lab's core safety rule. An agent that cannot write cannot close the wrong ticket or email the wrong person."
+               data-explanation-wrong="Not quite. The brief only needs to read. Giving an agent write access 'just in case' is exactly what every document in this lab forbids.">
+            <h3 class="quiz-question">A colleague offers you a Jira token that can both read and edit tickets. It would make setup faster. What does the lab's design say?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Decline it. The agent must stay read-only, so ask for a read-only token.</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Use it, but tell the AI in the prompt not to edit anything.</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Use it now and swap it for a read-only one later.</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module1')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module1')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-2" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">02</span>
+      <h1 class="module-title">Intent: drawing the fence</h1>
+      <p class="module-subtitle">Before anyone writes a line of code, one page says what the agent is for and where it may never go.</p>
+    </header>
+
+    <div class="module-body">
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Surveyors come before builders</h2>
+        <p>Before a house goes up, a surveyor hammers stakes into the ground: this is the plot, that is the neighbour's land. Nobody argues about the fence later because it was agreed before the first brick.</p>
+        <p><code>intent.md</code> is those stakes. It is step 1 of the lab, and <code>AGENTS.md</code> tells the AI assistant to read it before changing <em>anything</em>.</p>
+
+        <div class="step-cards">
+          <div class="step-card"><div class="step-num">1</div><div class="step-body"><strong>Outcome</strong><p>One observable result in plain words: what the reader opens each morning, and what they no longer have to do.</p></div></div>
+          <div class="step-card"><div class="step-num">2</div><div class="step-body"><strong>Success checks</strong><p>Tick-boxes a stranger can verify with one command or one look.</p></div></div>
+          <div class="step-card"><div class="step-num">3</div><div class="step-body"><strong>Boundary</strong><p>What is in scope, what is forbidden, and when to stop and ask a human.</p></div></div>
+          <div class="step-card"><div class="step-num">4</div><div class="step-body"><strong>Owners</strong><p>Three named roles: the Reader, the Maintainer and the Gate.</p></div></div>
+          <div class="step-card"><div class="step-num">5</div><div class="step-body"><strong>Evidence contract + OPEN</strong><p>What counts as proof, and a list of every unknown, written down instead of guessed.</p></div></div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Success checks: written for a stranger</h2>
+        <p>The template's own placeholder text tells you how to write a good check. Read the hints closely; they are the lesson.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">intent.md</span>
+            <pre><code><span class="code-line"><span class="code-keyword">## Success checks</span></span>
+<span class="code-line"></span>
+<span class="code-line">- [ ] <span class="code-string">`TEMPLATE — a check a fresh reader can verify with one command or one look, without the author in the room.`</span></span>
+<span class="code-line">- [ ] <span class="code-string">`TEMPLATE`</span></span>
+<span class="code-line">- [ ] <span class="code-string">`TEMPLATE`</span></span>
+<span class="code-line">- [ ] <span class="code-string">`OPEN — a check that needs a live run or an access you do not have yet.`</span></span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">A section heading. The <code>##</code> is <span class="term" data-definition="Markdown is plain text where symbols mean formatting: ## starts a heading, - [ ] draws an empty checkbox, backticks mark code or literal text.">Markdown</span> for "second-level heading."</p>
+              <p class="tl">&nbsp;</p>
+              <p class="tl">Check one: someone who has never met you must be able to confirm it, by running a command or glancing at a page.</p>
+              <p class="tl">Check two: same rule.</p>
+              <p class="tl">Check three: same rule.</p>
+              <p class="tl">Check four is honest about what you cannot prove yet, like a <span class="term" data-definition="A live run means running the agent for real against actual GitLab, Jira and so on, with real access tokens, instead of against saved sample data.">live run</span> you have no access for. It is marked <strong>OPEN</strong>, not quietly dropped.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">"Without the author in the room"</strong>
+            <p>This phrase is the key to working with AI. The AI is always "the author who is not in the room" tomorrow. If a check needs you to explain it, it cannot catch a mistake the AI made while you were not looking.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The boundary: four stakes in the ground</h2>
+        <p>This is the most important block in the whole lab. Every later document points back to it.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">intent.md</span>
+            <pre><code><span class="code-line"><span class="code-keyword">## Boundary</span></span>
+<span class="code-line"></span>
+<span class="code-line">- <span class="code-property">In scope:</span> <span class="code-string">`TEMPLATE — the folder, the sources, the outputs.`</span></span>
+<span class="code-line">- <span class="code-property">Out of scope:</span> <span class="code-string">`TEMPLATE — what the agent may never do: write to a source, send anything, store a credential.`</span></span>
+<span class="code-line">- <span class="code-property">The model never invents a fact:</span> <span class="code-string">`TEMPLATE — what happens when a source is silent.`</span></span>
+<span class="code-line">- <span class="code-property">Stop or escalate when:</span> <span class="code-string">`TEMPLATE — a write scope is offered, personal data appears, the agent starts deciding instead of describing.`</span></span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">The fence itself.</p>
+              <p class="tl">&nbsp;</p>
+              <p class="tl">Inside the fence: which folder the work lives in, which tools get read, what files come out.</p>
+              <p class="tl">Outside the fence: never change anything in a source, never send a message, never keep a <span class="term" data-definition="A credential is anything that proves identity to a service: a password, an API key, an access token. Leaking one lets a stranger act as you.">credential</span>.</p>
+              <p class="tl">If a source says nothing (say, the calendar is empty), the brief must say that, not make something up. This guards against <span class="term" data-definition="A hallucination is when an AI model states something that sounds plausible but is not true or has no source. It is the main risk of letting a model summarise data.">hallucination</span>.</p>
+              <p class="tl">Tripwires: if someone offers a <span class="term" data-definition="A scope is the list of permissions attached to a token. A 'read' scope lets a program look; a 'write' scope lets it change things.">write scope</span>, if private data shows up, or if the agent starts making decisions instead of describing facts, halt and hand it to a human.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Wish or rule?</h2>
+        <p><code>SOLO.md</code> gives you a test for your own boundary: "Read the boundary aloud. If any line is a wish rather than a rule, it is NEEDS REVISION." Try it on this made-up draft. Click the line that is a wish.</p>
+
+        <div class="bug-challenge">
+          <h3>An example draft boundary (not from the repo). Which line fails the test?</h3>
+          <div class="bug-code">
+            <div class="bug-line" data-line="1" onclick="checkBugLine(this, false)" data-hint="This one is a rule: a specific folder and specific sources. You could check it.">
+              <span class="line-num">1</span><code>In scope: this repo, GitHub + Linear, out/latest.html</code>
+            </div>
+            <div class="bug-line" data-line="2" onclick="checkBugLine(this, false)" data-hint="This is concrete. You can inspect a token's permissions and see whether any are write.">
+              <span class="line-num">2</span><code>Out of scope: any token with a write permission</code>
+            </div>
+            <div class="bug-line bug-target" data-line="3" onclick="checkBugLine(this, true)" data-explanation="&quot;Try to be accurate&quot; is a hope. Nobody can check it. A rule would say what happens: &quot;When a source returns nothing, the brief names that source in its notes.&quot;">
+              <span class="line-num">3</span><code>The model never invents a fact: it should try hard to be accurate</code>
+            </div>
+            <div class="bug-line" data-line="4" onclick="checkBugLine(this, false)" data-hint="Clear trigger, clear action. That is a rule.">
+              <span class="line-num">4</span><code>Stop when: a page contains a personal phone number</code>
+            </div>
+          </div>
+          <div class="bug-feedback"></div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Three owners, three different jobs</h2>
+        <div class="icon-rows">
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-1)">📖</div>
+            <div><strong>Reader</strong><p>"Reads the brief, decides what to push." The person the agent works for.</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-2)">🔧</div>
+            <div><strong>Maintainer</strong><p>"Owns the contract, the prompt, the schedule." Fixes it when it breaks.</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-3)">🚦</div>
+            <div><strong>Gate</strong><p>"Reads every pull request against this file before merge." The human who says yes or no.</p></div>
+          </div>
+        </div>
+        <p>Splitting these roles means nobody grades their own homework, including the AI.</p>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your understanding</h2>
+        <div class="quiz-container" id="quiz-module2">
+          <div class="quiz-question-block"
+               data-correct="b"
+               data-explanation-right="Exactly. A blank calendar is a fact too. The boundary says what happens when a source is silent, so the brief says so instead of padding."
+               data-explanation-wrong="Not quite. The 'never invents a fact' line exists for exactly this. Guessing or quietly skipping both hide something from the reader.">
+            <h3 class="quiz-question">The Outlook connection fails one morning and the agent gets no calendar data. What should the brief do, given the intent's boundary?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Guess the usual Tuesday meetings from last week.</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Say plainly that the calendar source was silent.</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Leave the calendar section out so the page looks clean.</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="c"
+               data-explanation-right="Right. 'The agent starts deciding instead of describing' is a listed tripwire. Re-prioritising tickets is a decision; that belongs to the Reader."
+               data-explanation-wrong="Look at the 'Stop or escalate when' line. The agent's job is to describe; deciding priorities is the Reader's job, per the Owners table.">
+            <h3 class="quiz-question">While testing, you notice the agent wrote "I have moved AL-42 to top priority." Which part of <code>intent.md</code> does this cross?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>None. Helpful suggestions are fine.</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Only the success checks, because the page got longer.</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The boundary: it is deciding, not describing, and it claims a write.</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="a"
+               data-explanation-right="Yes. The template reserves a checkbox for exactly this. An honest OPEN is worth more than a check you cannot actually run."
+               data-explanation-wrong="The lab treats unknowns as things to write down, not hide or fake. There is even a pre-made OPEN checkbox for this case.">
+            <h3 class="quiz-question">You have no Jira token yet, so you cannot prove the agent reads Jira correctly. How does that go into <code>intent.md</code>?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>As an <strong>OPEN</strong> success check, plus a line in the OPEN list.</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Leave it out until you have the token.</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Tick it anyway; it will probably work.</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module2')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module2')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-3" style="background: var(--color-bg)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">03</span>
+      <h1 class="module-title">Flight plan before takeoff</h1>
+      <p class="module-subtitle">Spec, design and plan: three documents that turn a wish into steps an AI can execute and a stranger can check.</p>
+    </header>
+
+    <div class="module-body">
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Pilots file a plan before they fly</h2>
+        <p>No pilot takes off and "sees where it goes." They file where they are landing, which aircraft they are flying, and the checkpoints on the way. Air traffic control can then tell, at any moment, whether the flight is on course.</p>
+        <p>Steps 2 and 3 of the lab are that filing. Three documents, three questions:</p>
+
+        <div class="pattern-cards stagger-children">
+          <div class="pattern-card animate-in" style="border-top: 3px solid var(--color-actor-1)">
+            <div class="pattern-icon" style="background: var(--color-actor-1)">📐</div>
+            <h4 class="pattern-title">docs/spec.md</h4>
+            <p class="pattern-desc"><strong>The destination.</strong> Exactly what the brief looks like, field by field, quoted from the example PDFs.</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top: 3px solid var(--color-actor-2)">
+            <div class="pattern-icon" style="background: var(--color-actor-2)">🧩</div>
+            <h4 class="pattern-title">docs/design.md</h4>
+            <p class="pattern-desc"><strong>The aircraft.</strong> Which part owns which job, and what each part must never do.</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top: 3px solid var(--color-actor-3)">
+            <div class="pattern-icon" style="background: var(--color-actor-3)">🗺️</div>
+            <h4 class="pattern-title">docs/plan.md</h4>
+            <p class="pattern-desc"><strong>The checkpoints.</strong> Ordered steps, exact files, one proof command per step.</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top: 3px solid var(--color-actor-4)">
+            <div class="pattern-icon" style="background: var(--color-actor-4)">⚖️</div>
+            <h4 class="pattern-title">docs/decisions/</h4>
+            <p class="pattern-desc"><strong>The logbook.</strong> One <span class="term" data-definition="An ADR (Architecture Decision Record) is a short note about one technical choice: the context, the options considered, the decision, and what would make you revisit it.">ADR</span> per real decision, so nobody re-argues it next month.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The spec: every field needs a quote</h2>
+        <p>The spec's heart is the <strong>contract</strong>, a table that pins down each piece of data the brief contains. The key column is the last one: every rule must be backed by real words from the reference PDFs.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">docs/spec.md</span>
+            <pre><code><span class="code-line"><span class="code-keyword">## The contract</span></span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">| Field | Type | Rule | Example from the reference |</span></span>
+<span class="code-line"><span class="code-comment">| --- | --- | --- | --- |</span></span>
+<span class="code-line">| <span class="code-string">`TEMPLATE`</span> | <span class="code-string">`TEMPLATE`</span> | <span class="code-string">`TEMPLATE — imperative, max nine words, names the artifact`</span> | <span class="code-string">`TEMPLATE — quoted from the PDF`</span> |</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">The <span class="term" data-definition="A contract (or schema) is a precise description of the shape data must have: which fields exist, what type each one is, and which rules it must follow. Code can check data against it automatically.">contract</span>: the agreed shape of a brief.</p>
+              <p class="tl">&nbsp;</p>
+              <p class="tl">For each field: its name, its <span class="term" data-definition="A type says what kind of value a field holds: text (a 'string'), a number, a true/false 'boolean', or a list. TypeScript uses types to catch mismatches before the code runs.">type</span>, the rule it obeys, and a real example.</p>
+              <p class="tl">(Table divider.)</p>
+              <p class="tl">One example rule style: "imperative, max nine words, names the artifact." Precise enough that a test can check it. The example must be <em>quoted</em>, not invented.</p>
+            </div>
+          </div>
+        </div>
+
+        <p>Step 2 then works <span class="term" data-definition="Test-first (or TDD, test-driven development) means writing the check before the code. The test fails ('red') at first, then you write code until it passes ('green'). It proves the test can actually catch a problem.">test-first</span>: <code>test/schema.test.ts</code> is written and fails, and only then does <code>src/brief.ts</code> get written to make it pass. <code>SOLO.md</code> even asks you to check that "<code>git log</code> show[s] the test commit before <code>brief.ts</code>."</p>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The design: boundaries become code</h2>
+        <p>The design template has a section that is easy to skim past and is the most important one. It asks how each rule from <code>intent.md</code> is enforced by the program itself, not by asking the AI nicely.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">docs/design.md</span>
+            <pre><code><span class="code-line"><span class="code-keyword">## Boundaries in code</span></span>
+<span class="code-line"></span>
+<span class="code-line">- <span class="code-property">Bound the task:</span> <span class="code-string">`TEMPLATE — which options remove capability from the model.`</span></span>
+<span class="code-line">- <span class="code-property">Watch the loop:</span> <span class="code-string">`TEMPLATE — which options cap and log the run.`</span></span>
+<span class="code-line">- <span class="code-property">Interrupt on purpose:</span> <span class="code-string">`TEMPLATE — where the human sits, and why not inside the run.`</span></span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">## Hooks (deterministic, hold without asking)</span></span>
+<span class="code-line"></span>
+<span class="code-line">- <span class="code-string">`TEMPLATE — the rule from the prompt that must hold even if the model ignores the prompt, and the code that holds it.`</span></span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">How the fence from <code>intent.md</code> is built into the software.</p>
+              <p class="tl">&nbsp;</p>
+              <p class="tl">Take abilities away: the model simply is not given a shell or a write tool, so it cannot misuse one.</p>
+              <p class="tl">Put a limit on how many steps the <span class="term" data-definition="The agent loop: the model thinks, calls a tool, reads the result, thinks again, and repeats until it has an answer. Capping it stops a run from going on forever.">agent loop</span> can take, and log every tool call.</p>
+              <p class="tl">The human reviews <em>after</em> the run, not in the middle. A 3 a.m. scheduled job cannot wait for someone to click "allow."</p>
+              <p class="tl">&nbsp;</p>
+              <p class="tl"><span class="term" data-definition="A hook is a small piece of code that runs automatically at a fixed moment (before a tool call, after a run) and can block or change what happens. 'Deterministic' means it behaves the same way every time; it does not depend on the AI's mood.">Hooks</span>: rules enforced by plain code, every time.</p>
+              <p class="tl">If a rule matters, do not trust the <span class="term" data-definition="The prompt is the text instructions given to the AI model. Models usually follow prompts, but not always, so critical rules also need code that enforces them.">prompt</span> alone. Write code that holds it even if the model ignores the instructions.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">A prompt is a request. Code is a lock.</strong>
+            <p>"Please don't write anything" in a prompt usually works. Not handing the model a write tool always works. When a rule really matters, ask your AI assistant to remove the capability, not to add a sentence to the prompt.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The plan: checkpoints you can actually run</h2>
+        <p>The plan's step table has a <strong>Proof command</strong> column. Those commands are real; they live in <code>package.json</code>, the one piece of real configuration on <code>main</code>.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">package.json</span>
+            <pre><code><span class="code-line">  <span class="code-property">"scripts"</span>: {</span>
+<span class="code-line">    <span class="code-property">"brief"</span>: <span class="code-string">"tsx src/main.ts"</span>,</span>
+<span class="code-line">    <span class="code-property">"brief:sample"</span>: <span class="code-string">"tsx src/main.ts --sample"</span>,</span>
+<span class="code-line">    <span class="code-property">"typecheck"</span>: <span class="code-string">"tsc --noEmit"</span>,</span>
+<span class="code-line">    <span class="code-property">"test"</span>: <span class="code-string">"tsx --test test/*.test.ts"</span></span>
+<span class="code-line">  },</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Named shortcuts. Typing <code>npm run &lt;name&gt;</code> runs the command next to it. (<span class="term" data-definition="npm is the Node.js package manager. It installs a project's libraries and runs the named scripts listed in package.json.">npm</span> is the tool that reads this file.)</p>
+              <p class="tl">The real run: start the program in <code>src/main.ts</code> using <span class="term" data-definition="tsx runs TypeScript files directly, without a separate build step. TypeScript is JavaScript with types added.">tsx</span>, reading live sources.</p>
+              <p class="tl">The safe run: same program with a <span class="term" data-definition="A flag is an option added to a command to change its behaviour, like --sample here, which tells the program to use saved sample data instead of live sources.">flag</span> that swaps in sample data. No tokens needed.</p>
+              <p class="tl">Check that every value matches its declared type, without producing any output files.</p>
+              <p class="tl">Run every file in <code>test/</code> ending in <code>.test.ts</code>.</p>
+              <p class="tl">End of the shortcuts.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flow-steps">
+          <div class="flow-step"><div class="flow-step-num">1</div><p>Plan names the step and its files</p></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-num">2</div><p>Plan names the proof, e.g. <code>npm test</code></p></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-num">3</div><p>Plan says how to roll the step back</p></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-num">4</div><p>A human accepts the plan <em>before</em> any build</p></div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Match the question to the document</h2>
+        <p>When you are unsure where something belongs, ask which question it answers. Drag each document onto the question it exists to answer.</p>
+
+        <div class="dnd-container" id="dnd-module3">
+          <div class="dnd-chips">
+            <div class="dnd-chip" draggable="true" data-answer="spec">docs/spec.md</div>
+            <div class="dnd-chip" draggable="true" data-answer="design">docs/design.md</div>
+            <div class="dnd-chip" draggable="true" data-answer="plan">docs/plan.md</div>
+            <div class="dnd-chip" draggable="true" data-answer="adr">docs/decisions/ADR</div>
+          </div>
+          <div class="dnd-zones">
+            <div class="dnd-zone" data-correct="spec"><p class="dnd-zone-label">"What exactly must the brief contain, and where is that written in the reference PDF?"</p><div class="dnd-zone-target">Drop here</div></div>
+            <div class="dnd-zone" data-correct="design"><p class="dnd-zone-label">"Which file talks to Jira, and what is it never allowed to do?"</p><div class="dnd-zone-target">Drop here</div></div>
+            <div class="dnd-zone" data-correct="plan"><p class="dnd-zone-label">"What do I build second, and which command proves it worked?"</p><div class="dnd-zone-target">Drop here</div></div>
+            <div class="dnd-zone" data-correct="adr"><p class="dnd-zone-label">"Why did we pick this approach over the alternative, and when should we reconsider?"</p><div class="dnd-zone-target">Drop here</div></div>
+          </div>
+          <button class="btn" onclick="checkDnD('dnd-module3')">Check Matches</button>
+          <button class="btn" onclick="resetDnD('dnd-module3')">Reset</button>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your understanding</h2>
+        <div class="quiz-container" id="quiz-module3">
+          <div class="quiz-question-block"
+               data-correct="c"
+               data-explanation-right="Right. A prompt is a request the model may ignore. Not giving it the tool at all is a guarantee. That is what 'Bound the task' and 'Hooks' in design.md ask for."
+               data-explanation-wrong="A stronger prompt is still just a request. design.md asks for rules that hold 'even if the model ignores the prompt', which means removing the capability in code.">
+            <h3 class="quiz-question">Your AI assistant proposes: "To keep the agent read-only, I will add 'NEVER modify tickets' to the system prompt." What is the better move?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Accept it, but put the sentence in capital letters twice.</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Accept it and review the output every morning.</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Only give the agent read-only tools, so editing is impossible, and note that in design.md.</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="a"
+               data-explanation-right="Yes. The contract's last column demands a quote from the reference. A field with no quote is your invention, so it goes in the spec's OPEN list until settled."
+               data-explanation-wrong="The spec says every field needs an 'Example from the reference', quoted. Without one, the field is a guess, which the lab records as OPEN, not as a rule.">
+            <h3 class="quiz-question">You want a "mood of the day" field in the brief, but nothing like it appears in either reference PDF. What does the spec process say?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>It has no quote, so it goes under OPEN in the spec rather than into the contract.</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Add it to the contract; the spec is yours to decide.</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Skip the spec and add it straight to the code.</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="b"
+               data-explanation-right="Exactly. Test-first means the test is committed and failing before the code. If the test was written after, you never saw it fail, so you don't know it can catch anything."
+               data-explanation-wrong="The order matters. SOLO.md asks you to check that git log shows the test commit before brief.ts. A test that has never failed has never proven it can catch a bug.">
+            <h3 class="quiz-question">The AI hands you <code>src/brief.ts</code> and <code>test/schema.test.ts</code> in a single commit, all green. What is missing?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Nothing. Green is green.</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Proof the test could fail: it should have been committed red, before the code.</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>A screenshot of the test output.</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module3')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module3')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-4" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">04</span>
+      <h1 class="module-title">The rulebook the AI reads</h1>
+      <p class="module-subtitle">CLAUDE.md, AGENTS.md and progress.md: how the lab briefs your AI assistant before it touches a single file.</p>
+    </header>
+
+    <div class="module-body">
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The note on the fridge</h2>
+        <p>When a house-sitter arrives, you do not rely on them remembering your phone call. You leave a note on the fridge: feed the cat twice, never open the back door, here is what is already done. They read it on arrival, every time.</p>
+        <p>Your AI assistant starts every session with no memory of yesterday. These files are its note on the fridge.</p>
+
+        <div class="icon-rows">
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-1)">📌</div>
+            <div><strong>CLAUDE.md</strong><p>Loaded automatically by <span class="term" data-definition="Claude Code is Anthropic's AI coding assistant that runs in your terminal. It reads CLAUDE.md at the start of every session as its standing instructions for this project.">Claude Code</span>. Pulls in the other three files.</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-2)">📜</div>
+            <div><strong>AGENTS.md</strong><p>Seven contribution rules, written for any AI agent (or human) working in the repo.</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-3)">🎯</div>
+            <div><strong>intent.md</strong><p>The outcome and the fence, from Module 2.</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-4)">📊</div>
+            <div><strong>progress.md</strong><p>The scoreboard: what is VERIFIED, what is still OPEN.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">CLAUDE.md: four lines that do the loading</h2>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">CLAUDE.md</span>
+            <pre><code><span class="code-line"><span class="code-keyword"># Project instructions</span></span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-function">@intent.md</span></span>
+<span class="code-line"><span class="code-function">@progress.md</span></span>
+<span class="code-line"><span class="code-function">@AGENTS.md</span></span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-string">`intent.md`</span> and <span class="code-string">`progress.md`</span> are project convention files; their presence at</span>
+<span class="code-line">the repository root does not load them independently. Keep these imports</span>
+<span class="code-line">explicit so the outcome, the current-state board and the contribution rules are</span>
+<span class="code-line">loaded together before anything is changed.</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">The title of the note.</p>
+              <p class="tl">&nbsp;</p>
+              <p class="tl">The <code>@</code> is an <span class="term" data-definition="An import pulls the content of another file in, as if it were pasted at that spot. Here, '@intent.md' makes Claude Code read intent.md as part of CLAUDE.md.">import</span>: "paste the whole of intent.md in here."</p>
+              <p class="tl">Also paste in the current scoreboard.</p>
+              <p class="tl">Also paste in the contribution rules.</p>
+              <p class="tl">&nbsp;</p>
+              <p class="tl">A warning for whoever edits this file later: just having intent.md and progress.md in the folder does nothing.</p>
+              <p class="tl">The assistant only reads them because of the <code>@</code> lines above.</p>
+              <p class="tl">So do not delete those lines. The goal, the status and the rules have to arrive together...</p>
+              <p class="tl">...before the assistant changes anything.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-icon">🧠</div>
+          <div class="callout-content">
+            <strong class="callout-title">Context is loaded, not remembered</strong>
+            <p>An AI model only "knows" what is in its <span class="term" data-definition="The context window is everything the model can see at once: your message, loaded files, earlier replies. Anything outside it simply does not exist for the model.">context window</span> right now. If a rule matters every session, make it load automatically instead of hoping you will remember to paste it.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">A session, as a group chat</h2>
+        <p>Here is what the start of a working session looks like if the files could talk. You ask the assistant to jump straight to step 5.</p>
+
+        <div class="chat-window" id="chat-module4">
+          <div class="chat-messages">
+            <div class="chat-message" data-msg="0" data-sender="you" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-5)">Y</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-5)">You</span><p>Hey Claude, skip ahead and build the Jira connection for step 5.</p></div>
+            </div>
+            <div class="chat-message" data-msg="1" data-sender="claudemd" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">C</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-1)">CLAUDE.md</span><p>Session starting. Loading @intent.md, @progress.md and @AGENTS.md before anyone touches a file.</p></div>
+            </div>
+            <div class="chat-message" data-msg="2" data-sender="progress" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-4)">P</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-4)">progress.md</span><p>Status board: steps 1 through 7 are all OPEN. Nothing is verified yet.</p></div>
+            </div>
+            <div class="chat-message" data-msg="3" data-sender="agents" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-2)">A</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-2)">AGENTS.md</span><p>Rule 1: follow the step order in the README; "do not skip to the code before the document of that step exists."</p></div>
+            </div>
+            <div class="chat-message" data-msg="4" data-sender="intent" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">I</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-3)">intent.md</span><p>Also, I am still a TEMPLATE. There is no outcome and no boundary yet, so nobody can say what a correct Jira connection even is.</p></div>
+            </div>
+            <div class="chat-message" data-msg="5" data-sender="claude" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-accent)">✦</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-accent)">Claude Code</span><p>Understood. I will not write step 5 code yet. Shall I interview you, one question at a time, to fill intent.md first?</p></div>
+            </div>
+            <div class="chat-message" data-msg="6" data-sender="agents" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-2)">A</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-2)">AGENTS.md</span><p>And when you do reach step 5, rule 3: read-only by construction. "No built-in tools, only the source tools you define, no write scope on any token. Never widen that."</p></div>
+            </div>
+            <div class="chat-message" data-msg="7" data-sender="you" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-5)">Y</div>
+              <div class="chat-bubble"><span class="chat-sender" style="color: var(--color-actor-5)">You</span><p>Fair. Interview me.</p></div>
+            </div>
+          </div>
+          <div class="chat-typing" style="display:none">
+            <div class="chat-avatar" id="chat-module4-typing-avatar">?</div>
+            <div class="chat-typing-dots"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>
+          </div>
+          <div class="chat-controls">
+            <button class="btn chat-next-btn">Next Message</button>
+            <button class="btn chat-all-btn">Play All</button>
+            <button class="btn chat-reset-btn">Replay</button>
+            <span class="chat-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">AGENTS.md: the rules that stop AI from bluffing</h2>
+        <p>Three of the seven rules are aimed squarely at the ways AI assistants go wrong.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">AGENTS.md</span>
+            <pre><code><span class="code-line"><span class="code-number">2.</span> Verify the current state with the relevant command. Do not invent evidence, exit codes, screenshots or run results. Quote actual output; mark unrun checks <span class="code-string">`OPEN`</span>.</span>
+<span class="code-line"><span class="code-number">3.</span> The agent you build is read-only by construction: no built-in tools, only the source tools you define, no write scope on any token. Never widen that.</span>
+<span class="code-line"><span class="code-number">4.</span> Never put a credential, a token or private company data in this repository, a prompt or a document. Sample data lives in <span class="code-string">`sample/`</span>.</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl"><strong>No bluffing.</strong> Run the command; do not guess what it would say. If you did not run it, say OPEN. This targets AI's habit of confidently reporting "all tests pass" without running them.</p>
+              <p class="tl"><strong>No extra powers.</strong> "Built-in tools" are things like a <span class="term" data-definition="A shell is the command line: a text interface where any program can be run, files deleted, and so on. Giving an AI model a shell gives it very broad power.">shell</span> or file editor. The brief agent gets none of them, only the read-only source tools you write.</p>
+              <p class="tl"><strong>No secrets.</strong> A <span class="term" data-definition="A token is a long secret string that acts as a password for a program. Anyone holding it can do whatever its permissions allow.">token</span> pasted into a prompt or committed to the repo can leak. Real tokens live only in a local <code>.env</code> file that Git ignores.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">Two kinds of agent, two sets of rules</strong>
+            <p>There are two AIs in this lab: your coding assistant (which writes the code) and the brief agent (which the code becomes). AGENTS.md governs the first and fences in the second. Keeping them apart in your head is half the battle.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your understanding</h2>
+        <div class="quiz-container" id="quiz-module4">
+          <div class="quiz-question-block"
+               data-correct="b"
+               data-explanation-right="Right. AGENTS.md rule 2: quote actual output. The fix is not to trust or distrust the assistant, it is to ask for the evidence: the command, the exit code and a real output line."
+               data-explanation-wrong="AGENTS.md rule 2 forbids inventing exit codes or run results. You do not need to guess whether it ran; ask for the quoted output and the exit code, or run it yourself.">
+            <h3 class="quiz-question">Your assistant reports: "Step 2 complete, all tests pass!" It shows no command output. What do you do?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Mark step 2 VERIFIED in progress.md.</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Ask it to run <code>npm test</code> and quote the exit code and an output line, or run it yourself.</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Assume it is lying and start the step over.</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="c"
+               data-explanation-right="Yes. CLAUDE.md explains that the files are only loaded because of the @ lines. Without them the assistant starts every session blind to the intent, the status and the rules."
+               data-explanation-wrong="Look at the paragraph under the imports: the files' 'presence at the repository root does not load them independently.' Remove the @ lines and the assistant never sees them.">
+            <h3 class="quiz-question">A teammate "tidies up" CLAUDE.md by deleting the three <code>@</code> lines, since the files are right there in the folder anyway. What happens?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Nothing; Claude Code finds every .md file on its own.</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The project stops building.</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The assistant starts sessions without the intent, status board or rules in its context.</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="a"
+               data-explanation-right="Correct. Rule 4 bans credentials from prompts, documents and the repo. Tokens belong in .env, which .gitignore keeps out of Git."
+               data-explanation-wrong="AGENTS.md rule 4 is blunt: never put a token in a prompt or a document. The lab's answer is the .env file, which Git is told to ignore.">
+            <h3 class="quiz-question">You want the assistant to test the Linear connection. What is the right way to give it your Linear API key?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Put it in your local <code>.env</code> file and let the program read it from there.</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Paste it into the chat so the assistant can use it.</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Save it in <code>docs/evidence.md</code> so the reviewer can rerun the check.</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module4')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module4')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-5" style="background: var(--color-bg)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">05</span>
+      <h1 class="module-title">Evidence and the gate</h1>
+      <p class="module-subtitle">How the lab turns "it works" into a claim someone else can check, and who gets to say yes.</p>
+    </header>
+
+    <div class="module-body">
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Inside the courtroom</h2>
+        <p>A court does not accept "trust me." It wants exhibits, a witness who can be cross-examined, and a judge who reads them and rules. When the evidence is not in yet, the case is adjourned, which is not the same as losing.</p>
+        <p>Steps 6 and 7 run the same way. <code>docs/evidence.md</code> holds the exhibits. <code>docs/gate.md</code> records the ruling.</p>
+
+        <div class="pattern-cards stagger-children">
+          <div class="pattern-card animate-in" style="border-top: 3px solid var(--color-success)">
+            <div class="pattern-icon" style="background: var(--color-success)">✅</div>
+            <h4 class="pattern-title">PASS</h4>
+            <p class="pattern-desc">Proven. A command ran, the output is quoted, and a second person reran it.</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top: 3px solid var(--color-error)">
+            <div class="pattern-icon" style="background: var(--color-error)">❌</div>
+            <h4 class="pattern-title">FAIL</h4>
+            <p class="pattern-desc">It ran and the result contradicts the claim.</p>
+          </div>
+          <div class="pattern-card animate-in" style="border-top: 3px solid var(--color-actor-4)">
+            <div class="pattern-icon" style="background: var(--color-actor-4)">⏸️</div>
+            <h4 class="pattern-title">OPEN</h4>
+            <p class="pattern-desc">Not yet known. Unrun, or blocked by access. "A blocked credential is an access result, not a failure."</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The evidence table</h2>
+        <p>Look at how much the template demands per row. Each column closes a gap an overconfident author (human or AI) could slip through.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">docs/evidence.md</span>
+            <pre><code><span class="code-line">Every row is a claim with the command that proves it, the exit code you saw and</span>
+<span class="code-line">the person who reran it. A row without a reviewer is a hypothesis. A command</span>
+<span class="code-line">nobody ran is <span class="code-string">`OPEN`</span>, never a failure and never a pass.</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">| Claim | Command | Exit code | Output line quoted | Reviewer | Status |</span></span>
+<span class="code-line"><span class="code-comment">| --- | --- | --- | --- | --- | --- |</span></span>
+<span class="code-line">| <span class="code-string">`TEMPLATE — the types hold`</span> | <span class="code-function">`npm run typecheck`</span> | <span class="code-number">`OPEN`</span> | <span class="code-number">`OPEN`</span> | <span class="code-string">`TEMPLATE`</span> | <span class="code-number">`OPEN`</span> |</span>
+<span class="code-line">| <span class="code-string">`TEMPLATE — the contract holds`</span> | <span class="code-function">`npm test`</span> | <span class="code-number">`OPEN`</span> | <span class="code-number">`OPEN`</span> | <span class="code-string">`TEMPLATE`</span> | <span class="code-number">`OPEN`</span> |</span>
+<span class="code-line">| <span class="code-string">`TEMPLATE — the page renders`</span> | <span class="code-function">`npm run brief:sample`</span> | <span class="code-number">`OPEN`</span> | <span class="code-number">`OPEN`</span> | <span class="code-string">`TEMPLATE`</span> | <span class="code-number">`OPEN`</span> |</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Each row pairs a claim with the command that proves it...</p>
+              <p class="tl">...and a second person. Without that second person it is only a <span class="term" data-definition="A hypothesis is a claim that has not been independently tested yet. It might be true; nobody has confirmed it.">hypothesis</span>.</p>
+              <p class="tl">Not run = OPEN. Never quietly counted as a pass, never unfairly counted as a fail.</p>
+              <p class="tl">&nbsp;</p>
+              <p class="tl">Six columns: what you claim, how to check it, the <span class="term" data-definition="An exit code is the number a command returns when it ends. 0 means success; any other number means an error. It is harder to misread than a wall of output text.">exit code</span>, a copied line of real output, who reran it, and the verdict.</p>
+              <p class="tl">(Table divider.)</p>
+              <p class="tl">Claim 1: all data shapes line up. Proof: the <span class="term" data-definition="A typecheck asks the TypeScript compiler to verify every value is used the way its declared type allows. It finds whole classes of bugs without running the program.">typecheck</span>.</p>
+              <p class="tl">Claim 2: the brief's contract from the spec holds. Proof: the test suite.</p>
+              <p class="tl">Claim 3: the sample brief turns into a page. Proof: the sample run. All three start OPEN.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Follow one claim to a verdict</h2>
+        <p>Step through how "the contract holds" earns its place in the table.</p>
+
+        <div class="flow-animation" data-steps='[
+          {"highlight":"flow-ev-1","label":"Claim: the contract holds. Status starts at OPEN."},
+          {"highlight":"flow-ev-2","label":"You run npm test and see it finish.","packet":true,"from":"ev-1","to":"ev-2"},
+          {"highlight":"flow-ev-3","label":"You record the exit code (0) and copy one real output line.","packet":true,"from":"ev-2","to":"ev-3"},
+          {"highlight":"flow-ev-4","label":"A reviewer reruns the same command on their own machine, or you rerun it the next day and say so.","packet":true,"from":"ev-3","to":"ev-4"},
+          {"highlight":"flow-ev-5","label":"Only now does the row flip from OPEN, and progress.md can say VERIFIED.","packet":true,"from":"ev-4","to":"ev-5"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-ev-1"><div class="flow-actor-icon">💬</div><span>Claim</span></div>
+            <div class="flow-actor" id="flow-ev-2"><div class="flow-actor-icon">⌨️</div><span>Command</span></div>
+            <div class="flow-actor" id="flow-ev-3"><div class="flow-actor-icon">🔢</div><span>Exit code + quote</span></div>
+            <div class="flow-actor" id="flow-ev-4"><div class="flow-actor-icon">👀</div><span>Reviewer</span></div>
+            <div class="flow-actor" id="flow-ev-5"><div class="flow-actor-icon">🏷️</div><span>Status</span></div>
+          </div>
+          <div class="flow-packet"></div>
+          <div class="flow-step-label">Click "Next Step" to begin</div>
+          <div class="flow-controls">
+            <button class="btn flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The gate: robots observe, humans decide</h2>
+        <p>Step 7 opens a <span class="term" data-definition="A pull request (PR, or 'merge request' on GitLab) is a proposal to merge your branch into main. Others can read the changes, comment and approve before it goes in.">pull request</span> and fills <code>docs/gate.md</code>. The template draws a hard line between automated checks and approval.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">docs/gate.md</span>
+            <pre><code><span class="code-line"><span class="code-keyword">## What the automated checks observed</span></span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment">| Check | Observed | Is it an approval? |</span></span>
+<span class="code-line"><span class="code-comment">| --- | --- | --- |</span></span>
+<span class="code-line">| <span class="code-string">`TEMPLATE — CI job`</span> | <span class="code-string">`TEMPLATE — what it actually ran`</span> | <span class="code-keyword">No</span> |</span>
+<span class="code-line">| <span class="code-string">`TEMPLATE — review bot`</span> | <span class="code-string">`TEMPLATE`</span> | <span class="code-keyword">No</span> |</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">## What the human read</span></span>
+<span class="code-line"></span>
+<span class="code-line">- <span class="code-property">Success check proven by this diff:</span> <span class="code-string">`TEMPLATE — quote the line from intent.md`</span></span>
+<span class="code-line">- <span class="code-property">Boundary touched by this diff:</span> <span class="code-string">`TEMPLATE — quote the line, or NONE`</span></span>
+<span class="code-line">- <span class="code-property">Line from the diff that decided it:</span> <span class="code-string">`TEMPLATE — quoted`</span></span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">First, list what the machines did.</p>
+              <p class="tl">&nbsp;</p>
+              <p class="tl">For each automated check: what it is, what it actually ran, and whether that counts as approval.</p>
+              <p class="tl">(Table divider.)</p>
+              <p class="tl">The <span class="term" data-definition="CI (Continuous Integration) is a server that automatically runs tests and checks every time code is pushed. It reports; it does not judge whether the change is a good idea.">CI</span> job: pre-filled answer, <strong>No</strong>. Green CI is an observation.</p>
+              <p class="tl">An AI review bot: also <strong>No</strong>. It is printed in the template so nobody can forget.</p>
+              <p class="tl">&nbsp;</p>
+              <p class="tl">Then, what a person actually read.</p>
+              <p class="tl">&nbsp;</p>
+              <p class="tl">Which success check from intent.md this change proves, quoted word for word.</p>
+              <p class="tl">Whether it touches the fence. If not, write NONE explicitly.</p>
+              <p class="tl">The exact line of the <span class="term" data-definition="A diff is the list of lines added and removed between two versions of the code. Reviewing a PR means reading its diff.">diff</span> that made up the reviewer's mind.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-icon">⚠️</div>
+          <div class="callout-content">
+            <strong class="callout-title">Old output is not fresh evidence</strong>
+            <p>The gate template ends with: "Do not treat this record, an agent claim or historical output as fresh evidence." Yesterday's green test run says nothing about today's code. Rerun it.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your understanding</h2>
+        <div class="quiz-container" id="quiz-module5">
+          <div class="quiz-question-block"
+               data-correct="c"
+               data-explanation-right="Right. Your Notion token was blocked, so the check could not run. That is an access result, recorded as OPEN, with the reason. It is neither a failure of the code nor a pass."
+               data-explanation-wrong="The lab is explicit: 'A blocked credential is an access result, not a failure.' And an unrun check can never be a PASS. That leaves OPEN, with the reason written down.">
+            <h3 class="quiz-question">Your company's IT team has not approved a Notion token yet, so the live Notion check could not run. How do you record it?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>FAIL, because the check did not succeed.</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>PASS, because the sample data version works.</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>OPEN, noting the token is blocked.</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="a"
+               data-explanation-right="Exactly. gate.md pre-fills 'Is it an approval?' with No for CI and review bots. They observe; the human reads the diff against intent.md and decides."
+               data-explanation-wrong="Look at the gate template: CI and review bots are listed with 'Is it an approval? No'. Green checks are inputs to the human decision, not a replacement for it.">
+            <h3 class="quiz-question">CI is green and an AI review bot left "LGTM 👍" on your pull request. Can you mark the gate PASS?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Not yet. A human still has to read the diff against intent.md and quote the deciding line.</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Yes. Two independent checks agreed.</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Yes, if the bot's comment is copied into gate.md.</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="b"
+               data-explanation-right="Yes. Without a reviewer, the row is by definition 'a hypothesis'. The fix is cheap: have someone rerun one command, or rerun it yourself the next day and say so, as SOLO.md allows."
+               data-explanation-wrong="evidence.md says 'A row without a reviewer is a hypothesis.' The command and exit code are there, but nobody independent has confirmed them yet.">
+            <h3 class="quiz-question">An evidence row has a command, exit code 0 and a quoted line, but the Reviewer column is empty. What is it?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>A PASS; the exit code says so.</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>A hypothesis until someone reruns it.</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>A FAIL, because the table is incomplete.</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module5')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module5')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-6" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">06</span>
+      <h1 class="module-title">The SOLO loop</h1>
+      <p class="module-subtitle">Walking all seven steps on your own, catching up when stuck, and why the route ends where it began.</p>
+    </header>
+
+    <div class="module-body">
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">A trail with numbered markers</h2>
+        <p>A good hiking trail has numbered markers, and at each one a map showing exactly where you should be. Lost? Walk to the next marker and carry on from there.</p>
+        <p><code>SOLO.md</code> is that trail for one person with their own GitHub, Linear and Notion. The markers are Git <span class="term" data-definition="A Git tag is a permanent name stuck on one specific commit, like a bookmark. 'step-2-spec' always points at the exact state of the reference solution after step 2.">tags</span>: <code>step-1-intent</code> through <code>step-7-gate-deploy</code>, each pointing at the reference solution after that step.</p>
+
+        <div class="step-cards">
+          <div class="step-card"><div class="step-num">1</div><div class="step-body"><strong>Plan: intent (15 min)</strong><p>Claude Code interviews you one question at a time. You cut.</p></div></div>
+          <div class="step-card"><div class="step-num">2</div><div class="step-body"><strong>Plan: spec and contract, test first (25 min)</strong><p>Quote the PDFs, write the failing test, then the code.</p></div></div>
+          <div class="step-card"><div class="step-num">3</div><div class="step-body"><strong>Design: one decision, a plan with proof (15 min)</strong><p>Claude Code in <span class="term" data-definition="Plan mode is a Claude Code setting where the assistant can read files and propose a plan but cannot edit anything until you accept it.">plan mode</span>: read-only until you accept.</p></div></div>
+          <div class="step-card"><div class="step-num">4</div><div class="step-body"><strong>Build: render the sample (25 min)</strong><p>The first artifact: <code>out/latest.html</code>, no API key needed.</p></div></div>
+          <div class="step-card"><div class="step-num">5</div><div class="step-body"><strong>Build: the loop and one read-only tool (20 min + live run)</strong><p>Take the reference files on purpose, then add one tool yourself.</p></div></div>
+          <div class="step-card"><div class="step-num">6</div><div class="step-body"><strong>Test: record the evidence (15 min)</strong><p>Three commands, exit codes, one screenshot, one reviewer.</p></div></div>
+          <div class="step-card"><div class="step-num">7</div><div class="step-body"><strong>Deploy: the gate and the schedule (15 min)</strong><p>Decide the gate, then run the brief every weekday morning.</p></div></div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The three commands you will use all day</h2>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">SOLO.md</span>
+            <pre><code><span class="code-line"><span class="code-function">git</span> diff main step-2-spec --stat              <span class="code-comment"># what a step adds</span></span>
+<span class="code-line"><span class="code-function">git</span> diff step-2-spec -- docs/spec.md          <span class="code-comment"># your file against the reference</span></span>
+<span class="code-line"><span class="code-function">git</span> checkout step-5-build-agent -- src/sources.ts   <span class="code-comment"># take one reference file</span></span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl"><strong>Peek at the map.</strong> List which files the reference solution changed between empty <code>main</code> and the end of step 2, with a count of lines per file. (<span class="term" data-definition="git diff shows the differences between two versions. --stat shrinks that to a summary: which files changed and by how many lines.">git diff</span>.)</p>
+              <p class="tl"><strong>Compare your work.</strong> Show, line by line, how <em>your</em> spec differs from the reference spec.</p>
+              <p class="tl"><strong>Catch up.</strong> Copy just one file from the step 5 reference into your branch, leaving everything else as you wrote it. (<span class="term" data-definition="git checkout <tag> -- <file> replaces one file in your working folder with that file's version at the given tag. Nothing else changes.">git checkout</span>.)</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-icon">🧭</div>
+          <div class="callout-content">
+            <strong class="callout-title">Catching up is part of the design</strong>
+            <p>Step 5 opens with "this is the deliberate catch-up": you are told to take the reference <code>sources.ts</code> and <code>agent.ts</code>, then read them. Reading good code and adding one piece yourself teaches more than fighting an SDK for two hours.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The live run: read the log, not just the page</h2>
+        <p>Step 5 ends with the first real run, using your read-only tokens from <code>.env</code>.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">SOLO.md</span>
+            <pre><code><span class="code-line"><span class="code-function">set</span> -a &amp;&amp; . ./.env &amp;&amp; <span class="code-function">set</span> +a</span>
+<span class="code-line"><span class="code-function">npm</span> run brief 2&gt; run.log</span>
+<span class="code-line"></span>
+<span class="code-line">Read <span class="code-string">`run.log`</span>: the <span class="code-string">`mcp=[…]`</span> line names the connected sources, every <span class="code-string">`→`</span></span>
+<span class="code-line">line is a tool call. Then read <span class="code-string">`out/latest.html`</span>.</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Load every setting in <code>.env</code> (your tokens) as <span class="term" data-definition="Environment variables are named settings the operating system hands to a program when it starts, like GITHUB_TOKEN. They keep secrets out of the code itself.">environment variables</span> for this terminal session.</p>
+              <p class="tl">Run the real brief, and send its diagnostic output (<code>2&gt;</code>, the error stream) into a file called <code>run.log</code>.</p>
+              <p class="tl">&nbsp;</p>
+              <p class="tl">In the log, one line lists which sources connected over <span class="term" data-definition="MCP (Model Context Protocol) is a standard way to plug tools and data sources into an AI model, so the model can call 'read Linear issues' like a function.">MCP</span>, and each arrow line is one <span class="term" data-definition="A tool call is the moment the AI model asks the program to run one of its tools, for example 'list my open pull requests', and receives the result back.">tool call</span>.</p>
+              <p class="tl">Only after reading the log, read the brief itself.</p>
+            </div>
+          </div>
+        </div>
+
+        <p>The check that follows is the sharpest in the lab: "is every sentence in the brief traceable to a tool call in <code>run.log</code>?" A sentence with no matching tool call came from nowhere.</p>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Where the trail ends: back at the start</h2>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">SOLO.md</span>
+            <pre><code><span class="code-line"><span class="code-keyword">## When you are done</span></span>
+<span class="code-line"></span>
+<span class="code-line">Seven files a stranger can point at, one brief you did not write, and a gate</span>
+<span class="code-line">you decided. Tomorrow's run reads what you merged today; when a footnote in</span>
+<span class="code-line">the brief changes <span class="code-string">`intent.md`</span>, the loop has closed.</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">What "finished" looks like.</p>
+              <p class="tl">&nbsp;</p>
+              <p class="tl">Artifacts anyone can inspect, a brief written by the agent, and a human decision on record.</p>
+              <p class="tl">Tomorrow the scheduled run uses what you <span class="term" data-definition="To merge is to fold the changes from your branch into main, so they become part of the shared, official version.">merged</span> today. And when something the brief reports teaches you that your intent was wrong...</p>
+              <p class="tl">...you go back and change <code>intent.md</code>. The route is a circle, not a line.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">Documents are living, not paperwork</strong>
+            <p>AGENTS.md rule 6: "when evidence changes the intent, the spec or the plan, go back and change that document before continuing." If your AI assistant patches code to match a surprise without updating the document above it, the documents stop being true, and the next session reads a lie.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your understanding</h2>
+        <div class="quiz-container" id="quiz-module6">
+          <div class="quiz-question-block"
+               data-correct="b"
+               data-explanation-right="Right. The tags exist for exactly this. Copy the one file you are stuck on from the reference, then read the diff to understand it, as step 4's hint suggests."
+               data-explanation-wrong="SOLO.md builds catching up into the route. 'git checkout step-4-build-render -- src/render.ts' takes one reference file without throwing away the rest of your work.">
+            <h3 class="quiz-question">It is 45 minutes into step 4 and your renderer still will not produce a page. You have a workshop to finish. What does SOLO.md suggest?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Delete your branch and start the lab again from main.</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Take the reference <code>src/render.ts</code> from the <code>step-4-build-render</code> tag, then read the diff.</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Skip to step 5; rendering can be fixed later.</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="c"
+               data-explanation-right="Exactly. Every sentence must trace to a tool call in run.log. A claim about a calendar with no calendar tool call was invented, which breaks the intent's 'never invents a fact' rule."
+               data-explanation-wrong="Check the log. If run.log has no Outlook tool call, the agent could not have known about that meeting. It is an invented fact, which the boundary forbids.">
+            <h3 class="quiz-question">Your first live brief mentions "your 10:00 design review," but <code>run.log</code> shows no calendar tool call at all. What does that tell you?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The log is incomplete; trust the brief.</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Nothing. The meeting might be real.</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The model invented it. That sentence fails the traceability check.</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="a"
+               data-explanation-right="Yes. AGENTS.md rule 6: evidence changed the intent, so update intent.md (and the spec) first, then the code. Otherwise tomorrow's session loads an intent that no longer matches reality."
+               data-explanation-wrong="The lab treats the phases as a loop. When evidence shows the intent was wrong, the document gets changed first, so every later session and reviewer reads the truth.">
+            <h3 class="quiz-question">After a week of briefs you realise nobody reads the Confluence section. You want to drop it. Where do you start?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Update <code>intent.md</code> and the spec first, then change the code.</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Ask the AI to delete the Confluence code; the docs can catch up.</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Leave everything and tell the reader to skip that section.</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module6')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module6')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+  </main>
+
+</body>
+</html>

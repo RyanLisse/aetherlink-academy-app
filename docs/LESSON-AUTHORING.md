@@ -54,3 +54,6 @@ P0 Workshop 5 (AET-77) → P1 Workshop 4 (AET-80) → P2 Workshop 3 (AET-79). W6
 
 ## AET-130 W4 HTML Solos
 Workshop 4 cites `/courses/{weather-agent-sdk,aetherlink-day5-n8n-to-agent,council-agent-sdk}/` HTML companions; `/start-solo` is not required for Done.
+
+## AET-131 W5 daily-brief Assignments + SOLO
+Workshop 5 cites `/courses/aetherlink-daily-brief-lab-s1/index.html` (modules 01–06), Assignments (`intent.md` · `docs/spec.md` · `docs/gate.md`), `SOLO.md`, and rulebook companions; `/start-solo` is not required for Done.

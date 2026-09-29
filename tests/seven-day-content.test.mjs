@@ -165,3 +165,39 @@ test('Workshop 4 cites HTML Solo packs weather + day5 + council (AET-130)',()=>{
  }
  assert.equal(d4.materials.some(m=>/start-solo/i.test(m.href||'')||/start-solo/i.test(m.label||'')),false);
 });
+
+test('Workshop 5 cites daily-brief HTML course + Assignments + SOLO (AET-131)',()=>{
+ const d5=getDayPack(5);
+ const solos=d5.materials.filter(m=>m.kind==='solo');
+ assert.deepEqual(solos.map(m=>m.href),[
+  '/courses/aetherlink-daily-brief-lab-s1/index.html',
+  '/courses/aetherlink-daily-brief-lab-s1/SOLO.md'
+ ]);
+ const assignments=d5.materials.filter(m=>m.kind==='assignment');
+ assert.deepEqual(assignments.map(m=>m.href),[
+  '/courses/aetherlink-daily-brief-lab-s1/intent.md',
+  '/courses/aetherlink-daily-brief-lab-s1/docs/spec.md',
+  '/courses/aetherlink-daily-brief-lab-s1/docs/gate.md'
+ ]);
+ for(const lang of ['en','nl']){
+  const mats=d5.copy[lang].materials;
+  assert.deepEqual(mats.filter(m=>m.kind==='solo').map(m=>m.href),[
+   '/courses/aetherlink-daily-brief-lab-s1/index.html',
+   '/courses/aetherlink-daily-brief-lab-s1/SOLO.md'
+  ],lang);
+  assert.deepEqual(mats.filter(m=>m.kind==='assignment').map(m=>m.href),[
+   '/courses/aetherlink-daily-brief-lab-s1/intent.md',
+   '/courses/aetherlink-daily-brief-lab-s1/docs/spec.md',
+   '/courses/aetherlink-daily-brief-lab-s1/docs/gate.md'
+  ],lang);
+  // no EN leak under nl labels for new cites
+  if(lang==='nl'){
+   for(const m of mats.filter(m=>m.kind==='solo'||m.kind==='assignment')){
+    assert.equal(/HTML course ·|Assignment ·/.test(m.label),false,`EN leak in nl label: ${m.label}`);
+   }
+  }
+ }
+ assert.equal(d5.materials.some(m=>/start-solo/i.test(m.href||'')||/start-solo/i.test(m.label||'')),false);
+});
+
+
