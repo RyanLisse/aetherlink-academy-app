@@ -185,7 +185,7 @@ test('day packs content file untouched by arcade ids', () => {
 test('sdk-bridge starters expose HTML Solo paths (AET-130)', () => {
   const sdkLesson = manifest.lessons.find((l) => l.id === 'sdk-bridge');
   const byId = Object.fromEntries((sdkLesson.starters || []).map((s) => [s.id, s]));
-  assert.equal(byId['weather-agent-sdk'].htmlCourse, '/courses/weather-agent-sdk/');
-  assert.equal(byId['council-agent-sdk'].htmlCourse, '/courses/council-agent-sdk/');
-  assert.equal(byId['aetherlink-day5-n8n-to-agent'].htmlCourse, '/courses/aetherlink-day5-n8n-to-agent/');
+  assert.equal(byId['weather-agent-sdk'].htmlCourse, '/courses/weather-agent-sdk/index.html');
+  assert.equal(byId['council-agent-sdk'].htmlCourse, '/courses/council-agent-sdk/index.html');
+  assert.equal(byId['aetherlink-day5-n8n-to-agent'].htmlCourse, '/courses/aetherlink-day5-n8n-to-agent/index.html');
 });

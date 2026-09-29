@@ -149,16 +149,16 @@ test('Workshop 4 cites HTML Solo packs weather + day5 + council (AET-130)',()=>{
  const d4=getDayPack(4);
  const solos=d4.materials.filter(m=>m.kind==='solo');
  assert.deepEqual(solos.map(m=>m.href),[
-  '/courses/weather-agent-sdk/',
-  '/courses/aetherlink-day5-n8n-to-agent/',
-  '/courses/council-agent-sdk/'
+  '/courses/weather-agent-sdk/index.html',
+  '/courses/aetherlink-day5-n8n-to-agent/index.html',
+  '/courses/council-agent-sdk/index.html'
  ]);
  for(const lang of ['en','nl']){
   const mats=d4.copy[lang].materials.filter(m=>m.kind==='solo');
   assert.deepEqual(mats.map(m=>m.href),[
-   '/courses/weather-agent-sdk/',
-   '/courses/aetherlink-day5-n8n-to-agent/',
-   '/courses/council-agent-sdk/'
+   '/courses/weather-agent-sdk/index.html',
+   '/courses/aetherlink-day5-n8n-to-agent/index.html',
+   '/courses/council-agent-sdk/index.html'
   ],lang);
   // no EN leak under nl labels for the three solos — labels stay product ids + short NL notes
   assert.equal(mats.every(m=>typeof m.label==='string'&&m.label.length>0),true,lang);

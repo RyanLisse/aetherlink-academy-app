@@ -61,9 +61,9 @@ const en = {
   {id:'w4-solo4',autograde:'triage',badge:'S4',level:'required',timerMinutes:15,title:'SOLO 4 · Acceptance table and Proof',goal:'Fill the table ticket → expected n8n label → actual Claude label. Resolve a mismatch in prompt or tools, not with new labels.',doneWhen:'Acceptance table, dry-run or trace, human gate, and achieved level (2, 3, or 4).',slide:slide(d,15,'Fill the acceptance table. Ship Proof.')}
  ],
  materials:[
-  link('solo','HTML Solo · weather-agent-sdk (L1)','/courses/weather-agent-sdk/','AET-130 · instruction-quest in instructions.md · Arcade companion'),
-  link('solo','HTML Solo · day5 n8n→agent (core W3→W4)','/courses/aetherlink-day5-n8n-to-agent/','AET-130 · SOLO.md + fixtures offline lane'),
-  link('solo','HTML Solo · council-agent-sdk (L2 stretch)','/courses/council-agent-sdk/','AET-130 · judge rule in instructions.md'),
+  link('solo','HTML Solo · weather-agent-sdk (L1)','/courses/weather-agent-sdk/index.html','AET-130 · instruction-quest in instructions.md · Arcade companion'),
+  link('solo','HTML Solo · day5 n8n→agent (core W3→W4)','/courses/aetherlink-day5-n8n-to-agent/index.html','AET-130 · SOLO.md + fixtures offline lane'),
+  link('solo','HTML Solo · council-agent-sdk (L2 stretch)','/courses/council-agent-sdk/index.html','AET-130 · judge rule in instructions.md'),
   link('vehicle','Rebuild repo aetherlink-day5-n8n-to-agent','https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent','Slide 2; SOLO.md in the repo'),
   starter('triage-fixtures.json','Shared fixture tickets (the server checks your labels)'),
   link('naslag','Agent SDK overview','https://code.claude.com/docs/en/agent-sdk/overview','NASLAG.md Support Day 4 · code.claude.com'),
@@ -141,9 +141,9 @@ const nl = {
   {id:'w4-solo4',autograde:'triage',badge:'S4',level:'required',timerMinutes:15,title:'SOLO 4 · Acceptatietabel en Proof',goal:'Vul de tabel ticket → verwacht n8n-label → werkelijk Claude-label. Een verschil los je op in prompt of tools, niet met nieuwe labels.',doneWhen:'Acceptatietabel, dry-run of trace, menselijke gate en behaald niveau (2, 3 of 4).',slide:slide(d,15,'Fill the acceptance table. Ship Proof.')}
  ],
  materials:[
-  link('solo','HTML-solo · weather-agent-sdk (L1)','/courses/weather-agent-sdk/','AET-130 · instructie-opdracht in instructions.md · Arcade-companion'),
-  link('solo','HTML-solo · day5 n8n→agent (kern · W3→W4)','/courses/aetherlink-day5-n8n-to-agent/','AET-130 · SOLO.md + fixtures · offline-pad'),
-  link('solo','HTML-solo · council-agent-sdk (L2 verdieping)','/courses/council-agent-sdk/','AET-130 · juryregel in instructions.md'),
+  link('solo','HTML-solo · weather-agent-sdk (L1)','/courses/weather-agent-sdk/index.html','AET-130 · instructie-opdracht in instructions.md · Arcade-companion'),
+  link('solo','HTML-solo · day5 n8n→agent (kern · W3→W4)','/courses/aetherlink-day5-n8n-to-agent/index.html','AET-130 · SOLO.md + fixtures · offline-pad'),
+  link('solo','HTML-solo · council-agent-sdk (L2 verdieping)','/courses/council-agent-sdk/index.html','AET-130 · juryregel in instructions.md'),
   link('vehicle','Rebuild-repository aetherlink-day5-n8n-to-agent','https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent','Dia 2; SOLO.md in de repo'),
   starter('triage-fixtures.json','Gedeelde fixture-tickets (de server controleert je labels)'),
   link('naslag','Agent SDK overview','https://code.claude.com/docs/en/agent-sdk/overview','NASLAG.md Support Day 4 · code.claude.com'),
