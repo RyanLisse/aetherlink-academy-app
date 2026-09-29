@@ -48,9 +48,8 @@ const en = {
  loop:[
   {label:'CLAUDE.md',prompt:'Which agreements must every new session know without briefing?'},
   {label:'Skill',prompt:'Which method do you repeat and how do you make it reusable?'},
-  {label:'Subagent',prompt:'Which role should stay bounded, and what brief does it get?'},
-  {label:'MCP',prompt:'Which information do you read read-only, and which actions do you not approve?'},
-  {label:'Hooks',prompt:'Which stop/allow gates keep the agent inside the bounds?'},
+  {label:'Bounded run',prompt:'Which sequence of work may Claude do, and where does it stop for approval? (subagents keep roles bounded)'},
+  {label:'MCP',prompt:'Which information do you read read-only, and which actions do you not approve? (hooks gate the rest)'},
   {label:'Workflow',prompt:'What is the smallest useful team workflow with a human checkpoint?'},
   {label:'Handoff',prompt:'Which use-case do you take to Workshop 6?'}
  ],
@@ -121,9 +120,8 @@ const nl = {
  loop:[
   {label:'CLAUDE.md',prompt:'Welke afspraken moet elke nieuwe sessie kennen zonder uitleg?'},
   {label:'Skill',prompt:'Welke werkwijze herhaal je en hoe maak je die herbruikbaar?'},
-  {label:'Subagent',prompt:'Welke rol moet begrensd blijven, en welke brief krijgt die?'},
-  {label:'MCP',prompt:'Welke informatie lees je read-only en welke acties keur je niet goed?'},
-  {label:'Hooks',prompt:'Welke stop/allow-gates houden de agent binnen de grenzen?'},
+  {label:'Bounded run',prompt:'Welke reeks werk mag Claude doen en waar stopt het voor akkoord? (subagents houden rollen begrensd)'},
+  {label:'MCP',prompt:'Welke informatie lees je read-only en welke acties keur je niet goed? (hooks bewaken de rest)'},
   {label:'Workflow',prompt:'Wat is de kleinste nuttige teamworkflow met een menselijk checkpoint?'},
   {label:'Handoff',prompt:'Welke use-case neem je mee naar Workshop 6?'}
  ],

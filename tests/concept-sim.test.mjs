@@ -400,10 +400,12 @@ test('AET-129 P3 Classroom 2 retrofit: customize-stack diagram + ConceptSim + lo
   assert.equal(en.mission?.id, 'CLASSROOM-02');
   assert.equal(pack.code, 'classroom-2');
   assert.equal(pack.kind, 'classroom');
-  assert.ok(en.lesson.loop?.some((l) => /subagent/i.test(l.label)));
-  assert.ok(en.lesson.loop?.some((l) => /hooks/i.test(l.label)));
-  assert.ok(nl.lesson.loop?.some((l) => /subagent/i.test(l.label)));
-  assert.ok(nl.lesson.loop?.some((l) => /hooks/i.test(l.label)));
+  // Subagents + hooks taught via narrative/diagram/sim; Apple loop labels keep Bounded run
+  assert.deepEqual(en.lesson.loop?.map((l) => l.label), ['CLAUDE.md','Skill','Bounded run','MCP','Workflow','Handoff']);
+  assert.match(en.lesson.narrative.join(' '), /subagents/i);
+  assert.match(en.lesson.narrative.join(' '), /hooks/i);
+  assert.match(nl.lesson.narrative.join(' '), /subagents/i);
+  assert.match(nl.lesson.narrative.join(' '), /hooks/i);
 
   const raw = JSON.parse(readFileSync(join(root, 'content/sims/c2-customize-stack.json'), 'utf8'));
   const localized = parseLocalizedScenario(raw, 'c2-customize-stack');
