@@ -1,0 +1,162 @@
+{
+  "version": "c1-agent-loop",
+  "attribution": "Academy-authored ConceptSim for Classroom 1 / AET-129 (Claude Code explore→plan→change→verify→commit). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches the product mechanism cue on the Aether Library vehicle. Not a port of an upstream chapter.",
+  "locales": {
+    "en": {
+      "title": "Agent loop · explore → plan → change → verify → commit",
+      "description": "Step a small Aether Library repo task through the Claude Code loop — explore, plan, change, verify, commit — without API keys.",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "In my local Aether Library clone: add one glossary term \"hallucination\" following the existing structure. Do not invent sources. Stop for approval before any file write.",
+          "annotation": "Smallest useful change. Same vehicle as solos A1–A4."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Starting at explore: I will only read. Mapping Profiles, Glossary, Library, and how glossary entries are shaped.",
+          "annotation": "explore — read only. Cite file evidence; mark unknowns OPEN."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "explore_repo",
+          "content": "{\"cwd\":\"aetherlink-classroom-starter\",\"actions\":[\"list glossary/\",\"read one sample entry\",\"find start/validate scripts\"],\"mutate\":false}",
+          "annotation": "explore — map structure without editing."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "explore_repo",
+          "content": "{\"glossary_path\":\"data/glossary/\",\"sample\":\"token.json\",\"fields\":[\"term\",\"definition\",\"sources\"],\"validate\":\"npm test\",\"OPEN\":[\"whether NL labels are required\"]}",
+          "annotation": "Evidence from files. OPEN stays OPEN — do not guess."
+        },
+        {
+          "type": "system_event",
+          "content": "HUMAN GATE · plan — propose the smallest change; wait for approval before Create/change.",
+          "annotation": "plan before change. Classroom pedagogy maps Create→change."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Plan: add data/glossary/hallucination.json with term, short definition, and one open source field left OPEN until a human verifies a URL. No other files. Await approval.",
+          "annotation": "plan — smallest change; scope explicit."
+        },
+        {
+          "type": "user_message",
+          "content": "Approved. Proceed with that one file only.",
+          "annotation": "Human approved the plan — now change."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "apply_change",
+          "content": "{\"file\":\"data/glossary/hallucination.json\",\"op\":\"create\",\"body\":{\"term\":\"hallucination\",\"definition\":\"Model output that sounds plausible but is not grounded in evidence.\",\"sources\":[\"OPEN\"]}}",
+          "annotation": "change (Create) — one edit after plan approval."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "apply_change",
+          "content": "{\"wrote\":\"data/glossary/hallucination.json\",\"diff_lines\":12}",
+          "annotation": "Single file changed. Next: verify with a real command."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "verify_checks",
+          "content": "{\"cmd\":\"npm test\",\"cwd\":\"aetherlink-classroom-starter\"}",
+          "annotation": "verify (Test) — run the real check you will cite."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "verify_checks",
+          "content": "{\"exit\":0,\"summary\":\"glossary schema OK · 1 new entry\"}",
+          "annotation": "Observed outcome. Review PASS/REVISE/OPEN with this evidence."
+        },
+        {
+          "type": "system_event",
+          "content": "HUMAN GATE · review — PASS with note: sources still OPEN until a verified URL is added.",
+          "annotation": "Human review before handoff/commit."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Handoff / commit note: file data/glossary/hallucination.json · cmd npm test → exit 0 · limitation sources=OPEN · next owner: reviewer who can confirm a citation.",
+          "annotation": "commit (Handoff) — file · command · result · limitation · owner."
+        }
+      ],
+      "attribution": "Academy-authored ConceptSim for Classroom 1 / AET-129 (Claude Code explore→plan→change→verify→commit). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches the product mechanism cue on the Aether Library vehicle. Not a port of an upstream chapter."
+    },
+    "nl": {
+      "title": "Agent-loop · explore → plan → change → verify → commit",
+      "description": "Stap een kleine Aether Library-repotaak door de Claude Code-loop — explore, plan, change, verify, commit — zonder API-sleutels.",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "In mijn lokale Aether Library-kloon: voeg één glossary-term \"hallucination\" toe volgens de bestaande structuur. Verzin geen bronnen. Stop voor goedkeuring vóór je een bestand schrijft.",
+          "annotation": "Kleinste nuttige wijziging. Zelfde voertuig als solos A1–A4."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Start bij explore: ik lees alleen. Mapping van Profiles, Glossary, Library en hoe glossary-entries zijn opgebouwd.",
+          "annotation": "explore — alleen lezen. Citeer bestandsbewijs; markeer onbekenden als OPEN."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "explore_repo",
+          "content": "{\"cwd\":\"aetherlink-classroom-starter\",\"actions\":[\"list glossary/\",\"read one sample entry\",\"find start/validate scripts\"],\"mutate\":false}",
+          "annotation": "explore — structuur in kaart brengen zonder te bewerken."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "explore_repo",
+          "content": "{\"glossary_path\":\"data/glossary/\",\"sample\":\"token.json\",\"fields\":[\"term\",\"definition\",\"sources\"],\"validate\":\"npm test\",\"OPEN\":[\"of NL-labels verplicht zijn\"]}",
+          "annotation": "Bewijs uit de bestanden. OPEN blijft OPEN — niet gokken."
+        },
+        {
+          "type": "system_event",
+          "content": "MENSELIJKE GATE · plan — stel de kleinste wijziging voor; wacht op akkoord vóór Create/change.",
+          "annotation": "plan vóór change. Classroom-pedagogie mapt Create→change."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Plan: voeg data/glossary/hallucination.json toe met term, korte definitie en één bronveld OPEN tot een mens een URL verifieert. Geen andere bestanden. Wacht op akkoord.",
+          "annotation": "plan — kleinste wijziging; scope expliciet."
+        },
+        {
+          "type": "user_message",
+          "content": "Akkoord. Ga door met alleen dat ene bestand.",
+          "annotation": "Mens heeft het plan goedgekeurd — nu change."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "apply_change",
+          "content": "{\"file\":\"data/glossary/hallucination.json\",\"op\":\"create\",\"body\":{\"term\":\"hallucination\",\"definition\":\"Modeluitvoer die aannemelijk klinkt maar niet op bewijs steunt.\",\"sources\":[\"OPEN\"]}}",
+          "annotation": "change (Create) — één wijziging na planakkoord."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "apply_change",
+          "content": "{\"wrote\":\"data/glossary/hallucination.json\",\"diff_lines\":12}",
+          "annotation": "Eén bestand gewijzigd. Volgende: verify met een echt commando."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "verify_checks",
+          "content": "{\"cmd\":\"npm test\",\"cwd\":\"aetherlink-classroom-starter\"}",
+          "annotation": "verify (Test) — draai de echte controle die je citeert."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "verify_checks",
+          "content": "{\"exit\":0,\"summary\":\"glossary schema OK · 1 nieuwe entry\"}",
+          "annotation": "Waargenomen uitkomst. Review PASS/REVISE/OPEN met dit bewijs."
+        },
+        {
+          "type": "system_event",
+          "content": "MENSELIJKE GATE · review — PASS met notitie: sources blijven OPEN tot er een geverifieerde URL bij komt.",
+          "annotation": "Menselijke review vóór handoff/commit."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Handoff / commit-notitie: bestand data/glossary/hallucination.json · cmd npm test → exit 0 · beperking sources=OPEN · volgende eigenaar: reviewer die een bron kan bevestigen.",
+          "annotation": "commit (Handoff) — bestand · commando · uitkomst · beperking · eigenaar."
+        }
+      ],
+      "attribution": "Door Academy geschreven ConceptSim voor Classroom 1 / AET-129 (Claude Code explore→plan→change→verify→commit). Scenariovorm compatibel met shareAI-lab/learn-claude-code (MIT). Leert de product-mechanisme-cue op het Aether Library-voertuig. Geen port van een upstream-hoofdstuk."
+    }
+  }
+}

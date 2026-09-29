@@ -1,0 +1,200 @@
+{
+  "version": "c2-customize-stack",
+  "attribution": "Academy-authored ConceptSim for Classroom 2 / AET-129 (CLAUDE.md → skills → subagents → MCP/hooks). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches the customize stack / Agent Capability Map on the Aether Library vehicle. Not a port of an upstream chapter.",
+  "locales": {
+    "en": {
+      "title": "Customize stack · CLAUDE.md → skills → subagents → MCP/hooks",
+      "description": "Step the Agent Capability Map: standing rules, a reusable skill, a bounded subagent, then MCP read-only context with hooks — without API keys.",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Turn my AetherBOT habits into the smallest useful workflow: CLAUDE.md rules, a create-concept-card skill, a research subagent, and read-only MCP — with a human gate before any write.",
+          "annotation": "Same vehicle as solos A6–A13. Stack is additive."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Layer 1 — CLAUDE.md: standing rules every fresh session must know without an oral re-brief.",
+          "annotation": "CLAUDE.md — always-on project instructions."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "write_claude_md",
+          "content": "{\"file\":\"CLAUDE.md\",\"rules\":[\"Never invent glossary sources\",\"Stop for human approval before writing files\",\"Say OPEN instead of guessing\"]}",
+          "annotation": "≥3 own rules. Permissions are separate from CLAUDE.md."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "write_claude_md",
+          "content": "{\"wrote\":\"CLAUDE.md\",\"rules\":3,\"fresh_session_ready\":true}",
+          "annotation": "A new session should follow these without you retyping them."
+        },
+        {
+          "type": "system_event",
+          "content": "STACK UP · CLAUDE.md → skill — promote the method you keep re-explaining into .claude/skills/…",
+          "annotation": "skills — reusable method, not a daemon."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "author_skill",
+          "content": "{\"path\":\".claude/skills/create-concept-card/SKILL.md\",\"requires\":[\"approved sources\",\"OPEN on uncertainty\",\"human OK before write\"]}",
+          "annotation": "Skill encodes the create-concept-card method (Assignment 9)."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "author_skill",
+          "content": "{\"skill\":\"create-concept-card\",\"tested_against\":\"approved cards\",\"status\":\"ready\"}",
+          "annotation": "Skill describes the method; it does not start Claude by itself."
+        },
+        {
+          "type": "system_event",
+          "content": "STACK UP · skill → subagent — when a role should stay bounded (e.g. research-only), give it a subagent with a tight brief.",
+          "annotation": "subagents — even if the deck lacks a slide, the stack still teaches them."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "spawn_subagent",
+          "content": "{\"role\":\"research\",\"brief\":\"Find candidate sources for one term; do not write files; return OPEN gaps\",\"bound\":\"read_only\"}",
+          "annotation": "Subagent = scoped specialist run, not a second unrestricted Claude."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "spawn_subagent",
+          "content": "{\"role\":\"research\",\"candidates\":2,\"OPEN\":[\"paywalled PDF\"],\"wrote_files\":false}",
+          "annotation": "Bounded output. Parent agent + human still own the write gate."
+        },
+        {
+          "type": "system_event",
+          "content": "STACK UP · subagent → MCP/hooks — pull authorized read-only context; hooks stop disallowed actions.",
+          "annotation": "MCP = connected context. Hooks = stop/allow gates."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "mcp_readonly_fetch",
+          "content": "{\"connection\":\"approved_jira\",\"op\":\"get_issue\",\"id\":\"WL-DAYSTART\",\"mutate\":false}",
+          "annotation": "Assignment 12 pattern — one authorized item, read-only."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "mcp_readonly_fetch",
+          "content": "{\"id\":\"WL-DAYSTART\",\"summary\":\"Triage morning queue\",\"actions_available_not_approved\":[\"transition\",\"comment\"],\"fetched\":\"read_only\"}",
+          "annotation": "Name what the connection could do that you did not approve."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "hooks_gate",
+          "content": "{\"hook\":\"PreToolUse\",\"block\":[\"Bash(rm*)\",\"mcp__jira__transition\"],\"allow\":[\"Read\",\"mcp__jira__get_issue\"]}",
+          "annotation": "hooks — technical gates beside CLAUDE.md rules."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "hooks_gate",
+          "content": "{\"blocked\":\"mcp__jira__transition\",\"allowed\":\"get_issue\",\"human_checkpoint\":\"before any write\"}",
+          "annotation": "Hooks enforce bounds; humans still approve writes."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Smallest useful team workflow: CLAUDE.md rules → create-concept-card skill → research subagent → MCP read-only day-start brief → human checkpoint. Ready as a Workshop 6 use-case seed.",
+          "annotation": "Capability map closed. Apple bar solos A6–A13 unchanged."
+        }
+      ],
+      "attribution": "Academy-authored ConceptSim for Classroom 2 / AET-129 (CLAUDE.md → skills → subagents → MCP/hooks). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches the customize stack / Agent Capability Map on the Aether Library vehicle. Not a port of an upstream chapter."
+    },
+    "nl": {
+      "title": "Customize-stack · CLAUDE.md → skills → subagents → MCP/hooks",
+      "description": "Stap de Agent Capability Map: vaste regels, een herbruikbare skill, een begrensde subagent, daarna MCP read-only context met hooks — zonder API-sleutels.",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Maak van mijn AetherBOT-gewoontes de kleinste nuttige workflow: CLAUDE.md-regels, een create-concept-card-skill, een research-subagent en read-only MCP — met een menselijke gate vóór elke write.",
+          "annotation": "Zelfde voertuig als solos A6–A13. De stack is additief."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Laag 1 — CLAUDE.md: vaste afspraken die elke verse sessie moet kennen zonder mondelinge heruitleg.",
+          "annotation": "CLAUDE.md — altijd-aan projectinstructies."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "write_claude_md",
+          "content": "{\"file\":\"CLAUDE.md\",\"rules\":[\"Verzin nooit glossary-bronnen\",\"Stop voor menselijk akkoord vóór je bestanden schrijft\",\"Zeg OPEN in plaats van te gokken\"]}",
+          "annotation": "≥3 eigen regels. Permissies zijn iets anders dan CLAUDE.md."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "write_claude_md",
+          "content": "{\"wrote\":\"CLAUDE.md\",\"rules\":3,\"fresh_session_ready\":true}",
+          "annotation": "Een nieuwe sessie moet dit volgen zonder dat jij het opnieuw typt."
+        },
+        {
+          "type": "system_event",
+          "content": "STACK UP · CLAUDE.md → skill — promoveer de methode die je steeds opnieuw uitlegt naar .claude/skills/…",
+          "annotation": "skills — herbruikbare methode, geen daemon."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "author_skill",
+          "content": "{\"path\":\".claude/skills/create-concept-card/SKILL.md\",\"requires\":[\"goedgekeurde bronnen\",\"OPEN bij onzekerheid\",\"menselijk OK vóór write\"]}",
+          "annotation": "Skill legt de create-concept-card-methode vast (opdracht 9)."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "author_skill",
+          "content": "{\"skill\":\"create-concept-card\",\"tested_against\":\"goedgekeurde kaarten\",\"status\":\"ready\"}",
+          "annotation": "Een skill beschrijft de methode; hij start Claude Code niet zelf."
+        },
+        {
+          "type": "system_event",
+          "content": "STACK UP · skill → subagent — als een rol begrensd moet blijven (bijv. alleen research), geef die een subagent met een strakke brief.",
+          "annotation": "subagents — ook als de deck geen dia heeft, leert de stack ze wél."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "spawn_subagent",
+          "content": "{\"role\":\"research\",\"brief\":\"Zoek kandidaatbronnen voor één term; schrijf geen bestanden; lever OPEN-gaten\",\"bound\":\"read_only\"}",
+          "annotation": "Subagent = begrensde specialistenrun, geen tweede onbegrensde Claude."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "spawn_subagent",
+          "content": "{\"role\":\"research\",\"candidates\":2,\"OPEN\":[\"paywalled PDF\"],\"wrote_files\":false}",
+          "annotation": "Begrensde output. Parent-agent + mens houden de write-gate."
+        },
+        {
+          "type": "system_event",
+          "content": "STACK UP · subagent → MCP/hooks — haal geautoriseerde read-only context op; hooks stoppen niet-toegestane acties.",
+          "annotation": "MCP = verbonden context. Hooks = stop/allow-gates."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "mcp_readonly_fetch",
+          "content": "{\"connection\":\"approved_jira\",\"op\":\"get_issue\",\"id\":\"WL-DAYSTART\",\"mutate\":false}",
+          "annotation": "Patroon opdracht 12 — één geautoriseerd item, read-only."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "mcp_readonly_fetch",
+          "content": "{\"id\":\"WL-DAYSTART\",\"summary\":\"Triage ochtendwachtrij\",\"actions_available_not_approved\":[\"transition\",\"comment\"],\"fetched\":\"read_only\"}",
+          "annotation": "Benoem wat de verbinding wél kan wat jij niet goedkeurde."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "hooks_gate",
+          "content": "{\"hook\":\"PreToolUse\",\"block\":[\"Bash(rm*)\",\"mcp__jira__transition\"],\"allow\":[\"Read\",\"mcp__jira__get_issue\"]}",
+          "annotation": "hooks — technische gates naast CLAUDE.md-regels."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "hooks_gate",
+          "content": "{\"blocked\":\"mcp__jira__transition\",\"allowed\":\"get_issue\",\"human_checkpoint\":\"vóór elke write\"}",
+          "annotation": "Hooks handhaven grenzen; mensen keuren writes nog steeds goed."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Kleinste nuttige teamworkflow: CLAUDE.md-regels → create-concept-card-skill → research-subagent → MCP read-only day-start-brief → menselijk checkpoint. Klaar als use-case-zaadje voor Workshop 6.",
+          "annotation": "Capability map gesloten. Apple-bar-solos A6–A13 ongewijzigd."
+        }
+      ],
+      "attribution": "Door Academy geschreven ConceptSim voor Classroom 2 / AET-129 (CLAUDE.md → skills → subagents → MCP/hooks). Scenariovorm compatibel met shareAI-lab/learn-claude-code (MIT). Leert de customize-stack / Agent Capability Map op het Aether Library-voertuig. Geen port van een upstream-hoofdstuk."
+    }
+  }
+}
