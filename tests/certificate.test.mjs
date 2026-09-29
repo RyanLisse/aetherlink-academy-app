@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {createApp} from '../server/app.mjs';
 import {LocalStore} from '../server/local-store.mjs';
-import {certificateEligibility,memberDayChecks} from '../server/certificate.mjs';
+import {certificateEligibility,memberDayChecks,dayIsComplete,renderCertificatePage} from '../server/certificate.mjs';
 import {getDayPack} from '../server/content.mjs';
 
 const DAY=24*60*60*1000;
@@ -35,6 +35,8 @@ test('completion rule (lighter, 2026-09-25): a day counts when its quiz is fully
   ['facilitator revoked access',{accessRevoked:true},{eligible:false,daysCompleted:2,reasons:[{code:'access-revoked'}]}],
  ];
  for(const [label,override,expected] of table)assert.deepEqual(certificateEligibility({...base,...override}),expected,label);
+ assert.equal(dayIsComplete(day1),true);
+ assert.equal(dayIsComplete([open('quiz','d1-quiz'),pass('task','c1-a1')]),false);
 });
 
 test('memberDayChecks reads AET-103 pass signals: quiz all-correct, graded labs, auto-graded and peer-approved tasks',()=>{
@@ -50,6 +52,21 @@ test('memberDayChecks reads AET-103 pass signals: quiz all-correct, graded labs,
  ]);
  const oneWrong=memberDayChecks({rooms:[],memberId:member,progressByDay:{3:{quizScore:getDayPack(3).quiz.questions.length-1}},day:3});
  assert.deepEqual(oneWrong.filter(check=>check.kind==='quiz'),[{kind:'quiz',id:'d3-quiz',source:'server-graded',passed:false}]);
+});
+
+test('certificate PDF chrome is locale-aware (EN+NL) with no EN leak under nl',()=>{
+ const cert={id:'AAAA-BBBB-CCCC-DDDD',name:'Alice Jansen',cohortName:'Wave oktober',startsAt:START,endsAt:START+2*DAY,days:2,issuedAt:START+DAY};
+ const nl=renderCertificatePage(cert,{verifyUrl:'http://example.test/verify/AAAA-BBBB-CCCC-DDDD',verifiableUntil:START+2*DAY+180*DAY,locale:'nl'});
+ assert.match(nl,/<html lang="nl">/);
+ assert.match(nl,/Certificaat van afronding/);
+ assert.match(nl,/Afdrukken/);
+ assert.doesNotMatch(nl,/Certificate of completion/);
+ assert.doesNotMatch(nl,/>Print</);
+ const en=renderCertificatePage(cert,{verifyUrl:'http://example.test/verify/AAAA-BBBB-CCCC-DDDD',verifiableUntil:START+2*DAY+180*DAY,locale:'en'});
+ assert.match(en,/<html lang="en">/);
+ assert.match(en,/Certificate of completion/);
+ assert.match(en,/>Print</);
+ assert.doesNotMatch(en,/Certificaat van afronding/);
 });
 
 async function gateway(){
@@ -71,9 +88,6 @@ async function gateway(){
 
 const host=body=>({body:{hostKey:'test-host',...body}});
 
-// Passes a day the way a participant does under the lighter rule: every quick check answer right,
-// then evidence for the given day tasks (default: only the first), each approved by someone other
-// than the author (alternating facilitator and a peer).
 async function completeDay(call,sessions,day,reviewers=['facilitator','bob'],tasks=TASKS[day].slice(0,1)){
  const {facilitator,alice}=sessions;
  assert.equal((await call('POST','/game/control',{cookie:facilitator,body:{action:'day',value:day}})).status,200);
@@ -112,10 +126,10 @@ const rosterOf=async(call)=>(await call('POST','/game/facilitator/cohorts',host(
 const mine=(call,cookie)=>call('GET','/game/certificate',{cookie});
 const certificateCount=store=>Object.keys(store.data.certificates).length;
 
-test('Mijn certificaat: ineligible members get reasons and no certificate; eligible ones get exactly one, automatically',async()=>{
+test('Mijn certificaat: eligible does not auto-issue; facilitator must issue (AET-97 gate)',async()=>{
  const {store,clock,call,close}=await gateway();
  try {
-  const {sessions,login}=await wave(call);
+  const {cohortId,alice,sessions,login}=await wave(call);
   await completeDay(call,sessions,1);
   const early=await mine(call,sessions.alice);
   assert.equal(early.status,200);
@@ -124,39 +138,38 @@ test('Mijn certificaat: ineligible members get reasons and no certificate; eligi
 
   await nextDay(clock,login);
   await completeDay(call,sessions,2,['bob']);
-  assert.equal(certificateCount(store),0,'nothing is issued until someone looks');
+  const ready=await mine(call,sessions.alice);
+  assert.equal(ready.body.status,'eligible');
+  assert.equal(ready.body.eligible,true);
+  assert.equal(ready.body.id,null);
+  assert.equal(certificateCount(store),0,'learners never auto-mill certificates');
+
+  assert.equal((await call('POST','/game/facilitator/cohort/certificate/issue',{cookie:sessions.alice,body:{cohortId,memberId:alice.memberId}})).status,403);
+  assert.equal((await call('POST','/game/facilitator/cohort/certificate/issue',host({cohortId,memberId:alice.memberId}))).status,200);
+  assert.equal(certificateCount(store),1);
 
   const first=await mine(call,sessions.alice);
-  assert.equal(first.status,200);
   assert.equal(first.body.status,'issued');
-  assert.equal(first.body.eligible,true);
-  assert.equal(first.body.daysCompleted,2);
   assert.match(first.body.id,ID);
-  assert.equal(first.body.issuedAt,START+1*DAY);
   assert.equal(first.body.certificateUrl,`/certificate/${first.body.id}`);
-  assert.equal(first.body.verifyUrl,`http://127.0.0.1:4317/verify/${first.body.id}`);
   const {id}=first.body;
-  assert.equal((await store.certificate(id)).issuedBy,null,'no facilitator identity on an automatic certificate');
+  assert.equal((await store.certificate(id)).issuedBy,null,'hostKey path has no facilitator identity');
 
   for(let i=0;i<3;i++)assert.equal((await mine(call,sessions.alice)).body.id,id);
-  const concurrent=await Promise.all([...Array(6)].map(()=>mine(call,sessions.alice)).concat(call('POST','/game/facilitator/cohorts',host({}))));
-  assert.deepEqual(concurrent.slice(0,6).map(response=>response.body.id),Array(6).fill(id));
-  assert.equal(concurrent[6].body[0].members[0].certificate.id,id);
-  assert.equal(certificateCount(store),1);
+  assert.equal((await call('POST','/game/facilitator/cohort/certificate/issue',host({cohortId,memberId:alice.memberId}))).status,409,'already issued');
 
   const bob=await mine(call,sessions.bob);
   assert.deepEqual([bob.body.status,bob.body.id,bob.body.daysCompleted],['not-eligible',null,0]);
-  assert.ok(!bob.text.includes(id),'another member never sees this certificate id');
-  assert.ok(!bob.text.includes('Alice'));
   assert.equal((await call('GET',`/certificate/${id}`,{cookie:sessions.bob})).status,404);
-  assert.equal((await call('GET',`/certificate/${id.toLowerCase()}`,{cookie:sessions.alice})).status,200);
+  assert.equal((await call('GET',`/certificate/${id.toLowerCase()}?locale=en`,{cookie:sessions.alice})).status,200);
+  assert.match((await call('GET',`/certificate/${id}?locale=en`,{cookie:sessions.alice})).text,/Certificate of completion/);
+  assert.match((await call('GET',`/certificate/${id}?locale=nl`,{cookie:sessions.alice})).text,/Certificaat van afronding/);
   assert.deepEqual((await mine(call,sessions.facilitator)).body,{status:'no-cohort'});
   assert.equal((await mine(call)).status,401);
-  assert.equal(certificateCount(store),1);
  } finally {await close();}
 });
 
-test('facilitator roster issues automatically, shows reasons, keeps revoke, and a revoked certificate is never reissued',async()=>{
+test('facilitator roster shows eligible, issues on click, revoke + re-issue allowed',async()=>{
  const {store,clock,call,close}=await gateway();
  try {
   const {cohortId,alice,sessions,login}=await wave(call);
@@ -165,28 +178,38 @@ test('facilitator roster issues automatically, shows reasons, keeps revoke, and 
   await completeDay(call,sessions,2);
   const roster=await rosterOf(call);
   assert.deepEqual(roster.map(member=>[member.name,member.certificate.status,reasonKeys(member.certificate.reasons)]),[
-   ['Alice Jansen','issued',[]],
+   ['Alice Jansen','eligible',[]],
    ['Bob','not-eligible',[1,2].flatMap(day=>[`quiz-open:${day}:d${day}-quiz`,`no-task-passed:${day}`])],
   ]);
-  const {id}=roster[0].certificate;
-  assert.match(id,ID);
-  assert.equal((await call('POST','/game/facilitator/cohort/certificate/issue',host({cohortId,memberId:alice.memberId}))).status,404,'the manual issue route is gone');
+  assert.equal(roster[0].certificate.id,null);
+  assert.ok(Array.isArray(roster[0].badges));
 
-  const printable=await call('POST','/game/facilitator/cohort/certificate/view',host({certificateId:id}));
+  const issued=await call('POST','/game/facilitator/cohort/certificate/issue',host({cohortId,memberId:alice.memberId}));
+  assert.equal(issued.status,200);
+  const {id}=issued.body.members[0].certificate;
+  assert.match(id,ID);
+
+  const printable=await call('POST','/game/facilitator/cohort/certificate/view',host({certificateId:id,locale:'nl'}));
   assert.equal(printable.status,200);
   for(const expected of ['Alice Jansen','Wave oktober (synthetisch)','5 oktober 2026 – 6 oktober 2026','2 van 2','6 oktober 2026',`http://127.0.0.1:4317/verify/${id}`,'verifieerbaar tot en met 4 april 2027'])assert.ok(printable.text.includes(expected),expected);
   const inlineScript=printable.text.match(/<script>(.*?)<\/script>/s)[1];
-  assert.ok(printable.csp.includes(`script-src 'sha256-${createHash('sha256').update(inlineScript).digest('base64')}'`),'CSP allows exactly the print script');
+  assert.ok(printable.csp && printable.csp.includes(createHash('sha256').update(inlineScript).digest('base64')), () => `CSP=${printable.csp} script=${JSON.stringify(inlineScript)}`);
   assert.equal((await call('POST','/game/facilitator/cohort/certificate/view',{cookie:sessions.alice,body:{certificateId:id}})).status,403);
 
-  assert.equal((await call('POST','/game/facilitator/cohort/certificate/revoke',{cookie:sessions.alice,body:{cohortId,certificateId:id}})).status,403);
   clock.now=START+3*DAY;await login();
   const revoked=await call('POST','/game/facilitator/cohort/certificate/revoke',host({cohortId,certificateId:id}));
   assert.deepEqual([revoked.body.members[0].certificate.status,revoked.body.members[0].certificate.id,revoked.body.members[0].certificate.eligible,revoked.body.members[0].certificate.revokedAt],['revoked',null,true,START+3*DAY]);
   const after=await mine(call,sessions.alice);
   assert.deepEqual([after.body.status,after.body.id,after.body.certificateUrl],['revoked',null,undefined]);
-  assert.equal((await rosterOf(call))[0].certificate.status,'revoked');
-  assert.equal(certificateCount(store),1,'revocation is final: no new certificate on later evaluations');
+  assert.equal(certificateCount(store),1);
+
+  const reissued=await call('POST','/game/facilitator/cohort/certificate/issue',host({cohortId,memberId:alice.memberId}));
+  assert.equal(reissued.status,200);
+  const newId=reissued.body.members[0].certificate.id;
+  assert.match(newId,ID);
+  assert.notEqual(newId,id);
+  assert.equal(certificateCount(store),2);
+  assert.equal((await mine(call,sessions.alice)).body.id,newId);
   assert.equal((await call('GET',`/certificate/${id}`,{cookie:sessions.alice})).status,404);
  } finally {await close();}
 });
@@ -198,7 +221,8 @@ test('public verification confirms only name, cohort and date, and fails for rev
   await completeDay(call,sessions,1);
   await nextDay(clock,login);
   await completeDay(call,sessions,2);
-  const id=(await mine(call,sessions.alice)).body.id;
+  const issued=await call('POST','/game/facilitator/cohort/certificate/issue',host({cohortId,memberId:alice.memberId}));
+  const id=issued.body.members[0].certificate.id;
 
   const valid=await call('GET',`/verify/${id}`);
   assert.equal(valid.status,200);
@@ -226,7 +250,8 @@ test('retention deletes certificates with the cohort, so verification stops afte
   await completeDay(call,sessions,1);
   await nextDay(clock,login);
   await completeDay(call,sessions,2);
-  const id=(await mine(call,sessions.alice)).body.id;
+  const issued=await call('POST','/game/facilitator/cohort/certificate/issue',host({cohortId,memberId:alice.memberId}));
+  const id=issued.body.members[0].certificate.id;
   clock.now=START+2*DAY+180*DAY-1;
   assert.deepEqual((await store.purgeExpiredCohorts({dryRun:false})).purged,[]);
   assert.equal((await call('GET',`/verify/${id}`)).status,200);

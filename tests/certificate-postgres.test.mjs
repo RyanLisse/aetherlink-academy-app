@@ -8,7 +8,7 @@ const DAY=24*60*60*1000;
 const START=Date.parse('2026-10-05T00:00:00Z');
 const WAVE={name:'Wave oktober (synthetisch)',startsAt:START,days:1,readOnlyExport:true};
 
-test('PostgresStore: automatic certificate issuance is idempotent under concurrency, revocation is final, retention cascades',{skip:process.env.ACADEMY_POSTGRES_TEST!=='1'},async()=>{
+test('PostgresStore: facilitator-gated issue, revoke + re-issue, retention cascades',{skip:process.env.ACADEMY_POSTGRES_TEST!=='1'},async()=>{
  const {Pool}=await import('pg');
  const url=new URL(process.env.DATABASE_URL);
  url.searchParams.delete('sslmode');
@@ -34,13 +34,19 @@ test('PostgresStore: automatic certificate issuance is idempotent under concurre
    r.evidence.push({id:'evidence-c1-a1',personId:p.id,name:p.name,day:1,taskId:'c1-a1',status:'accepted',review:{by:bob.memberId,reviewer:{role:'peer'},note:'Klopt (synthetisch).'}});
   });
 
-  const results=await Promise.all([...Array(6)].map(()=>store.myCertificate(session)).concat(store.cohortOverview(),store.cohortOverview()));
-  const {id}=results[0];
+  const ready=await store.myCertificate(session);
+  assert.equal(ready.status,'eligible');
+  assert.equal(ready.id,null);
+  assert.equal(await count(),0,'no auto-mill');
+  const overview=await store.cohortOverview();
+  assert.equal(overview[0].members[0].certificate.status,'eligible');
+
+  const issued=await store.issueCertificate(cohort.id,alice.memberId,{email:'facilitator@example.test',name:'Facilitator'});
+  const {id}=issued.members[0].certificate;
   assert.match(id,/^[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}$/);
-  assert.deepEqual(results.slice(0,6).map(result=>[result.status,result.id]),Array(6).fill(['issued',id]));
-  assert.deepEqual(results.slice(6).map(overview=>overview[0].members[0].certificate.id),[id,id]);
   assert.equal(await count(),1);
-  assert.deepEqual(await store.certificate(id),{id,cohortId:cohort.id,memberId:alice.memberId,name:'Alice Jansen',cohortName:'Wave oktober (synthetisch)',startsAt:START,endsAt:START+DAY,days:1,issuedAt:START,issuedBy:null,revokedAt:null});
+  assert.equal((await store.myCertificate(session)).status,'issued');
+  await assert.rejects(store.issueCertificate(cohort.id,alice.memberId),error=>error.status===409);
   const other=await store.myCertificate(bobSession);
   assert.deepEqual([other.status,other.id],['not-eligible',null]);
 
@@ -53,7 +59,11 @@ test('PostgresStore: automatic certificate issuance is idempotent under concurre
   const later=await Promise.all([store.myCertificate(fresh),store.cohortOverview()]);
   assert.deepEqual([later[0].status,later[0].id],['revoked',null]);
   assert.equal(later[1][0].members[0].certificate.status,'revoked');
-  assert.equal(await count(),1,'a revoked certificate is never reissued automatically');
+  assert.equal(await count(),1,'revoke does not auto-reissue');
+  const reissued=await store.issueCertificate(cohort.id,alice.memberId,{email:'facilitator@example.test',name:'Facilitator'});
+  assert.equal(reissued.members[0].certificate.status,'issued');
+  assert.notEqual(reissued.members[0].certificate.id,id);
+  assert.equal(await count(),2);
 
   clock.now=START+DAY+180*DAY;
   assert.equal((await store.purgeExpiredCohorts()).purged[0].certificates,1);

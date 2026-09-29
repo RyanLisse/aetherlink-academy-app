@@ -2,7 +2,9 @@ import {createHash, randomBytes, randomUUID} from 'node:crypto';
 import {readFile} from 'node:fs/promises';
 import {awaitingReview} from './proof-trail.mjs';
 import {hash, secret, fail, writable, Store, MAX_SQUAD_SIZE, COHORT_ROOM_JOIN_MESSAGE, DUPLICATE_PARTICIPANT_MESSAGE, INVALID_PARTICIPANT_ACCESS_MESSAGE, COHORT_SEAT_ACCESS_MESSAGE} from './store.mjs';
-import {INVALID_COHORT_CODE_MESSAGE,COHORT_NO_ROOM_MESSAGE,COHORT_RATE_LIMIT_MESSAGE,RATE_LIMITS,attemptKeys,issueAccessCode,sessionGrant,mergeSeatProgress,seatMember,cohortView,cohortWindow,anonymizeRoom,dueCertificates,memberCertificate} from './cohort.mjs';
+import {INVALID_COHORT_CODE_MESSAGE,COHORT_NO_ROOM_MESSAGE,COHORT_RATE_LIMIT_MESSAGE,RATE_LIMITS,attemptKeys,issueAccessCode,sessionGrant,mergeSeatProgress,seatMember,cohortView,cohortWindow,anonymizeRoom,draftCertificate,canIssueCertificate,memberCertificate} from './cohort.mjs';
+import {memberBadges} from './badges.mjs';
+import {DAY_COUNT} from '../content/days/index.mjs';
 import {COACH_RETENTION_MS} from './coach.mjs';
 import {EMAIL_CODE_INVALID_MESSAGE,EMAIL_PARTICIPANT_ONLY_MESSAGE,EMAIL_RATE_LIMITS,EMAIL_RATE_LIMIT_MESSAGE,challengeKey,checkChallenge,emailAttemptKeys,issueChallenge} from './email-login.mjs';
 
@@ -233,12 +235,8 @@ export class PostgresStore {
  // Reads without a lock first; only when a certificate is due does it take the cohort row lock
  // (the same lock member revoke, code reissue and certificate revoke take) and re-evaluate, so
  // concurrent evaluations insert one certificate and a revoke in flight is never overtaken.
- async settleCertificates(client,cohortId) {
-  let cohort=await this.cohortRow(client,cohortId);
-  let facts=await this.cohortFacts(client,cohort);
-  if(!dueCertificates(facts).length)return facts;
-  cohort=await this.cohortRow(client,cohortId,true);
-  for(const certificate of dueCertificates(await this.cohortFacts(client,cohort)))await client.query('INSERT INTO cohort_certificates(id,cohort_id,member_id,member_name,cohort_name,starts_at,ends_at,days,issued_at) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',[certificate.id,cohort.id,certificate.memberId,certificate.name,certificate.cohortName,certificate.startsAt,certificate.endsAt,certificate.days,certificate.issuedAt]);
+ async cohortFactsLocked(client,cohortId) {
+  const cohort=await this.cohortRow(client,cohortId,false);
   return this.cohortFacts(client,cohort);
  }
  async issueCode(client,cohortId,memberId) {
@@ -316,8 +314,22 @@ export class PostgresStore {
   return this.transaction(async client=>{
    const {r,p}=await this.authenticated(client,token,'browser');
    if(!p?.cohortMemberId||!r.cohortId)return null;
-   const facts=await this.settleCertificates(client,r.cohortId);
+   const facts=await this.cohortFactsLocked(client,r.cohortId);
    return {cohortName:facts.cohort.name,days:facts.cohort.days,...memberCertificate({...facts,memberId:p.cohortMemberId,codes:facts.codes.filter(code=>code.memberId===p.cohortMemberId)})};
+  });
+ }
+ async issueCertificate(cohortId,memberId,issuedBy=null) {
+  return this.transaction(async client=>{
+   const cohort=await this.cohortRow(client,cohortId,true);
+   const memberRow=await client.query('SELECT id,name FROM cohort_members WHERE id=$1 AND cohort_id=$2 FOR UPDATE',[memberId,cohortId]);
+   if(!memberRow.rowCount)fail(404,'Deelnemer niet gevonden in dit cohort.');
+   const member=memberRow.rows[0];
+   const facts=await this.cohortFacts(client,cohort);
+   const summary=memberCertificate({...facts,memberId,codes:facts.codes.filter(code=>code.memberId===memberId)});
+   if(!canIssueCertificate(summary))fail(409,summary.eligible===false?'Deelnemer voldoet nog niet aan de afrondingsregels.':'Certificaat is al uitgegeven.');
+   const certificate=draftCertificate({cohort,member:{id:member.id,name:member.name},now:this.now(),issuedBy});
+   await client.query('INSERT INTO cohort_certificates(id,cohort_id,member_id,member_name,cohort_name,starts_at,ends_at,days,issued_at,issued_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',[certificate.id,cohort.id,certificate.memberId,certificate.name,certificate.cohortName,certificate.startsAt,certificate.endsAt,certificate.days,certificate.issuedAt,issuedBy?JSON.stringify(issuedBy):null]);
+   return this.cohortSnapshot(client,cohort);
   });
  }
  async revokeCertificate(cohortId,certificateId) {
@@ -328,11 +340,29 @@ export class PostgresStore {
    return this.cohortSnapshot(client,cohort);
   });
  }
+ async myBadges(token) {
+  return this.transaction(async client=>{
+   const {r,p}=await this.authenticated(client,token,'browser');
+   if(!p)return {badges:[],scope:'none'};
+   const memberId=p.cohortMemberId||p.id;
+   let rooms,days=DAY_COUNT,progressByDay;
+   if(r.cohortId){
+    const facts=await this.cohortFactsLocked(client,r.cohortId);
+    rooms=facts.rooms;
+    days=facts.cohort.days;
+    progressByDay=mergeSeatProgress(rooms,memberId);
+   }else{
+    rooms=[r];
+    progressByDay=p.progressByDay||{};
+   }
+   return {badges:memberBadges({rooms,memberId,progressByDay,days}),scope:r.cohortId?'cohort':'room'};
+  });
+ }
  async cohortOverview() {
   return this.transaction(async client=>{
    const ids=await client.query('SELECT id FROM cohorts ORDER BY created_at DESC');
    const cohorts=[];
-   for(const {id} of ids.rows)cohorts.push(cohortView(await this.settleCertificates(client,id)));
+   for(const {id} of ids.rows)cohorts.push(cohortView(await this.cohortFactsLocked(client,id)));
    return cohorts;
   });
  }
