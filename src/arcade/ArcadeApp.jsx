@@ -339,7 +339,7 @@ function StartersReadyPanel({lesson}) {
   const starters = lesson.starters || [];
   return (
     <div className="arcade-ready" role="status" data-starters-status="available">
-      <strong>SDK starters ready</strong>
+      <strong>SDK-starters klaar</strong>
       <p>Herdr <strong>AET-63</strong> kits available. Clone, <code>pnpm i</code>, run tests without an API key, then set <code>ANTHROPIC_API_KEY</code> in env only for the live SDK path.</p>
       <ul className="arcade-starter-list">
         {starters.map((s) => (
@@ -349,7 +349,31 @@ function StartersReadyPanel({lesson}) {
             <a href={s.repoUrl || s.cloneUrl} target="_blank" rel="noreferrer">
               open repo <ExternalLink size={14} />
             </a>
-            {s.quest ? <span className="muted"> · quest {s.quest}</span> : null}
+            {s.quest ? <span className="muted"> · opdracht {s.quest}</span> : null}
+            {s.htmlCourse ? (
+              <>
+                {" · "}
+                <a href={s.htmlCourse} rel="noreferrer">
+                  HTML-solo
+                </a>
+              </>
+            ) : null}
+            {s.instructions ? (
+              <>
+                {" · "}
+                <a href={s.instructions} rel="noreferrer">
+                  instructions
+                </a>
+              </>
+            ) : null}
+            {s.soloMd ? (
+              <>
+                {" · "}
+                <a href={s.soloMd} rel="noreferrer">
+                  SOLO.md
+                </a>
+              </>
+            ) : null}
             {s.cloneUrl ? (
               <pre className="arcade-clone">git clone {s.cloneUrl}</pre>
             ) : null}

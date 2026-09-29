@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How the Weather Agent Works</title>
+
+  <!-- Google Fonts: Bricolage Grotesque · DM Sans · JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <!--
+    CUSTOMIZE PER COURSE — change only the three accent variables below.
+    Options:
+      vermillion  #D94F30 / #C4432A / #FDEEE9 / #E8836C  (default)
+      coral       #E06B56 / #C85A47 / #FDECEA / #E89585
+      teal        #2A7B9B / #1F6280 / #E4F2F7 / #5A9DB8
+      amber       #D4A843 / #BF9530 / #FDF5E0 / #E0C070
+      forest      #2D8B55 / #226B41 / #E8F5EE / #5AAD7A
+  -->
+  <style>
+    :root {
+      --color-accent:       #2A7B9B;
+      --color-accent-hover: #1F6280;
+      --color-accent-light: #E4F2F7;
+      --color-accent-muted: #5A9DB8;
+    }
+  </style>
+
+  <script src="main.js" defer></script>
+</head>
+<body>
+
+  <nav class="nav" id="nav">
+    <div class="progress-bar" id="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    <div class="nav-inner">
+      <span class="nav-title">How the Weather Agent Works</span>
+      <div class="nav-dots" id="nav-dots" role="tablist">
+        <!--
+          One <button> per module. Replace MODULE_N_NAME with the actual module title.
+
+          <button class="nav-dot" data-target="module-1" data-tooltip="MODULE_1_NAME" role="tab" aria-label="Module 1: MODULE_1_NAME"></button>
+          <button class="nav-dot" data-target="module-2" data-tooltip="MODULE_2_NAME" role="tab" aria-label="Module 2: MODULE_2_NAME"></button>
+          ...
+        -->
+        <button class="nav-dot" data-target="module-1" data-tooltip="Ask About the Weather" role="tab" aria-label="Module 1: Ask About the Weather"></button>
+        <button class="nav-dot" data-target="module-2" data-tooltip="Meet the Cast" role="tab" aria-label="Module 2: Meet the Cast"></button>
+        <button class="nav-dot" data-target="module-3" data-tooltip="The Tool Call Handshake" role="tab" aria-label="Module 3: The Tool Call Handshake"></button>
+        <button class="nav-dot" data-target="module-4" data-tooltip="Fixtures and the Outside World" role="tab" aria-label="Module 4: Fixtures and the Outside World"></button>
+        <button class="nav-dot" data-target="module-5" data-tooltip="Rules, Quests and Tests" role="tab" aria-label="Module 5: Rules, Quests and Tests"></button>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main">
+    <!-- modules/*.html content is assembled here by build.sh -->
+<section class="module" id="module-1" style="background: var(--color-bg)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">01</span>
+      <h1 class="module-title">Ask About the Weather</h1>
+      <p class="module-subtitle">What this little agent does, and the journey a single question takes before it comes back as an answer.</p>
+    </header>
+
+    <div class="module-body">
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">What is this thing?</h2>
+        <p>You type <em>"Wat is het weer in Amsterdam op 2026-09-21? Geef kledingadvies."</em> and get back a friendly Dutch answer: rain is likely, bring an umbrella, wear a light jacket. That is the whole product.</p>
+        <p>Under the hood it is a starter kit for building an <span class="term" data-definition="A program where an AI model can decide to take actions (like calling a tool) instead of only writing text. When you ask AI to 'build an agent', this is what you mean: a model plus tools plus a loop.">agent</span> with the <span class="term" data-definition="Claude Agent SDK: a toolkit (SDK = Software Development Kit, a bundle of ready-made code) from Anthropic that lets your program run Claude as an agent with tools. You install it like any other library.">Claude Agent SDK</span>. It is deliberately tiny so you can see every moving part.</p>
+
+        <div class="pattern-cards">
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-2)">
+            <div class="pattern-icon" style="background: var(--color-actor-2)">🌦️</div>
+            <h4 class="pattern-title">One tool</h4>
+            <p class="pattern-desc"><code>get_weather</code> looks up temperature and chance of rain for a city and date.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-4)">
+            <div class="pattern-icon" style="background: var(--color-actor-4)">☂️</div>
+            <h4 class="pattern-title">One decision rule</h4>
+            <p class="pattern-desc">Rain chance of 60% or more means "bring umbrella". Everything else: leave it.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-5)">
+            <div class="pattern-icon" style="background: var(--color-actor-5)">🧥</div>
+            <h4 class="pattern-title">One mini-quest</h4>
+            <p class="pattern-desc">Add clothing advice (jas / geen jas / paraplu) by editing instructions only, no new code.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Two ways to run it</h2>
+        <p>The kit has a free practice lane and a real lane. Think of a pilot: the <strong>flight simulator</strong> needs no fuel, the <strong>real plane</strong> needs a ticket (your API key).</p>
+        <div class="step-cards">
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Simulator lane (always runs)</strong>
+              <p>Uses a built-in <span class="term" data-definition="A fixture is fake, fixed sample data used for practice and testing. It always returns the same answer, so results are predictable and nothing costs money.">fixture</span>: Amsterdam, 14°C, 72% rain. No internet, no AI, no cost.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Live lane (only with a key)</strong>
+              <p>If <code>ANTHROPIC_API_KEY</code> is set as an <span class="term" data-definition="An environment variable is a named setting that lives outside your code, in the terminal session or a .env file. Secrets like API keys go here so they never end up in git.">environment variable</span>, Claude itself gets the question and calls the tool.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The fork in the road, in code</h2>
+        <p>This is the bottom of <code>src/agent.ts</code>, the <span class="term" data-definition="The entry point is the file that runs first when you start a program. Here, 'pnpm start' runs src/agent.ts.">entry point</span>. Every run starts here.</p>
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">src/agent.ts</span>
+            <pre><code><span class="code-line"><span class="code-keyword">if</span> (isMain) {</span>
+<span class="code-line">  <span class="code-keyword">const</span> city = process.argv[<span class="code-number">2</span>] || <span class="code-string">'Amsterdam'</span>;</span>
+<span class="code-line">  <span class="code-keyword">const</span> date = process.argv[<span class="code-number">3</span>] || <span class="code-string">'2026-09-21'</span>;</span>
+<span class="code-line">  <span class="code-keyword">const</span> result = <span class="code-keyword">await</span> <span class="code-function">fetchWeatherDecision</span>({ city, date, <span class="code-property">useFixture</span>: <span class="code-keyword">true</span> });</span>
+<span class="code-line">  console.<span class="code-function">log</span>(JSON.<span class="code-function">stringify</span>(result, <span class="code-keyword">null</span>, <span class="code-number">2</span>));</span>
+<span class="code-line">  <span class="code-keyword">if</span> (process.env.ANTHROPIC_API_KEY) {</span>
+<span class="code-line">    console.<span class="code-function">log</span>(<span class="code-string">'\n— live SDK run —'</span>);</span>
+<span class="code-line">    <span class="code-keyword">const</span> live = <span class="code-keyword">await</span> <span class="code-function">runWeatherAgent</span>(<span class="code-string">`Wat is het weer in ${city} op ${date}? Geef kledingadvies.`</span>);</span>
+<span class="code-line">    console.<span class="code-function">log</span>(JSON.<span class="code-function">stringify</span>(live.<span class="code-function">slice</span>(-<span class="code-number">3</span>), <span class="code-keyword">null</span>, <span class="code-number">2</span>));</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Only do this when the file is run directly (not when another file borrows its functions).</p>
+              <p class="tl">City: take the first word you typed after the command, or default to Amsterdam.</p>
+              <p class="tl">Date: take the second word, or default to 21 September 2026.</p>
+              <p class="tl">Run the simulator lane: fetch fixture weather and decide umbrella + clothing.</p>
+              <p class="tl">Print the result as neatly indented <span class="term" data-definition="JSON (JavaScript Object Notation) is a plain-text format for structured data, using curly braces and key: value pairs. Almost every API speaks it.">JSON</span>.</p>
+              <p class="tl">Is there an API key in the environment? Only then...</p>
+              <p class="tl">...print a divider...</p>
+              <p class="tl">...ask real Claude the question in Dutch, including clothing advice...</p>
+              <p class="tl">...and print just the last three messages of the conversation.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Follow one question around the loop</h2>
+        <p>In the live lane, the answer does not come straight back. Claude pauses, asks for data, waits, then finishes. Click through the <span class="term" data-definition="A tool call is when the AI model says 'please run this function with these inputs' instead of answering directly. Your program runs it and hands the result back.">tool call</span> round trip.</p>
+
+        <div class="flow-animation" data-steps='[
+          {"highlight":"flow-actor-1","label":"You ask: what is the weather in Amsterdam on 2026-09-21? Give clothing advice."},
+          {"highlight":"flow-actor-2","label":"agent.ts wraps your question with instructions.md and the list of allowed tools","packet":true,"from":"actor-1","to":"actor-2"},
+          {"highlight":"flow-actor-4","label":"The SDK sends it all to Claude. Claude reads: always call get_weather before answering.","packet":true,"from":"actor-2","to":"actor-4"},
+          {"highlight":"flow-actor-2","label":"Claude replies with a tool call, not an answer: get_weather with city Amsterdam and date 2026-09-21","packet":true,"from":"actor-4","to":"actor-2"},
+          {"highlight":"flow-actor-3","label":"The SDK runs get_weather on your machine","packet":true,"from":"actor-2","to":"actor-3"},
+          {"highlight":"flow-actor-2","label":"get_weather returns JSON text: 14 degrees C, 72 percent chance of rain","packet":true,"from":"actor-3","to":"actor-2"},
+          {"highlight":"flow-actor-4","label":"The SDK passes the tool result back to Claude","packet":true,"from":"actor-2","to":"actor-4"},
+          {"highlight":"flow-actor-4","label":"Claude applies the rule: 72 is at least 60, so bring umbrella. 14 degrees means a light jacket."},
+          {"highlight":"flow-actor-5","label":"Final answer in Dutch: lichte jas, paraplu mee!","packet":true,"from":"actor-4","to":"actor-5"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-actor-1">
+              <div class="flow-actor-icon">🙋</div>
+              <span>You</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-2">
+              <div class="flow-actor-icon">🤖</div>
+              <span>agent.ts + SDK</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-3">
+              <div class="flow-actor-icon">🌦️</div>
+              <span>get_weather</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-4">
+              <div class="flow-actor-icon">🧠</div>
+              <span>Claude (model)</span>
+            </div>
+            <div class="flow-actor" id="flow-actor-5">
+              <div class="flow-actor-icon">💬</div>
+              <span>Answer</span>
+            </div>
+          </div>
+
+          <div class="flow-packet"></div>
+
+          <div class="flow-step-label">Click "Next Step" to begin</div>
+
+          <div class="flow-controls">
+            <button class="btn flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">The model never touches the weather itself</strong>
+            <p>Claude only <em>asks</em> for the tool to run. Your code does the actual work and reports back. That split is why agents can be safe: you decide which tools exist and what they are allowed to do.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your understanding</h2>
+        <div class="quiz-container" id="quiz-module1">
+          <div class="quiz-question-block"
+               data-correct="b"
+               data-explanation-right="Exactly. Without ANTHROPIC_API_KEY the program only runs the simulator lane and prints a tip. The fixture output is still correct and useful."
+               data-explanation-wrong="Not quite. Look at the fork: the live lane only runs when the API key exists. Without it, you get fixture JSON plus a tip. Nothing is broken.">
+            <h3 class="quiz-question">A teammate runs <code>pnpm start</code> and sees only the Amsterdam JSON plus a "(Tip)" line. No Claude answer. What happened?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The weather tool crashed</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>No API key is set, so only the simulator lane ran</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Claude refused to answer in Dutch</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="c"
+               data-explanation-right="Right. The model decides WHAT to call; your program does the calling. The weather data is fetched by get_weather running locally."
+               data-explanation-wrong="Not quite. In the round trip, Claude sends back a request to run get_weather. The SDK runs it on your machine and returns the result.">
+            <h3 class="quiz-question">In the live lane, who actually fetches the weather data?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Claude looks it up on the internet by itself</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>You paste it into the prompt</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The get_weather function in your code, after Claude asks for it</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="a"
+               data-explanation-right="Yes. The city and date come from the command line (process.argv), so you just pass them as extra words."
+               data-explanation-wrong="Not quite. agent.ts already reads city and date from the words after the command. No code changes needed.">
+            <h3 class="quiz-question">You want advice for Utrecht on 2026-10-01 without editing any code. What do you tell your AI assistant to run?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Run agent.ts with the arguments "Utrecht 2026-10-01"</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Change the default city inside agent.ts</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Add a new tool called get_utrecht_weather</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module1')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module1')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-2" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">02</span>
+      <h1 class="module-title">Meet the Cast</h1>
+      <p class="module-subtitle">Six files, six jobs. Knowing who does what lets you tell your AI exactly where a change belongs.</p>
+    </header>
+
+    <div class="module-body">
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">A TV weather studio</h2>
+        <p>Picture the evening weather broadcast. A <strong>presenter</strong> reads from a <strong>script</strong>, a <strong>producer</strong> runs the show, a <strong>weather station</strong> supplies numbers, and a <strong>style guide</strong> says when to show the umbrella icon. This repo has exactly that crew.</p>
+
+        <div class="file-tree">
+          <div class="ft-file">
+            <span class="ft-name">instructions.md</span>
+            <span class="ft-desc">The script: always-on rules Claude must follow (the "system prompt")</span>
+          </div>
+          <div class="ft-folder open">
+            <span class="ft-name">src/</span>
+            <span class="ft-desc">All the program code</span>
+            <div class="ft-children">
+              <div class="ft-file">
+                <span class="ft-name">agent.ts</span>
+                <span class="ft-desc">The producer: starts the run, wires Claude to the tool</span>
+              </div>
+              <div class="ft-file">
+                <span class="ft-name">decide.ts</span>
+                <span class="ft-desc">The style guide: umbrella rule and clothing rule</span>
+              </div>
+              <div class="ft-file">
+                <span class="ft-name">quest-clothing.ts</span>
+                <span class="ft-desc">The rehearsal: checks the clothing quest is done</span>
+              </div>
+              <div class="ft-folder open">
+                <span class="ft-name">tools/</span>
+                <span class="ft-desc">Things Claude may ask to run</span>
+                <div class="ft-children">
+                  <div class="ft-file">
+                    <span class="ft-name">get_weather.ts</span>
+                    <span class="ft-desc">The weather station: fixture data or a real HTTP lookup</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="ft-folder">
+            <span class="ft-name">tests/</span>
+            <span class="ft-desc">Automatic checks that run with no API key</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Backstage chatter</h2>
+        <p>Here is how the crew talks during one live run. Press play.</p>
+
+        <div class="chat-window" id="chat-module2">
+          <div class="chat-messages">
+            <div class="chat-message" data-msg="0" data-sender="agent" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">A</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">agent.ts</span>
+                <p>We're live. I've loaded the script from instructions.md and registered one tool. Claude, over to you.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="1" data-sender="claude" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">C</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Claude</span>
+                <p>Script says I must call get_weather before answering. get_weather, Amsterdam, 2026-09-21 please.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="2" data-sender="weather" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-2)">W</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-2)">get_weather</span>
+                <p>No WEATHER_BASE_URL set, so fixture it is: {"temperatureC":14,"precipitationProbability":72}.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="3" data-sender="claude" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">C</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Claude</span>
+                <p>72 is at least 60, so "bring umbrella". Script also wants clothing advice in Dutch: lichte jas, paraplu mee.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="4" data-sender="decide" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-4)">D</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-4)">decide.ts</span>
+                <p>For the record, my code gives the same result in the fixture lane: "lichte jas of trui; paraplu mee". We agree.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="5" data-sender="tests" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-5)">T</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-5)">tests</span>
+                <p>And I check that every time someone runs pnpm test. No key, no network, still green.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-typing" style="display:none">
+            <div class="chat-avatar" id="chat-module2-typing-avatar">?</div>
+            <div class="chat-typing-dots">
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+            </div>
+          </div>
+
+          <div class="chat-controls">
+            <button class="btn chat-next-btn">Next Message</button>
+            <button class="btn chat-all-btn">Play All</button>
+            <button class="btn chat-reset-btn">Replay</button>
+            <span class="chat-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">How the producer hands Claude its tools</h2>
+        <p>Tools don't reach Claude one by one. agent.ts packs them into a small <span class="term" data-definition="MCP (Model Context Protocol) is a standard way to offer tools to an AI model. An 'MCP server' is a bundle of tools the model can see and call. Tell your AI 'expose this function as an MCP tool'.">MCP</span> server, like a toolbox with a label on the lid.</p>
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">src/agent.ts</span>
+            <pre><code><span class="code-line"><span class="code-keyword">export</span> <span class="code-keyword">function</span> <span class="code-function">weatherMcpServer</span>() {</span>
+<span class="code-line">  <span class="code-keyword">return</span> <span class="code-function">createSdkMcpServer</span>({</span>
+<span class="code-line">    <span class="code-property">name</span>: <span class="code-string">'weather-agent-sdk'</span>,</span>
+<span class="code-line">    <span class="code-property">version</span>: <span class="code-string">'0.1.0'</span>,</span>
+<span class="code-line">    <span class="code-property">tools</span>: [getWeatherTool],</span>
+<span class="code-line">  });</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Define a reusable <span class="term" data-definition="A function is a named, reusable block of code. You 'call' it to run it. 'export' means other files are allowed to use it.">function</span> other files can use, called weatherMcpServer.</p>
+              <p class="tl">It builds a toolbox using a helper from the SDK...</p>
+              <p class="tl">...labels the toolbox with a name...</p>
+              <p class="tl">...and a version number...</p>
+              <p class="tl">...and puts exactly one tool inside: get_weather.</p>
+              <p class="tl">Close the toolbox.</p>
+              <p class="tl">Done.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-icon">🧭</div>
+          <div class="callout-content">
+            <strong class="callout-title">Why this matters when steering AI</strong>
+            <p>Adding a second tool means two edits: write it in <code>src/tools/</code>, then add it to this <code>tools: [...]</code> list (and to the allowed list you'll meet in Module 3). Forget either and Claude will never use it.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your understanding</h2>
+        <div class="quiz-container" id="quiz-module2">
+          <div class="quiz-question-block"
+               data-correct="a"
+               data-explanation-right="Exactly. Tone and language are behaviour rules for Claude, and those live in the script: instructions.md. No code change needed."
+               data-explanation-wrong="Not quite. The language Claude answers in is a behaviour rule, and behaviour rules live in instructions.md (the script), not in the code files.">
+            <h3 class="quiz-question">You want the agent to answer in English by default. Which crew member do you change?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The script: instructions.md</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The weather station: get_weather.ts</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The style guide: decide.ts</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="c"
+               data-explanation-right="Right. The threshold lives in decideWeather in decide.ts. Changing it there updates the fixture lane and the tests see it. (You'd also update the matching sentence in instructions.md so Claude agrees.)"
+               data-explanation-wrong="Not quite. The number 60 is part of the umbrella rule, which is the style guide: decideWeather in decide.ts. The tool only reports raw numbers.">
+            <h3 class="quiz-question">Your manager says "umbrella from 50% rain, not 60%". Where does the code change go first?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>get_weather.ts, so the tool reports higher rain chances</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>agent.ts, in weatherMcpServer</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>decide.ts, in the umbrella rule</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="b"
+               data-explanation-right="Yes. A tool that exists as a file but is not in the toolbox list is invisible to Claude."
+               data-explanation-wrong="Not quite. Writing the tool file is only half the job. If it isn't listed in createSdkMcpServer's tools array, Claude never sees it.">
+            <h3 class="quiz-question">Your AI assistant wrote <code>src/tools/get_uv_index.ts</code>, but Claude never calls it. What is the most likely missing step?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The file needs to be in the tests folder</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>It was never added to the tools list in weatherMcpServer</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>UV data needs a different programming language</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module2')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module2')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-3" style="background: var(--color-bg)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">03</span>
+      <h1 class="module-title">The Tool Call Handshake</h1>
+      <p class="module-subtitle">How a tool describes itself to Claude, and how agent.ts runs the conversation loop.</p>
+    </header>
+
+    <div class="module-body">
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">A form at the town hall</h2>
+        <p>At the town hall you can't just shout "I want a parking permit". You fill in a form with labelled boxes, and the clerk rejects it if a box is empty. A tool definition is that form: a name, a one-line purpose, and boxes Claude must fill in.</p>
+        <div class="badge-list">
+          <div class="badge-item">
+            <code class="badge-code">get_weather</code>
+            <span class="badge-desc">The form's name. Claude uses it to say which tool it wants.</span>
+          </div>
+          <div class="badge-item">
+            <code class="badge-code">description</code>
+            <span class="badge-desc">One sentence Claude reads to decide <em>when</em> this tool is useful.</span>
+          </div>
+          <div class="badge-item">
+            <code class="badge-code">city, date</code>
+            <span class="badge-desc">The boxes. Each has a type (text) and a hint for Claude.</span>
+          </div>
+          <div class="badge-item">
+            <code class="badge-code">handler</code>
+            <span class="badge-desc">The clerk who processes the form and hands back an answer.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The form, in real code</h2>
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">src/tools/get_weather.ts</span>
+            <pre><code><span class="code-line"><span class="code-keyword">export</span> <span class="code-keyword">const</span> getWeatherTool = <span class="code-function">tool</span>(</span>
+<span class="code-line">  <span class="code-string">'get_weather'</span>,</span>
+<span class="code-line">  <span class="code-string">'Fetch weather for a city and date (fixture by default for labs).'</span>,</span>
+<span class="code-line">  {</span>
+<span class="code-line">    <span class="code-property">city</span>: z.<span class="code-function">string</span>().<span class="code-function">describe</span>(<span class="code-string">'City name'</span>),</span>
+<span class="code-line">    <span class="code-property">date</span>: z.<span class="code-function">string</span>().<span class="code-function">describe</span>(<span class="code-string">'ISO date YYYY-MM-DD'</span>),</span>
+<span class="code-line">  },</span>
+<span class="code-line">  <span class="code-keyword">async</span> (args) <span class="code-operator">=&gt;</span> {</span>
+<span class="code-line">    <span class="code-keyword">const</span> weather = <span class="code-keyword">await</span> <span class="code-function">fetchWeather</span>({</span>
+<span class="code-line">      <span class="code-property">city</span>: args.city,</span>
+<span class="code-line">      <span class="code-property">date</span>: args.date,</span>
+<span class="code-line">      <span class="code-property">baseUrl</span>: process.env.WEATHER_BASE_URL,</span>
+<span class="code-line">      <span class="code-property">useFixture</span>: process.env.WEATHER_USE_FIXTURE !== <span class="code-string">'0'</span>,</span>
+<span class="code-line">    });</span>
+<span class="code-line">    <span class="code-keyword">return</span> {</span>
+<span class="code-line">      <span class="code-property">content</span>: [{ <span class="code-property">type</span>: <span class="code-string">'text'</span> <span class="code-keyword">as const</span>, <span class="code-property">text</span>: JSON.<span class="code-function">stringify</span>(weather) }],</span>
+<span class="code-line">    };</span>
+<span class="code-line">  },</span>
+<span class="code-line">);</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Create a tool using the SDK's <code>tool()</code> helper, and share it with other files.</p>
+              <p class="tl">Its name is get_weather.</p>
+              <p class="tl">Its description, which Claude reads to decide when to use it.</p>
+              <p class="tl">Now the boxes on the form, checked by <span class="term" data-definition="Zod is a library that describes the exact shape data must have (e.g. 'city must be text') and rejects anything that doesn't match. Say 'validate this with a zod schema' to your AI.">Zod</span>:</p>
+              <p class="tl">city must be text, hinted as "City name".</p>
+              <p class="tl">date must be text, hinted as an <span class="term" data-definition="ISO 8601 is the international standard date format: year-month-day, like 2026-09-21. It sorts correctly and nobody confuses day and month.">ISO date</span>.</p>
+              <p class="tl">End of boxes.</p>
+              <p class="tl">The clerk: an <span class="term" data-definition="Async (asynchronous) code can wait for slow things, like a network request, without freezing the whole program. 'await' means 'pause here until the answer arrives'.">async</span> function that receives Claude's filled-in form (args).</p>
+              <p class="tl">Wait for the real weather lookup (Module 4 opens this box)...</p>
+              <p class="tl">...passing the city Claude asked for...</p>
+              <p class="tl">...and the date...</p>
+              <p class="tl">...plus an optional real weather service address from the environment...</p>
+              <p class="tl">...and use fake data unless someone set WEATHER_USE_FIXTURE to "0".</p>
+              <p class="tl">Lookup done.</p>
+              <p class="tl">Hand the answer back...</p>
+              <p class="tl">...as a single text message containing the weather as JSON. Claude reads text, so we turn the data into text.</p>
+              <p class="tl">End of answer.</p>
+              <p class="tl">End of the clerk.</p>
+              <p class="tl">End of the tool.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Starting the conversation loop</h2>
+        <p>The live lane calls the SDK's <code>query()</code>. It is a <span class="term" data-definition="A stream (here an 'async iterator') hands you results one at a time as they happen, instead of all at once at the end. 'for await' loops over them as they arrive.">stream</span>: every message in the round trip (tool request, tool result, final answer) arrives one by one, and agent.ts collects them all.</p>
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">src/agent.ts</span>
+            <pre><code><span class="code-line">  <span class="code-keyword">for await</span> (<span class="code-keyword">const</span> message <span class="code-keyword">of</span> <span class="code-function">query</span>({</span>
+<span class="code-line">    prompt,</span>
+<span class="code-line">    <span class="code-property">options</span>: {</span>
+<span class="code-line">      <span class="code-property">systemPrompt</span>: instructions,</span>
+<span class="code-line">      <span class="code-property">mcpServers</span>: { <span class="code-property">weather</span>: server },</span>
+<span class="code-line">      <span class="code-property">allowedTools</span>: [<span class="code-string">'mcp__weather__get_weather'</span>],</span>
+<span class="code-line">      <span class="code-property">permissionMode</span>: <span class="code-string">'bypassPermissions'</span>,</span>
+<span class="code-line">    },</span>
+<span class="code-line">  })) {</span>
+<span class="code-line">    messages.<span class="code-function">push</span>(message);</span>
+<span class="code-line">  }</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Start a conversation with Claude and handle each message as it arrives...</p>
+              <p class="tl">...sending your question...</p>
+              <p class="tl">...with these settings:</p>
+              <p class="tl">The <span class="term" data-definition="The system prompt is the hidden, always-on instruction text the model reads before your question. Here it is the whole of instructions.md.">system prompt</span> is the text of instructions.md.</p>
+              <p class="tl">Plug in our toolbox and call it "weather".</p>
+              <p class="tl">Only this one tool may be used. Its full name is mcp + toolbox name + tool name.</p>
+              <p class="tl">Don't stop to ask a human "may I run this tool?" each time.</p>
+              <p class="tl">End of settings.</p>
+              <p class="tl">For every message that streams back...</p>
+              <p class="tl">...add it to our list, so we can print the last few later.</p>
+              <p class="tl">Loop finished: the conversation is over.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-icon">⚠️</div>
+          <div class="callout-content">
+            <strong class="callout-title">The name has to match three places</strong>
+            <p><code>mcp__weather__get_weather</code> is built from the key <code>weather</code> in <code>mcpServers</code> and the tool name <code>'get_weather'</code>. Rename either one and the allow-list silently stops matching, so Claude can't call the tool.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your understanding</h2>
+        <div class="quiz-container" id="quiz-module3">
+          <div class="quiz-question-block"
+               data-correct="b"
+               data-explanation-right="Exactly. The allow-list still says mcp__weather__get_weather, but the server is now registered as forecast, so the real name is mcp__forecast__get_weather. Nothing matches."
+               data-explanation-wrong="Not quite. The allowed tool name is assembled from the mcpServers key plus the tool name. Renaming the key breaks that match.">
+            <h3 class="quiz-question">An AI refactor renamed <code>mcpServers: { weather: server }</code> to <code>{ forecast: server }</code>. Now Claude answers without ever checking the weather. Why?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Claude doesn't like the word forecast</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>allowedTools still lists mcp__weather__get_weather, which no longer exists</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The fixture data was deleted</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="a"
+               data-explanation-right="Right. The description is what Claude reads to decide when a tool fits. Vague descriptions lead to tools being skipped or misused."
+               data-explanation-wrong="Not quite. Claude never sees your function body. It chooses tools based on their name, description, and input hints.">
+            <h3 class="quiz-question">You add a tool described only as "does stuff". Claude rarely picks it. What is the best fix?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Write a clear description of what it returns and when to use it</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Make the function body longer so Claude sees more code</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Remove all the Zod boxes so it's easier to call</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="c"
+               data-explanation-right="Yes. bypassPermissions is fine for one read-only weather lookup. For tools that delete, pay, or send, you want a human approval step or a tight allow-list."
+               data-explanation-wrong="Not quite. bypassPermissions skips the 'may I?' prompt. That's harmless for a weather lookup but risky for tools with real side effects.">
+            <h3 class="quiz-question">You plan to add a <code>send_email</code> tool next to get_weather. What deserves a second look?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The ISO date hint on get_weather</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The version number of the MCP server</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>permissionMode: bypassPermissions, since emails can't be unsent</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module3')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module3')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-4" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">04</span>
+      <h1 class="module-title">Fixtures and the Outside World</h1>
+      <p class="module-subtitle">When the agent uses fake weather, when it goes to the real internet, and how secrets stay out of git.</p>
+    </header>
+
+    <div class="module-body">
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Plastic fruit in the shop window</h2>
+        <p>Shops put plastic fruit in the window: it looks right, never rots, and is identical every morning. The <span class="term" data-definition="A fixture is fixed, fake sample data. Tests and demos use it so results are predictable and need no network or payment.">fixture</span> is this repo's plastic fruit: Amsterdam, 14°C, 72% rain, forever.</p>
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">src/tools/get_weather.ts</span>
+            <pre><code><span class="code-line"><span class="code-comment">/** Deterministic Amsterdam fixture — unit tests pass without network or API key. */</span></span>
+<span class="code-line"><span class="code-keyword">export</span> <span class="code-keyword">const</span> FIXTURE_WEATHER: WeatherObservation = {</span>
+<span class="code-line">  <span class="code-property">city</span>: <span class="code-string">'Amsterdam'</span>,</span>
+<span class="code-line">  <span class="code-property">date</span>: <span class="code-string">'2026-09-21'</span>,</span>
+<span class="code-line">  <span class="code-property">temperatureC</span>: <span class="code-number">14</span>,</span>
+<span class="code-line">  <span class="code-property">precipitationProbability</span>: <span class="code-number">72</span>,</span>
+<span class="code-line">};</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">A note: this data is <span class="term" data-definition="Deterministic means 'same input, same output, every time'. No randomness, no surprises. Tests love it.">deterministic</span>, so tests never need the internet or a key.</p>
+              <p class="tl">A shared constant shaped like a <span class="term" data-definition="A type is a promise about the shape of data, e.g. 'always has city, date, temperatureC and precipitationProbability'. TypeScript checks the promise before the code runs.">WeatherObservation</span>:</p>
+              <p class="tl">City: Amsterdam.</p>
+              <p class="tl">Date: 21 September 2026.</p>
+              <p class="tl">14 degrees Celsius.</p>
+              <p class="tl">72% chance of rain (high enough for an umbrella).</p>
+              <p class="tl">Done.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Three doors inside fetchWeather</h2>
+        <p>Every lookup walks through <code>fetchWeather</code> and exits through one of three doors. Which one depends on two <span class="term" data-definition="Environment variables are named settings outside your code (in your shell or a .env file). You change behaviour without editing code: WEATHER_BASE_URL=https://... pnpm start.">environment variables</span>.</p>
+        <div class="step-cards">
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>Fixture door (default)</strong>
+              <p>No <code>WEATHER_BASE_URL</code> set, or <code>WEATHER_USE_FIXTURE=1</code>. Returns the plastic fruit with your city and date pasted on.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Safety-net door</strong>
+              <p>Fixture was switched off (<code>WEATHER_USE_FIXTURE=0</code>) but there's still no URL. Rather than crash, it hands back the fixture anyway.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Real-world door</strong>
+              <p>A <code>WEATHER_BASE_URL</code> exists and the fixture isn't forced: it makes a real <span class="term" data-definition="HTTP is the language browsers and servers use to talk. A GET request asks a server for data at a URL, and the server replies with a status code (200 = OK, 404 = not found, 500 = server broke).">HTTP</span> request.</p>
+            </div>
+          </div>
+        </div>
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">src/tools/get_weather.ts</span>
+            <pre><code><span class="code-line">  <span class="code-keyword">const</span> response = <span class="code-keyword">await</span> <span class="code-function">fetch</span>(<span class="code-function">weatherUrl</span>(input.baseUrl, input));</span>
+<span class="code-line">  <span class="code-keyword">if</span> (!response.ok) <span class="code-keyword">throw new</span> <span class="code-function">Error</span>(<span class="code-string">`Weather request failed with ${response.status}`</span>);</span>
+<span class="code-line">  <span class="code-keyword">return</span> (<span class="code-keyword">await</span> response.<span class="code-function">json</span>()) <span class="code-keyword">as</span> WeatherObservation;</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Build the full address and ask the weather server, then wait for the reply.</p>
+              <p class="tl">If the server said anything other than "OK", stop loudly and include the status code (like 404 or 500) in the error.</p>
+              <p class="tl">Otherwise read the reply as JSON and trust that it has the WeatherObservation shape.</p>
+            </div>
+          </div>
+        </div>
+        <div class="callout callout-info">
+          <div class="callout-icon">🔍</div>
+          <div class="callout-content">
+            <strong class="callout-title">Notice the "trust"</strong>
+            <p><code>as WeatherObservation</code> is a promise to the compiler, not a check. If a real server returns different field names, nothing complains until something downstream reads <code>undefined</code>. A <span class="term" data-definition="Runtime validation checks data while the program is actually running (e.g. with a Zod schema), rather than only trusting type labels written in code.">runtime validation</span> step would catch it.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Keeping the key out of git</h2>
+        <p>The live lane needs <code>ANTHROPIC_API_KEY</code>. The repo treats it like a house key: kept on you, never taped to the front door.</p>
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">src/agent.ts</span>
+            <pre><code><span class="code-line"><span class="code-keyword">export</span> <span class="code-keyword">async</span> <span class="code-keyword">function</span> <span class="code-function">runWeatherAgent</span>(prompt: string) {</span>
+<span class="code-line">  <span class="code-keyword">if</span> (!process.env.ANTHROPIC_API_KEY) {</span>
+<span class="code-line">    <span class="code-keyword">throw new</span> <span class="code-function">Error</span>(<span class="code-string">'Set ANTHROPIC_API_KEY in the environment (see .env.example). No secrets in git.'</span>);</span>
+<span class="code-line">  }</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">The live-lane function, which takes your question as text.</p>
+              <p class="tl">First, check: is there an API key in the environment?</p>
+              <p class="tl">If not, stop immediately with a helpful message pointing at .env.example.</p>
+              <p class="tl">(Only past this gate does any money get spent.)</p>
+            </div>
+          </div>
+        </div>
+        <div class="badge-list">
+          <div class="badge-item">
+            <code class="badge-code">.env.example</code>
+            <span class="badge-desc">Committed template with an empty <code>ANTHROPIC_API_KEY=</code> line</span>
+          </div>
+          <div class="badge-item">
+            <code class="badge-code">.env</code>
+            <span class="badge-desc">Your real copy with the key. Listed in <span class="term" data-definition="A .gitignore file lists files git should never track or upload. Secrets and build output go here.">.gitignore</span>, so git never uploads it</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your understanding</h2>
+        <div class="quiz-container" id="quiz-module4">
+          <div class="quiz-question-block"
+               data-correct="b"
+               data-explanation-right="Exactly. With a WEATHER_BASE_URL set and the fixture not forced, it takes the real-world door. Your server returned 503, so the tool threw an error with that status."
+               data-explanation-wrong="Not quite. The message 'Weather request failed with 503' only comes from the real-world door, which only opens when WEATHER_BASE_URL is set. The server itself is unhappy.">
+            <h3 class="quiz-question">After setting <code>WEATHER_BASE_URL</code>, the tool throws "Weather request failed with 503". Where do you look first?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The fixture numbers in FIXTURE_WEATHER</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The weather server at that URL: it is up but refusing requests</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The ANTHROPIC_API_KEY</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="a"
+               data-explanation-right="Right. WEATHER_USE_FIXTURE=1 forces the fixture door even when a URL is set, so the workshop never depends on the network."
+               data-explanation-wrong="Not quite. You don't need to delete anything. The fixture door opens when WEATHER_USE_FIXTURE is 1, even with a URL configured.">
+            <h3 class="quiz-question">You're teaching a workshop on bad Wi-Fi, but your shell has <code>WEATHER_BASE_URL</code> set. How do you guarantee plastic-fruit data?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Set WEATHER_USE_FIXTURE=1</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Set WEATHER_USE_FIXTURE=0</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Delete get_weather.ts</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="c"
+               data-explanation-right="Yes. Secrets belong in environment variables or a gitignored .env. Pasting a key into source code puts it in git history, where it's effectively public."
+               data-explanation-wrong="Not quite. Any key written into a source file ends up in git history. Keep it in .env (ignored by git) or your shell environment.">
+            <h3 class="quiz-question">Your AI assistant suggests "just hardcode the API key in agent.ts to save time". What do you say?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Fine, the repo is small</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Fine, as long as it's in a comment</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>No: put it in .env or the shell environment, which git ignores</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module4')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module4')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-5" style="background: var(--color-bg)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">05</span>
+      <h1 class="module-title">Rules, Quests and Tests</h1>
+      <p class="module-subtitle">The plain-code rules that back up Claude, the "edit instructions, not code" quest, and the tests that keep everyone honest.</p>
+    </header>
+
+    <div class="module-body">
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">A thermostat with two dials</h2>
+        <p>A thermostat doesn't think. Below the set point it heats; above it, it doesn't. <code>decide.ts</code> is two of those dials: one for temperature (coat or not), one for rain (umbrella or not).</p>
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">src/decide.ts</span>
+            <pre><code><span class="code-line"><span class="code-keyword">export</span> <span class="code-keyword">const</span> <span class="code-function">clothingAdvice</span> = (weather: WeatherObservation): string <span class="code-operator">=&gt;</span> {</span>
+<span class="code-line">  <span class="code-keyword">const</span> parts: string[] = [];</span>
+<span class="code-line">  <span class="code-keyword">if</span> (weather.temperatureC <span class="code-operator">&lt;</span> <span class="code-number">12</span>) parts.<span class="code-function">push</span>(<span class="code-string">'jas aan'</span>);</span>
+<span class="code-line">  <span class="code-keyword">else if</span> (weather.temperatureC <span class="code-operator">&lt;</span> <span class="code-number">18</span>) parts.<span class="code-function">push</span>(<span class="code-string">'lichte jas of trui'</span>);</span>
+<span class="code-line">  <span class="code-keyword">else</span> parts.<span class="code-function">push</span>(<span class="code-string">'geen jas nodig'</span>);</span>
+<span class="code-line">  parts.<span class="code-function">push</span>(<span class="code-function">decideWeather</span>(weather) === <span class="code-string">'bring umbrella'</span> ? <span class="code-string">'paraplu mee'</span> : <span class="code-string">'geen paraplu'</span>);</span>
+<span class="code-line">  <span class="code-keyword">return</span> parts.<span class="code-function">join</span>(<span class="code-string">'; '</span>);</span>
+<span class="code-line">};</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">A function that takes one weather reading and returns a sentence of advice.</p>
+              <p class="tl">Start with an empty list of advice pieces (an <span class="term" data-definition="An array is an ordered list of items, written with square brackets like ['a', 'b']. You can add to it with push().">array</span>).</p>
+              <p class="tl">Colder than 12°C? Add "jas aan" (wear a coat).</p>
+              <p class="tl">Otherwise, colder than 18°C? Add "lichte jas of trui" (light jacket or sweater).</p>
+              <p class="tl">Otherwise add "geen jas nodig" (no coat needed).</p>
+              <p class="tl">Reuse the umbrella rule (60%+ rain): add "paraplu mee" or "geen paraplu".</p>
+              <p class="tl">Glue the pieces together with a semicolon: "lichte jas of trui; paraplu mee".</p>
+              <p class="tl">Done.</p>
+            </div>
+          </div>
+        </div>
+        <div class="callout callout-accent">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">Same rule, two places</strong>
+            <p>The 60% rule is written in code (<code>decideWeather</code>) <em>and</em> in English (<code>instructions.md</code>). Code gives a guaranteed answer; the prompt only asks Claude nicely. Keep both in sync, or the fixture lane and the live lane will disagree.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The quest: change the briefing, not the car</h2>
+        <p>To make a sat-nav speak Dutch you change a setting, you don't rebuild the engine. The clothing quest works the same way: the README says <em>do not add a new tool</em>. You edit <code>instructions.md</code>, and a checker script confirms you did.</p>
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">src/quest-clothing.ts</span>
+            <pre><code><span class="code-line"><span class="code-keyword">if</span> (!<span class="code-string">/kleding|clothing|jas|paraplu/i</span>.<span class="code-function">test</span>(instructions)) {</span>
+<span class="code-line">  console.<span class="code-function">error</span>(<span class="code-string">'Mini-quest incomplete: add clothing advice to instructions.md'</span>);</span>
+<span class="code-line">  process.<span class="code-function">exit</span>(<span class="code-number">1</span>);</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Search the instructions text for any of these words: kleding, clothing, jas, paraplu (upper or lower case). This search pattern is a <span class="term" data-definition="A regular expression (regex) is a mini-language for text patterns. /jas|paraplu/i means 'jas OR paraplu, ignoring case'.">regex</span>. If none are found...</p>
+              <p class="tl">...print a clear message saying what is missing...</p>
+              <p class="tl">...and quit with <span class="term" data-definition="An exit code is a number a program returns when it ends. 0 means success; anything else means failure. CI systems read it to decide pass or fail.">exit code</span> 1, meaning "failed".</p>
+              <p class="tl">(Otherwise carry on and print the fixture advice.)</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Tests: the smoke-alarm button</h2>
+        <p>You press the test button on a smoke alarm without setting the house on fire. <span class="term" data-definition="Unit tests are small automatic checks that run a piece of code with known inputs and compare the output to what you expect. Run them with 'pnpm test'.">Unit tests</span> do the same: known weather in, expected advice out, no API key, no network.</p>
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">tests/weather-tool.test.ts</span>
+            <pre><code><span class="code-line"><span class="code-function">test</span>(<span class="code-string">'fixture weather tool works without API key or network'</span>, <span class="code-keyword">async</span> () <span class="code-operator">=&gt;</span> {</span>
+<span class="code-line">  <span class="code-keyword">const</span> weather = <span class="code-keyword">await</span> <span class="code-function">fetchWeather</span>({ <span class="code-property">city</span>: <span class="code-string">'Amsterdam'</span>, <span class="code-property">date</span>: <span class="code-string">'2026-09-21'</span>, <span class="code-property">useFixture</span>: <span class="code-keyword">true</span> });</span>
+<span class="code-line">  assert.<span class="code-function">equal</span>(weather.precipitationProbability, FIXTURE_WEATHER.precipitationProbability);</span>
+<span class="code-line">  assert.<span class="code-function">equal</span>(<span class="code-function">decideWeather</span>(weather), <span class="code-string">'bring umbrella'</span>);</span>
+<span class="code-line">});</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">A test with a name that says what it proves.</p>
+              <p class="tl">Ask the tool for Amsterdam weather, fixture mode on.</p>
+              <p class="tl"><span class="term" data-definition="An assertion is a line that says 'this MUST be true'. If it isn't, the test fails and tells you what it got instead.">Assert</span> the rain chance is exactly the fixture's 72.</p>
+              <p class="tl">Assert 72% rain leads to "bring umbrella".</p>
+              <p class="tl">End of test.</p>
+            </div>
+          </div>
+        </div>
+        <div class="pattern-cards">
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-2)">
+            <div class="pattern-icon" style="background: var(--color-actor-2)">🌦️</div>
+            <h4 class="pattern-title">Tool works offline</h4>
+            <p class="pattern-desc">Fixture returns 72% and triggers the umbrella.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-1)">
+            <div class="pattern-icon" style="background: var(--color-actor-1)">🔗</div>
+            <h4 class="pattern-title">Contract holds</h4>
+            <p class="pattern-desc"><code>fetchWeatherDecision</code> returns decision plus clothing with "paraplu".</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-3)">
+            <div class="pattern-icon" style="background: var(--color-actor-3)">📜</div>
+            <h4 class="pattern-title">Quest hook present</h4>
+            <p class="pattern-desc">instructions.md mentions clothing advice.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-5)">
+            <div class="pattern-icon" style="background: var(--color-actor-5)">🧥</div>
+            <h4 class="pattern-title">Cold and wet</h4>
+            <p class="pattern-desc">8°C and 80% rain gives both "jas" and "paraplu".</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your understanding</h2>
+        <div class="quiz-container" id="quiz-module5">
+          <div class="quiz-question-block"
+               data-correct="b"
+               data-explanation-right="Exactly. 12 is not below 12, but it is below 18, so it lands in the middle band: lichte jas of trui. 60% rain meets the 60 threshold: paraplu mee."
+               data-explanation-wrong="Not quite. Walk the dials: 12 is not less than 12, but is less than 18, so light jacket. 60 is 'at least 60', so umbrella.">
+            <h3 class="quiz-question">It's 12°C with exactly 60% rain. What does <code>clothingAdvice</code> return?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>jas aan; geen paraplu</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>lichte jas of trui; paraplu mee</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>geen jas nodig; paraplu mee</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="c"
+               data-explanation-right="Right. The quest is an instruction-only change. A new tool is exactly what the README says not to do, and the checker only looks at instructions.md."
+               data-explanation-wrong="Not quite. The mini-quest is deliberately instruction-only. The fix belongs in instructions.md; adding code or tools misses the point of the exercise.">
+            <h3 class="quiz-question"><code>pnpm quest:clothing</code> prints "Mini-quest incomplete". Your AI offers to write a new <code>get_clothing</code> tool. What should you do instead?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Accept: more tools means better answers</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Delete quest-clothing.ts so the error goes away</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Add a clothing-advice line to instructions.md</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="a"
+               data-explanation-right="Yes. Tests cover the code rules, not what Claude says. If the prompt still says 60 but the code says 50, the tests pass while the live lane gives different advice. Update both."
+               data-explanation-wrong="Not quite. The tests never call Claude. They check decide.ts, so they can pass even when instructions.md tells Claude something different.">
+            <h3 class="quiz-question">You change the umbrella threshold in decide.ts to 50 and all tests pass. The live answers still use 60. Why?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>instructions.md still tells Claude 60, and tests never check what Claude says</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The fixture is cached from yesterday</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Claude ignores all numbers</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module5')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module5')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+  </main>
+
+</body>
+</html>

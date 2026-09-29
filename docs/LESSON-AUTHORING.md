@@ -51,3 +51,6 @@ P0 Workshop 5 (AET-77) → P1 Workshop 4 (AET-80) → P2 Workshop 3 (AET-79). W6
 **AET-84:** Day-pack thin remaining — Classroom 2 (+ W3–W5) naslag links from NASLAG.md / AET-104 SoT; facilitator-n8n-triage.md linked from W3 materials; no invent naslag; Proof AC / P3 cites kept.
 
 **P3 status:** Classroom 1–2 retrofit (AET-129). Classroom 1 ships explore→plan→change→verify→commit diagram (`public/diagrams/classroom/c1-explore-plan-change-verify-commit.svg`) + ConceptSim `c1-agent-loop` (EN+NL). Classroom 2 ships customize-stack diagram (`public/diagrams/classroom/c2-customize-stack.svg`) + ConceptSim `c2-customize-stack` (EN+NL). Apple bar / Uitleg→Voordoen→Zelf doen and solos A1–A4 / A6–A13 kept. Do not rename Classroom→Workshop; W6/W7 not forced.
+
+## AET-130 W4 HTML Solos
+Workshop 4 cites `/courses/{weather-agent-sdk,aetherlink-day5-n8n-to-agent,council-agent-sdk}/` HTML companions; `/start-solo` is not required for Done.

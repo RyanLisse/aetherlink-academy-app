@@ -111,7 +111,7 @@ test('parse council + sdk bridge; sdk starters available', () => {
   assert.equal(String(sdkLesson.startersStatus).toLowerCase(), 'available');
   assert.doesNotMatch(String(sdkLesson.startersStatus), /PENDING/i);
   const ids = (sdkLesson.starters || []).map((x) => x.id).sort();
-  assert.deepEqual(ids, ['council-agent-sdk', 'weather-agent-sdk']);
+  assert.deepEqual(ids, ['aetherlink-day5-n8n-to-agent', 'council-agent-sdk', 'weather-agent-sdk']);
   for (const starter of sdkLesson.starters) {
     assert.match(starter.cloneUrl, /^https:\/\/github\.com\/RyanLisse\//);
   }
@@ -180,4 +180,12 @@ test('day packs content file untouched by arcade ids', () => {
   const content = readFileSync(path.join(root, 'server/content.mjs'), 'utf8');
   assert.doesNotMatch(content, /agent-arcade|l1-weather|sdk-bridge/);
   assert.match(content, /getDayPack|day1|Day/);
+});
+
+test('sdk-bridge starters expose HTML Solo paths (AET-130)', () => {
+  const sdkLesson = manifest.lessons.find((l) => l.id === 'sdk-bridge');
+  const byId = Object.fromEntries((sdkLesson.starters || []).map((s) => [s.id, s]));
+  assert.equal(byId['weather-agent-sdk'].htmlCourse, '/courses/weather-agent-sdk/');
+  assert.equal(byId['council-agent-sdk'].htmlCourse, '/courses/council-agent-sdk/');
+  assert.equal(byId['aetherlink-day5-n8n-to-agent'].htmlCourse, '/courses/aetherlink-day5-n8n-to-agent/');
 });

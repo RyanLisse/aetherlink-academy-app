@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inside the LLM Council</title>
+
+  <!-- Google Fonts: Bricolage Grotesque · DM Sans · JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400;1,9..40,500&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="styles.css">
+
+  <!--
+    CUSTOMIZE PER COURSE — change only the three accent variables below.
+    Options:
+      vermillion  #D94F30 / #C4432A / #FDEEE9 / #E8836C  (default)
+      coral       #E06B56 / #C85A47 / #FDECEA / #E89585
+      teal        #2A7B9B / #1F6280 / #E4F2F7 / #5A9DB8
+      amber       #D4A843 / #BF9530 / #FDF5E0 / #E0C070
+      forest      #2D8B55 / #226B41 / #E8F5EE / #5AAD7A
+  -->
+  <style>
+    :root {
+      --color-accent:       #2A7B9B;
+      --color-accent-hover: #1F6280;
+      --color-accent-light: #E4F2F7;
+      --color-accent-muted: #5A9DB8;
+    }
+  </style>
+
+  <script src="main.js" defer></script>
+</head>
+<body>
+
+  <nav class="nav" id="nav">
+    <div class="progress-bar" id="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    <div class="nav-inner">
+      <span class="nav-title">Inside the LLM Council</span>
+      <div class="nav-dots" id="nav-dots" role="tablist">
+        <!--
+          One <button> per module. Replace MODULE_N_NAME with the actual module title.
+
+          <button class="nav-dot" data-target="module-1" data-tooltip="MODULE_1_NAME" role="tab" aria-label="Module 1: MODULE_1_NAME"></button>
+          <button class="nav-dot" data-target="module-2" data-tooltip="MODULE_2_NAME" role="tab" aria-label="Module 2: MODULE_2_NAME"></button>
+          ...
+        -->
+        <button class="nav-dot" data-target="module-1" data-tooltip="Ask the Council" role="tab" aria-label="Module 1: Ask the Council"></button>
+        <button class="nav-dot" data-target="module-2" data-tooltip="Meet the Council" role="tab" aria-label="Module 2: Meet the Council"></button>
+        <button class="nav-dot" data-target="module-3" data-tooltip="The Judge&#39;s Scorecard" role="tab" aria-label="Module 3: The Judge&#39;s Scorecard"></button>
+        <button class="nav-dot" data-target="module-4" data-tooltip="Rules Written in Prose" role="tab" aria-label="Module 4: Rules Written in Prose"></button>
+        <button class="nav-dot" data-target="module-5" data-tooltip="Rehearsal vs Live" role="tab" aria-label="Module 5: Rehearsal vs Live"></button>
+      </div>
+    </div>
+  </nav>
+
+  <main id="main">
+    <!-- modules/*.html content is assembled here by build.sh -->
+<section class="module" id="module-1" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">01</span>
+      <h1 class="module-title">Ask the Council a Question</h1>
+      <p class="module-subtitle">What this project does, and what happens between typing a question and getting a verdict back</p>
+    </header>
+
+    <div class="module-body">
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">One question, four opinions, one verdict</h2>
+        <p>This project is a small <span class="term" data-definition="A starter is a deliberately tiny project you copy and build on. It shows the shape of a solution without all the production extras.">starter</span> for an idea called an <strong>LLM council</strong>: instead of asking one <span class="term" data-definition="LLM stands for Large Language Model, the kind of AI behind Claude and ChatGPT. It reads text and predicts good text to write back.">LLM</span> once, you ask several "members" the same thing, then let a <strong>judge</strong> boil their answers down into one final answer plus a score for how much each member agreed.</p>
+        <p>It was built for AetherLink Academy's Agent Arcade as a lab exercise, using the <span class="term" data-definition="The Claude Agent SDK is Anthropic's toolkit for building AI agents in code. SDK means Software Development Kit: a ready-made library you import instead of writing everything yourself.">Claude Agent SDK</span>.</p>
+
+        <div class="step-cards">
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <strong>You ask a question</strong>
+              <p>"Moeten we een paraplu meenemen in Amsterdam?" (Should we bring an umbrella in Amsterdam?)</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <strong>Fan-out: four members answer</strong>
+              <p>Alpha, Bravo, Charlie and Delta each give an opinion.</p>
+            </div>
+          </div>
+          <div class="step-card">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <strong>Reduce: the judge decides</strong>
+              <p>One short summary, plus an agreement score from 0 to 1 for each member.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The advice column</h2>
+        <p>Picture a newspaper advice column. A reader mails in a letter. The desk photocopies it for four columnists, each writes a reply, and the editor prints one answer, noting which columnists she sided with.</p>
+        <div class="pattern-cards">
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-1)">
+            <div class="pattern-icon" style="background: var(--color-actor-1)">✉️</div>
+            <h4 class="pattern-title">The letter</h4>
+            <p class="pattern-desc">Your prompt, typed on the command line.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-2)">
+            <div class="pattern-icon" style="background: var(--color-actor-2)">🗂️</div>
+            <h4 class="pattern-title">The mail desk</h4>
+            <p class="pattern-desc"><code>src/agent.ts</code> receives it and routes it onward.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-3)">
+            <div class="pattern-icon" style="background: var(--color-actor-3)">✍️</div>
+            <h4 class="pattern-title">The columnists</h4>
+            <p class="pattern-desc">Four council members inside <code>src/council.ts</code>.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-4)">
+            <div class="pattern-icon" style="background: var(--color-actor-4)">⚖️</div>
+            <h4 class="pattern-title">The editor</h4>
+            <p class="pattern-desc">The judge, whose house rules live in <code>instructions.md</code>.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Follow the letter</h2>
+        <p>You run <code>pnpm start</code> in a <span class="term" data-definition="The terminal is the text window where you type commands to your computer instead of clicking buttons.">terminal</span>. Click through to watch your question travel.</p>
+
+        <div class="flow-animation" data-steps='[
+          {"highlight":"flow-m1-you","label":"You run pnpm start with a question (or none, and a default umbrella question is used)"},
+          {"highlight":"flow-m1-agent","label":"agent.ts notices it is the file being run directly and grabs your words from the command line","packet":true,"from":"m1-you","to":"m1-agent"},
+          {"highlight":"flow-m1-council","label":"runCouncil hands the prompt plus the path to instructions.md over to council.ts","packet":true,"from":"m1-agent","to":"m1-council"},
+          {"highlight":"flow-m1-council","label":"fanOutFixture produces four member answers (alpha, bravo, charlie, delta)"},
+          {"highlight":"flow-m1-rules","label":"The judge reads instructions.md to learn how strict to be","packet":true,"from":"m1-council","to":"m1-rules"},
+          {"highlight":"flow-m1-council","label":"reduceCouncil writes the summary and scores each member","packet":true,"from":"m1-rules","to":"m1-council"},
+          {"highlight":"flow-m1-you","label":"agent.ts prints everything as JSON in your terminal","packet":true,"from":"m1-council","to":"m1-you"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-m1-you">
+              <div class="flow-actor-icon">🧑</div>
+              <span>You (terminal)</span>
+            </div>
+            <div class="flow-actor" id="flow-m1-agent">
+              <div class="flow-actor-icon">🗂️</div>
+              <span>agent.ts</span>
+            </div>
+            <div class="flow-actor" id="flow-m1-council">
+              <div class="flow-actor-icon">✍️</div>
+              <span>council.ts</span>
+            </div>
+            <div class="flow-actor" id="flow-m1-rules">
+              <div class="flow-actor-icon">📜</div>
+              <span>instructions.md</span>
+            </div>
+          </div>
+          <div class="flow-packet"></div>
+          <div class="flow-step-label">Click "Next Step" to begin</div>
+          <div class="flow-controls">
+            <button class="btn flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The front door, in code</h2>
+        <p>This is the bottom of <code>src/agent.ts</code>. It only runs when you start this file directly, which makes it the program's <span class="term" data-definition="The entry point is where a program starts running, like the front door of a building. Tell an AI 'change the entry point' when you want to alter what happens at startup.">entry point</span>.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">src/agent.ts</span>
+            <pre><code><span class="code-line"><span class="code-keyword">const</span> isMain = process.argv[<span class="code-number">1</span>] <span class="code-operator">&amp;&amp;</span> <span class="code-function">fileURLToPath</span>(<span class="code-keyword">import</span>.meta.url) <span class="code-operator">===</span> process.argv[<span class="code-number">1</span>];</span>
+<span class="code-line"><span class="code-keyword">if</span> (isMain) {</span>
+<span class="code-line">  <span class="code-keyword">const</span> prompt = process.argv.<span class="code-function">slice</span>(<span class="code-number">2</span>).<span class="code-function">join</span>(<span class="code-string">' '</span>) <span class="code-operator">||</span> <span class="code-string">'Moeten we een paraplu meenemen in Amsterdam?'</span>;</span>
+<span class="code-line">  <span class="code-keyword">const</span> result = <span class="code-function">runCouncil</span>(prompt);</span>
+<span class="code-line">  console.<span class="code-function">log</span>(JSON.<span class="code-function">stringify</span>(result, <span class="code-keyword">null</span>, <span class="code-number">2</span>));</span>
+<span class="code-line">  <span class="code-keyword">if</span> (<span class="code-operator">!</span>process.env.ANTHROPIC_API_KEY) {</span>
+<span class="code-line">    console.<span class="code-function">log</span>(<span class="code-string">'\n(Tip) Set ANTHROPIC_API_KEY to exercise the live Claude Agent SDK path.'</span>);</span>
+<span class="code-line">  }</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Am I the file you actually launched, or did another file just borrow my functions? Only continue if I was launched.</p>
+              <p class="tl">If so, run the block below.</p>
+              <p class="tl">Glue together every word you typed after the command into one question. Typed nothing? Use the umbrella question.</p>
+              <p class="tl">Ask the council.</p>
+              <p class="tl">Print the whole result as neatly indented <span class="term" data-definition="JSON is a plain-text format for structured data: curly braces, labels in quotes, and values. Almost every program can read and write it.">JSON</span>.</p>
+              <p class="tl">If no <span class="term" data-definition="An API key is a secret password that proves to a paid service (here, Anthropic) who you are, so it can bill you.">API key</span> is set in the <span class="term" data-definition="Environment variables are settings stored outside the code, in the terminal session. Secrets like API keys live here so they never end up in the code itself.">environment</span>...</p>
+              <p class="tl">...print a friendly hint about the optional live path.</p>
+              <p class="tl">End of the check.</p>
+              <p class="tl">End of the startup block.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">Fan-out, then reduce</strong>
+            <p>Sending one job to many workers and then combining their results is one of computing's oldest patterns. Engineers call it <strong>fan-out / reduce</strong> (you may hear "map-reduce"). Knowing the name lets you ask an AI for it directly: "fan this out to three reviewers and reduce to one verdict."</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">What comes back</h2>
+        <p>This is real output from running the council on the umbrella question. The members echo your question, and the judge's scores sit under <code>agreement</code>.</p>
+        <div class="translation-block">
+          <div class="translation-code">
+            <span class="translation-label">terminal output (abridged view of judge)</span>
+            <pre><code><span class="code-line"><span class="code-property">"judge"</span>: {</span>
+<span class="code-line">  <span class="code-property">"answer"</span>: <span class="code-string">"Samenvatting: Moeten we een paraplu meenemen in Amsterdam? — concrete stappen: 1) check bron 2) beslis."</span>,</span>
+<span class="code-line">  <span class="code-property">"agreement"</span>: {</span>
+<span class="code-line">    <span class="code-property">"alpha"</span>: <span class="code-number">0.85</span>, <span class="code-property">"bravo"</span>: <span class="code-number">0.3</span>, <span class="code-property">"charlie"</span>: <span class="code-number">0.85</span>, <span class="code-property">"delta"</span>: <span class="code-number">0.85</span></span>
+<span class="code-line">  },</span>
+<span class="code-line">  <span class="code-property">"notes"</span>: <span class="code-string">"judge-rule:strict-vague"</span></span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Here is the judge's verdict.</p>
+              <p class="tl">The final answer, in Dutch, built from Charlie's concrete step-by-step reply.</p>
+              <p class="tl">How much each member supports that answer:</p>
+              <p class="tl">Everyone agrees strongly except Bravo, whose "maybe, it depends" got penalized.</p>
+              <p class="tl"></p>
+              <p class="tl">A label saying the strict "punish vague claims" rule was active.</p>
+              <p class="tl"></p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your understanding</h2>
+        <div class="quiz-container" id="quiz-module1">
+          <div class="quiz-question-block"
+               data-correct="b"
+               data-explanation-right="Right. The prompt comes from the words after the command. With none, agent.ts falls back to the built-in umbrella question, so the output looks familiar."
+               data-explanation-wrong="Look at the line with <code>||</code>: when you type nothing, the code quietly swaps in the umbrella question. Nothing crashes and nothing waits.">
+            <h3 class="quiz-question">A classmate runs <code>pnpm start</code> without typing any question and is surprised the council talks about umbrellas. What happened?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The council remembered their previous question</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>No words were given, so agent.ts used its default question</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The judge rewrote the question to something it prefers</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="c"
+               data-explanation-right="Yes. Fan-out/reduce fits whenever you want several independent takes and then one combined decision, like getting three code reviews and merging the verdict."
+               data-explanation-wrong="Think about the shape: several independent opinions, then one combined decision. Only one option has that shape.">
+            <h3 class="quiz-question">You want an AI feature that gets three separate reviews of a contract and then produces one recommendation. Which pattern from this project would you ask your AI assistant for?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>A single prompt that asks for three reviews at once</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>A retry loop that asks the same model until it agrees with itself</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Fan-out to three reviewers, then a reduce step that judges and scores them</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="a"
+               data-explanation-right="Exactly. The prompt enters through agent.ts, but the judging logic and its scores are produced in council.ts, so that is where a wrong score comes from."
+               data-explanation-wrong="agent.ts only receives the question and prints the result. The scores are calculated elsewhere; follow the flow animation again.">
+            <h3 class="quiz-question">The printed agreement scores look wrong. Where should you point your AI assistant first?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>council.ts, where the judge calculates the scores</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The startup block in agent.ts that prints the JSON</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>package.json</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module1')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module1')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-2" style="background: var(--color-bg)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">02</span>
+      <h1 class="module-title">Meet the Council</h1>
+      <p class="module-subtitle">Who sits at the table, what each one says, and the form they all have to fill in</p>
+    </header>
+
+    <div class="module-body">
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The cast</h2>
+        <p>Four members and one judge. Each member has a personality baked into its answer, and those personalities are chosen on purpose so the judge has something to disagree about.</p>
+        <div class="icon-rows">
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-1)">A</div>
+            <div><strong>Alpha — the fact checker</strong><p>"focus op feiten" (focus on facts)</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-2)">B</div>
+            <div><strong>Bravo — the fence-sitter</strong><p>"misschien, hangt van context af" (maybe, depends on context)</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-3)">C</div>
+            <div><strong>Charlie — the planner</strong><p>"concrete stappen: 1) check bron 2) beslis" (concrete steps: check source, decide)</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-5)">D</div>
+            <div><strong>Delta — the seconder</strong><p>"eens met Charlie over broncheck" (agrees with Charlie on checking sources)</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-4)">⚖️</div>
+            <div><strong>The judge (rechter)</strong><p>Picks the most concrete answer, summarizes it and scores everyone</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Listen in on the deliberation</h2>
+        <p>Here is the umbrella question played out as a group chat. Every member line is the exact text the code produces; the judge's lines narrate what <code>reduceCouncil</code> decides.</p>
+
+        <div class="chat-window" id="chat-council">
+          <div class="chat-messages">
+            <div class="chat-message" data-msg="0" data-sender="user" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-text-secondary)">?</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-text-secondary)">You</span>
+                <p>Moeten we een paraplu meenemen in Amsterdam?</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="1" data-sender="alpha" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-1)">A</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-1)">Alpha</span>
+                <p>Alpha: Moeten we een paraplu meenemen in Amsterdam? — focus op feiten.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="2" data-sender="bravo" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-2)">B</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-2)">Bravo</span>
+                <p>Bravo: Moeten we een paraplu meenemen in Amsterdam? — misschien, hangt van context af.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="3" data-sender="charlie" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-3)">C</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-3)">Charlie</span>
+                <p>Charlie: Moeten we een paraplu meenemen in Amsterdam? — concrete stappen: 1) check bron 2) beslis.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="4" data-sender="delta" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-5)">D</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-5)">Delta</span>
+                <p>Delta: Moeten we een paraplu meenemen in Amsterdam? — eens met Charlie over broncheck.</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="5" data-sender="judge" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-4)">J</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-4)">Judge</span>
+                <p>First member mentioning "concreet", "stappen" or "bron" wins the summary. That's Charlie. Writing it up in Dutch: "Samenvatting: ..."</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="6" data-sender="bravo" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-2)">B</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-2)">Bravo</span>
+                <p>Hey, "it depends" is a perfectly honest answer!</p>
+              </div>
+            </div>
+            <div class="chat-message" data-msg="7" data-sender="judge" style="display:none">
+              <div class="chat-avatar" style="background: var(--color-actor-4)">J</div>
+              <div class="chat-bubble">
+                <span class="chat-sender" style="color: var(--color-actor-4)">Judge</span>
+                <p>My rule says "Wees strenger bij vage claims." Alpha, Charlie, Delta: 0.85. Bravo: 0.3. Notes: judge-rule:strict-vague.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-typing" style="display:none">
+            <div class="chat-avatar" id="chat-council-typing-avatar">?</div>
+            <div class="chat-typing-dots">
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+            </div>
+          </div>
+
+          <div class="chat-controls">
+            <button class="btn chat-next-btn">Next Message</button>
+            <button class="btn chat-all-btn">Play All</button>
+            <button class="btn chat-reset-btn">Replay</button>
+            <span class="chat-progress"></span>
+          </div>
+        </div>
+
+        <div class="callout callout-info">
+          <div class="callout-icon">🎭</div>
+          <div class="callout-content">
+            <strong class="callout-title">These members are actors reading a script</strong>
+            <p>No AI is called here. The answers are <span class="term" data-definition="A fixture is canned, predictable data used in place of the real thing, usually for tests or demos. Same input, same output, every time, and no cost.">fixtures</span>: fixed sentences with your question pasted in. That keeps the lab free and the tests predictable.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Where the script lives</h2>
+        <p>The whole council is one <span class="term" data-definition="A function is a named, reusable block of code. You give it inputs, it does its job and hands back an output, like a vending machine.">function</span> in <code>src/council.ts</code> that returns a list of four answers.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">src/council.ts</span>
+            <pre><code><span class="code-line"><span class="code-comment">/** Fixture member answers — no live multi-model spend. */</span></span>
+<span class="code-line"><span class="code-keyword">export function</span> <span class="code-function">fanOutFixture</span>(prompt: <span class="code-keyword">string</span>): CouncilMemberOutput[] {</span>
+<span class="code-line">  <span class="code-keyword">const</span> base = prompt.<span class="code-function">trim</span>() <span class="code-operator">||</span> <span class="code-string">'Geen prompt'</span>;</span>
+<span class="code-line">  <span class="code-keyword">return</span> [</span>
+<span class="code-line">    { <span class="code-property">id</span>: <span class="code-string">'alpha'</span>, <span class="code-property">answer</span>: <span class="code-string">`Alpha: ${base} — focus op feiten.`</span> },</span>
+<span class="code-line">    { <span class="code-property">id</span>: <span class="code-string">'bravo'</span>, <span class="code-property">answer</span>: <span class="code-string">`Bravo: ${base} — misschien, hangt van context af.`</span> },</span>
+<span class="code-line">    { <span class="code-property">id</span>: <span class="code-string">'charlie'</span>, <span class="code-property">answer</span>: <span class="code-string">`Charlie: ${base} — concrete stappen: 1) check bron 2) beslis.`</span> },</span>
+<span class="code-line">    { <span class="code-property">id</span>: <span class="code-string">'delta'</span>, <span class="code-property">answer</span>: <span class="code-string">`Delta: ${base} — eens met Charlie over broncheck.`</span> },</span>
+<span class="code-line">  ];</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">A note to humans: these answers are fake on purpose, so no money is spent on AI calls.</p>
+              <p class="tl">Define "fanOutFixture": it takes the question as text and promises to return a list of member answers.</p>
+              <p class="tl">Trim stray spaces off the question. If nothing is left, use "Geen prompt" (no prompt).</p>
+              <p class="tl">Hand back a list of four answers:</p>
+              <p class="tl">Alpha pastes in the question and adds "focus on facts."</p>
+              <p class="tl">Bravo pastes it in and hedges.</p>
+              <p class="tl">Charlie pastes it in and gives concrete steps.</p>
+              <p class="tl">Delta pastes it in and backs Charlie.</p>
+              <p class="tl">End of the list.</p>
+              <p class="tl">End of the function.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The ballot form every member fills in</h2>
+        <p>Think of an election ballot: every voter gets the same printed form with fixed boxes, so counting is easy. <code>src/schemas.ts</code> is that printed form. It uses <span class="term" data-definition="TypeScript is JavaScript with labels (types) that say what shape each piece of data must have. Mistakes get flagged before the program even runs.">TypeScript</span> <span class="term" data-definition="A type describes the shape data must have, such as 'text', 'a number', or 'an object with an id and an answer'. Ask AI to 'add a type' when you want the editor to catch shape mistakes.">types</span> to describe the exact shape of every answer and every verdict.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">src/schemas.ts</span>
+            <pre><code><span class="code-line"><span class="code-keyword">export type</span> CouncilMemberId = <span class="code-string">'alpha'</span> <span class="code-operator">|</span> <span class="code-string">'bravo'</span> <span class="code-operator">|</span> <span class="code-string">'charlie'</span> <span class="code-operator">|</span> <span class="code-string">'delta'</span>;</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">export type</span> CouncilMemberOutput = {</span>
+<span class="code-line">  <span class="code-property">id</span>: CouncilMemberId;</span>
+<span class="code-line">  <span class="code-property">answer</span>: <span class="code-keyword">string</span>;</span>
+<span class="code-line">};</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">export type</span> JudgeResult = {</span>
+<span class="code-line">  <span class="code-property">answer</span>: <span class="code-keyword">string</span>;</span>
+<span class="code-line">  <span class="code-property">agreement</span>: Record&lt;CouncilMemberId, <span class="code-keyword">number</span>&gt;;</span>
+<span class="code-line">  <span class="code-property">notes</span>: <span class="code-keyword">string</span>;</span>
+<span class="code-line">};</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">export const</span> MEMBER_IDS: CouncilMemberId[] = [<span class="code-string">'alpha'</span>, <span class="code-string">'bravo'</span>, <span class="code-string">'charlie'</span>, <span class="code-string">'delta'</span>];</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">A member name can only be one of these four words. "echo" would be rejected.</p>
+              <p class="tl"></p>
+              <p class="tl">A member's ballot has exactly two boxes:</p>
+              <p class="tl">who they are,</p>
+              <p class="tl">and what they said.</p>
+              <p class="tl"></p>
+              <p class="tl"></p>
+              <p class="tl">The judge's verdict has three boxes:</p>
+              <p class="tl">the final answer,</p>
+              <p class="tl">a score for every one of the four members (a lookup table: name to number),</p>
+              <p class="tl">and a short note about which rule was used.</p>
+              <p class="tl"></p>
+              <p class="tl"></p>
+              <p class="tl">The official roll call, in order. The judge walks this list when scoring.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">Structured output beats free text</strong>
+            <p>Because the verdict is a fixed <span class="term" data-definition="A schema is a formal description of what data must look like: which fields exist and what kind of value each holds.">schema</span>, other code (tests, dashboards, a grading bot) can read <code>agreement.bravo</code> without guessing. When you ask an AI for results, asking for "JSON matching this schema" is what makes them usable by software.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your understanding</h2>
+        <div class="quiz-container" id="quiz-module2">
+          <div class="quiz-question-block"
+               data-correct="c"
+               data-explanation-right="Right. The member name is a closed list in schemas.ts, the roll call MEMBER_IDS drives scoring, and fanOutFixture must actually produce the new answer. Miss one and TypeScript or the judge will complain."
+               data-explanation-wrong="Adding a member is not just adding a sentence. The allowed names and the roll call the judge walks both live in schemas.ts, and they must match the answers fanOutFixture returns.">
+            <h3 class="quiz-question">You want a fifth member, "echo", who always plays devil's advocate. What should you tell your AI assistant to change?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Only add a new line in fanOutFixture</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Only edit instructions.md to mention echo</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Add "echo" to CouncilMemberId and MEMBER_IDS in schemas.ts, and give echo an answer in fanOutFixture</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="a"
+               data-explanation-right="Yes. The members are fixtures, so their words never change except for your pasted-in question. Only the judge's rules can change the outcome in this lab."
+               data-explanation-wrong="Remember: the members are scripted fixtures, not live AI. Nothing about them varies from run to run except the question pasted into the template.">
+            <h3 class="quiz-question">You ask ten different questions and Bravo is always the lowest-scoring member. Why?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Bravo's answer is a fixed template that always hedges, whatever the question</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Bravo is a weaker AI model than the others</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Bravo answers last, so it is out of time</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="b"
+               data-explanation-right="Exactly. A fixed schema is a contract: the grader can rely on agreement.alpha existing and being a number."
+               data-explanation-wrong="Think about who else reads the verdict. Free prose is great for humans but software needs predictable fields.">
+            <h3 class="quiz-question">A teammate suggests the judge should just return a friendly paragraph instead of the JudgeResult shape. What do you lose?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Nothing, a paragraph contains the same information</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Tests and other programs can no longer reliably read each member's score</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The members stop answering</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module2')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module2')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-3" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">03</span>
+      <h1 class="module-title">The Judge's Scorecard</h1>
+      <p class="module-subtitle">How the reduce step picks a winner and turns words into numbers between 0 and 1</p>
+    </header>
+
+    <div class="module-body">
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Scored like figure skating</h2>
+        <p>A figure skating judge starts from a base value, adds bonuses for clean elements, subtracts deductions for falls, and the final mark can never drop below zero. This judge works exactly the same way, except its "elements" are words.</p>
+        <div class="flow-steps">
+          <div class="flow-step"><div class="flow-step-num">0.55</div><p>Everyone starts with the same base score</p></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-num">+0.2</div><p>Bonus for concrete words: feit, bron, concreet, stappen</p></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-num">−</div><p>Deduction for vague words: misschien, hangt, vague, vaag</p></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-num">+0.1</div><p>Bonus for sharing a long word with the final answer</p></div>
+          <div class="flow-arrow">→</div>
+          <div class="flow-step"><div class="flow-step-num">0–1</div><p>Clamp into the 0 to 1 range and round</p></div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The scoring function, line by line</h2>
+        <p>This is <code>scoreAgainstJudge</code> in <code>src/council.ts</code>. It uses <span class="term" data-definition="A regular expression (regex) is a tiny pattern language for finding text. /bron|feit/ means 'contains bron or feit'. Ask an AI for 'a regex that matches X' when you need text detection.">regular expressions</span> to spot words, and a <span class="term" data-definition="A boolean is a value that is only ever true or false, like a light switch.">boolean</span> called <code>strict</code> to decide how harsh the vagueness penalty is.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">src/council.ts</span>
+            <pre><code><span class="code-line"><span class="code-keyword">function</span> <span class="code-function">scoreAgainstJudge</span>(member: CouncilMemberOutput, judgeAnswer: <span class="code-keyword">string</span>, strict: <span class="code-keyword">boolean</span>): <span class="code-keyword">number</span> {</span>
+<span class="code-line">  <span class="code-keyword">const</span> text = member.answer.<span class="code-function">toLowerCase</span>();</span>
+<span class="code-line">  <span class="code-keyword">let</span> score = <span class="code-number">0.55</span>;</span>
+<span class="code-line">  <span class="code-keyword">if</span> (<span class="code-string">/feit|bron|concreet|stappen/</span>.<span class="code-function">test</span>(text)) score <span class="code-operator">+=</span> <span class="code-number">0.2</span>;</span>
+<span class="code-line">  <span class="code-keyword">if</span> (<span class="code-string">/misschien|hangt|vague|vaag/</span>.<span class="code-function">test</span>(text)) score <span class="code-operator">-=</span> strict <span class="code-operator">?</span> <span class="code-number">0.35</span> <span class="code-operator">:</span> <span class="code-number">0.15</span>;</span>
+<span class="code-line">  <span class="code-keyword">if</span> (judgeAnswer.<span class="code-function">toLowerCase</span>().<span class="code-function">split</span>(<span class="code-string">/\s+/</span>).<span class="code-function">some</span>((w) <span class="code-operator">=&gt;</span> w.length <span class="code-operator">&gt;</span> <span class="code-number">4</span> <span class="code-operator">&amp;&amp;</span> text.<span class="code-function">includes</span>(w))) score <span class="code-operator">+=</span> <span class="code-number">0.1</span>;</span>
+<span class="code-line">  <span class="code-keyword">return</span> Math.<span class="code-function">max</span>(<span class="code-number">0</span>, Math.<span class="code-function">min</span>(<span class="code-number">1</span>, <span class="code-function">Number</span>(score.<span class="code-function">toFixed</span>(<span class="code-number">2</span>))));</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">To score one member, I need their answer, the judge's final answer, and whether strict mode is on.</p>
+              <p class="tl">Lowercase the member's answer so "Bron" and "bron" count the same.</p>
+              <p class="tl">Start at 0.55.</p>
+              <p class="tl">Mentions facts, sources, concreteness or steps? Add 0.2.</p>
+              <p class="tl">Uses hedging words? Subtract 0.35 when strict, only 0.15 when mild.</p>
+              <p class="tl">Chop the final answer into words. If any word longer than 4 letters also appears in this member's answer, add 0.1.</p>
+              <p class="tl">Round to two decimals and squeeze the result so it never goes below 0 or above 1.</p>
+              <p class="tl">Done.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Watch Bravo get scored</h2>
+        <p>Here is the scorecard travelling through each check for Bravo's hedging answer, with strict mode on.</p>
+
+        <div class="flow-animation" data-steps='[
+          {"highlight":"flow-m3-base","label":"Bravo starts at 0.55, like everyone else"},
+          {"highlight":"flow-m3-facts","label":"No feit, bron, concreet or stappen in Bravo&apos;s answer: no bonus. Still 0.55","packet":true,"from":"m3-base","to":"m3-facts"},
+          {"highlight":"flow-m3-vague","label":"Found misschien and hangt. Strict rule: minus 0.35. Now 0.20","packet":true,"from":"m3-facts","to":"m3-vague"},
+          {"highlight":"flow-m3-overlap","label":"Bravo echoes the question, so words like paraplu also appear in the final answer: plus 0.1. Now 0.30","packet":true,"from":"m3-vague","to":"m3-overlap"},
+          {"highlight":"flow-m3-clamp","label":"0.30 is already between 0 and 1. Final score: 0.3 (it would be 0.5 with a mild rule)","packet":true,"from":"m3-overlap","to":"m3-clamp"}
+        ]'>
+          <div class="flow-actors">
+            <div class="flow-actor" id="flow-m3-base"><div class="flow-actor-icon">🎯</div><span>Base</span></div>
+            <div class="flow-actor" id="flow-m3-facts"><div class="flow-actor-icon">📌</div><span>Concrete?</span></div>
+            <div class="flow-actor" id="flow-m3-vague"><div class="flow-actor-icon">🌫️</div><span>Vague?</span></div>
+            <div class="flow-actor" id="flow-m3-overlap"><div class="flow-actor-icon">🔗</div><span>Overlap?</span></div>
+            <div class="flow-actor" id="flow-m3-clamp"><div class="flow-actor-icon">📏</div><span>Clamp</span></div>
+          </div>
+          <div class="flow-packet"></div>
+          <div class="flow-step-label">Click "Next Step" to begin</div>
+          <div class="flow-controls">
+            <button class="btn flow-next-btn">Next Step</button>
+            <button class="btn flow-reset-btn">Restart</button>
+            <span class="flow-progress"></span>
+          </div>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-icon">🔍</div>
+          <div class="callout-content">
+            <strong class="callout-title">A bonus everybody always gets</strong>
+            <p>Every fixture member repeats your question, and the final answer repeats it too. So the "+0.1 overlap" bonus fires for all four members on almost every question. A check that always passes measures nothing. Spotting this kind of thing is exactly how you catch an AI-written <span class="term" data-definition="A heuristic is a rule of thumb: a quick shortcut that is usually good enough, instead of an exact method.">heuristic</span> that looks clever but does not discriminate.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Picking the winning answer</h2>
+        <p>Before scoring anyone, <code>reduceCouncil</code> chooses which member's words become the final answer, then trims it to the word limit.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">src/council.ts</span>
+            <pre><code><span class="code-line">  <span class="code-keyword">const</span> rule = <span class="code-function">loadJudgeRule</span>(input.instructions);</span>
+<span class="code-line">  <span class="code-keyword">const</span> preferred = input.members.<span class="code-function">find</span>((m) <span class="code-operator">=&gt;</span> <span class="code-string">/concreet|stappen|bron/i</span>.<span class="code-function">test</span>(m.answer)) <span class="code-operator">||</span> input.members[<span class="code-number">0</span>];</span>
+<span class="code-line">  <span class="code-keyword">let</span> answer = rule.dutch</span>
+<span class="code-line">    <span class="code-operator">?</span> <span class="code-string">`Samenvatting: ${preferred.answer.replace(/^[A-Za-z]+:\s*/, '')}`</span></span>
+<span class="code-line">    <span class="code-operator">:</span> <span class="code-string">`Summary: ${preferred.answer.replace(/^[A-Za-z]+:\s*/, '')}`</span>;</span>
+<span class="code-line">  <span class="code-keyword">const</span> words = answer.<span class="code-function">split</span>(<span class="code-string">/\s+/</span>);</span>
+<span class="code-line">  <span class="code-keyword">if</span> (words.length <span class="code-operator">&gt;</span> rule.maxWords) {</span>
+<span class="code-line">    answer = words.<span class="code-function">slice</span>(<span class="code-number">0</span>, rule.maxWords).<span class="code-function">join</span>(<span class="code-string">' '</span>) <span class="code-operator">+</span> <span class="code-string">'…'</span>;</span>
+<span class="code-line">  }</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Read the judge's house rules (strict? Dutch? word limit?) from instructions.md. Module 4 covers how.</p>
+              <p class="tl">Walk the members in order and take the first one that sounds concrete. Nobody does? Fall back to the first member.</p>
+              <p class="tl">If the rules say Dutch...</p>
+              <p class="tl">...start with "Samenvatting:" and strip the "Charlie:" name tag off the front.</p>
+              <p class="tl">Otherwise start with "Summary:" instead.</p>
+              <p class="tl">Count the words.</p>
+              <p class="tl">Too many for the limit?</p>
+              <p class="tl">Keep only the allowed number and add an ellipsis.</p>
+              <p class="tl">End of the trimming.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your understanding</h2>
+        <div class="quiz-container" id="quiz-module3">
+          <div class="quiz-question-block"
+               data-correct="b"
+               data-explanation-right="Right. Alpha already passes the concrete check via &quot;feiten&quot;. It still loses the summary because the picker looks only for concreet, stappen or bron, and Charlie matches first."
+               data-explanation-wrong="Two different word lists are at play. The scoring list includes feit, but the picker in reduceCouncil only looks for concreet, stappen or bron.">
+            <h3 class="quiz-question">Alpha scores 0.85, tied with Charlie, yet the final answer is always built from Charlie's words. Why?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Ties are broken alphabetically from the end</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Picking the summary uses a different word list than scoring, and Alpha's answer is not on it</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Charlie answered faster</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="c"
+               data-explanation-right="Exactly. The overlap bonus fires for everyone because everyone echoes the question, so it adds the same 0.1 to all and never separates them. Removing it or changing what counts as overlap is the real fix."
+               data-explanation-wrong="Look at what every fixture answer has in common with the final answer: the pasted-in question. Which check does that make useless?">
+            <h3 class="quiz-question">A reviewer complains that agreement scores barely tell members apart. Which check would you ask your AI to rethink first?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The clamp to 0 to 1</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The 0.55 base score</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The shared-long-word overlap bonus</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="a"
+               data-explanation-right="Yes. 0.55 plus 0.2 is 0.75, the vague penalty does not apply, and the overlap bonus brings it to 0.85."
+               data-explanation-wrong="Walk the scorecard: base 0.55, concrete bonus +0.2 for &quot;bron&quot;, no vague words, overlap +0.1.">
+            <h3 class="quiz-question">A new member answers "Echo: [your question] — check eerst de bron." What score will it get, strict mode on?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>0.85</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>0.55</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>0.30</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module3')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module3')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-4" style="background: var(--color-bg)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">04</span>
+      <h1 class="module-title">Rules Written in Prose</h1>
+      <p class="module-subtitle">How a Markdown file steers the judge, and the mini-quest that asks you to edit it</p>
+    </header>
+
+    <div class="module-body">
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">A note on the fridge for the house-sitter</h2>
+        <p>You leave a note for a house-sitter who does not read full sentences. They skim for a few magic words: see "strenger" and they get strict, see "Nederlands" and they speak Dutch, see "max 80 woorden" and they keep it short. Everything else on the note is decoration to them.</p>
+        <p>That note is <code>instructions.md</code>, a plain <span class="term" data-definition="Markdown is a simple way to format plain text: # for headings, ** for bold, - for bullet lists. README files are usually Markdown.">Markdown</span> file. The house-sitter is <code>loadJudgeRule</code>.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">instructions.md</span>
+            <pre><code><span class="code-line"><span class="code-keyword">## Judge / reduce (mini-quest hook — edit this section)</span></span>
+<span class="code-line">You are the **rechter** (judge). Produce:</span>
+<span class="code-line">1. A short final answer (max 80 woorden, Nederlands tenzij de gebruiker Engels vraagt).</span>
+<span class="code-line">2. Per-member agreement scores from 0 to 1 (how well each member supports the final answer).</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-keyword">### Judge rule (edit for mini-quest)</span></span>
+<span class="code-line">Wees strenger bij vage claims. Prefer concrete statements. If members disagree, say so explicitly and lower agreement scores for vague answers.</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">A heading marking the part you are allowed to edit.</p>
+              <p class="tl">Contains "rechter": the quest script checks this word exists.</p>
+              <p class="tl">"max 80 woorden" sets the word limit. "Nederlands" switches the answer to Dutch.</p>
+              <p class="tl">Describes the scores. Human-readable only; the code ignores it.</p>
+              <p class="tl"></p>
+              <p class="tl">The quest's target zone.</p>
+              <p class="tl">"strenger" (stricter) is the switch that turns on the harsh 0.35 vagueness penalty.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The house-sitter, in code</h2>
+        <p><code>loadJudgeRule</code> reads the whole note and returns three settings. Watch the <code>\b</code> markers: they mean "word boundary", so the word must stand on its own.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">src/council.ts</span>
+            <pre><code><span class="code-line"><span class="code-keyword">export function</span> <span class="code-function">loadJudgeRule</span>(instructions: <span class="code-keyword">string</span>): { <span class="code-property">strict</span>: <span class="code-keyword">boolean</span>; <span class="code-property">dutch</span>: <span class="code-keyword">boolean</span>; <span class="code-property">maxWords</span>: <span class="code-keyword">number</span> } {</span>
+<span class="code-line">  <span class="code-keyword">const</span> strict = <span class="code-string">/\bstrenger\b|\bbe strict\b|strict-vague/i</span>.<span class="code-function">test</span>(instructions);</span>
+<span class="code-line">  <span class="code-keyword">const</span> dutch = <span class="code-string">/nederlands/i</span>.<span class="code-function">test</span>(instructions);</span>
+<span class="code-line">  <span class="code-keyword">const</span> maxMatch = instructions.<span class="code-function">match</span>(<span class="code-string">/max\s*(\d+)\s*woord/i</span>);</span>
+<span class="code-line">  <span class="code-keyword">const</span> maxWords = maxMatch <span class="code-operator">?</span> <span class="code-function">Number</span>(maxMatch[<span class="code-number">1</span>]) <span class="code-operator">:</span> <span class="code-number">80</span>;</span>
+<span class="code-line">  <span class="code-keyword">return</span> { strict, dutch, maxWords };</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Take the note's full text; return three settings: strict yes/no, Dutch yes/no, and a word limit.</p>
+              <p class="tl">Strict if the note contains the standalone word "strenger", the phrase "be strict", or "strict-vague". Capital letters do not matter.</p>
+              <p class="tl">Dutch if "nederlands" appears anywhere at all.</p>
+              <p class="tl">Look for "max", a number, then "woord". Remember the number.</p>
+              <p class="tl">Found one? Use it. Otherwise default to 80 words.</p>
+              <p class="tl">Hand the three settings back.</p>
+              <p class="tl">Done.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">Prose as configuration</strong>
+            <p>The same file is a <span class="term" data-definition="A system prompt is the standing instructions given to an AI model before the conversation, setting its role and rules.">system prompt</span> for a real model (module 5) and a <span class="term" data-definition="Configuration is the set of settings that change how a program behaves without changing its code.">config</span> file for the fixture judge. That is elegant, but keyword matching is brittle: a rephrasing a human reads as identical can flip a setting in code. When you ask an AI to "read settings from a prompt file", ask it to list which exact words it matches.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Spot the edit that silently breaks strict mode</h2>
+        <p>Four learners each rewrote the judge rule line. Every one of them meant "be stricter". Click the edit that actually turns strict mode <em>off</em>.</p>
+        <div class="bug-challenge">
+          <h3>Which judge rule no longer triggers <code>strict: true</code>?</h3>
+          <div class="bug-code">
+            <div class="bug-line" data-line="1" data-hint="This one still matches. Look for a line where the magic word is glued to extra letters." onclick="checkBugLine(this, false)">
+              <span class="line-num">1</span>
+              <code>Wees strenger bij vage claims.</code>
+            </div>
+            <div class="bug-line" data-line="2" data-hint="This one still matches. Look for a line where the magic word is glued to extra letters." onclick="checkBugLine(this, false)">
+              <span class="line-num">2</span>
+              <code>Wees STRENGER bij vage claims en maximaal concreet.</code>
+            </div>
+            <div class="bug-line bug-target" data-line="3" data-explanation="The pattern wants &quot;be strict&quot; followed by a word boundary. In &quot;stricter&quot; the letters &quot;er&quot; follow straight after, so there is no boundary, the match fails, and the judge quietly goes mild. (Line 2 still works because the i flag ignores capitals.)" onclick="checkBugLine(this, true)">
+              <span class="line-num">3</span>
+              <code>Be stricter with vague claims.</code>
+            </div>
+            <div class="bug-line" data-line="4" data-hint="This one still matches. Look for a line where the magic word is glued to extra letters." onclick="checkBugLine(this, false)">
+              <span class="line-num">4</span>
+              <code>Be strict with vague claims.</code>
+            </div>
+          </div>
+          <div class="bug-feedback"></div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The mini-quest loop</h2>
+        <p>The lab asks you to change <strong>only</strong> the judge rule and watch the numbers move. <code>src/quest-judge.ts</code> first checks you did not delete the judge section entirely.</p>
+
+        <div class="step-cards">
+          <div class="step-card"><div class="step-num">1</div><div class="step-body"><strong>Edit the judge rule</strong><p>In <code>instructions.md</code>, under "Judge rule (edit for mini-quest)".</p></div></div>
+          <div class="step-card"><div class="step-num">2</div><div class="step-body"><strong>Run <code>pnpm quest:judge</code></strong><p>Prints the notes label, the agreement scores and the answer for a remote-first startup question.</p></div></div>
+          <div class="step-card"><div class="step-num">3</div><div class="step-body"><strong>Run <code>pnpm test</code></strong><p>Confirms the council still behaves. Arcade checkpoint: <code>mini-quest-judge</code>.</p></div></div>
+        </div>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">src/quest-judge.ts</span>
+            <pre><code><span class="code-line"><span class="code-keyword">const</span> before = <span class="code-function">readFileSync</span>(instructionsPath, <span class="code-string">'utf8'</span>);</span>
+<span class="code-line"><span class="code-keyword">if</span> (<span class="code-operator">!</span><span class="code-string">/rechter|judge/i</span>.<span class="code-function">test</span>(before)) {</span>
+<span class="code-line">  console.<span class="code-function">error</span>(<span class="code-string">'Mini-quest incomplete: judge section missing in instructions.md'</span>);</span>
+<span class="code-line">  process.<span class="code-function">exit</span>(<span class="code-number">1</span>);</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Read the instructions file as text.</p>
+              <p class="tl">If it mentions neither "rechter" nor "judge"...</p>
+              <p class="tl">...print an error explaining the judge section is gone...</p>
+              <p class="tl">...and stop with <span class="term" data-definition="An exit code is the number a program reports when it finishes. 0 means success; anything else means failure, which scripts and CI systems can detect.">exit code</span> 1, signalling failure.</p>
+              <p class="tl">Otherwise carry on and run the council.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="translation-block">
+          <div class="translation-code">
+            <span class="translation-label">quest output: mild rule vs strict rule</span>
+            <pre><code><span class="code-line"><span class="code-comment"># "Wees mild; vague wording is fine."</span></span>
+<span class="code-line">judge notes: judge-rule:default</span>
+<span class="code-line">agreement: { alpha: <span class="code-number">0.85</span>, bravo: <span class="code-number">0.5</span>, charlie: <span class="code-number">0.85</span>, delta: <span class="code-number">0.85</span> }</span>
+<span class="code-line"></span>
+<span class="code-line"><span class="code-comment"># "Wees strenger bij vage claims."</span></span>
+<span class="code-line">judge notes: judge-rule:strict-vague</span>
+<span class="code-line">agreement: { alpha: <span class="code-number">0.85</span>, bravo: <span class="code-number">0.3</span>, charlie: <span class="code-number">0.85</span>, delta: <span class="code-number">0.85</span> }</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">With a mild rule...</p>
+              <p class="tl">...the notes say the default rule ran...</p>
+              <p class="tl">...and Bravo only loses 0.15 for hedging.</p>
+              <p class="tl"></p>
+              <p class="tl">With the strict rule...</p>
+              <p class="tl">...the notes change...</p>
+              <p class="tl">...and Bravo drops to 0.3. Nobody else moves, because nobody else hedges.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your understanding</h2>
+        <div class="quiz-container" id="quiz-module4">
+          <div class="quiz-question-block"
+               data-correct="b"
+               data-explanation-right="Right. dutch is true whenever &quot;nederlands&quot; appears anywhere. Removing that phrase flips it to false and the answer starts with &quot;Summary:&quot;."
+               data-explanation-wrong="Look at how dutch is detected: a single word, anywhere in the file. Which edit removes it?">
+            <h3 class="quiz-question">After a learner's edit, the final answer suddenly starts with "Summary:" instead of "Samenvatting:". What did they most likely change?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>They removed "strenger" from the judge rule</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>They deleted the phrase containing "Nederlands"</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>They asked the question in English</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="c"
+               data-explanation-right="Exactly. The pattern needs &quot;max&quot;, a number and &quot;woord&quot;. &quot;max 15 woorden&quot; fits, and the answer is cut to 15 words with an ellipsis."
+               data-explanation-wrong="The word limit is read with the pattern max + number + woord. Only one option keeps that shape.">
+            <h3 class="quiz-question">You want the judge's answer cut to 15 words. Which edit to instructions.md actually works?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>"Keep it under fifteen words"</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>"Limit: 15 words"</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>"max 15 woorden"</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="a"
+               data-explanation-right="Yes. The matcher reads the whole file, not just the rule section. The word elsewhere keeps strict mode on, which is why the scores never move."
+               data-explanation-wrong="loadJudgeRule receives the entire file. Section headings mean nothing to a regex.">
+            <h3 class="quiz-question">A learner deletes "strenger" from the judge rule but adds a sentence elsewhere in the file: "De rechter is strenger dan vorig jaar." Scores do not change. Why?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The strict check scans the whole file, so "strenger" anywhere still counts</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The file is cached and needs a restart</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Strict mode is hardcoded on</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module4')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module4')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+<section class="module" id="module-5" style="background: var(--color-bg-warm)">
+  <div class="module-content">
+    <header class="module-header animate-in">
+      <span class="module-number">05</span>
+      <h1 class="module-title">Rehearsal vs Live</h1>
+      <p class="module-subtitle">The free fixture path, the paid Claude Agent SDK path, and the tests that keep both honest</p>
+    </header>
+
+    <div class="module-body">
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Flight simulator, then real plane</h2>
+        <p>Pilots log hours in a simulator first: same cockpit, same controls, no fuel burned, no risk. This project has the same split. Everything you have seen so far is the simulator.</p>
+        <div class="pattern-cards">
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-5)">
+            <div class="pattern-icon" style="background: var(--color-actor-5)">🕹️</div>
+            <h4 class="pattern-title">Fixture path: runCouncil</h4>
+            <p class="pattern-desc">Scripted members, rule-based judge. Free, instant, identical every run. Used by <code>pnpm start</code> and every test.</p>
+          </div>
+          <div class="pattern-card" style="border-top: 3px solid var(--color-actor-1)">
+            <div class="pattern-icon" style="background: var(--color-actor-1)">✈️</div>
+            <h4 class="pattern-title">Live path: runCouncilAgentLive</h4>
+            <p class="pattern-desc">Sends your question to Claude through the Agent SDK, with <code>instructions.md</code> as its standing orders. Needs a key and costs money.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">The live path, in code</h2>
+        <p>This function in <code>src/agent.ts</code> calls <code>query()</code> from the Claude Agent SDK. It is <span class="term" data-definition="Async (asynchronous) code can wait for something slow, like a reply over the internet, without freezing the whole program. 'await' means 'pause here until the answer arrives'.">async</span> because Claude's reply arrives over the network as a <span class="term" data-definition="A stream delivers a result in pieces as they are ready, instead of all at once at the end, like a video that starts playing before it fully downloads.">stream</span> of messages.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">src/agent.ts</span>
+            <pre><code><span class="code-line"><span class="code-comment">/** Optional live SDK path — single model asking to apply judge instructions (env key required). */</span></span>
+<span class="code-line"><span class="code-keyword">export async function</span> <span class="code-function">runCouncilAgentLive</span>(prompt: <span class="code-keyword">string</span>) {</span>
+<span class="code-line">  <span class="code-keyword">if</span> (<span class="code-operator">!</span>process.env.ANTHROPIC_API_KEY) {</span>
+<span class="code-line">    <span class="code-keyword">throw new</span> <span class="code-function">Error</span>(<span class="code-string">'Set ANTHROPIC_API_KEY in the environment (see .env.example). No secrets in git.'</span>);</span>
+<span class="code-line">  }</span>
+<span class="code-line">  <span class="code-keyword">const</span> instructions = <span class="code-function">loadInstructions</span>();</span>
+<span class="code-line">  <span class="code-keyword">const</span> messages: <span class="code-keyword">unknown</span>[] = [];</span>
+<span class="code-line">  <span class="code-keyword">for await</span> (<span class="code-keyword">const</span> message <span class="code-keyword">of</span> <span class="code-function">query</span>({</span>
+<span class="code-line">    <span class="code-property">prompt</span>: <span class="code-string">`${prompt}\n\nApply the council judge instructions and return JSON with answer + agreement scores.`</span>,</span>
+<span class="code-line">    <span class="code-property">options</span>: {</span>
+<span class="code-line">      <span class="code-property">systemPrompt</span>: instructions,</span>
+<span class="code-line">      <span class="code-property">permissionMode</span>: <span class="code-string">'bypassPermissions'</span>,</span>
+<span class="code-line">    },</span>
+<span class="code-line">  })) {</span>
+<span class="code-line">    messages.<span class="code-function">push</span>(message);</span>
+<span class="code-line">  }</span>
+<span class="code-line">  <span class="code-keyword">return</span> messages;</span>
+<span class="code-line">}</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">Honest label: this is one model, not a real four-member council.</p>
+              <p class="tl">Define the live function. It takes the question and works asynchronously.</p>
+              <p class="tl">No API key in the environment?</p>
+              <p class="tl">Stop immediately with a clear error. Never paste keys into code.</p>
+              <p class="tl"></p>
+              <p class="tl">Read <code>instructions.md</code> as text.</p>
+              <p class="tl">Prepare an empty list to collect Claude's messages.</p>
+              <p class="tl">Start a conversation with Claude and handle each message as it streams in:</p>
+              <p class="tl">the question, plus a request to judge it and reply in JSON,</p>
+              <p class="tl">with these settings:</p>
+              <p class="tl">the instructions file becomes Claude's <span class="term" data-definition="A system prompt is the standing instructions given to an AI model before the conversation, setting its role and rules.">system prompt</span>,</p>
+              <p class="tl">and Claude may use tools without asking for approval each time.</p>
+              <p class="tl"></p>
+              <p class="tl"></p>
+              <p class="tl">Drop every incoming message into the list.</p>
+              <p class="tl"></p>
+              <p class="tl">Return the full transcript.</p>
+              <p class="tl">Done.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-warning">
+          <div class="callout-icon">⚠️</div>
+          <div class="callout-content">
+            <strong class="callout-title">Read the label, not the function name</strong>
+            <p>"runCouncilAgentLive" sounds like four live members. The comment admits it is one model told to act as the judge, and nothing in the starter calls it yet. When an AI writes code for you, check the comments and what actually gets called, not just the names. Also note <code>bypassPermissions</code>: fine for a sandboxed lab, risky for an agent with real tools.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Tests that edit the rulebook, then put it back</h2>
+        <p>The project's <span class="term" data-definition="Tests are small programs that run your code with known inputs and check the outputs. If a test fails, something changed that you did not intend.">tests</span> run with Node's built-in <span class="term" data-definition="A test runner is the tool that finds your test files, runs them, and reports which passed and failed. Here it is node --test, started with pnpm test.">test runner</span>. The cleverest one temporarily rewrites <code>instructions.md</code> to prove the quest hook really works.</p>
+
+        <div class="translation-block animate-in">
+          <div class="translation-code">
+            <span class="translation-label">tests/council-reduce.test.ts</span>
+            <pre><code><span class="code-line"><span class="code-function">test</span>(<span class="code-string">'judge instruction delta changes reduce notes (mini-quest parity)'</span>, () <span class="code-operator">=&gt;</span> {</span>
+<span class="code-line">  <span class="code-keyword">const</span> original = <span class="code-function">readFileSync</span>(instructionsFile, <span class="code-string">'utf8'</span>);</span>
+<span class="code-line">  <span class="code-keyword">try</span> {</span>
+<span class="code-line">    <span class="code-keyword">const</span> loose = original.<span class="code-function">replace</span>(<span class="code-string">/Wees strenger bij vage claims\./i</span>, <span class="code-string">'Wees mild; vague wording is fine.'</span>);</span>
+<span class="code-line">    <span class="code-function">writeFileSync</span>(instructionsFile, loose);</span>
+<span class="code-line">    <span class="code-keyword">const</span> a = <span class="code-function">loadJudgeRule</span>(original);</span>
+<span class="code-line">    <span class="code-keyword">const</span> b = <span class="code-function">loadJudgeRule</span>(loose);</span>
+<span class="code-line">    assert.<span class="code-function">equal</span>(a.strict, <span class="code-keyword">true</span>);</span>
+<span class="code-line">    assert.<span class="code-function">equal</span>(b.strict, <span class="code-keyword">false</span>);</span>
+<span class="code-line">    <span class="code-keyword">const</span> members = <span class="code-function">fanOutFixture</span>(<span class="code-string">'Vague topic'</span>);</span>
+<span class="code-line">    <span class="code-keyword">const</span> strictJudge = <span class="code-function">reduceCouncil</span>({ <span class="code-property">prompt</span>: <span class="code-string">'x'</span>, members, <span class="code-property">instructions</span>: original });</span>
+<span class="code-line">    <span class="code-keyword">const</span> mildJudge = <span class="code-function">reduceCouncil</span>({ <span class="code-property">prompt</span>: <span class="code-string">'x'</span>, members, <span class="code-property">instructions</span>: loose });</span>
+<span class="code-line">    assert.<span class="code-function">equal</span>(strictJudge.notes, <span class="code-string">'judge-rule:strict-vague'</span>);</span>
+<span class="code-line">    assert.<span class="code-function">equal</span>(mildJudge.notes, <span class="code-string">'judge-rule:default'</span>);</span>
+<span class="code-line">    assert.<span class="code-function">ok</span>(strictJudge.agreement.bravo <span class="code-operator">&lt;=</span> mildJudge.agreement.bravo);</span>
+<span class="code-line">  } <span class="code-keyword">finally</span> {</span>
+<span class="code-line">    <span class="code-function">writeFileSync</span>(instructionsFile, original);</span>
+<span class="code-line">  }</span>
+<span class="code-line">});</span></code></pre>
+          </div>
+          <div class="translation-english">
+            <span class="translation-label">PLAIN ENGLISH</span>
+            <div class="translation-lines">
+              <p class="tl">A test named after what it proves: changing the judge rule changes the verdict.</p>
+              <p class="tl">Photocopy the current rulebook first.</p>
+              <p class="tl">Try the following...</p>
+              <p class="tl">Make a mild version by swapping the strict sentence for a relaxed one.</p>
+              <p class="tl">Actually write the mild version to disk.</p>
+              <p class="tl">Read the settings from the original...</p>
+              <p class="tl">...and from the mild copy.</p>
+              <p class="tl"><span class="term" data-definition="An assertion is a line in a test that says 'this must be true'. If it is not, the test fails and tells you where.">Assert</span> the original is strict...</p>
+              <p class="tl">...and the mild copy is not.</p>
+              <p class="tl">Get the four scripted members.</p>
+              <p class="tl">Judge them with the strict rules...</p>
+              <p class="tl">...and with the mild rules.</p>
+              <p class="tl">The strict verdict must carry the strict label...</p>
+              <p class="tl">...and the mild one the default label.</p>
+              <p class="tl">Bravo must never score higher under strict rules than mild ones.</p>
+              <p class="tl">No matter what happened above, even a crash...</p>
+              <p class="tl">...restore the original rulebook.</p>
+              <p class="tl"></p>
+              <p class="tl">End of test.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout-accent">
+          <div class="callout-icon">💡</div>
+          <div class="callout-content">
+            <strong class="callout-title">try / finally is a safety net</strong>
+            <p>Code in a <span class="term" data-definition="try/finally is a code structure that guarantees the 'finally' part runs even if the 'try' part fails. Use it for cleanup: closing files, restoring settings.">finally</span> block always runs, even if an assertion fails halfway. Without it, one failed test would leave a mangled <code>instructions.md</code> behind and quietly break the next run. When an AI writes a test that touches real files, ask: "does it restore them in a finally block?"</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Your debugging checklist</h2>
+        <div class="icon-rows">
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-1)">🔑</div>
+            <div><strong>"Set ANTHROPIC_API_KEY" error</strong><p>Only the live path needs it. Export the key in your terminal; never commit a <code>.env</code> file.</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-2)">🎚️</div>
+            <div><strong>Quest edit had no effect</strong><p>Your wording missed the magic words (module 4), or the word still appears elsewhere in the file.</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-3)">📝</div>
+            <div><strong><code>instructions.md</code> changed and you did not touch it</strong><p>A test was interrupted mid-run (for example, force-quit). Check <code>git diff instructions.md</code>.</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-circle" style="background: var(--color-actor-5)">🧪</div>
+            <div><strong>Tests pass but live answers look odd</strong><p>Tests only cover the fixture path. The live model is not tested at all, by design, to avoid spend.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen animate-in">
+        <h2 class="screen-heading">Check your understanding</h2>
+        <div class="quiz-container" id="quiz-module5">
+          <div class="quiz-question-block"
+               data-correct="b"
+               data-explanation-right="Right. Fixtures make tests free, fast and repeatable. A live model gives slightly different words every run, so exact checks like Bravo scoring 0.3 would flicker."
+               data-explanation-wrong="Think about cost and repeatability. Would a test that calls a paid, non-deterministic model give the same answer every time in CI?">
+            <h3 class="quiz-question">A teammate wants the tests to call the real Claude model "so they are more realistic". What is the strongest argument against?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The Agent SDK cannot be used inside tests</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Every run would cost money and give slightly different answers, so tests would flicker</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Real models are always less accurate than fixtures</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="c"
+               data-explanation-right="Exactly. Today one model plays judge. A true live council needs a query() per member, run in parallel, feeding the same reduceCouncil step."
+               data-explanation-wrong="Look at how many times query() is called in runCouncilAgentLive: once. A council needs several independent opinions first.">
+            <h3 class="quiz-question">You want a genuine live council: four real Claude answers, then the judge. What should you ask your AI assistant to build?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Just rename runCouncilAgentLive to runLiveCouncil</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Add "pretend to be four people" to instructions.md</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>A live fan-out that calls query() once per member in parallel, then feeds the answers into reduceCouncil</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <div class="quiz-question-block"
+               data-correct="a"
+               data-explanation-right="Yes. Without finally, the restore line is skipped whenever an assertion throws, leaving the mild rulebook on disk for the next run."
+               data-explanation-wrong="What happens to the line that restores the original file if an assertion above it fails and the test stops early?">
+            <h3 class="quiz-question">An AI "simplifies" the test by removing try/finally and putting the restore line at the end. What breaks?</h3>
+            <div class="quiz-options">
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>If any assertion fails, instructions.md stays in its mild version</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Nothing; the restore line still runs every time</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The test can no longer read the file</span></button>
+            </div>
+            <div class="quiz-feedback"></div>
+          </div>
+
+          <button class="quiz-check-btn" onclick="checkQuiz('quiz-module5')">Check Answers</button>
+          <button class="quiz-reset-btn" onclick="resetQuiz('quiz-module5')">Try Again</button>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</section>
+  </main>
+
+</body>
+</html>
