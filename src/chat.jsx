@@ -26,7 +26,7 @@ export function Hit({hit,onNavigate}){
   <strong>{hit.title}</strong>{hit.open&&<span className="chat-open">OPEN</span>}
   <p>{hit.answer}</p>
   {hit.links.length>0&&<div className="chat-links">{hit.links.map((link,j)=><ChatLink key={j} link={link} onNavigate={onNavigate}/>)}</div>}
-  <small className="muted">{t('chat.source')} {hit.source.href?<a href={hit.source.href} target="_blank" rel="noopener noreferrer">{hit.source.label}</a>:hit.source.label}</small>
+  <small className="muted chat-cite">{t('chat.source')} {hit.day!=null&&<span className="chat-day">{t('chat.dayCite',{day:hit.day})} · </span>}{hit.source.href?<a href={hit.source.href} target="_blank" rel="noopener noreferrer">{hit.source.label}</a>:hit.source.label}</small>
  </div>;
 }
 
