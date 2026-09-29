@@ -1,0 +1,48 @@
+{
+  "version": "1.0.0",
+  "id": "c1-c2-concepts",
+  "title": "Classroom 1–2 concepts Solo-in-Claude",
+  "day": "classroom-1-2",
+  "entryCommand": "start-solo",
+  "aliasCommands": ["start-c1-concepts"],
+  "proof": "proof/PROOF.md",
+  "artifactCard": "proof/artifact-card.html",
+  "modules": [
+    {
+      "id": "01",
+      "title": "CLAUDE.md — standing notebook",
+      "slug": "claude-md",
+      "path": "lessons/01-claude-md/CLAUDE.md",
+      "command": "start-01-claude-md",
+      "estimatedMinutes": 8,
+      "next": "start-02-skills-vs-agents"
+    },
+    {
+      "id": "02",
+      "title": "Skills vs agents",
+      "slug": "skills-vs-agents",
+      "path": "lessons/02-skills-vs-agents/CLAUDE.md",
+      "command": "start-02-skills-vs-agents",
+      "estimatedMinutes": 8,
+      "next": "start-03-mcp"
+    },
+    {
+      "id": "03",
+      "title": "MCP — power strip",
+      "slug": "mcp",
+      "path": "lessons/03-mcp/CLAUDE.md",
+      "command": "start-03-mcp",
+      "estimatedMinutes": 8,
+      "next": "start-04-hooks"
+    },
+    {
+      "id": "04",
+      "title": "Hooks — guarantees vs sticky notes",
+      "slug": "hooks",
+      "path": "lessons/04-hooks/CLAUDE.md",
+      "command": "start-04-hooks",
+      "estimatedMinutes": 8,
+      "next": null
+    }
+  ]
+}

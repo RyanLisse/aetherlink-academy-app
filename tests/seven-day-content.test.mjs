@@ -102,7 +102,11 @@ test('unverifiable sources stay OPEN instead of invented',()=>{
  assert.match(getDayPack(2).lesson.workedExample,/customize-stack|CLAUDE\.md → skills → subagents → MCP\/hooks/i);
  assert.match(getDayPack(2).demo.open || '',/geen aparte live-demo-dia/);
  assert.deepEqual(getDayPack(3).materials.filter(m=>!m.href).map(m=>m.label),['Workshop-n8n-instantie']);
- assert.deepEqual(getDayPack(1).materials.filter(m=>m.kind==='naslag').map(m=>m.href),['https://anthropic.skilljar.com/claude-code-101','https://anthropic.skilljar.com/claude-code-in-action']);
+ assert.deepEqual(getDayPack(1).materials.filter(m=>m.kind==='naslag').map(m=>m.href),[
+  'https://anthropic.skilljar.com/claude-code-101',
+  'https://anthropic.skilljar.com/claude-code-in-action',
+  'https://ccforeveryone.com/guides/claude-code-concepts-explained'
+ ]);
 });
 test('Classroom 2 and missing days gain naslag links from NASLAG SoT (AET-84)',()=>{
  const d2=getDayPack(2).materials.filter(m=>m.kind==='naslag');
@@ -111,13 +115,14 @@ test('Classroom 2 and missing days gain naslag links from NASLAG SoT (AET-84)',(
   'https://academy.claude.com/courses/introduction-to-subagents',
   'https://code.claude.com/docs/en/agents',
   'https://code.claude.com/docs/en/skills',
-  'https://code.claude.com/docs/en/sub-agents'
+  'https://code.claude.com/docs/en/sub-agents',
+  'https://ccforeveryone.com/guides/claude-code-concepts-explained'
  ]);
  assert.equal(d2.every(m=>m.href),true);
  assert.equal(getDayPack(2).openItems.some(i=>/no reference|geen naslagbronnen/i.test(i)),false);
  for(const lang of ['en','nl']){
   const mats=getDayPack(2).copy[lang].materials.filter(m=>m.kind==='naslag');
-  assert.ok(mats.length>=5,lang);
+  assert.ok(mats.length>=6,lang);
   assert.equal(mats.every(m=>m.href),true,lang);
   assert.equal(getDayPack(2).copy[lang].openItems.some(i=>/no reference|geen naslagbronnen/i.test(i)),false,lang);
  }
@@ -200,4 +205,23 @@ test('Workshop 5 cites daily-brief HTML course + Assignments + SOLO (AET-131)',(
  assert.equal(d5.materials.some(m=>/start-solo/i.test(m.href||'')||/start-solo/i.test(m.label||'')),false);
 });
 
-
+test('Classroom 1-2 cite Solo-in-Claude concepts pack + Proof card (AET-132)',()=>{
+ for(const day of [1,2]){
+  const pack=getDayPack(day);
+  const solos=pack.materials.filter(m=>m.kind==='solo');
+  assert.ok(solos.some(m=>m.href==='/solos/c1-c2-concepts/index.html'),`day ${day} solo entry`);
+  const proof=pack.materials.filter(m=>m.kind==='assignment');
+  assert.ok(proof.some(m=>m.href==='/solos/c1-c2-concepts/proof/artifact-card.html'),`day ${day} proof card`);
+  assert.ok(pack.materials.some(m=>m.kind==='naslag'&&m.href==='https://ccforeveryone.com/guides/claude-code-concepts-explained'),`day ${day} Carl naslag`);
+  for(const lang of ['en','nl']){
+   const mats=pack.copy[lang].materials;
+   assert.ok(mats.some(m=>m.href==='/solos/c1-c2-concepts/index.html'),`${lang} day ${day} solo`);
+   assert.ok(mats.some(m=>m.href==='/solos/c1-c2-concepts/proof/artifact-card.html'),`${lang} day ${day} proof`);
+  }
+  const nlSolo=pack.copy.nl.materials.find(m=>m.href==='/solos/c1-c2-concepts/index.html');
+  assert.match(nlSolo.label,/concepten/i);
+  assert.equal(/HTML course|Assignment /.test(nlSolo.label),false);
+  const nlProof=pack.copy.nl.materials.find(m=>m.href==='/solos/c1-c2-concepts/proof/artifact-card.html');
+  assert.match(nlProof.label,/artefactkaart/i);
+ }
+});
