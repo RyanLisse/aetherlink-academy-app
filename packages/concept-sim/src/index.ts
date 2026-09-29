@@ -61,7 +61,7 @@ export function isSimStepType(value: unknown): value is SimStepType {
 }
 
 export function normalizeContentLocale(raw: unknown): ContentLocale {
-  return raw === 'en' ? 'en' : 'nl';
+  return raw === 'nl' ? 'nl' : 'en';
 }
 
 export function parseSimStep(raw: unknown, at = 'step'): SimStep {

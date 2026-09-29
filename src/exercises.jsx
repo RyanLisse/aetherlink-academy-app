@@ -1,21 +1,47 @@
 import React,{useState} from 'react';
 import {classroomExerciseSources,exercisesForDay} from '../content/exercises/classroom-days.mjs';
+import {useT} from './i18n';
 import './exercises.css';
 
-const labels={typescript:'TypeScript',python:'Python'};
+const LANG_KEYS={typescript:'code.lang.typescript',python:'code.lang.python'};
 
-function CodeTabs({examples}){
-  const [language,setLanguage]=useState('typescript');
+/** One code-example identity + language toggle; Copy selects the displayed variant (AET-122). */
+export function PairedCodeExample({examples,title,id}){
+  const t=useT();
+  const keys=Object.keys(examples||{}).filter(k=>examples[k]);
+  const [language,setLanguage]=useState(keys.includes('typescript')?'typescript':keys[0]);
+  const [copied,setCopied]=useState(false);
   const code=examples?.[language];
-  if(!code)return null;
-  return <section className="classroom-code" aria-label="Illustrative code examples">
-    <div className="classroom-code-head"><div><h4>Developer deep dive · code example</h4><p>Display only. Academy does not run these snippets; use your own local repository when you choose to try them.</p></div>
-      <div className="classroom-code-tabs" role="group" aria-label="Code display language">
-        {Object.keys(examples).map(key=><button key={key} type="button" aria-pressed={language===key} onClick={()=>setLanguage(key)}>{labels[key]||key}</button>)}
+  if(!code||!keys.length)return null;
+  async function copy(){
+    try{
+      if(!navigator.clipboard?.writeText)throw Error('clipboard');
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(()=>setCopied(false),1600);
+    }catch{
+      setCopied(false);
+    }
+  }
+  return <section className="classroom-code" data-testid="paired-code" data-code-id={id||undefined} aria-label={t('code.aria')}>
+    <div className="classroom-code-head">
+      <div>
+        <h4>{title||t('code.title')}</h4>
+        <p>{t('code.displayOnly')}</p>
+      </div>
+      <div className="classroom-code-actions">
+        <div className="classroom-code-tabs" role="group" aria-label={t('code.langGroup')}>
+          {keys.map(key=><button key={key} type="button" aria-pressed={language===key} data-testid={`code-lang-${key}`} onClick={()=>setLanguage(key)}>{t(LANG_KEYS[key]||key)}</button>)}
+        </div>
+        <button type="button" className="classroom-code-copy" data-testid="code-copy" onClick={copy}>{copied?t('code.copied'):t('code.copy')}</button>
       </div>
     </div>
-    <pre><code>{code}</code></pre>
+    <pre data-testid="code-body" data-lang={language}><code>{code}</code></pre>
   </section>;
+}
+
+function CodeTabs({examples}){
+  return <PairedCodeExample examples={examples}/>;
 }
 
 function ExerciseCard({item}){

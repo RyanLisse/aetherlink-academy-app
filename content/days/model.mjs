@@ -92,6 +92,7 @@ export function projectDayPack(src){
   ...(src.sims?.length?{sims:src.sims}:{}),
   ...(src.diagrams?.length?{diagrams:src.diagrams}:{}),
   ...(src.attribution?{attribution:src.attribution}:{}),
+  ...(src.codeExamples?.length?{codeExamples:src.codeExamples}:{}),
   ...(bakedCopy?{copy:bakedCopy}:{}),
   localeComplete:Boolean(bakedCopy?.en&&bakedCopy?.nl),
   requireLocales:Boolean(src.requireLocales||src.localeComplete||src.kind==='harness')

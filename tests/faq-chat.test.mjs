@@ -42,10 +42,11 @@ test('navigation intents answer with an in-app view link',()=>{
   const result=answerQuestion({day:3,query});
   assert.equal(result.mode,'answer');
   assert.equal(result.hits[0].id,'nav:solo');
-  assert.equal(result.hits[0].title,'Je opdracht staat onder Solo-missie');
+  assert.equal(result.hits[0].title,'Your assignment is under Solo mission');
   assert.deepEqual(result.hits[0].links,[{view:'solo'}]);
  }
  assert.equal(answerQuestion({day:3,query:'Where do I find my assignment?',locale:'en'}).hits[0].title,'Your assignment is under Solo mission');
+ assert.equal(answerQuestion({day:3,query:'Waar vind ik mijn opdracht?',locale:'nl'}).hits[0].title,'Je opdracht staat onder Solo-missie');
  assert.deepEqual(answerQuestion({day:2,query:'waar lever ik bewijs in'}).hits[0].links,[{view:'review'}]);
 });
 
@@ -61,9 +62,9 @@ test('no match or a conceptual question hands off to the participant’s own Cla
  const none=answerQuestion({day:3,query:'pizza recept'});
  assert.equal(none.mode,'handoff');
  assert.deepEqual(none.hits,[]);
- assert.deepEqual(none.handoff.link,{view:'coach',label:'Open Mijn leercoach'});
- assert.match(none.handoff.text,/^Diepere hulp, zoals uitleg van een concept/);
- assert.equal(none.handoff.prompt,'Lees mijn Academy-scherm met get_screen_state en mijn opdracht met get_mission. Help me daarna met: “pizza recept”. Geef eerst hints, geen kant-en-klaar antwoord.');
+ assert.deepEqual(none.handoff.link,{view:'coach',label:'Open My learning coach'});
+ assert.match(none.handoff.text,/Diepere hulp|deeper help|Ask your own Claude|eigen Claude/i);
+ assert.equal(none.handoff.prompt,'Read my Academy screen with get_screen_state and my assignment with get_mission. Then help me with: “pizza recept”. Give hints first, not a finished answer.');
 
  const why=answerQuestion({day:3,query:'Waarom is L1 zonder LLM?'});
  assert.equal(why.mode,'handoff');

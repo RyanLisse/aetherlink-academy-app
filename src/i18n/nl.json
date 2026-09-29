@@ -868,5 +868,13 @@
   "arcade.starters.pendingTitle": "PENDING — SDK-starters",
   "arcade.starters.pendingBody": "Starters nog niet klaar ({status}). Geen nep-repos. Hands-on SDK-labs wachten op Herdr AET-63. Mapping + watch/skip blijven geldig.",
   "arcade.demoOnly": "alleen demo",
-  "arcade.optional": "optioneel"
+  "arcade.optional": "optioneel",
+  "code.aria": "Illustratieve codevoorbeelden",
+  "code.title": "Developer deep dive · codevoorbeeld",
+  "code.displayOnly": "Alleen weergave. Academy voert deze snippets niet uit; gebruik je eigen lokale repository als je ze wilt proberen.",
+  "code.langGroup": "Taal voor codeweergave",
+  "code.lang.typescript": "TypeScript",
+  "code.lang.python": "Python",
+  "code.copy": "Kopiëren",
+  "code.copied": "Gekopieerd"
 }

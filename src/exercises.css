@@ -39,3 +39,8 @@
 .classroom-setup pre{margin:10px 0;font-size:11px;}
 
 .classroom-exercises{min-width:0}.classroom-exercise-body p,.classroom-exercise-body li{font-size:15px}.classroom-exercise-body h4,.classroom-code h4{font-size:16px}.classroom-exercise-intro,.classroom-setup p{font-size:14px}.classroom-exercise-picker button,.classroom-code-tabs button{font-size:13px}.classroom-code pre,.classroom-setup pre{overflow:auto;max-width:100%;font-size:13px}.classroom-exercise-heading strong{font-size:16px}.classroom-code-head p,.classroom-exercise-sources,.classroom-exercise-heading small{font-size:12px}
+
+.classroom-code-actions{display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex:none;}
+.classroom-code-copy{border:1px solid var(--border);background:var(--surface);font-size:11px;padding:7px 11px;white-space:nowrap;}
+.classroom-code-copy:hover{border-color:var(--cyan);color:var(--cyan);}
+@media(max-width:700px){.classroom-code-actions{align-items:stretch;margin-top:12px;}.classroom-code-tabs{margin-top:0;}}

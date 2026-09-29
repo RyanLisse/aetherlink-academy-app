@@ -137,7 +137,7 @@ test('outbound payload: lesson passages and the question only, with names, email
  const {instance,host,participant,ask}=await classroom(fake.config(),{name:'Fenna Jansen'});
  instance.store.join(host.code,'Karim');
  for(const q of [`Waarom L1 Switch zonder LLM regels? fenna Karim ${host.code.toLowerCase()}`,'Waarom L1 Switch LLM? f.jansen@example.test','Waarom L1 Switch zonder LLM credential? ABCD-EFGH-JKMN-PQRS'])assert.equal((await ask(q)).body.coach.status,'answered',q);
- const questions=fake.requests.map(({body})=>body.messages[1].content.split('\n\nVraag: ')[1]);
+ const questions=fake.requests.map(({body})=>body.messages[1].content.split(/\n\n(?:Vraag|Question): /)[1]);
  assert.deepEqual(questions,['Waarom L1 Switch zonder LLM regels? [naam] [naam] [code]','Waarom L1 Switch LLM? [e-mail]','Waarom L1 Switch zonder LLM credential? [code]']);
  const [{headers,body:sent}]=fake.requests;
  assert.equal(headers.authorization,'Bearer sk-or-test');
@@ -160,7 +160,7 @@ test('answer keys never reach the model: no quiz question or key, no expected tr
  for(const {ticket} of TRIAGE_FIXTURES.tickets)await ask(`Waarom krijgt ticket ${ticket.ticket_id} deze prioriteit in de triage?`);
  assert.ok(fake.requests.length>=7,`model saw ${fake.requests.length} grounded questions`);
  for(const {raw} of fake.requests){
-  const context=JSON.parse(raw).messages[1].content.split('\n\nVraag: ')[0];
+  const context=JSON.parse(raw).messages[1].content.split(/\n\n(?:Vraag|Question): /)[0];
   for(const source of DAY_SOURCES)for(const {question} of source.quiz)assert.equal(context.includes(question),false,question);
   assert.doesNotMatch(raw,/expected_priority|"expected"|answerKey/);
   assert.deepEqual(proseLeaks(raw),[]);

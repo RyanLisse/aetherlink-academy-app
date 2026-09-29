@@ -2,6 +2,7 @@ import {lessons,getDayPack} from './content.mjs';
 import {DAY_PACKS} from '../content/days/index.mjs';
 import {NAVIGATION,CHAT_COPY} from '../content/faq/navigation.mjs';
 import {releasedDays} from './release.mjs';
+import {normalizeContentLocale} from '../content/days/locale.mjs';
 
 const STOPWORDS=new Set('de het een en of in op aan van voor met bij naar om te tot uit als dat die dit deze is zijn wordt word ben bent was er ik je jij jou jouw mijn me mij we wij ons onze u uw hij zij ze hoe wat wie welke wanneer moet moeten kan kun kunnen mag mogen wil zal niet geen wel ook nog dan maar dus zo hier daar the a an and or of in on at to for with by from is are be do does can how what which who when my me i you your it this that there'.split(' '));
 const NAVIGATION_CUES=new Set(['waar','vind','vinden','staat','staan','where','find','locate']);
@@ -53,7 +54,8 @@ function termWeight(term,fields){
 
 // Ties go to the live day first, then platform navigation, then earlier released days (latest first),
 // so opening up the archive does not push today's answers or the app's own help down.
-export function rankDocuments(query,{day,days,locale='nl'}={}){
+export function rankDocuments(query,{day,days,locale='en'}={}){
+ locale=normalizeContentLocale(locale);
  const words=tokens(query);
  const navigation=words.some(w=>NAVIGATION_CUES.has(w));
  const conceptual=words.some(w=>CONCEPT_CUES.has(w));
@@ -73,9 +75,9 @@ export function rankDocuments(query,{day,days,locale='nl'}={}){
 // Deterministic and local: no model, no network. The Postgres tsvector search
 // in apps/server is the later upgrade once prod runs that server.
 // `released` comes from server/release.mjs; a bare day stands for a room that is on that day.
-export function answerQuestion({day,released=releasedDays({day}),query,locale='nl'}){
+export function answerQuestion({day,released=releasedDays({day}),query,locale='en'}){
  const pack=getDayPack(day);
- const lang=locale==='en'?'en':'nl';
+ const lang=normalizeContentLocale(locale);
  const {conceptual,hits}=rankDocuments(query,{day,days:released,locale:lang});
  const mode=hits.length&&!conceptual?'answer':'handoff';
  return {day,query,mode,hits,handoff:mode==='handoff'?{title:CHAT_COPY.handoffTitle[lang],text:pack?.deepHelp??null,prompt:CHAT_COPY.handoffPrompt[lang](query),link:{view:'coach',label:CHAT_COPY.coachLabel[lang]}}:null};

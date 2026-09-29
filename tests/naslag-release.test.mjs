@@ -77,7 +77,7 @@ test('a participant opens day 2 while the room is on day 5; unreleased and unkno
   await g.setDay(5);
   const pack=await g.call('GET','/game/day-pack?day=2',{token:g.ann.token});
   assert.equal(pack.status,200);
-  assert.deepEqual([pack.body.day,pack.body.title,pack.body.deck.route],[2,'Classroom 2 · Herbruikbare workflows','/classroom/2']);
+  assert.deepEqual([pack.body.day,pack.body.title,pack.body.deck.route],[2,'Classroom 2 · Reusable workflows','/classroom/2']);
   assert.deepEqual(Object.keys(pack.body.quiz),['questions'],'the practice pack carries no answer key');
   assert.equal((await g.call('GET','/game/day-pack',{token:g.ann.token})).body.day,5,'without ?day the live day is served');
   assert.equal((await g.call('GET','/game/state',{token:g.ann.token})).body.day,5,'reading day 2 does not move the room');

@@ -5,7 +5,7 @@ import {useT,useI18n} from './i18n';
 import {LabEmbed,LabSlotEmpty} from './LabEmbed';
 import {ConceptSimSlot} from './ConceptSim';
 import {StatusState,RemoteStatus,useRemote} from './status';
-import {ClassroomExercises} from './exercises';
+import {ClassroomExercises,PairedCodeExample} from './exercises';
 import {OfficialDocs} from './official-docs';
 // AET-120: Coach Connect status chrome runs on shadcn/ui primitives; the testids,
 // data-status contract and verified-after-tool-call behaviour (AET-126) are unchanged.
@@ -189,6 +189,7 @@ export function Lesson({room,action,busy,day,onNavigate}){
     <div className="learning-loop" data-testid="path-pedagogy">{lesson.loop.map((s,i)=><div key={s.label}><span>0{i+1}</span><strong>{s.label}</strong><small>{s.prompt}</small></div>)}</div>
     {pack.steps?.length>0&&<div className="path-assignments-link" data-testid="path-assignments-crosslink"><p className="muted">{t('path.assignmentsCrosslink')}</p><button type="button" className="text-button" onClick={()=>setPage('assignments')}>{t('path.openAssignments')}</button><ProgressivePath steps={pack.steps} compact/></div>}
     <div className="worked"><BookOpen size={20}/><div><h3>{t('lesson.explained')}</h3><p>{lesson.workedExample}</p></div></div>
+    {pack.codeExamples?.length>0&&<div className="lesson-code-examples" data-testid="lesson-code-examples">{pack.codeExamples.map(ex=><PairedCodeExample key={ex.id} id={ex.id} title={ex.title} examples={{typescript:ex.typescript,python:ex.python}}/>)}</div>}
     {pack.diagrams?.length>0&&<section className="lesson-diagrams" aria-label={t('lesson.diagrams')} data-testid="lesson-diagrams">{pack.diagrams.map(d=><figure key={d.src} className="lesson-diagram"><img src={d.src} alt={d.alt||d.title} loading="lazy"/><figcaption>{d.title}</figcaption></figure>)}</section>}
     {pack.materials?.length>0&&<><h3>{t('lesson.materials')}</h3><ul className="materials">{pack.materials.map(m=><li key={m.label}>{m.href?<a href={m.href} target={m.href.startsWith('http')?'_blank':undefined} rel="noreferrer">{m.label}</a>:<span>{m.label}: <strong>OPEN</strong> · {m.open}</span>}{m.note&&<small className="muted"> · {m.note}</small>}</li>)}</ul></>}
     {pack.sims?.length>0&&<ConceptSimSlot sims={pack.sims}/>}

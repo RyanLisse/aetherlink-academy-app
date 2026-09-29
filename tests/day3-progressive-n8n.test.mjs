@@ -32,7 +32,7 @@ test('day 3 pack serves the n8n L1–L3 ticket ladder with the shared fixture',a
  assert.equal(pack.statusCode,200);
  assert.equal(pack.body.mission.id,'TRIAGE-N8N-03');
  assert.deepEqual(pack.body.steps.map(s=>s.id),['w3-l1','w3-l2','w3-l3','w3-proof']);
- assert.deepEqual(pack.body.lesson.loop.map(s=>s.label),['L1 regels','L2 oordeel','L3 specialisten','Proof','Gate']);
+ assert.deepEqual(pack.body.lesson.loop.map(s=>s.label),['L1 rules','L2 judgment','L3 specialists','Proof','Gate']);
  assert.deepEqual(pack.body.triage.tickets.map(t=>t.ticketId),['WL-1026','WL-1027','WL-9001','WL-9002']);
  assert.doesNotMatch(JSON.stringify(pack.body),/"expected/,'the participant pack carries no expected triage labels');
  assert.equal(pack.body.quiz.key,undefined);
