@@ -57,6 +57,20 @@ WebSocket-verbindingen kunnen na een containerherstart opnieuw verbinden. De app
 Nieuwe betaalde diensten zijn niet nodig voor de huidige implementatiestappen en zijn niet aangekocht.
 
 
+## Reverse proxy and HttpOnly sessions (AET-82)
+
+Academy sets the learner `academy` cookie as **HttpOnly** (+ `SameSite=Strict`, `Secure` when `ACADEMY_PUBLIC_URL` is HTTPS). Behind a reverse proxy (nginx, Caddy, Traefik, cloud LB) Express must trust the proxy hop so `req.ip` / `X-Forwarded-*` stay correct for rate limits and secure cookie decisions.
+
+Set:
+
+```text
+ACADEMY_TRUST_PROXY=1
+```
+
+Use `1` when a single reverse-proxy hop sits in front of the gateway (typical Hetzner Compose / sslip deploy). A positive integer trusts that many hops; any other non-empty value is passed through to Express `trust proxy` as-is. Leave unset only for direct local binds with no proxy.
+
+Do **not** invent secrets here and do **not** flip live proxy config from app code — ops sets the env on the host. `ACADEMY_PUBLIC_URL` must still be the exact public HTTPS origin (no path) so cookies and redirects match what the browser sees.
+
 ## Google facilitator SSO (ops)
 
 Vereist samen: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `ACADEMY_FACILITATOR_DOMAINS`, plus exacte `ACADEMY_PUBLIC_URL` origin (geen pad) die overeenkomt met de Google redirect-URI `${ACADEMY_PUBLIC_URL}/auth/google/callback`.
