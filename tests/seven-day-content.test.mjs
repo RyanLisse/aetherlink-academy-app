@@ -104,6 +104,41 @@ test('unverifiable sources stay OPEN instead of invented',()=>{
  assert.deepEqual(getDayPack(3).materials.filter(m=>!m.href).map(m=>m.label),['Workshop-n8n-instantie']);
  assert.deepEqual(getDayPack(1).materials.filter(m=>m.kind==='naslag').map(m=>m.href),['https://anthropic.skilljar.com/claude-code-101','https://anthropic.skilljar.com/claude-code-in-action']);
 });
+test('Classroom 2 and missing days gain naslag links from NASLAG SoT (AET-84)',()=>{
+ const d2=getDayPack(2).materials.filter(m=>m.kind==='naslag');
+ assert.deepEqual(d2.map(m=>m.href),[
+  'https://academy.claude.com/courses/introduction-to-agent-skills',
+  'https://academy.claude.com/courses/introduction-to-subagents',
+  'https://code.claude.com/docs/en/agents',
+  'https://code.claude.com/docs/en/skills',
+  'https://code.claude.com/docs/en/sub-agents'
+ ]);
+ assert.equal(d2.every(m=>m.href),true);
+ assert.equal(getDayPack(2).openItems.some(i=>/no reference|geen naslagbronnen/i.test(i)),false);
+ for(const lang of ['en','nl']){
+  const mats=getDayPack(2).copy[lang].materials.filter(m=>m.kind==='naslag');
+  assert.ok(mats.length>=5,lang);
+  assert.equal(mats.every(m=>m.href),true,lang);
+  assert.equal(getDayPack(2).copy[lang].openItems.some(i=>/no reference|geen naslagbronnen/i.test(i)),false,lang);
+ }
+ const d3=getDayPack(3).materials.filter(m=>/facilitator/i.test(m.label));
+ assert.equal(d3.length,1);
+ assert.match(d3[0].href,/facilitator-n8n-triage\.md/);
+ assert.ok(getDayPack(3).materials.some(m=>m.kind==='starter'&&m.file==='n8n-triage-l1-switch.json'));
+ assert.ok(getDayPack(3).materials.some(m=>m.kind==='starter'&&m.file==='n8n-triage-l2-agent-memory.json'));
+ assert.ok(getDayPack(3).materials.some(m=>m.kind==='starter'&&m.file==='n8n-triage-l3-multi-agent.json'));
+ const d4=getDayPack(4).materials.filter(m=>m.kind==='naslag').map(m=>m.href);
+ assert.ok(d4.includes('https://code.claude.com/docs/en/agent-sdk/overview'));
+ assert.ok(d4.includes('https://code.claude.com/docs/en/agents'));
+ const d5=getDayPack(5).materials.filter(m=>m.kind==='naslag').map(m=>m.href);
+ assert.ok(d5.includes('https://academy.claude.com/courses/ai-native-sdlc-playbook'));
+ assert.ok(d5.includes('https://claude.com/blog/the-ai-native-sdlc-playbook'));
+ const proofBlob=getDayPack(2).reviewCriteria.join('\n');
+ assert.match(proofBlob,/Workshop 6/);
+ assert.match(proofBlob,/c2-customize-stack/);
+ assert.equal(/Proof open|no reference sources/i.test(proofBlob),false);
+});
+
 
 test('starter whitelist keeps legacy files and adds the triage starters',()=>{
  for(const file of ['README.md','n8n-repository-review.json','n8n-triage-l1-switch.json','n8n-triage-l2-agent-memory.json','n8n-triage-l3-multi-agent.json','triage-fixtures.json'])assert.equal(starterFileNames.includes(file),true,file);

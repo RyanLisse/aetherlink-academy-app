@@ -63,6 +63,9 @@ const en = {
  materials:[
   link('vehicle','Rebuild repo aetherlink-day5-n8n-to-agent','https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent','Slide 2; SOLO.md in the repo'),
   starter('triage-fixtures.json','Shared fixture tickets (the server checks your labels)'),
+  link('naslag','Agent SDK overview','https://code.claude.com/docs/en/agent-sdk/overview','NASLAG.md Support Day 4 · code.claude.com'),
+  link('naslag','Agents docs','https://code.claude.com/docs/en/agents','NASLAG.md Support Day 4 · code.claude.com'),
+  link('naslag','Introduction to Subagents','https://academy.claude.com/courses/introduction-to-subagents','NASLAG.md Support Day 4 · Anthropic Academy'),
   link('diagram','Ticket → tool_use → priority diagram','/diagrams/workshop/w4-ticket-tool-priority.svg','Workshop 4 · AET-80 P1 retrofit')
  ],
  diagrams:[DIAGRAM_EN],
@@ -137,6 +140,9 @@ const nl = {
  materials:[
   link('vehicle','Rebuild-repository aetherlink-day5-n8n-to-agent','https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent','Dia 2; SOLO.md in de repo'),
   starter('triage-fixtures.json','Gedeelde fixture-tickets (de server controleert je labels)'),
+  link('naslag','Agent SDK overview','https://code.claude.com/docs/en/agent-sdk/overview','NASLAG.md Support Day 4 · code.claude.com'),
+  link('naslag','Agents-docs','https://code.claude.com/docs/en/agents','NASLAG.md Support Day 4 · code.claude.com'),
+  link('naslag','Introduction to Subagents','https://academy.claude.com/courses/introduction-to-subagents','NASLAG.md Support Day 4 · Anthropic Academy'),
   link('diagram','Ticket → tool_use → prioriteit-diagram','/diagrams/workshop/w4-ticket-tool-priority.svg','Workshop 4 · AET-80 P1-retrofit')
  ],
  diagrams:[DIAGRAM_NL],

@@ -1,4 +1,4 @@
-import {diagram,link,openMaterial,question,slide} from './model.mjs';
+import {diagram,link,question,slide} from './model.mjs';
 
 const d='classroom-2';
 
@@ -66,7 +66,11 @@ const en = {
  solo:SOLO,
  materials:[
   link('vehicle','Practice repo aetherlink-classroom-starter','https://github.com/jyse/aetherlink-classroom-starter','Same copy as Classroom 1'),
-  openMaterial('naslag','Classroom 2 references','The lesson plan lists no reference sources for Classroom 2.'),
+  link('naslag','Introduction to Agent Skills','https://academy.claude.com/courses/introduction-to-agent-skills','NASLAG.md Teach Day 2 · Anthropic Academy'),
+  link('naslag','Introduction to Subagents','https://academy.claude.com/courses/introduction-to-subagents','NASLAG.md Teach Day 2 · Anthropic Academy'),
+  link('naslag','Agents / parallel','https://code.claude.com/docs/en/agents','NASLAG.md Teach Day 2 · code.claude.com'),
+  link('naslag','Claude Code skills docs','https://code.claude.com/docs/en/skills','AET-104 in-app Naslag SoT · official docs'),
+  link('naslag','Sub-agents docs','https://code.claude.com/docs/en/sub-agents','AET-104 in-app Naslag SoT · official docs'),
   link('diagram','Customize stack diagram','/diagrams/classroom/c2-customize-stack.svg','Classroom 2 · AET-129 P3 retrofit')
  ],
  diagrams:[DIAGRAM_EN],
@@ -98,7 +102,6 @@ const en = {
  },
  openItems:[
   'The lesson plan names subagents and hooks for Classroom 2; the deck has no slide for them — P3 diagram + ConceptSim teach them.',
-  'The lesson plan lists no reference sources for Classroom 2.',
   'The deck has no separate live-demo slide; the facilitator chooses the demo piece.',
   'Assignments 12 and 13 need an approved Jira connection via MCP per participant (notes slide 80).',
   'Room deck for this day = Academy /classroom/2 (AET-105 overlay out — thin pointer only).'
@@ -140,7 +143,11 @@ const nl = {
  solo:SOLO_NL,
  materials:[
   link('vehicle','Oefenrepository aetherlink-classroom-starter','https://github.com/jyse/aetherlink-classroom-starter','Zelfde kopie als Classroom 1'),
-  openMaterial('naslag','Naslag Classroom 2','Het lesplan noemt voor Classroom 2 geen naslagbronnen.'),
+  link('naslag','Introduction to Agent Skills','https://academy.claude.com/courses/introduction-to-agent-skills','NASLAG.md Teach Day 2 · Anthropic Academy'),
+  link('naslag','Introduction to Subagents','https://academy.claude.com/courses/introduction-to-subagents','NASLAG.md Teach Day 2 · Anthropic Academy'),
+  link('naslag','Agents / parallel','https://code.claude.com/docs/en/agents','NASLAG.md Teach Day 2 · code.claude.com'),
+  link('naslag','Claude Code skills-docs','https://code.claude.com/docs/en/skills','AET-104 in-app Naslag SoT · officiële docs'),
+  link('naslag','Sub-agents-docs','https://code.claude.com/docs/en/sub-agents','AET-104 in-app Naslag SoT · officiële docs'),
   link('diagram','Customize-stackdiagram','/diagrams/classroom/c2-customize-stack.svg','Classroom 2 · AET-129 P3-retrofit')
  ],
  diagrams:[DIAGRAM_NL],
@@ -172,7 +179,6 @@ const nl = {
  },
  openItems:[
   'Het lesplan noemt subagents en hooks voor Classroom 2; de deck heeft er geen dia voor — P3-diagram + ConceptSim leren ze.',
-  'Het lesplan noemt geen naslagbronnen voor Classroom 2.',
   'De deck heeft geen aparte live-demo-dia; de facilitator kiest het demo-onderdeel.',
   'Opdracht 12 en 13 vragen per deelnemer een goedgekeurde Jira-verbinding via MCP (notities dia 80).',
   'Room-deck voor deze dag = Academy /classroom/2 (AET-105-overlay buiten scope — alleen dunne pointer).'

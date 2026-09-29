@@ -68,6 +68,8 @@ const en = {
  ],
  materials:[
   link('vehicle','Lab repo aetherlink-daily-brief-lab-s1','https://github.com/RyanLisse/aetherlink-daily-brief-lab-s1','Slide 2; main is intentionally empty; private repo'),
+  link('naslag','AI-native SDLC playbook','https://academy.claude.com/courses/ai-native-sdlc-playbook','NASLAG.md Support Day 1–2 · Anthropic Academy'),
+  link('naslag','AI-native SDLC blog playbook','https://claude.com/blog/the-ai-native-sdlc-playbook','NASLAG.md Support Day 1–2 · claude.com/blog'),
   link('diagram','SDLC harness-loop diagram','/diagrams/workshop/w5-harness-loop.svg','Workshop 5 · AET-77 P0 retrofit')
  ],
  diagrams:[DIAGRAM_EN],
@@ -146,6 +148,8 @@ const nl = {
  ],
  materials:[
   link('vehicle','Lab-repository aetherlink-daily-brief-lab-s1','https://github.com/RyanLisse/aetherlink-daily-brief-lab-s1','Dia 2; main is expres leeg; privé-repository'),
+  link('naslag','AI-native SDLC playbook','https://academy.claude.com/courses/ai-native-sdlc-playbook','NASLAG.md Support Day 1–2 · Anthropic Academy'),
+  link('naslag','AI-native SDLC blog-playbook','https://claude.com/blog/the-ai-native-sdlc-playbook','NASLAG.md Support Day 1–2 · claude.com/blog'),
   link('diagram','SDLC-harnesslus-diagram','/diagrams/workshop/w5-harness-loop.svg','Workshop 5 · AET-77 P0-retrofit')
  ],
  diagrams:[DIAGRAM_NL],
