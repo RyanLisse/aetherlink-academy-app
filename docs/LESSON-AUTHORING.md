@@ -45,4 +45,6 @@ P0 Workshop 5 (AET-77) → P1 Workshop 4 (AET-80) → P2 Workshop 3 (AET-79). W6
 
 **P1 status:** Workshop 4 ships ticket→tool_use→priority diagram (`public/diagrams/workshop/w4-ticket-tool-priority.svg`) + ConceptSim `w4-ticket-priority` (EN+NL) while keeping Apple bar / Uitleg→Voordoen→Zelf doen and SOLO 0–4 on aetherlink-day5-n8n-to-agent.
 
-**P2 status:** Workshop 3 ships agency-ladder diagram (`public/diagrams/workshop/w3-agency-ladder.svg`) + ConceptSim `w3-agency-ladder` (EN+NL) while keeping Apple bar / Uitleg→Voordoen→Zelf doen and L1→L2 (L3 stretch) on the n8n triage starters. Must B P0–P2 complete — do not auto-start P3 Early Classroom / W1–W2 until CoS.
+**P2 status:** Workshop 3 ships agency-ladder diagram (`public/diagrams/workshop/w3-agency-ladder.svg`) + ConceptSim `w3-agency-ladder` (EN+NL) while keeping Apple bar / Uitleg→Voordoen→Zelf doen and L1→L2 (L3 stretch) on the n8n triage starters. Must B P0–P2 complete.
+
+**P3 status:** Classroom 1–2 retrofit (AET-129). Classroom 1 ships explore→plan→change→verify→commit diagram (`public/diagrams/classroom/c1-explore-plan-change-verify-commit.svg`) + ConceptSim `c1-agent-loop` (EN+NL). Classroom 2 ships customize-stack diagram (`public/diagrams/classroom/c2-customize-stack.svg`) + ConceptSim `c2-customize-stack` (EN+NL). Apple bar / Uitleg→Voordoen→Zelf doen and solos A1–A4 / A6–A13 kept. Do not rename Classroom→Workshop; W6/W7 not forced.

@@ -71,14 +71,16 @@ test('workshop rhythm: W3 solo bar is L2 with L3 as stretch, W4 bar is SOLO 2',(
 
 test('Classroom 2 Proof acceptance hands its use-case to Workshop 6 (AET-76)',()=>{
  const proof=getDayPack(2).reviewCriteria;
- assert.equal(proof.length,6);
+ assert.equal(proof.length,7);
  assert.equal(proof[5],'De kleinste nuttige teamworkflow in één zin vastgelegd als use-case voor Workshop 6 (W6 dia 2).');
+ assert.match(proof[6],/Customize-stackdiagram|ConceptSim/);
  assert.equal(getDayPack(6).materials.find(m=>m.label==='Je Classroom 2-artefact').href,'/classroom/2');
 });
 
 test('unverifiable sources stay OPEN instead of invented',()=>{
  assert.equal(getDayPack(2).demo.slides.length,0);
- assert.match(getDayPack(2).lesson.workedExample,/^OPEN: De Classroom 2-deck heeft geen aparte live-demo-dia/);
+ assert.match(getDayPack(2).lesson.workedExample,/customize-stack|CLAUDE\.md → skills → subagents → MCP\/hooks/i);
+ assert.match(getDayPack(2).demo.open || '',/geen aparte live-demo-dia/);
  assert.deepEqual(getDayPack(3).materials.filter(m=>!m.href).map(m=>m.label),['Workshop-n8n-instantie']);
  assert.deepEqual(getDayPack(1).materials.filter(m=>m.kind==='naslag').map(m=>m.href),['https://anthropic.skilljar.com/claude-code-101','https://anthropic.skilljar.com/claude-code-in-action']);
 });

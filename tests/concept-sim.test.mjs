@@ -122,7 +122,7 @@ test('day-pack includes resolved sims; sim-catalog lists fixture', async () => {
   const pack = await invoke(app, '/game/day-pack', {cookies});
   assert.equal(pack.statusCode, 200);
   assert.ok(Array.isArray(pack.body.sims));
-  assert.ok(pack.body.sims.some((s) => s.id === 'fixture-agent-loop'));
+  assert.ok(pack.body.sims.some((s) => s.id === 'c1-agent-loop'));
   assert.ok(pack.body.sims[0].steps.length >= 4);
   assert.equal(typeof pack.body.sims[0].steps[0].annotation, 'string');
 });
@@ -180,7 +180,7 @@ test('Harness day packs declare diagram + sim + MIT + real EN/NL', async () => {
       assert.ok(existsSync(join(root, 'public', d.src.replace(/^\//, ''))), d.src);
     }
   }
-  assert.ok(byDay[1].sims?.some((s) => s.id === 'fixture-agent-loop'));
+  assert.ok(byDay[1].sims?.some((s) => s.id === 'c1-agent-loop'));
 });
 
 test('AET-118 P0 W5 retrofit: diagram + ConceptSim + locale-complete; Apple bar kept', async () => {
@@ -320,4 +320,109 @@ test('AET-118 P2 W3 retrofit: ladder diagram + ConceptSim + locale-complete; L1�
   assert.ok(simNl.steps.some((s) => s.type === 'system_event' && /MENSELIJKE GATE/i.test(s.content)));
   assert.equal(getSim('w3-agency-ladder', 'en')?.title, simEn.title);
   assert.equal(getSim('w3-agency-ladder', 'nl')?.title, simNl.title);
+});
+
+test('AET-129 P3 Classroom 1 retrofit: loop diagram + ConceptSim + locale-complete; A1–A4 kept', async () => {
+  const {DAY_PACKS} = await import('../content/days/index.mjs');
+  const {projectPackLocale} = await import('../content/days/locale.mjs');
+  const {parseLocalizedScenario, projectScenario, assertScenarioLocaleComplete} = await import('../packages/concept-sim/src/index.ts');
+  const pack = DAY_PACKS.find((p) => p.day === 1);
+  assert.ok(pack, 'day 1 pack');
+  assert.equal(pack.kind, 'classroom');
+  assert.equal(pack.localeComplete, true);
+  assert.ok(pack.copy?.en && pack.copy?.nl, 'C1 copy en+nl');
+
+  const en = projectPackLocale(pack, 'en');
+  const nl = projectPackLocale(pack, 'nl');
+  assert.notEqual(en.lesson.narrative[0], nl.lesson.narrative[0]);
+  assert.match(en.lesson.motto || '', /explore → plan → change → verify → commit/i);
+  assert.match(nl.lesson.motto || '', /explore → plan → change → verify → commit/i);
+  assert.ok(en.diagrams?.some((d) => d.src === '/diagrams/classroom/c1-explore-plan-change-verify-commit.svg'));
+  assert.ok(existsSync(join(root, 'public/diagrams/classroom/c1-explore-plan-change-verify-commit.svg')));
+  assert.ok(en.sims?.some((s) => s.id === 'c1-agent-loop'));
+  assert.ok(nl.sims?.some((s) => s.id === 'c1-agent-loop'));
+  assert.ok(!en.sims?.some((s) => s.id === 'fixture-agent-loop'), 'fixture no longer Classroom 1 bar sim');
+
+  // Apple bar / A1–A4 pedagogy kept
+  assert.equal(en.demo?.slides?.length, 2);
+  assert.equal(en.steps?.length, 5);
+  assert.deepEqual(en.steps.map((s) => s.badge), ['0','A1','A2','A3','A4']);
+  assert.ok(en.materials?.some((m) => /aetherlink-classroom-starter/.test(m.href || '')));
+  assert.ok(nl.materials?.some((m) => /aetherlink-classroom-starter/.test(m.href || '')));
+  assert.equal(en.mission?.id, 'CLASSROOM-01');
+  assert.equal(pack.code, 'classroom-1');
+
+  const raw = JSON.parse(readFileSync(join(root, 'content/sims/c1-agent-loop.json'), 'utf8'));
+  const localized = parseLocalizedScenario(raw, 'c1-agent-loop');
+  assertScenarioLocaleComplete(localized, 'c1-agent-loop');
+  const simEn = projectScenario(localized, 'en');
+  const simNl = projectScenario(localized, 'nl');
+  assert.ok(simEn.steps.length >= 10);
+  assert.ok(simNl.steps.length >= 10);
+  assert.notEqual(
+    JSON.stringify(simEn.steps.map((s) => s.content + s.annotation)),
+    JSON.stringify(simNl.steps.map((s) => s.content + s.annotation)),
+  );
+  assert.ok(simEn.steps.some((s) => s.type === 'tool_call' && s.toolName === 'explore_repo'));
+  assert.ok(simEn.steps.some((s) => s.type === 'tool_call' && s.toolName === 'apply_change'));
+  assert.ok(simEn.steps.some((s) => s.type === 'tool_call' && s.toolName === 'verify_checks'));
+  assert.ok(simEn.steps.some((s) => s.type === 'system_event' && /HUMAN GATE/i.test(s.content)));
+  assert.ok(simNl.steps.some((s) => s.type === 'system_event' && /MENSELIJKE GATE/i.test(s.content)));
+  assert.equal(getSim('c1-agent-loop', 'en')?.title, simEn.title);
+  assert.equal(getSim('c1-agent-loop', 'nl')?.title, simNl.title);
+});
+
+test('AET-129 P3 Classroom 2 retrofit: customize-stack diagram + ConceptSim + locale-complete; A6–A13 kept', async () => {
+  const {DAY_PACKS} = await import('../content/days/index.mjs');
+  const {projectPackLocale} = await import('../content/days/locale.mjs');
+  const {parseLocalizedScenario, projectScenario, assertScenarioLocaleComplete} = await import('../packages/concept-sim/src/index.ts');
+  const pack = DAY_PACKS.find((p) => p.day === 2);
+  assert.ok(pack, 'day 2 pack');
+  assert.equal(pack.kind, 'classroom');
+  assert.equal(pack.localeComplete, true);
+  assert.ok(pack.copy?.en && pack.copy?.nl, 'C2 copy en+nl');
+
+  const en = projectPackLocale(pack, 'en');
+  const nl = projectPackLocale(pack, 'nl');
+  assert.notEqual(en.lesson.narrative[0], nl.lesson.narrative[0]);
+  assert.match(en.lesson.motto || '', /CLAUDE\.md → skills → subagents → MCP\/hooks/i);
+  assert.match(nl.lesson.motto || '', /CLAUDE\.md → skills → subagents → MCP\/hooks/i);
+  assert.ok(en.diagrams?.some((d) => d.src === '/diagrams/classroom/c2-customize-stack.svg'));
+  assert.ok(existsSync(join(root, 'public/diagrams/classroom/c2-customize-stack.svg')));
+  assert.ok(en.sims?.some((s) => s.id === 'c2-customize-stack'));
+  assert.ok(nl.sims?.some((s) => s.id === 'c2-customize-stack'));
+
+  // Apple bar / A6–A13 pedagogy kept (no rename Classroom→Workshop)
+  assert.equal(en.steps?.length, 6);
+  assert.deepEqual(en.steps.map((s) => s.badge), ['A6','A7','A9','A10','A12','A13']);
+  assert.ok(en.materials?.some((m) => /aetherlink-classroom-starter/.test(m.href || '')));
+  assert.ok(nl.materials?.some((m) => /aetherlink-classroom-starter/.test(m.href || '')));
+  assert.equal(en.mission?.id, 'CLASSROOM-02');
+  assert.equal(pack.code, 'classroom-2');
+  assert.equal(pack.kind, 'classroom');
+  // Subagents + hooks taught via narrative/diagram/sim; Apple loop labels keep Bounded run
+  assert.deepEqual(en.lesson.loop?.map((l) => l.label), ['CLAUDE.md','Skill','Bounded run','MCP','Workflow','Handoff']);
+  assert.match(en.lesson.narrative.join(' '), /subagents/i);
+  assert.match(en.lesson.narrative.join(' '), /hooks/i);
+  assert.match(nl.lesson.narrative.join(' '), /subagents/i);
+  assert.match(nl.lesson.narrative.join(' '), /hooks/i);
+
+  const raw = JSON.parse(readFileSync(join(root, 'content/sims/c2-customize-stack.json'), 'utf8'));
+  const localized = parseLocalizedScenario(raw, 'c2-customize-stack');
+  assertScenarioLocaleComplete(localized, 'c2-customize-stack');
+  const simEn = projectScenario(localized, 'en');
+  const simNl = projectScenario(localized, 'nl');
+  assert.ok(simEn.steps.length >= 12);
+  assert.ok(simNl.steps.length >= 12);
+  assert.notEqual(
+    JSON.stringify(simEn.steps.map((s) => s.content + s.annotation)),
+    JSON.stringify(simNl.steps.map((s) => s.content + s.annotation)),
+  );
+  assert.ok(simEn.steps.some((s) => s.type === 'tool_call' && s.toolName === 'write_claude_md'));
+  assert.ok(simEn.steps.some((s) => s.type === 'tool_call' && s.toolName === 'author_skill'));
+  assert.ok(simEn.steps.some((s) => s.type === 'tool_call' && s.toolName === 'spawn_subagent'));
+  assert.ok(simEn.steps.some((s) => s.type === 'tool_call' && s.toolName === 'mcp_readonly_fetch'));
+  assert.ok(simEn.steps.some((s) => s.type === 'tool_call' && s.toolName === 'hooks_gate'));
+  assert.equal(getSim('c2-customize-stack', 'en')?.title, simEn.title);
+  assert.equal(getSim('c2-customize-stack', 'nl')?.title, simNl.title);
 });
