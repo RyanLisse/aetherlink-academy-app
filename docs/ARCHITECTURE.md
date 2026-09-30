@@ -1,6 +1,6 @@
 # Academy architecture (v2)
 
-One public origin, `https://academy.aetherlink.ai`, serves everything a participant or facilitator opens. Behind it runs one Node 24 process tree on the Hetzner CX33 `aetherlink-academy` (see [DEPLOYMENT.md](DEPLOYMENT.md)). This page describes what runs where today. It is not a roadmap.
+One public origin serves everything a participant or facilitator opens. Today that is `https://academy.91-99-78-17.sslip.io/` (OpenShip edge on the Hetzner host, see [runbooks/single-academy-openship.md](runbooks/single-academy-openship.md)). The target origin is `https://academy.aetherlink.ai`, which does not resolve yet (DNS cutover is AET-42). Behind it runs one Node 24 process tree on the Hetzner CX33 `aetherlink-academy` (see [DEPLOYMENT.md](DEPLOYMENT.md)). This page describes what runs where today. It is not a roadmap.
 
 ```
 browser ──HTTPS──> gateway (server/app.mjs, :4317)
@@ -86,10 +86,10 @@ Both old sites route on the query string and the URL hash. A server never sees t
 
 Operator steps (not done by this change):
 
-1. Generate the stubs: `node --experimental-strip-types apps/web/scripts/legacy-stubs.ts <out> https://academy.aetherlink.ai`.
+1. Generate the stubs: `node --experimental-strip-types apps/web/scripts/legacy-stubs.ts <out> https://academy.aetherlink.ai`. The stubs point at the target origin, so publish them only after `academy.aetherlink.ai` resolves (AET-42); before that, pass the current origin instead.
 2. Training site: in a checkout of `RyanLisse/aetherlink-training-site`, replace `dist/index.html` and `dist/glossary.html` with `<out>/training-site/*`, commit, and publish that commit through ChatGPT Sites with the existing `project_id` from `.openai/hosting.json`, as the repo README describes. Keep the other `dist/` files until the stub is live, then remove them.
 3. Classroom slides: if any copy is hosted, replace its `index.html` and `presenter.html` with `<out>/classroom-slides/*`. Otherwise nothing to deploy; the table still documents the mapping.
-4. Verify: open `https://aetherlink-training.ryanlisse.chatgpt.site/?squad=1&day=3#5` and expect `https://academy.aetherlink.ai/archive/squad-1/day-3#slide-archive-s1-day3-5`.
+4. Verify: open `https://aetherlink-training.ryanlisse.chatgpt.site/?squad=1&day=3#5` and expect `<origin>/archive/squad-1/day-3#slide-archive-s1-day3-5` for the origin used in step 1.
 
 ## Operator runbooks
 
