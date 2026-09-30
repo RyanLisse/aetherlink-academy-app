@@ -25,12 +25,12 @@ export function debrief(room) {
  return {day:room.day,name:room.name,quiz,members:room.members.map(person=>({id:person.id,name:person.name,help:person.help,progress:dayProgress(room,person,room.day),quizPhase:quiz.members.find(m=>m.id===person.id)?.phase||'not_started'})),handoffs:(room.handoffs||[]).filter(item=>Number(item.day)===room.day)};
 }
 export function exportDebrief(room,board=null) {
- const lines=['# Squad-overdracht',room.name,'','Dit overzicht toont vastgelegd bewijs, geen certificering of ranglijst.'];
+ const lines=['# Squad handoff',room.name,'','This overview shows recorded evidence, not a certification or leaderboard.'];
  for(let day=1;day<=DAY_COUNT;day++){
-  lines.push('',`## Dag ${day}`);
-  for(const person of room.members){const progress=dayProgress(room,person,day);lines.push('',`### ${person.name}`,`Bewijs: ${progress.evidenceCount}; beoordeeld: ${progress.reviewedCount}; geaccepteerd: ${progress.acceptedCount}.`);if(progress.reflection)lines.push('Reflectie:',progress.reflection.learned,'Volgende oefening:',progress.reflection.next);}
-  for(const handoff of (room.handoffs||[]).filter(item=>Number(item.day)===day))lines.push('','Besluit:',handoff.decision,'Gecontroleerd:',handoff.checked,'Open:',handoff.open,'Volgende eigenaar:',handoff.next);
+  lines.push('',`## Day ${day}`);
+  for(const person of room.members){const progress=dayProgress(room,person,day);lines.push('',`### ${person.name}`,`Evidence: ${progress.evidenceCount}; reviewed: ${progress.reviewedCount}; accepted: ${progress.acceptedCount}.`);if(progress.reflection)lines.push('Reflection:',progress.reflection.learned,'Next practice:',progress.reflection.next);}
+  for(const handoff of (room.handoffs||[]).filter(item=>Number(item.day)===day))lines.push('','Decision:',handoff.decision,'Checked:',handoff.checked,'Open:',handoff.open,'Next owner:',handoff.next);
  }
- if(board){lines.push('','## Debriefbord');for(const column of board){lines.push('',`### ${column.title}`);lines.push(...(column.cards.length?column.cards.map(card=>`- ${card}`):['Geen kaarten.']));}}
+ if(board){lines.push('','## Debrief board');for(const column of board){lines.push('',`### ${column.title}`);lines.push(...(column.cards.length?column.cards.map(card=>`- ${card}`):['No cards.']));}}
  return lines.join('\n');
 }

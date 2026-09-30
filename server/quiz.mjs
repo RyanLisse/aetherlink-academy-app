@@ -4,11 +4,11 @@ import {fail} from './store.mjs';
 
 export const QUIZ_ATTEMPT_TTL_MS=30*60*1000;
 /** Human copy when a day-pack quiz fails schema validation at serve/submit time (F1/F5). */
-export const QUIZ_BAD_ASSET_MESSAGE='De quiz voor deze dag is ongeldig of ontbreekt. Vraag de facilitator om de content te herstellen, of ga verder met de solo-missie.';
-export const QUIZ_EXPIRED_MESSAGE='Je quizpoging is verlopen (30 minuten zonder inleveren). Beantwoord de vragen opnieuw.';
+export const QUIZ_BAD_ASSET_MESSAGE='The quiz for this day is invalid or missing. Ask the facilitator to fix the content, or continue with the solo mission.';
+export const QUIZ_EXPIRED_MESSAGE='Your quiz attempt has expired (30 minutes without submitting). Answer the questions again.';
 
 const clip=value=>String(value).slice(0,64);
-const describe=issue=>issue._tag==='MissingAnswer'?`vraag ${clip(issue.questionId)} is niet beantwoord`:issue._tag==='UnknownQuestion'?`onbekende vraag ${clip(issue.questionId)}`:`onbekende optie ${clip(issue.optionId)} bij vraag ${clip(issue.questionId)}`;
+const describe=issue=>issue._tag==='MissingAnswer'?`question ${clip(issue.questionId)} is not answered`:issue._tag==='UnknownQuestion'?`unknown question ${clip(issue.questionId)}`:`unknown option ${clip(issue.optionId)} for question ${clip(issue.questionId)}`;
 const routeFor=score=>score<=1?'guided':score===2?'standard':'stretch';
 
 /** Decode or return null — never throws; used for soft-fail participant projection (F1/F5). */
@@ -69,20 +69,20 @@ export function quizRoomStatus(members,day,now=Date.now()){
 // quiz pass the certificate check (dayChecks) already counts; the last practice run is kept apart.
 export function submitQuizAttempt(p,day,quiz,body,now,liveDay=day){
  const attemptId=body?.attemptId,answers=body?.answers;
- if(typeof attemptId!=='string'||!answers||typeof answers!=='object'||Array.isArray(answers)||Object.values(answers).some(value=>typeof value!=='string'))fail(400,'Stuur een quizpoging-id en per vraag-id één gekozen optie-id.');
+ if(typeof attemptId!=='string'||!answers||typeof answers!=='object'||Array.isArray(answers)||Object.values(answers).some(value=>typeof value!=='string'))fail(400,'Send a quiz attempt id and one chosen option id per question id.');
  const trusted=requireDayQuiz(quiz);
  const scoring=scoreDayQuiz(trusted,answers);
- if(scoring._tag==='Rejected')fail(400,`Ongeldige quizantwoorden: ${scoring.issues.slice(0,5).map(describe).join('; ')}.`);
+ if(scoring._tag==='Rejected')fail(400,`Invalid quiz answers: ${scoring.issues.slice(0,5).map(describe).join('; ')}.`);
  const attempt=p.quizAttempt;
- if(!attempt||attempt.id!==attemptId||attempt.day!==day)fail(409,'Onbekende quizpoging. Start de quiz opnieuw.');
+ if(!attempt||attempt.id!==attemptId||attempt.day!==day)fail(409,'Unknown quiz attempt. Start the quiz again.');
  const fingerprint=trusted.questions.map(question=>`${question.id}=${answers[question.id]}`).join('&');
  if(attempt.result){
   if(attempt.fingerprint===fingerprint)return attempt.result;
-  fail(409,'Deze quizpoging is al ingeleverd met andere antwoorden. Start een nieuwe poging.');
+  fail(409,'This quiz attempt was already submitted with different answers. Start a new attempt.');
  }
  if(now>attempt.expiresAt)fail(410,QUIZ_EXPIRED_MESSAGE);
  const {score,total,results}=scoring,at=new Date(now).toISOString(),route=routeFor(score);
- const result={score,total,results,route,day,note:'Voorlopige hulpkeuze op basis van 3 scenario’s; geen vaardigheidsbewijs of permanent label.'};
+ const result={score,total,results,route,day,note:'Provisional help choice based on 3 scenarios; not proof of skill or a permanent label.'};
  if(day===liveDay){p.route=route;p.quiz={score,at,day};}
  p.progressByDay=p.progressByDay||{};
  const saved=p.progressByDay[String(day)]||{};

@@ -43,13 +43,13 @@ describe('AET-80 workshop 4 ultra-minimal n8n→Claude Agent SDK deck', () => {
   });
 
   it('pedagogy: Open/Parity/First-agent/Stretch/Acceptance cycles (uitleg→voordoen→zelf doen)', () => {
-    const demos = workshop4SourceSlides.filter((s) => String(s.kicker ?? '').startsWith('Voordoen'));
+    const demos = workshop4SourceSlides.filter((s) => String(s.kicker ?? '').startsWith('Demo'));
     expect(demos.length).toBeGreaterThanOrEqual(3);
     expect(practice.length).toBeGreaterThanOrEqual(4); // SOLO 0 1 2 3 (+4)
     for (const solo of ['SOLO 0', 'SOLO 1', 'SOLO 2', 'SOLO 3']) {
-      const demoIdx = workshop4SourceSlides.findIndex((s) => String(s.kicker ?? '') === `Voordoen · ${solo}`);
+      const demoIdx = workshop4SourceSlides.findIndex((s) => String(s.kicker ?? '') === `Demo · ${solo}`);
       const zelfIdx = workshop4SourceSlides.findIndex(
-        (s) => String(s.kicker ?? '').startsWith(solo) && String(s.kicker ?? '').includes('Zelf doen'),
+        (s) => String(s.kicker ?? '').startsWith(solo) && String(s.kicker ?? '').includes('Your turn'),
       );
       expect(demoIdx, `demo ${solo}`).toBeGreaterThanOrEqual(0);
       expect(zelfIdx, `zelf ${solo}`).toBe(demoIdx + 1);
@@ -90,7 +90,7 @@ describe('AET-80 workshop 4 ultra-minimal n8n→Claude Agent SDK deck', () => {
       expect(notes, String(slide.title)).toMatch(/Timer:\s*\d+\s*min/i);
       expect(typeof slide.timer, String(slide.title)).toBe('number');
       expect(notes.toLowerCase()).toMatch(/checklist:/);
-      expect(notes, String(slide.title)).toMatch(/Zelf doen/i);
+      expect(notes, String(slide.title)).toMatch(/Your turn/i);
     });
   });
 

@@ -20,11 +20,11 @@ export const makeFileActions=Effect.gen(function*(){
 
  const uploadFile=(actor:Actor,raw:unknown)=>Effect.gen(function*(){
   const bytes=(raw as {bytes?:unknown}|null)?.bytes;
-  if(!(bytes instanceof Uint8Array))return yield* Effect.fail(new InvalidInput({reason:'Geen bestandsinhoud ontvangen.'}));
-  if(!bytes.byteLength)return yield* Effect.fail(new InvalidInput({reason:'Het bestand is leeg.'}));
+  if(!(bytes instanceof Uint8Array))return yield* Effect.fail(new InvalidInput({reason:'No file content received.'}));
+  if(!bytes.byteLength)return yield* Effect.fail(new InvalidInput({reason:'The file is empty.'}));
   if(bytes.byteLength>MAX_UPLOAD_BYTES)return yield* Effect.fail(new FileTooLarge({sizeBytes:bytes.byteLength,maxBytes:MAX_UPLOAD_BYTES}));
   const requested=(raw as {contentType?:unknown}|null)?.contentType;
-  if(typeof requested!=='string'||!(requested in CONTENT_TYPES))return yield* Effect.fail(new InvalidInput({reason:`Bestandstype ${typeof requested==='string'&&requested?requested:'ontbreekt'} wordt niet ondersteund. Toegestaan: ${Object.keys(CONTENT_TYPES).join(', ')}.`}));
+  if(typeof requested!=='string'||!(requested in CONTENT_TYPES))return yield* Effect.fail(new InvalidInput({reason:`File type ${typeof requested==='string'&&requested?requested:'missing'} is not supported. Allowed: ${Object.keys(CONTENT_TYPES).join(', ')}.`}));
   const input=yield* parse(UploadInput)(raw);
   const id=randomUUID();
   const objectKey=`rooms/${actor.roomId}/${id}${extensionFor(input.contentType)}`;
@@ -50,7 +50,7 @@ export const makeFileActions=Effect.gen(function*(){
  const deleteFile=(actor:Actor,raw:unknown)=>Effect.gen(function*(){
   const {fileId}=yield* parse(FileIdInput)(raw);
   const file=yield* owned(actor,fileId);
-  if(actor.role!=='facilitator'&&file.uploadedBy.id!==actor.id)return yield* Effect.fail(new Forbidden({reason:'Alleen de facilitator of de uploader verwijdert een bestand.'}));
+  if(actor.role!=='facilitator'&&file.uploadedBy.id!==actor.id)return yield* Effect.fail(new Forbidden({reason:'Only the facilitator or the uploader deletes a file.'}));
   yield* repo.remove(fileId);
   yield* Effect.ignore(objects.remove(file.objectKey));
   return {deleted:true,fileId};

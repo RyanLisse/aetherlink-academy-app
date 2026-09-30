@@ -65,7 +65,7 @@
   <!-- Pedagogy + gate -->
   <rect x="28" y="318" width="420" height="118" rx="8" fill="#fff" stroke="#e2e8f0" stroke-width="1.5"/>
   <text x="44" y="344" fill="#1e3a5f" font-size="13" font-weight="700">How each block works</text>
-  <text x="44" y="366" fill="#475569" font-size="12">Uitleg → Voordoen → Zelf doen on the Worldline deck.</text>
+  <text x="44" y="366" fill="#475569" font-size="12">Explain → Demo → Your turn on the Worldline deck.</text>
   <text x="44" y="386" fill="#475569" font-size="12">Solo bar = L2; L3 is stretch. Build with the starters.</text>
   <text x="44" y="406" fill="#64748b" font-size="11">L1 needs no credential; L2/L3 use your own chat model.</text>
   <text x="44" y="422" fill="#64748b" font-size="11">ConceptSim steps L1 → L2 → L3 without API keys.</text>

@@ -40,7 +40,7 @@ test('server scores option ids against the day 1 key and reports correctness wit
   score:2,total:3,
   results:[{questionId:'d1-q1',correct:true},{questionId:'d1-q2',correct:false},{questionId:'d1-q3',correct:true}],
   route:'standard',day:1,
-  note:'Voorlopige hulpkeuze op basis van 3 scenario’s; geen vaardigheidsbewijs of permanent label.'
+  note:'Provisional help choice based on 3 scenarios; not proof of skill or a permanent label.'
  });
 });
 
@@ -73,12 +73,12 @@ test('malformed submissions are rejected with 400 before touching progress',asyn
  const {instance,participant,start,submit}=fixture();
  const {body:{attemptId}}=await start();
  const cases=[
-  [{attemptId,answers:[1,0,2]},'Stuur een quizpoging-id en per vraag-id één gekozen optie-id.'],
-  [{answers:DAY1_CORRECT},'Stuur een quizpoging-id en per vraag-id één gekozen optie-id.'],
-  [{attemptId,answers:{...DAY1_CORRECT,'d1-q2':1}},'Stuur een quizpoging-id en per vraag-id één gekozen optie-id.'],
-  [{attemptId,answers:{'d1-q1':'b','d1-q2':'a'}},'Ongeldige quizantwoorden: vraag d1-q3 is niet beantwoord.'],
-  [{attemptId,answers:{...DAY1_CORRECT,'d1-q3':'z'}},'Ongeldige quizantwoorden: onbekende optie z bij vraag d1-q3.'],
-  [{attemptId,answers:{...DAY1_CORRECT,'d9-q9':'a'}},'Ongeldige quizantwoorden: onbekende vraag d9-q9.']
+  [{attemptId,answers:[1,0,2]},'Send a quiz attempt id and one chosen option id per question id.'],
+  [{answers:DAY1_CORRECT},'Send a quiz attempt id and one chosen option id per question id.'],
+  [{attemptId,answers:{...DAY1_CORRECT,'d1-q2':1}},'Send a quiz attempt id and one chosen option id per question id.'],
+  [{attemptId,answers:{'d1-q1':'b','d1-q2':'a'}},'Invalid quiz answers: question d1-q3 is not answered.'],
+  [{attemptId,answers:{...DAY1_CORRECT,'d1-q3':'z'}},'Invalid quiz answers: unknown option z for question d1-q3.'],
+  [{attemptId,answers:{...DAY1_CORRECT,'d9-q9':'a'}},'Invalid quiz answers: unknown question d9-q9.']
  ];
  for(const [body,error] of cases){
   const response=await submit(body);
@@ -100,11 +100,11 @@ test('a submitted attempt replays its result for identical answers and rejects d
  assert.equal(instance.store.auth(participant.token).p.progressByDay['1'].quizAt,quizAt);
  const changed=await submit({attemptId,answers:{...DAY1_CORRECT,'d1-q1':'a'}});
  assert.equal(changed.statusCode,409);
- assert.equal(changed.body.error,'Deze quizpoging is al ingeleverd met andere antwoorden. Start een nieuwe poging.');
+ assert.equal(changed.body.error,'This quiz attempt was already submitted with different answers. Start a new attempt.');
  const retake=await start();
  const stale=await submit({attemptId,answers:DAY1_CORRECT});
  assert.equal(stale.statusCode,409);
- assert.equal(stale.body.error,'Onbekende quizpoging. Start de quiz opnieuw.');
+ assert.equal(stale.body.error,'Unknown quiz attempt. Start the quiz again.');
  const second=await submit({attemptId:retake.body.attemptId,answers:{'d1-q1':'a','d1-q2':'a','d1-q3':'a'}});
  assert.equal(second.body.score,1);
  assert.equal(instance.store.auth(participant.token).p.progressByDay['1'].quizScore,1);
@@ -119,7 +119,7 @@ test('an attempt left open past the 30 minute idle timeout expires',async t=>{
  t.mock.timers.tick(QUIZ_ATTEMPT_TTL_MS+1);
  const expired=await submit({attemptId:opened.body.attemptId,answers:DAY1_CORRECT});
  assert.equal(expired.statusCode,410);
- assert.equal(expired.body.error,'Je quizpoging is verlopen (30 minuten zonder inleveren). Beantwoord de vragen opnieuw.');
+ assert.equal(expired.body.error,'Your quiz attempt has expired (30 minutes without submitting). Answer the questions again.');
  const fresh=await start();
  const scored=await submit({attemptId:fresh.body.attemptId,answers:DAY1_CORRECT});
  assert.equal(scored.body.score,3);

@@ -10,12 +10,12 @@ const TRIAGE_IDS=TRIAGE_TICKETS.map(t=>t.ticketId);
 
 function parseTriage(body){
  const labels=body?.labels,replies=body?.replies??{};
- if(!isRecord(labels)||!isRecord(replies))fail(400,'Stuur per ticket-id een label (low, medium of high) en optioneel een antwoord.');
+ if(!isRecord(labels)||!isRecord(replies))fail(400,'Send one label (low, medium or high) per ticket id, plus an optional reply.');
  const unknown=[...Object.keys(labels),...Object.keys(replies)].filter(id=>!TRIAGE_IDS.includes(id));
- if(unknown.length)fail(400,`Onbekend ticket: ${unknown.slice(0,3).map(clip).join(', ')}.`);
+ if(unknown.length)fail(400,`Unknown ticket: ${unknown.slice(0,3).map(clip).join(', ')}.`);
  const invalid=Object.entries(labels).filter(([,label])=>typeof label!=='string'||!PRIORITIES.includes(label.trim().toLowerCase()));
- if(invalid.length)fail(400,`Ongeldig label bij ${invalid.slice(0,3).map(([id])=>id).join(', ')}. Kies low, medium of high.`);
- if(Object.values(replies).some(reply=>typeof reply!=='string'||reply.length>REPLY_MAX))fail(400,`Een antwoord is tekst van maximaal ${REPLY_MAX} tekens.`);
+ if(invalid.length)fail(400,`Invalid label for ${invalid.slice(0,3).map(([id])=>id).join(', ')}. Choose low, medium or high.`);
+ if(Object.values(replies).some(reply=>typeof reply!=='string'||reply.length>REPLY_MAX))fail(400,`A reply is text of at most ${REPLY_MAX} characters.`);
  return {
   labels:Object.fromEntries(Object.entries(labels).map(([id,label])=>[id,label.trim().toLowerCase()])),
   replies:Object.fromEntries(Object.entries(replies).map(([id,reply])=>[id,reply.trim()]).filter(([,reply])=>reply))

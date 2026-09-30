@@ -9,12 +9,12 @@ export const EMAIL_RATE_LIMITS={
  email:{max:5,windowMs:60*60*1000},
  ip:{max:20,windowMs:15*60*1000},
 };
-export const EMAIL_INVALID_MESSAGE='Vul een geldig e-mailadres in.';
-export const EMAIL_CODE_INVALID_MESSAGE='Deze code is ongeldig of verlopen. Vraag een nieuwe code aan.';
-export const EMAIL_COOLDOWN_MESSAGE='Wacht een minuut voordat je een nieuwe code aanvraagt.';
-export const EMAIL_RATE_LIMIT_MESSAGE='Te veel codes aangevraagd. Wacht even en probeer opnieuw.';
-export const EMAIL_LOGIN_SENT_MESSAGE='Als dit e-mailadres bij een deelnemer hoort, ontvang je een code van 6 cijfers.';
-export const EMAIL_PARTICIPANT_ONLY_MESSAGE='Alleen deelnemers kunnen een e-mailadres koppelen.';
+export const EMAIL_INVALID_MESSAGE='Enter a valid email address.';
+export const EMAIL_CODE_INVALID_MESSAGE='This code is invalid or has expired. Request a new code.';
+export const EMAIL_COOLDOWN_MESSAGE='Wait a minute before you request a new code.';
+export const EMAIL_RATE_LIMIT_MESSAGE='Too many codes requested. Wait a moment and try again.';
+export const EMAIL_LOGIN_SENT_MESSAGE='If this email address belongs to a participant, you will receive a 6-digit code.';
+export const EMAIL_PARTICIPANT_ONLY_MESSAGE='Only participants can link an email address.';
 
 export function normalizeEmail(input){
  const email=typeof input==='string'?input.trim().toLowerCase():'';
@@ -49,8 +49,8 @@ export function otpMail(purpose,code){
  const nl=purpose==='login'?'Je inlogcode voor AetherLink Academy':'Bevestig je e-mailadres voor AetherLink Academy';
  const en=purpose==='login'?'Your AetherLink Academy sign-in code':'Confirm your email address for AetherLink Academy';
  return {
-  subject:`${nl}: ${code}`,
-  text:`${nl}: ${code}\nDe code is 10 minuten geldig. Heb je dit niet aangevraagd? Dan kun je deze e-mail negeren.\n\n${en}: ${code}\nThe code is valid for 10 minutes. If you did not request it, you can ignore this email.\n`,
+  subject:`${en}: ${code}`,
+  text:`${en}: ${code}\nThe code is valid for 10 minutes. If you did not request it, you can ignore this email.\n\n${nl}: ${code}\nDe code is 10 minuten geldig. Heb je dit niet aangevraagd? Dan kun je deze e-mail negeren.\n`,
  };
 }
 

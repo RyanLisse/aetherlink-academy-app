@@ -27,10 +27,10 @@ export function registerMcpRoutes(app, deps) {
     const a = await store.auth(token, 'mcp');
     const { r, p, s } = a;
     const facilitator = s.personId === 'facilitator';
-    if (!p && !facilitator) fail(403, 'Geen geldige Academy-rol.');
+    if (!p && !facilitator) fail(403, 'No valid Academy role.');
     const requireParticipant = () => {
       if (!p)
-        fail(403, 'Deze MCP-actie is alleen beschikbaar voor deelnemers.');
+        fail(403, 'This MCP action is only available to participants.');
     };
     let result;
     switch (tool) {
@@ -61,7 +61,7 @@ export function registerMcpRoutes(app, deps) {
               tasks: taskTrail(r, p.id, r.day),
               intent: { url: r.intentUrl || null, file: 'intent.md' },
               coach:
-                'Leg begrippen uit, citeer les-IDs, pas hints aan de hulpkeuze aan. Lees eerst de gedeelde intent: intent.url als die is ingesteld, anders intent.md in de repo van de squad. Geen browserchat of model-API vanuit de game.',
+                'Explain concepts, cite lesson ids, and match hints to the help choice. Read the shared intent first: intent.url when it is set, otherwise intent.md in the squad repo. No browser chat or model API from the game.',
             };
         break;
       }
@@ -117,7 +117,7 @@ export function registerMcpRoutes(app, deps) {
         break;
       }
       default:
-        fail(404, 'Onbekende MCP-tool.');
+        fail(404, 'Unknown MCP tool.');
     }
     if (p)
       await store.withSession(token, 'mcp', ({ p }) => {
@@ -145,8 +145,8 @@ export function registerMcpRoutes(app, deps) {
         remoteConfigured: publicUrl.protocol === 'https:',
         status:
           publicUrl.protocol === 'https:'
-            ? 'Remote-adres geconfigureerd; externe bereikbaarheid nog te controleren.'
-            : 'Lokale preview. Er is nog geen publieke remote MCP uitgerold.',
+            ? 'Remote address configured; external reachability not yet verified.'
+            : 'Local preview. No public remote MCP has been deployed yet.',
       });
     }),
   );
@@ -175,15 +175,15 @@ export function registerMcpRoutes(app, deps) {
       if (req.method !== 'POST') {
         res.setHeader('Allow', 'POST');
         return res.status(405).json({
-          error: 'Stateless Streamable HTTP ondersteunt hier alleen POST.',
+          error: 'Stateless Streamable HTTP only supports POST here.',
         });
       }
       if (!validateHostHeader(req.headers.host, [publicUrl.hostname]).ok)
-        return res.status(403).json({ error: 'Ongeldige Host-header.' });
+        return res.status(403).json({ error: 'Invalid Host header.' });
       if (req.headers.origin && req.headers.origin !== publicUrl.origin)
         return res
           .status(403)
-          .json({ error: 'Andere origin niet toegestaan.' });
+          .json({ error: 'Cross-origin requests are not allowed.' });
       await mcpNodeHandler(req, res, req.body);
     }),
   );

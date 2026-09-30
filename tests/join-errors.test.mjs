@@ -17,6 +17,7 @@ const cases=[
   [INVALID_PARTICIPANT_ACCESS_MESSAGE,'accessInvalid',null],
   [DUPLICATE_PARTICIPANT_MESSAGE,'duplicate','name'],
   ['Kamercode niet gevonden.','room','code'],
+  ['Room code not found.','room','code'],
   ['Squad is vol (maximaal 12).','full',null],
 ];
 

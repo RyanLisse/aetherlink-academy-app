@@ -66,6 +66,7 @@ test('a real Arcade lesson embedded in the day-1 lesson reports completion into 
   assert.equal(saved.evidence,'sample-counter: 1/1 checkpoints, end reached');
   await shot(page,'lab-embed-desktop-done.png');
 
+  await page.locator('.participant-more > button').click();
   await page.getByRole('button',{name:'Mijn route'}).click();
   await assert.doesNotReject(page.locator('.progress-chip.on',{hasText:'Labs 1/1'}).waitFor({timeout:10000}),'route shows the lab chip');
 

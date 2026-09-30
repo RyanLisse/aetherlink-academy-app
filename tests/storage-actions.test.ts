@@ -45,10 +45,10 @@ test('the 25 MiB cap and the content-type allowlist reject before anything is st
  const svc=service();
  try{
   await rejects(svc.run('uploadFile',ryan,{filename:'groot.bin',contentType:'application/pdf',bytes:Buffer.alloc(MAX_UPLOAD_BYTES+1)}),413,/25 MiB/);
-  await rejects(svc.run('uploadFile',ryan,{filename:'leeg.txt',contentType:'text/plain',bytes:Buffer.alloc(0)}),400,/leeg/);
-  await rejects(svc.run('uploadFile',ryan,{filename:'x.exe',contentType:'application/x-msdownload',bytes:Buffer.from('x')}),400,/niet ondersteund.*text\/markdown/);
+  await rejects(svc.run('uploadFile',ryan,{filename:'leeg.txt',contentType:'text/plain',bytes:Buffer.alloc(0)}),400,/empty/);
+  await rejects(svc.run('uploadFile',ryan,{filename:'x.exe',contentType:'application/x-msdownload',bytes:Buffer.from('x')}),400,/not supported.*text\/markdown/);
   await rejects(svc.run('uploadFile',ryan,{filename:'x'.repeat(201),contentType:'text/plain',bytes:Buffer.from('x')}),400,/filename/);
-  await rejects(svc.run('uploadFile',ryan,{filename:'x.txt',contentType:'text/plain'}),400,/bestandsinhoud/);
+  await rejects(svc.run('uploadFile',ryan,{filename:'x.txt',contentType:'text/plain'}),400,/file content/);
   assert.deepEqual(await svc.run('listFiles',ryan),{files:[]});
  }finally{await svc.close();}
 });
@@ -60,7 +60,7 @@ test('files are invisible outside their room; delete needs facilitator or upload
   assert.deepEqual(await svc.run('listFiles',stranger),{files:[]});
   await rejects(svc.run('getFile',stranger,{fileId:file.id}),404);
   await rejects(svc.run('deleteFile',stranger,{fileId:file.id}),404);
-  await rejects(svc.run('deleteFile',{...ryan,id:'p2'},{fileId:file.id}),403,/facilitator of de uploader/);
+  await rejects(svc.run('deleteFile',{...ryan,id:'p2'},{fileId:file.id}),403,/facilitator or the uploader/);
   assert.deepEqual(await svc.run('deleteFile',facilitator,{fileId:file.id}),{deleted:true,fileId:file.id});
   await rejects(svc.run('getFile',ryan,{fileId:file.id}),404);
   const own=await svc.run('uploadFile',ryan,{filename:'eigen.txt',contentType:'text/plain',bytes:Buffer.from('x')}) as any;
@@ -73,7 +73,7 @@ test('without S3 credentials every action answers 503',async()=>{
  const svc=createFileStorage({config:{bucket:'',endpoint:'',accessKeyId:'',secretAccessKey:'',region:'auto'}});
  try{
   assert.equal(svc.configured,false);
-  await rejects(svc.run('listFiles',ryan),503,/niet geconfigureerd/);
+  await rejects(svc.run('listFiles',ryan),503,/not configured/);
   await rejects(svc.run('uploadFile',ryan,{filename:'x.txt',contentType:'text/plain',bytes:Buffer.from('x')}),503);
  }finally{await svc.close();}
 });

@@ -67,5 +67,5 @@ test('facilitator can select day 7 but not day 8',async()=>{
  const seven=await invoke(app,'/game/control',{body:{action:'day',value:7},cookies:{academy:host.token}});
  assert.deepEqual([seven.statusCode,seven.body.day],[200,7]);
  const eight=await invoke(app,'/game/control',{body:{action:'day',value:8},cookies:{academy:host.token}});
- assert.deepEqual([eight.statusCode,eight.body.error],[400,'Kies dag 1–7.']);
+ assert.deepEqual([eight.statusCode,eight.body.error],[400,'Choose day 1–7.']);
 });

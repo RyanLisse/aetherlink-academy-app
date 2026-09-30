@@ -28,7 +28,7 @@ test('create, add, read, update and patch a deck inside one squad',async()=>{
   const updated=await svc.run('updateSlide',ryan,{deckId:deck.id,slideId:added.slide.id,edits:[{find:'Twee',replace:'Drie',expectedMatches:1}],baseContentHash:one.slide.contentHash}) as any;
   assert.equal(updated.changed,true);assert.deepEqual(updated.edits,['replace:first']);
   await rejects(svc.run('updateSlide',ryan,{deckId:deck.id,slideId:added.slide.id,edits:[{find:'Drie',replace:'Vier'}],baseContentHash:one.slide.contentHash}),409,/contentHash/);
-  await rejects(svc.run('updateSlide',ryan,{deckId:deck.id,slideId:added.slide.id,edits:[{find:'x',replace:'y'}],fullContent:'<div class="fmd-slide">z</div>'}),400,/één invoermodus/);
+  await rejects(svc.run('updateSlide',ryan,{deckId:deck.id,slideId:added.slide.id,edits:[{find:'x',replace:'y'}],fullContent:'<div class="fmd-slide">z</div>'}),400,/exactly one input mode/);
   await rejects(svc.run('updateSlide',ryan,{deckId:deck.id,slideId:added.slide.id,edits:[{find:'nope',replace:'y'}]}),422);
   await rejects(svc.run('updateSlide',ryan,{deckId:deck.id,slideId:'missing',fullContent:'<div>x</div>'}),404);
   const patched=await svc.run('patchDeck',ryan,{deckId:deck.id,expectedRevision:updated.revision,operations:[{op:'add-slide',slide:{heading:'Einde'},afterSlideId:deck.slides[0].id},{op:'reorder-slides',slideIds:[added.slide.id,deck.slides[0].id].concat([])},{op:'patch-deck-fields',fields:{title:'Recap'}}]}).catch(e=>e) as any;
@@ -58,7 +58,7 @@ test('decks are invisible outside their room; delete needs facilitator or creato
   const copy=await svc.run('duplicateDeck',{...ryan,id:'p2'},{deckId:deck.id}) as any;
   assert.equal(copy.title,'Privé (kopie)');
   await svc.run('deleteDeck',facilitator,{deckId:deck.id});
-  await rejects(svc.run('exportHtml',ryan,{deckId:copy.id}),400,/leeg/);
+  await rejects(svc.run('exportHtml',ryan,{deckId:copy.id}),400,/empty/);
   const list=await svc.run('listDecks',ryan) as any;
   assert.deepEqual(list.decks.map((d:any)=>d.id),[copy.id]);
   await rejects(svc.run('createDeck',ryan,{title:''}),400,/title/);
