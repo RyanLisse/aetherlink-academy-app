@@ -136,8 +136,6 @@ jobs:
           ACADEMY_POSTGRES_TEST=1
           node --import tsx --test
           tests/postgres-store.test.mjs tests/participant-access.test.mjs tests/cohort-access.test.mjs tests/email-otp.test.mjs tests/certificate-postgres.test.mjs tests/facilitator-postgres.test.mjs tests/learning-postgres.test.mjs tests/presence.test.mjs tests/course-order.test.mjs
-         
-         
           tests/request-retry.test.mjs tests/storage-postgres.test.ts tests/proof-trail-postgres.test.mjs tests/leercoach-postgres.test.mjs
           tests/slides-postgres.test.ts
       - name: Run migrate-v2 apply against a throwaway database
