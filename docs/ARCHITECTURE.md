@@ -15,7 +15,7 @@ browser ──HTTPS──> gateway (server/app.mjs, :4317)
 
 ## Process model
 
-`scripts/start.mjs` validates the runtime configuration (`server/runtime-config.mjs`), starts Proof from `vendor/proof-sdk/server/index.ts` on loopback `PROOF_PORT` (default 4400), waits for its `/health`, then starts the gateway from `createApp` in `server/app.mjs` on `PORT` (default 4317). Only the gateway takes public traffic. The container image is `Dockerfile`; `Dockerfile.vercel` is the hardened variant the CI `container` job builds, and despite its name no longer depends on Vercel.
+`scripts/start.mjs` validates the runtime configuration (`server/runtime-config.mjs`), starts Proof from `vendor/proof-sdk/server/index.ts` on loopback `PROOF_PORT` (default 4400), waits for its `/health`, then starts the gateway from `createApp` in `server/app.mjs` on `PORT` (default 4317). Only the gateway takes public traffic. The container image is `Dockerfile` (digest-pinned base, `SOURCE_REVISION` build arg and OCI labels); the CI `container` job builds and runs that same image.
 
 ## Gateway (`server/`)
 

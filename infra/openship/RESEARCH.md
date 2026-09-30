@@ -192,8 +192,9 @@ for Academy deploy.
   or using the retained image, within `rollbackWindow` (5 in the project body)
   (`G/apps/api/src/modules/deployments/rollback/rollback-orchestrator.ts`).
 - **Every project env var is also passed as a Docker build arg**
-  (`G/packages/adapters/src/runtime/docker-build-args.ts`). The root `Dockerfile` declares no
-  `ARG`, so the values are not written into image layers, but they do reach the build step.
+  (`G/packages/adapters/src/runtime/docker-build-args.ts`). The root `Dockerfile` declares only
+  `ARG SOURCE_REVISION`, so that (non-secret) value is baked into the image and its OCI revision
+  label; the other values are not written into image layers, but they do reach the build step.
 
 ## Postgres/Redis password reuse (28P01)
 

@@ -250,15 +250,15 @@ jobs:
       - uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
         with:
           context: .
-          file: Dockerfile.vercel
-          tags: aetherlink-academy-vercel:${{ github.sha }}
+          file: Dockerfile
+          tags: aetherlink-academy:${{ github.sha }}
           load: true
           build-args: |
             SOURCE_REVISION=${{ github.sha }}
       - name: Capture image identity
         if: always()
         run: |
-          docker image inspect aetherlink-academy-vercel:${{ github.sha }} \
+          docker image inspect aetherlink-academy:${{ github.sha }} \
             --format '{"imageId":{{json .Id}},"created":{{json .Created}},"tags":{{json .RepoTags}},"digests":{{json .RepoDigests}},"os":{{json .Os}},"architecture":{{json .Architecture}},"revision":{{json (index .Config.Labels "org.opencontainers.image.revision")}}}' \
             > "$RUNNER_TEMP/academy-image-identity.json" || true
       - name: Upload image identity
@@ -268,10 +268,10 @@ jobs:
           name: academy-image-identity-${{ github.sha }}
           path: ${{ runner.temp }}/academy-image-identity.json
           if-no-files-found: ignore
-      - name: Start the actual Vercel container image
+      - name: Start the production container image
         run: |
           source "$RUNNER_TEMP/aetherlink-academy-ci/env.sh"
-          docker run --detach --name academy-vercel-ci --network host \
+          docker run --detach --name academy-ci --network host \
             --volume "$RUNNER_TEMP/aetherlink-academy-ci/server.crt:/tmp/academy-ca.crt:ro" \
             --env NODE_EXTRA_CA_CERTS=/tmp/academy-ca.crt \
             --env DATABASE_URL="$DATABASE_URL" --env REDIS_URL="$REDIS_URL" \
@@ -280,7 +280,7 @@ jobs:
             --env ACADEMY_HOST_KEY="$(openssl rand -hex 32)" \
             --env PROOF_COLLAB_SIGNING_SECRET="$(openssl rand -hex 32)" \
             --env VERCEL=1 \
-            aetherlink-academy-vercel:${{ github.sha }}
+            aetherlink-academy:${{ github.sha }}
           for i in $(seq 1 60); do
             body=$(curl --silent --fail http://127.0.0.1:4317/game/health || true)
             if jq --exit-status --arg revision "$GITHUB_SHA" ' .ok == true and .proof == true and .revision == $revision' <<< "$body" >/dev/null; then exit 0; fi
@@ -290,11 +290,11 @@ jobs:
       - name: Check container health and restart readiness
         run: |
           for i in $(seq 1 30); do
-            [[ "$(docker inspect --format '{{.State.Health.Status}}' academy-vercel-ci)" == healthy ]] && break
+            [[ "$(docker inspect --format '{{.State.Health.Status}}' academy-ci)" == healthy ]] && break
             sleep 2
           done
-          test "$(docker inspect --format '{{.State.Health.Status}}' academy-vercel-ci)" = healthy
-          docker restart academy-vercel-ci >/dev/null
+          test "$(docker inspect --format '{{.State.Health.Status}}' academy-ci)" = healthy
+          docker restart academy-ci >/dev/null
           for i in $(seq 1 60); do
             body=$(curl --silent --fail http://127.0.0.1:4317/game/health || true)
             if jq --exit-status --arg revision "$GITHUB_SHA" ' .ok == true and .proof == true and .revision == $revision' <<< "$body" >/dev/null; then exit 0; fi
@@ -304,5 +304,5 @@ jobs:
       - name: Stop container and CI services
         if: always()
         run: |
-          docker rm --force academy-vercel-ci >/dev/null 2>&1 || true
+          docker rm --force academy-ci >/dev/null 2>&1 || true
           bash scripts/ci-services.sh stop

@@ -1,6 +1,9 @@
 services:
   academy:
-    build: .
+    build:
+      context: .
+      args:
+        SOURCE_REVISION: ${SOURCE_REVISION:-}
     ports:
       - "127.0.0.1:4317:4317"
     env_file:
