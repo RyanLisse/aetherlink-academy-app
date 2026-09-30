@@ -4,6 +4,7 @@ import {api,apiMethod,getToken} from './api';
 import {useI18n,useT} from './i18n';
 import {reportScreen} from './screen';
 import {StatusState} from './status';
+import {CLASSROOM_SANDBOX} from './classroom';
 import './slides-simple.css';
 
 const DIMS={'16:9':[960,540],'4:3':[960,720],'1:1':[1080,1080],'9:16':[540,960],'4:5':[864,1080]};
@@ -150,6 +151,7 @@ function DeckView({room,deckId,action,busy,onRoom,onContext,onBack}){
   {deck&&count>0&&<div className="deck-body">
    <div className="deck-structure">
     <div className="deck-structure-head"><strong>{t('decks.structure')}</strong><span className="muted">{index+1} / {count}</span></div>
+    <p className="deck-structure-here muted" aria-live="polite">{t('decks.youAreHere',{n:index+1,count,title:deck.title})}</p>
     <ol className="slide-rail" aria-label={t('decks.rail')}>{deck.slides.map((slide,i)=><li key={slide.id} className={i===index?'selected':''}>
      <button type="button" className="slide-thumb" onClick={()=>setIndex(i)} aria-current={i===index} aria-label={t('decks.slideN',{n:i+1})}><SlideStage slide={slide} aspectRatio={deck.aspectRatio} designSystem={deck.designSystem} className="thumb"/><span>{i+1}</span></button>
     </li>)}</ol>
@@ -185,7 +187,7 @@ function DeckView({room,deckId,action,busy,onRoom,onContext,onBack}){
     </div>
     <button type="button" className="gradient" onClick={()=>setPreview(false)}><X size={14}/>{t('decks.previewClose')}</button>
    </div>
-   <iframe className="deck-preview-frame" title={t('decks.previewTitle')} src={`/game/decks/${deckId}/present`}/>
+   <iframe className="deck-preview-frame" title={t('decks.previewTitle')} src={`/game/decks/${deckId}/present`} sandbox={CLASSROOM_SANDBOX}/>
   </div>}
  </section>;
 }

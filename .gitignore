@@ -9,6 +9,8 @@ dist/
 *.log
 test-results/
 playwright-report/
+# Local screenshot/proof output from scripts/*-screenshots.mjs (evidence lives on the PRs)
+artifacts/
 vendor/proof-sdk/.git/
 
 .mcp.json

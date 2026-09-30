@@ -33,6 +33,7 @@ export function useRemote(path,deps=[]){
     let active=true;
     api(path).then(data=>{if(active)setState({status:'ready',data});}).catch(e=>{if(active)setState({status:'error',message:e.message});});
     return()=>{active=false;};
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- caller deps extend this hook's path and reload dependencies
   },[path,tick,...deps]);
   return {...state,reload:()=>setTick(n=>n+1)};
 }
