@@ -399,7 +399,7 @@ function StepTaskList({steps,tasks,action,busy,onGraded,onSubmitEvidence}){
           {step.doneWhen&&<small><span className="muted">{t('path.doneWhen')}</span> {step.doneWhen}</small>}
           {step.hint&&<small className="muted">{step.hint}</small>}
           {last?.review&&<p><strong>{t('tasks.feedback',{name:last.review.reviewer?.name||'Facilitator'})}</strong> {last.review.note}</p>}
-          {task&&<small className="muted">{t('tasks.attempts',{count:task.submissions.length})}</small>}
+          {task?.submissions.length>0&&<small className="muted">{t('tasks.attempts',{count:task.submissions.length})}</small>}
           {task?.autograde&&(auto||task.status!=='approved')&&<AutogradeForm task={task} action={action} busy={busy} onGraded={onGraded}/>}
           {task&&(task.status==='open'||task.status==='changes_requested')&&!step.autograde&&<button type="button" className="text-button" onClick={()=>onSubmitEvidence(step.id)}>{t('steps.submitEvidence')}</button>}
         </div>
