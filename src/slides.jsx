@@ -1,10 +1,11 @@
 import React,{useCallback,useEffect,useRef,useState} from 'react';
-import {Presentation,Plus,ChevronLeft,ChevronRight,Download,Trash2,Copy,RefreshCw,ArrowLeft,Sparkles,Pin,PinOff,Eye,X,Pencil} from 'lucide-react';
+import {Presentation,Plus,ChevronLeft,ChevronRight,Download,Trash2,Copy,RefreshCw,ArrowLeft,Sparkles,Pin,PinOff,Eye,X,Pencil,MonitorPlay} from 'lucide-react';
 import {api,apiMethod,getToken} from './api';
 import {useI18n,useT} from './i18n';
 import {reportScreen} from './screen';
 import {StatusState} from './status';
 import {CLASSROOM_SANDBOX} from './classroom';
+import {DeckAssistant} from './deck-assistant';
 import './slides-simple.css';
 
 const DIMS={'16:9':[960,540],'4:3':[960,720],'1:1':[1080,1080],'9:16':[540,960],'4:5':[864,1080]};
@@ -54,6 +55,7 @@ export function Decks({room,action,busy,onRoom,onContext}){
    <button type="submit" className="gradient" disabled={busy||!title.trim()}><Plus size={16}/>{t('decks.create')}</button>
   </form>
   <div className="notice"><strong><Sparkles size={14}/> {t('decks.agentTitle')}</strong><p>{t('decks.agentBody')}</p></div>
+  {room.me.role==='Facilitator'&&<DeckAssistant onApplied={result=>{if(result.deckId)setOpen(result.deckId);else refresh();}}/>}
   {listError&&<StatusState kind="error" title={t('decks.loadFailed')} action={<button type="button" onClick={refresh}>{t('status.retry')}</button>}>{listError}<p>{t('decks.loadFailedHelp')}</p></StatusState>}
   {decks===null&&!listError&&<StatusState kind="loading" title={t('common.loading')}/>}
   {decks&&!decks.length&&!listError&&<StatusState kind="empty" title={t('decks.empty')}>{t('decks.emptyHelp')}</StatusState>}
@@ -81,7 +83,7 @@ function DeckView({room,deckId,action,busy,onRoom,onContext,onBack}){
  const stage=useRef(null);
  const onContextRef=useRef(onContext);
  useEffect(()=>{onContextRef.current=onContext;},[onContext]);
- const load=useCallback(async()=>{try{const next=await api(`decks/${deckId}`);setDeck(next);setError('');}catch(e){setError(e.message||t('decks.loadFailed'));}},[deckId,t]);
+ const load=useCallback(async()=>{try{const next=await api(`decks/${deckId}`);setDeck(next);setError('');return next;}catch(e){setError(e.message||t('decks.loadFailed'));return null;}},[deckId,t]);
  useEffect(()=>{load();const timer=setInterval(load,4000);return()=>clearInterval(timer);},[load]);
  const count=deck?.slides.length||0;
  const slideId=deck?.slides[index]?.id??null;
@@ -91,6 +93,8 @@ function DeckView({room,deckId,action,busy,onRoom,onContext,onBack}){
  useEffect(()=>()=>onContextRef.current?.(null),[]);
  const go=useCallback(delta=>setIndex(i=>Math.max(0,Math.min(count-1,i+delta))),[count]);
  useEffect(()=>{if(index>=count&&count)setIndex(count-1);},[count,index]);
+ const classroomDeck=deck?.slides.some(slide=>slide.kind==='classroom');
+ const openPresenter=()=>window.open(`/decks/${deckId}?mode=presenter&index=${index}`,'academy-deck-presenter','noopener,noreferrer');
  useEffect(()=>{const onKey=e=>{if(e.key==='Escape'&&preview){e.preventDefault();setPreview(false);return;}if(preview||renaming)return;if(e.target.closest('input,textarea,select,[contenteditable],.simple-assistant,.simple-menu'))return;if(['ArrowRight','ArrowDown','PageDown'].includes(e.key)){e.preventDefault();go(1);}else if(['ArrowLeft','ArrowUp','PageUp'].includes(e.key)){e.preventDefault();go(-1);}else if(e.key==='Home')setIndex(0);else if(e.key==='End')setIndex(Math.max(0,count-1));};window.addEventListener('keydown',onKey);return()=>window.removeEventListener('keydown',onKey);},[go,count,preview,renaming]);
  const presentFullscreen=()=>setPreview(true);
  const download=()=>action(async()=>{const response=await fetch(`/game/decks/${deckId}/export.html`,{headers:{authorization:`Bearer ${getToken()}`}});if(!response.ok)throw Error((await response.json().catch(()=>({})))?.error||t('decks.exportFailed'));const blob=await response.blob();const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=response.headers.get('content-disposition')?.match(/filename="([^"]+)"/)?.[1]||'deck.html';a.click();setTimeout(()=>URL.revokeObjectURL(url),2000);});
@@ -137,6 +141,7 @@ function DeckView({room,deckId,action,busy,onRoom,onContext,onBack}){
      <div className="simple-deck-more-menu">
       <button type="button" disabled={busy} onClick={addSlide}><Plus size={14}/>{t('decks.addSlide')}</button>
       <button type="button" disabled={!count} onClick={()=>setPreview(true)}><Eye size={14}/>{t('decks.preview')}</button>
+      {facilitator&&classroomDeck&&<button type="button" onClick={openPresenter}><MonitorPlay size={14}/>{t('decks.presenterView')}</button>}
       <button type="button" onClick={load} aria-label={t('decks.refresh')}><RefreshCw size={14}/>{t('decks.refresh')}</button>
       <button type="button" disabled={!count} onClick={download}><Download size={14}/>{t('decks.export')}</button>
       {facilitator&&<button type="button" disabled={busy||!count} onClick={togglePin} aria-pressed={pinned}>{pinned?<PinOff size={14}/>:<Pin size={14}/>}{pinned?t('decks.unpinOverlayShort'):t('decks.pinOverlayShort')}</button>}
@@ -174,6 +179,7 @@ function DeckView({room,deckId,action,busy,onRoom,onContext,onBack}){
      <span>{index+1} / {count}</span>
      <button type="button" onClick={()=>go(1)} disabled={index>=count-1} aria-label={t('decks.next')}><ChevronRight size={16}/></button>
     </div>
+    {facilitator&&<DeckAssistant deckId={deckId} slideId={slideId} onApplied={async result=>{const next=await load();const first=result.changes?.added?.[0]||result.changes?.updated?.[0];const at=first?next?.slides.findIndex(slide=>slide.id===first)??-1:-1;if(at!==-1)setIndex(at);}}/>}
     {showNotes&&current?.notes&&<details className="simple-speaker-notes"><summary>{t('decks.notes')}</summary><div className="notice deck-notes"><p>{current.notes}</p></div></details>}
     <details className="simple-technical-details"><summary>{locale==='nl'?'Technische details':'Technical details'}</summary><p>{t('decks.editHint',{id:current?.id||'',deckId:deck.id})}</p></details>
    </div>

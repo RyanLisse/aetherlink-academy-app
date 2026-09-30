@@ -16,6 +16,7 @@ import { createPortal } from './portal/index.mjs';
 import { courseDays, releasedDays } from './release.mjs';
 import { labGradingKeys } from './lab-keys.mjs';
 import { readCoachConfig } from './coach.mjs';
+import { readDeckAssistantConfig } from './deck-assistant.mjs';
 import { bearer, cookie, namedCookie } from './routes/shared.mjs';
 import {
   registerRequestMiddleware,
@@ -57,6 +58,7 @@ export function createApp({
   trustProxy = process.env.ACADEMY_TRUST_PROXY,
   chatConfig = readChatConfig(),
   coachConfig = readCoachConfig(),
+  deckAssistantConfig = readDeckAssistantConfig(),
   mailer = createMailTransport(),
 } = {}) {
   const publicUrl = new URL(publicBaseUrl);
@@ -251,6 +253,8 @@ export function createApp({
     token,
     browser,
     wrap,
+    fetchImpl,
+    deckAssistantConfig,
   });
   registerFileRoutes(app, { files, deckActor, browser, wrap });
   registerMcpRoutes(app, {
