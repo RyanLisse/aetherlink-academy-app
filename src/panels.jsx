@@ -109,10 +109,16 @@ export function CopyConfiguration({value,label}){
   return <div className="copy-configuration"><label>{resolvedLabel}<textarea ref={field} aria-label={resolvedLabel} readOnly value={value} rows={Math.min(14,Math.max(3,value.split('\n').length))} spellCheck={false} onFocus={e=>e.currentTarget.select()}/></label><div className="form-row"><button type="button" onClick={copy}><Copy size={16}/>{t('copy.button')}</button><button type="button" onClick={select}>{t('copy.select')}</button></div>{message&&<p role="status">{message}</p>}</div>;
 }
 
+function InlineCode({text}){
+  return text.split('`').map((segment,index)=>index%2===1?<code key={index}>{segment}</code>:segment);
+}
+
 function ProgressivePath({steps,compact=false}){
   const t=useT();
   if(!steps?.length)return null;
-  return <div className={compact?'progressive-path compact':'progressive-path'} aria-label={t('path.aria')}>{steps.map((s,i)=><div className="progressive-step" key={s.id||i}><span className="agent-badge">{s.badge}</span><strong>{s.title}{s.level==='stretch'&&<small className="muted"> · {t('path.stretch')}</small>}</strong><p>{s.goal}</p>{!compact&&s.doneWhen&&<small><span className="muted">{t('path.doneWhen')}</span> {s.doneWhen}</small>}{compact&&s.hint&&<small className="muted">{s.hint}</small>}</div>)}</div>;
+  const detailed=steps.some(s=>s.instructions?.length>0);
+  const className=`progressive-path${compact?' compact':''}${detailed?' detailed':''}`;
+  return <div className={className} aria-label={t('path.aria')}>{steps.map((s,i)=><div className="progressive-step" key={s.id||i}><span className="agent-badge">{s.badge}</span><strong>{s.title}{s.level==='stretch'&&<small className="muted"> · {t('path.stretch')}</small>}</strong><p>{s.goal}</p>{s.instructions?.length>0&&<ol className="step-instructions">{s.instructions.map((line,j)=><li key={j}><InlineCode text={line}/></li>)}</ol>}{!compact&&s.doneWhen&&<small><span className="muted">{t('path.doneWhen')}</span> {s.doneWhen}</small>}{compact&&s.hint&&<small className="muted">{s.hint}</small>}</div>)}</div>;
 }
 function QuickCheck({room,action,busy,practice,shownDay,chosen,questions,quizError}){
   const t=useT();
@@ -213,10 +219,16 @@ export function Solo({room,action,busy,onNavigate}){
   const [pack,setPack]=useState(null);
   const [error,setError]=useState('');
   const [sent,setSent]=useState(false);
+  const [evidenceTask,setEvidenceTask]=useState('');
+  const [evidenceTaskKey,setEvidenceTaskKey]=useState('');
+  const formRef=useRef(null);
   const participant=room.me.role!=='Facilitator';
   const {locale}=useI18n();
   const trail=useRemote(participant?`tasks?locale=${locale}`:null,[room.day,trailKey(room)]),tasks=trail.data?.tasks;
   const submittable=(tasks||[]).filter(task=>task.status==='open'||task.status==='changes_requested');
+  const submittableKey=submittable.map(task=>task.id).join();
+  const defaultEvidenceTask=submittable[0]?.id||'';
+  const selectedEvidenceTask=evidenceTaskKey===submittableKey&&submittable.some(task=>task.id===evidenceTask)?evidenceTask:defaultEvidenceTask;
   useEffect(()=>{let active=true;setPack(null);setError('');setSent(false);api(`day-pack?locale=${locale}`).then(d=>{if(active)setPack(d);}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[room.day,locale]);
   if(error)return <section className="panel content-panel"><p className="cyan">{t('solo.eyebrow')}</p><h2>{t('solo.noneTitle')}</h2><StatusState kind="error" title={t('status.errorTitle')}>{error}<p>{t('solo.noneHint')}</p></StatusState></section>;
   if(!pack)return <section className="panel content-panel"><StatusState kind="loading" title={t('solo.loading')}/></section>;
@@ -224,7 +236,42 @@ export function Solo({room,action,busy,onNavigate}){
   const files=mission.starterFiles||['README.md','CLAUDE.md','package.json','status.mjs','status.test.mjs'];
   const hintText=(mission.hints||[]).join(' ');
   const allowedText=(mission.allowed||[]).join(' ');
-  return <section className="panel content-panel"><p className="cyan">{t('solo.meta',{minutes:mission.minutes||25,id:mission.id})}</p><h2>{mission.title}</h2><p className="lede">{mission.goal}</p>{mission.starterNote&&<p className="muted">{mission.starterNote}</p>}{pack.steps?.length>0&&<><p className="cyan">{t('path.label')}</p><ProgressivePath steps={pack.steps} compact/></>}<div className="mission-goal"><Target size={22}/><div><h3>{t('solo.goal')}</h3><p>{mission.goal}</p></div></div>{participant&&(tasks?<TaskList tasks={tasks} action={action} busy={busy} onGraded={trail.reload}/>:<RemoteStatus remote={trail} loading={t('tasks.loading')}/>)}<label className="route-select">{t('solo.helpAmount')}<select value={room.me.route||'standard'} disabled={room.me.role==='Facilitator'} onChange={e=>action(()=>api('route',{route:e.target.value}))}>{['guided','standard','stretch'].map(v=><option value={v} key={v}>{routeName(t,v)}</option>)}</select></label><details className="hint" open={room.me.route==='guided'}><summary>{t('solo.hintSummary')}</summary><p>{hintText||t('solo.hintFallback')}</p></details>{room.me.route==='stretch'&&<div className="notice"><strong>{t('solo.stretch')}</strong><p>{mission.stretch||t('solo.stretchFallback')}</p></div>}<h3>{t('solo.workspace')}</h3><p className="muted">{t('solo.workspaceHint')}</p><div className="files">{files.map(f=><a key={f} href={'/game/starter/'+f} download={f}><FileText size={16}/>{f}<Download size={15}/></a>)}</div><details className="hint"><summary>{t('solo.allowedSummary')}</summary><p>{allowedText} {mission.stop} {t('solo.noPush')}</p></details><button type="button" className="text-button" onClick={()=>onNavigate('coach')}><Sparkles size={17}/>{t('solo.openCoach')}</button><h3>{t('solo.submitHeading')}</h3><p className="muted">{t('solo.submitHint')}</p><form onSubmit={e=>{e.preventDefault();const form=e.currentTarget;const values=Object.fromEntries(new FormData(form));action(async()=>{await api('evidence',{...values,requestId:form.dataset.requestId||(form.dataset.requestId=crypto.randomUUID())});setSent(true);form.reset();delete form.dataset.requestId;});}}>{tasks&&<label>{t('tasks.field')}<select name="taskId" key={submittable.map(task=>task.id).join()} defaultValue={submittable[0]?.id||''}>{submittable.map(task=><option value={task.id} key={task.id}>{task.title}</option>)}<option value="">{t('tasks.none')}</option></select></label>}{[['finding',t('solo.finding')],['command',t('solo.command')],['observed',t('solo.observed')],['limitation',t('solo.limitation')]].map(([n,l])=><label key={n}>{l}<textarea required name={n} maxLength={n==='command'?1000:4000}/></label>)}<button type="submit" className="gradient" disabled={busy||room.me.role==='Facilitator'}>{t('solo.submit')}<ArrowRight size={17}/></button>{sent&&<p className="success" role="status"><Check size={16}/>{t('solo.sent')}</p>}</form></section>;
+  const onSubmitEvidence=id=>{
+    setEvidenceTask(id);
+    setEvidenceTaskKey(submittableKey);
+    formRef.current?.scrollIntoView({behavior:'smooth',block:'start'});
+    formRef.current?.querySelector('textarea')?.focus();
+  };
+  const hasSteps=pack.steps?.length>0;
+  return <section className="panel content-panel">
+    <p className="cyan">{t('solo.meta',{minutes:mission.minutes||25,id:mission.id})}</p>
+    <h2>{mission.title}</h2>
+    <p className="lede">{mission.goal}</p>
+    {mission.starterNote&&<p className="muted">{mission.starterNote}</p>}
+    {!hasSteps&&<div className="mission-goal"><Target size={22}/><div><h3>{t('solo.goal')}</h3><p>{mission.goal}</p></div></div>}
+    {hasSteps?
+      <>
+        {participant&&!tasks&&<RemoteStatus remote={trail} loading={t('tasks.loading')}/>}
+        <StepTaskList steps={pack.steps} tasks={tasks} action={action} busy={busy} onGraded={trail.reload} onSubmitEvidence={onSubmitEvidence}/>
+      </>:
+      participant&&(tasks?<TaskList tasks={tasks} action={action} busy={busy} onGraded={trail.reload}/>:<RemoteStatus remote={trail} loading={t('tasks.loading')}/>)}
+    <label className="route-select">{t('solo.helpAmount')}<select value={room.me.route||'standard'} disabled={room.me.role==='Facilitator'} onChange={e=>action(()=>api('route',{route:e.target.value}))}>{['guided','standard','stretch'].map(v=><option value={v} key={v}>{routeName(t,v)}</option>)}</select></label>
+    <details className="hint" open={room.me.route==='guided'}><summary>{t('solo.hintSummary')}</summary><p>{hintText||t('solo.hintFallback')}</p></details>
+    {room.me.route==='stretch'&&<div className="notice"><strong>{t('solo.stretch')}</strong><p>{mission.stretch||t('solo.stretchFallback')}</p></div>}
+    <h3>{t('solo.workspace')}</h3>
+    <p className="muted">{t('solo.workspaceHint')}</p>
+    <div className="files">{files.map(f=><a key={f} href={'/game/starter/'+f} download={f}><FileText size={16}/>{f}<Download size={15}/></a>)}</div>
+    <details className="hint"><summary>{t('solo.allowedSummary')}</summary><p>{allowedText} {mission.stop} {t('solo.noPush')}</p></details>
+    <button type="button" className="text-button" onClick={()=>onNavigate('coach')}><Sparkles size={17}/>{t('solo.openCoach')}</button>
+    <h3>{t('solo.submitHeading')}</h3>
+    <p className="muted">{t('solo.submitHint')}</p>
+    <form ref={formRef} onSubmit={e=>{e.preventDefault();const form=e.currentTarget;const values=Object.fromEntries(new FormData(form));action(async()=>{await api('evidence',{...values,requestId:form.dataset.requestId||(form.dataset.requestId=crypto.randomUUID())});setSent(true);form.reset();setEvidenceTask(defaultEvidenceTask);setEvidenceTaskKey(submittableKey);delete form.dataset.requestId;});}}>
+      {tasks&&<label>{t('tasks.field')}<select name="taskId" key={submittableKey} value={selectedEvidenceTask} onChange={e=>{setEvidenceTask(e.target.value);setEvidenceTaskKey(submittableKey);}}>{submittable.map(task=><option value={task.id} key={task.id}>{task.title}</option>)}<option value="">{t('tasks.none')}</option></select></label>}
+      {[['finding',t('solo.finding')],['command',t('solo.command')],['observed',t('solo.observed')],['limitation',t('solo.limitation')]].map(([n,l])=><label key={n}>{l}<textarea required name={n} maxLength={n==='command'?1000:4000}/></label>)}
+      <button type="submit" className="gradient" disabled={busy||room.me.role==='Facilitator'}>{t('solo.submit')}<ArrowRight size={17}/></button>
+      {sent&&<p className="success" role="status"><Check size={16}/>{t('solo.sent')}</p>}
+    </form>
+  </section>;
 }
 
 export function Review({room,action,busy}){
@@ -324,6 +371,44 @@ const trailKey=room=>room.evidence.map(e=>e.id+':'+e.status).join(',');
 function TaskList({tasks,action,busy,onGraded}){
   const t=useT();
   return <><h3>{t('tasks.title')}</h3><p className="muted">{t('tasks.lede')}</p>{!tasks.length&&<StatusState kind="empty" title={t('tasks.empty')}/>}<div className="task-list">{tasks.map(task=>{const last=task.submissions.at(-1),auto=task.autograde?.passed;return <article className="task" key={task.id}><div><strong>{task.title}</strong><span className={'task-chip '+task.status}>{t(auto?'tasks.status.auto_approved':'tasks.status.'+task.status)}</span></div><small>{task.id}{task.submissions.length?` · ${t('tasks.attempts',{count:task.submissions.length})}`:''}</small>{last?.review&&<p><strong>{t('tasks.feedback',{name:last.review.reviewer?.name||'Facilitator'})}</strong> {last.review.note}</p>}{task.autograde&&(auto||task.status!=='approved')&&<AutogradeForm task={task} action={action} busy={busy} onGraded={onGraded}/>}</article>;})}</div></>;
+}
+
+function StepTaskList({steps,tasks,action,busy,onGraded,onSubmitEvidence}){
+  const t=useT();
+  const taskById=new Map((tasks||[]).map(task=>[task.id,task]));
+  const requiredSteps=steps.filter(step=>step.level!=='stretch');
+  const done=requiredSteps.filter(step=>taskById.get(step.id)?.status==='approved').length;
+  const openIndex=tasks?steps.findIndex(step=>taskById.get(step.id)?.status!=='approved'):steps.length?0:-1;
+  if(!steps.length)return null;
+  return <>
+    <h3>{t('tasks.title')}</h3>
+    <p className="muted">{t('tasks.lede')}</p>
+    {tasks&&<div className="step-progress-row"><span>{t('steps.progress',{done,total:requiredSteps.length})}</span><progress className="step-progress" value={done} max={requiredSteps.length}/></div>}
+    <div className="step-card-list">{steps.map((step,index)=>{
+      const task=taskById.get(step.id);
+      const last=task?.submissions?.at(-1);
+      const auto=task?.autograde?.passed;
+      return <details className="step-card" data-testid="step-card" open={index===openIndex} key={step.id||index}>
+        <summary>
+          <span className="agent-badge">{step.badge}</span>
+          <strong>{step.title}{step.level==='stretch'&&<small className="muted"> · {t('path.stretch')}</small>}</strong>
+          {step.timerMinutes&&<small className="muted">{t('steps.minutes',{minutes:step.timerMinutes})}</small>}
+          {task&&<span className={'task-chip '+task.status}>{t(auto?'tasks.status.auto_approved':'tasks.status.'+task.status)}</span>}
+          {task?.status==='approved'&&<Check size={16} aria-hidden="true"/>}
+        </summary>
+        <div className="step-card-body">
+          <p>{step.goal}</p>
+          {step.instructions?.length>0&&<ol className="step-instructions">{step.instructions.map((line,lineIndex)=><li key={lineIndex}><InlineCode text={line}/></li>)}</ol>}
+          {step.doneWhen&&<small><span className="muted">{t('path.doneWhen')}</span> {step.doneWhen}</small>}
+          {step.hint&&<small className="muted">{step.hint}</small>}
+          {last?.review&&<p><strong>{t('tasks.feedback',{name:last.review.reviewer?.name||'Facilitator'})}</strong> {last.review.note}</p>}
+          {task?.submissions.length>0&&<small className="muted">{t('tasks.attempts',{count:task.submissions.length})}</small>}
+          {task?.autograde&&(auto||task.status!=='approved')&&<AutogradeForm task={task} action={action} busy={busy} onGraded={onGraded}/>}
+          {task&&(task.status==='open'||task.status==='changes_requested')&&!step.autograde&&<button type="button" className="text-button" onClick={()=>onSubmitEvidence(step.id)}>{t('steps.submitEvidence')}</button>}
+        </div>
+      </details>;
+    })}</div>
+  </>;
 }
 
 const PRIORITIES=['low','medium','high'];

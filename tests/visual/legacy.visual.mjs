@@ -32,7 +32,7 @@ for (const [width, height] of [[1440, 900], [390, 844]]) {
     await open(page, {width, height});
     await page.goto(`${fixture.base}/#access=${fixture.participantAccess}`);
     await page.getByRole('heading', {name: 'Squad Noord'}).waitFor();
-    await page.getByTestId('lesson-panel').waitFor();
+    await page.getByTestId('today-next').waitFor();
     await page.waitForFunction(()=>!document.querySelector('.primary [data-status="loading"]'));
     await settle(page);
     await expect(page).toHaveScreenshot(`participant-room-${width}.png`, {fullPage: true});
