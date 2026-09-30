@@ -42,7 +42,7 @@ export function registerAuthRoutes(app, deps) {
       reason,
       userAgent: String(req.headers['user-agent'] || '').slice(0, 80),
     });
-    return Object.assign(new Error('Google-login mislukt (state).'), {
+    return Object.assign(new Error('Google sign-in failed (state).'), {
       code: 'state',
     });
   };
@@ -63,7 +63,7 @@ export function registerAuthRoutes(app, deps) {
     mapLoginError = (e) => (loginCodes.has(e?.code) ? e.code : 'session'),
     loginError = (res, code, detail = {}) => {
       res.clearCookie('academy-login', loginCookie);
-      console.warn('[academy] Google-login mislukt', {
+      console.warn('[academy] Google sign-in failed', {
         code,
         reason: detail.reason || null,
         message:
@@ -195,7 +195,7 @@ export function registerAuthRoutes(app, deps) {
       if (!identity)
         return res
           .status(401)
-          .json({ error: 'Geen geldige facilitator-login.' });
+          .json({ error: 'No valid facilitator sign-in.' });
       res.json({ email: identity.email, name: identity.name });
     }),
   );
@@ -240,7 +240,7 @@ export function registerAuthRoutes(app, deps) {
   // Email is optional: without a mail transport every email route is absent, not merely hidden.
   const emailRoute = (fn) =>
     wrap(async (req, res) => {
-      if (!mailer) return res.status(404).json({ error: 'Niet gevonden.' });
+      if (!mailer) return res.status(404).json({ error: 'Not found.' });
       await fn(req, res);
     });
   const otpCode = (v) => text(v, 12);
@@ -263,7 +263,7 @@ export function registerAuthRoutes(app, deps) {
         console.error('academy mail send failed', error?.message);
         fail(
           502,
-          'De e-mail kon niet worden verstuurd. Probeer het later opnieuw.',
+          'The email could not be sent. Try again later.',
         );
       }
       res.json({ ok: true });

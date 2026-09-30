@@ -127,13 +127,13 @@ test('participant views: loading, empty, error and offline states are visible an
 
     assert.equal(await nav('Debriefbord').count(),0,'participants only see the board once it exists');
 
-    await page.route('**/game/day-route',route=>route.fulfill({status:500,contentType:'application/json',body:JSON.stringify({error:'Synthetische serverfout.'})}));
+    await page.route('**/game/day-route?*',route=>route.fulfill({status:500,contentType:'application/json',body:JSON.stringify({error:'Synthetische serverfout.'})}));
     await nav('Mijn route').click();
     const failure=page.locator('.primary [data-status="error"]');
     await failure.waitFor();
     assert.equal(await failure.getAttribute('role'),'alert');
     assert.match(await failure.innerText(),/Dit kon niet worden geladen\s+Synthetische serverfout\./);
-    await page.unroute('**/game/day-route');
+    await page.unroute('**/game/day-route?*');
     await failure.getByRole('button',{name:'Opnieuw proberen'}).click();
     await failure.waitFor({state:'detached'});
     await shot(page,'route-recovered-1440.png');

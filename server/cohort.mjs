@@ -8,11 +8,11 @@ export const ACCESS_DAYS=90;
 export const READ_ONLY_DAYS=14;
 export const RETENTION_DAYS=180;
 export const SESSION_MS=12*60*60*1000;
-export const ANONYMIZED_NAME='Geanonimiseerd';
-export const INVALID_COHORT_CODE_MESSAGE='Deze cohortcode is ongeldig of ingetrokken.';
-export const COHORT_EXPIRED_MESSAGE='Je cohorttoegang is verlopen.';
-export const COHORT_NO_ROOM_MESSAGE='Je cohort heeft nog geen actieve kamer. Vraag je facilitator.';
-export const COHORT_RATE_LIMIT_MESSAGE='Te veel pogingen met een cohortcode. Wacht even en probeer opnieuw.';
+export const ANONYMIZED_NAME='Anonymized';
+export const INVALID_COHORT_CODE_MESSAGE='This cohort code is invalid or has been revoked.';
+export const COHORT_EXPIRED_MESSAGE='Your cohort access has expired.';
+export const COHORT_NO_ROOM_MESSAGE='Your cohort has no active room yet. Ask your facilitator.';
+export const COHORT_RATE_LIMIT_MESSAGE='Too many cohort code attempts. Wait a moment and try again.';
 export {READ_ONLY_MESSAGE,COHORT_ROOM_JOIN_MESSAGE} from './store.mjs';
 
 // Crockford base32 without I, L, O, U: typeable, unambiguous when read aloud.
@@ -190,23 +190,23 @@ export function rosterCsv(cohort){
 }
 
 export function parseCohortInput({name,startDate,days,readOnlyExport=true}){
- if(typeof name!=='string'||!name.trim()||name.length>60)fail(400,'Geef het cohort een naam (maximaal 60 tekens).');
- if(typeof startDate!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(startDate))fail(400,'Kies een startdatum (JJJJ-MM-DD).');
+ if(typeof name!=='string'||!name.trim()||name.length>60)fail(400,'Give the cohort a name (at most 60 characters).');
+ if(typeof startDate!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(startDate))fail(400,'Choose a start date (YYYY-MM-DD).');
  const startsAt=Date.parse(`${startDate}T00:00:00Z`);
- if(!Number.isFinite(startsAt)||new Date(startsAt).toISOString().slice(0,10)!==startDate)fail(400,'Kies een geldige startdatum.');
+ if(!Number.isFinite(startsAt)||new Date(startsAt).toISOString().slice(0,10)!==startDate)fail(400,'Choose a valid start date.');
  const dayCount=Number(days);
- if(!Number.isInteger(dayCount)||dayCount<1||dayCount>14)fail(400,'Kies 1 tot 14 cohortdagen.');
+ if(!Number.isInteger(dayCount)||dayCount<1||dayCount>14)fail(400,'Choose 1 to 14 cohort days.');
  return {name:name.trim(),startsAt,days:dayCount,readOnlyExport:readOnlyExport!==false};
 }
 
 export function parseMemberNames(names,existing=[]){
- if(!Array.isArray(names))fail(400,'Geef een lijst met deelnemersnamen.');
+ if(!Array.isArray(names))fail(400,'Provide a list of participant names.');
  const cleaned=names.map(name=>typeof name==='string'?name.trim():'').filter(Boolean);
- if(!cleaned.length||cleaned.length>40)fail(400,'Voeg 1 tot 40 deelnemers tegelijk toe.');
+ if(!cleaned.length||cleaned.length>40)fail(400,'Add 1 to 40 participants at a time.');
  const seen=new Set(existing.map(name=>name.toLowerCase()));
  for(const name of cleaned){
-  if(name.length>50)fail(400,'Deelnemersnamen zijn maximaal 50 tekens.');
-  if(seen.has(name.toLowerCase()))fail(409,`De naam ${name} staat al in dit cohort.`);
+  if(name.length>50)fail(400,'Participant names are at most 50 characters.');
+  if(seen.has(name.toLowerCase()))fail(409,`The name ${name} is already in this cohort.`);
   seen.add(name.toLowerCase());
  }
  return cleaned;

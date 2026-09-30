@@ -44,7 +44,7 @@ describe('AET-81 workshop 6 ultra-minimal eigen-opdracht thin-slice deck', () =>
   });
 
   it('pedagogy: Open / Intent / Plan / First-build / Proof / Close cycles (uitleg→voordoen→zelf doen)', () => {
-    const demos = workshop6SourceSlides.filter((s) => String(s.kicker ?? '').startsWith('Voordoen'));
+    const demos = workshop6SourceSlides.filter((s) => String(s.kicker ?? '').startsWith('Demo'));
     expect(demos.length).toBeGreaterThanOrEqual(3);
     expect(practice.length).toBeGreaterThanOrEqual(3);
     // First practice arrives before late Proof — no theory-dump then practice
@@ -57,12 +57,12 @@ describe('AET-81 workshop 6 ultra-minimal eigen-opdracht thin-slice deck', () =>
     // Each Voordoen has a following Zelf doen nearby in Open / Intent / Plan
     for (const cycle of ['Open', 'Intent', 'Plan']) {
       const demoIdx = workshop6SourceSlides.findIndex(
-        (s) => String(s.kicker ?? '') === `Voordoen · ${cycle}`,
+        (s) => String(s.kicker ?? '') === `Demo · ${cycle}`,
       );
       expect(demoIdx, `demo ${cycle}`).toBeGreaterThanOrEqual(0);
       const zelfAfter = workshop6SourceSlides
         .slice(demoIdx + 1)
-        .findIndex((s) => s.type === 'practice' && String(s.kicker ?? '').includes('Zelf doen'));
+        .findIndex((s) => s.type === 'practice' && String(s.kicker ?? '').includes('Your turn'));
       expect(zelfAfter, `zelf after ${cycle}`).toBeGreaterThanOrEqual(0);
     }
   });
@@ -91,7 +91,7 @@ describe('AET-81 workshop 6 ultra-minimal eigen-opdracht thin-slice deck', () =>
       expect(notes, String(slide.title)).toMatch(/Timer:\s*\d+\s*min/i);
       expect(typeof slide.timer, String(slide.title)).toBe('number');
       expect(notes.toLowerCase()).toMatch(/checklist:/);
-      expect(notes, String(slide.title)).toMatch(/Zelf doen/i);
+      expect(notes, String(slide.title)).toMatch(/Your turn/i);
     });
   });
 

@@ -23,12 +23,12 @@ export function createLaunchTicketService({signingSecret, academyOrigin}) {
   const secret = createHmac('sha256', String(signingSecret)).update('academy-portal-launch-v1').digest();
 
   function mint({appId, actor, returnTo, grantId = null, targetOrigin = null}) {
-    if (!appId) fail(400, 'App-id verplicht.');
-    if (!actor?.ownerId || !actor?.role) fail(403, 'Geen geldige portal-identiteit.');
+    if (!appId) fail(400, 'App id is required.');
+    if (!actor?.ownerId || !actor?.role) fail(403, 'No valid portal identity.');
     // Never allow hostKey / secrets into claims
     const forbidden = JSON.stringify(actor);
     if (/hostKey|AGENT_CHAT_SHARED_SECRET|PROOF_|BEGIN [A-Z]+ PRIVATE KEY/i.test(forbidden)) {
-      fail(400, 'Secrets horen niet in launch-claims.');
+      fail(400, 'Secrets do not belong in launch claims.');
     }
     const issuedAt = Date.now();
     const claims = {
@@ -69,12 +69,12 @@ export function createLaunchTicketService({signingSecret, academyOrigin}) {
     try {
       parsed = JSON.parse(Buffer.from(String(ticket || ''), 'base64url').toString('utf8'));
     } catch {
-      fail(401, 'Ongeldig launch-ticket.');
+      fail(401, 'Invalid launch ticket.');
     }
     const bodyText = JSON.stringify({claims: parsed.claims});
     const expected = sign(secret, bodyText);
-    if (!same(expected, parsed.signature)) fail(401, 'Launch-ticket handtekening ongeldig.');
-    if (!parsed.claims || parsed.claims.expiresAt < Date.now()) fail(401, 'Launch-ticket verlopen.');
+    if (!same(expected, parsed.signature)) fail(401, 'Launch ticket signature is invalid.');
+    if (!parsed.claims || parsed.claims.expiresAt < Date.now()) fail(401, 'Launch ticket has expired.');
     return parsed.claims;
   }
 

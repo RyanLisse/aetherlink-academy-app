@@ -58,9 +58,9 @@ test('config: no key means no coach, a paid model id is refused at boot, caps ar
  assert.deepEqual(readCoachConfig({OPENROUTER_API_KEY:'sk-or-1'}),{apiKey:'sk-or-1',model:'google/gemma-4-31b-it:free',url:'https://openrouter.ai/api/v1/chat/completions',participantCap:40,platformCap:50,timeoutMs:15000});
  assert.equal(COACH_DEFAULT_MODEL.endsWith(':free'),true);
  assert.deepEqual(readCoachConfig({OPENROUTER_API_KEY:'k',ACADEMY_COACH_MODEL:'qwen/qwen3.8-27b:free',ACADEMY_COACH_DAILY_CAP:'12',ACADEMY_COACH_PLATFORM_DAILY_CAP:'200'}),{apiKey:'k',model:'qwen/qwen3.8-27b:free',url:'https://openrouter.ai/api/v1/chat/completions',participantCap:12,platformCap:200,timeoutMs:15000});
- assert.throws(()=>readCoachConfig({OPENROUTER_API_KEY:'k',ACADEMY_COACH_MODEL:'anthropic/claude-sonnet-5'}),{message:"ACADEMY_COACH_MODEL moet een gratis OpenRouter-model zijn (id eindigt op ':free'); kreeg 'anthropic/claude-sonnet-5'."});
- assert.throws(()=>readCoachConfig({OPENROUTER_API_KEY:'k',ACADEMY_COACH_DAILY_CAP:'0'}),{message:'ACADEMY_COACH_DAILY_CAP moet een positief geheel getal zijn.'});
- assert.throws(()=>validateRuntimeEnvironment({OPENROUTER_API_KEY:'k',ACADEMY_COACH_MODEL:'openai/gpt-5',DATABASE_URL:'postgres://x'}),/eindigt op ':free'/);
+ assert.throws(()=>readCoachConfig({OPENROUTER_API_KEY:'k',ACADEMY_COACH_MODEL:'anthropic/claude-sonnet-5'}),{message:"ACADEMY_COACH_MODEL must be a free OpenRouter model (id ends in ':free'); got 'anthropic/claude-sonnet-5'."});
+ assert.throws(()=>readCoachConfig({OPENROUTER_API_KEY:'k',ACADEMY_COACH_DAILY_CAP:'0'}),{message:'ACADEMY_COACH_DAILY_CAP must be a positive integer.'});
+ assert.throws(()=>validateRuntimeEnvironment({OPENROUTER_API_KEY:'k',ACADEMY_COACH_MODEL:'openai/gpt-5',DATABASE_URL:'postgres://x'}),/ends in ':free'/);
  assert.doesNotThrow(()=>validateRuntimeEnvironment({OPENROUTER_API_KEY:'k',DATABASE_URL:'postgres://x'}));
 });
 
@@ -136,16 +136,16 @@ test('outbound payload: lesson passages and the question only, with names, email
  fake.reply=()=>({json:{answer:'Uitleg.',citations:['d3:step:w3-l1']}});
  const {instance,host,participant,ask}=await classroom(fake.config(),{name:'Fenna Jansen'});
  instance.store.join(host.code,'Karim');
- for(const q of [`Waarom L1 Switch zonder LLM regels? fenna Karim ${host.code.toLowerCase()}`,'Waarom L1 Switch LLM? f.jansen@example.test','Waarom L1 Switch zonder LLM credential? ABCD-EFGH-JKMN-PQRS'])assert.equal((await ask(q)).body.coach.status,'answered',q);
+ for(const q of [`Why L1 Switch without LLM rules? fenna Karim ${host.code.toLowerCase()}`,'Why L1 Switch LLM? f.jansen@example.test','Why L1 Switch without LLM credential? ABCD-EFGH-JKMN-PQRS'])assert.equal((await ask(q)).body.coach.status,'answered',q);
  const questions=fake.requests.map(({body})=>body.messages[1].content.split(/\n\n(?:Vraag|Question): /)[1]);
- assert.deepEqual(questions,['Waarom L1 Switch zonder LLM regels? [naam] [naam] [code]','Waarom L1 Switch LLM? [e-mail]','Waarom L1 Switch zonder LLM credential? [code]']);
+ assert.deepEqual(questions,['Why L1 Switch without LLM rules? [naam] [naam] [code]','Why L1 Switch LLM? [e-mail]','Why L1 Switch without LLM credential? [code]']);
  const [{headers,body:sent}]=fake.requests;
  assert.equal(headers.authorization,'Bearer sk-or-test');
  assert.deepEqual(Object.keys(sent).sort(),['max_tokens','messages','model','provider','temperature']);
  assert.equal(sent.model,'google/gemma-4-31b-it:free');
  assert.deepEqual(sent.provider,{data_collection:'deny'});
  assert.deepEqual(sent.messages.map(m=>m.role),['system','user']);
- assert.match(sent.messages[1].content,/^Passages:\n\n\[d3:step:w3-l1\] Stap L1 · L1 · Switch zonder LLM\n/);
+ assert.match(sent.messages[1].content,/^Passages:\n\n\[d3:step:w3-l1\] Step L1 · L1 · Switch without LLM\n/);
  for(const {raw} of fake.requests)for(const secret of ['Fenna','fenna','Jansen','jansen','Karim','example.test',host.code,host.code.toLowerCase(),'ABCD-EFGH',participant.token,host.roomId,'Noordzee'])assert.equal(raw.includes(secret),false,secret);
 });
 

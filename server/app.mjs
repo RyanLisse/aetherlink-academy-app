@@ -69,7 +69,7 @@ export function createApp({
     publicUrl.pathname !== '/'
   )
     throw Error(
-      'ACADEMY_PUBLIC_URL moet een HTTP(S)-origin zonder pad of credentials zijn.',
+      'ACADEMY_PUBLIC_URL must be an HTTP(S) origin without a path or credentials.',
     );
   const store = repository || new LocalStore(dir);
   const slides =
@@ -96,11 +96,11 @@ export function createApp({
     if (raw === undefined || raw === null || raw === '') return context.r.day;
     const day = Number(raw);
     if (!Number.isInteger(day) || !getDayPack(day))
-      fail(404, `Geen contentpakket voor dag ${String(raw).slice(0, 8)}.`);
+      fail(404, `No content pack for day ${String(raw).slice(0, 8)}.`);
     if (!courseDays(context.r).includes(day))
-      fail(404, `Dag ${day} zit niet in de cursus.`);
+      fail(404, `Day ${day} is not part of the course.`);
     if (!readableDays(context).includes(day))
-      fail(403, `Dag ${day} is nog niet vrijgegeven.`);
+      fail(403, `Day ${day} has not been released yet.`);
     return day;
   };
   const hostFile = path.join(dir, 'host-key');
@@ -110,7 +110,7 @@ export function createApp({
     hostKey = readFileSync(hostFile, 'utf8').trim();
   }
   if (!hostKey.trim())
-    throw new Error('ACADEMY_HOST_KEY of .data/host-key is leeg.');
+    throw new Error('ACADEMY_HOST_KEY or .data/host-key is empty.');
   const googleSso = createGoogleSso({
       clientId: googleClientId,
       clientSecret: googleClientSecret,
@@ -128,7 +128,7 @@ export function createApp({
     readCanonical: async (ref) => {
       if (ref?.kind === 'day-pack') {
         const pack = getDayPack(ref.day);
-        if (!pack) fail(404, `Geen contentpakket voor dag ${ref.day}.`);
+        if (!pack) fail(404, `No content pack for day ${ref.day}.`);
         return {
           body: JSON.stringify(participantDayPack(pack)),
           sourceRef: `day-pack:${ref.day}`,
@@ -141,7 +141,7 @@ export function createApp({
           sourceRef: ref.sourceRef || 'inline',
           contentType: ref.contentType || 'text/plain',
         };
-      fail(400, 'Onbekende content-ref.');
+      fail(400, 'Unknown content ref.');
     },
   });
   const requireFacilitator = async (req) => {
@@ -151,7 +151,7 @@ export function createApp({
       namedCookie(req, 'academy-facilitator'),
     );
     if (identity) return identity;
-    fail(403, 'Ongeldige facilitator-startsleutel.');
+    fail(403, 'Invalid facilitator start key.');
   };
   app.disable('x-powered-by');
   if (trustProxy)
@@ -169,7 +169,7 @@ export function createApp({
       origin !== publicUrl.origin &&
       origin !== `${req.protocol}://${req.headers.host}`
     )
-      return res.status(403).json({ error: 'Andere origin niet toegestaan.' });
+      return res.status(403).json({ error: 'Cross-origin requests are not allowed.' });
     next();
   });
   const wrap = (fn) => async (req, res, next) => {

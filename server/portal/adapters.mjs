@@ -14,12 +14,12 @@ export function createPublishAdapter({readCanonical} = {}) {
     if (contentRef && typeof contentRef === 'object' && typeof contentRef.body === 'string') {
       return {body: contentRef.body, sourceRef: contentRef.sourceRef || 'inline', contentType: contentRef.contentType || 'text/plain'};
     }
-    fail(400, 'Geen canonieke inhoud.');
+    fail(400, 'No canonical content.');
   }
 
   async function publishImmutable({appId, contentRef, actor, resourceId = null}) {
-    if (!actor?.ownerId) fail(403, 'Publiceren vereist een eigenaar.');
-    if (!appId) fail(400, 'App-id verplicht.');
+    if (!actor?.ownerId) fail(403, 'Publishing requires an owner.');
+    if (!appId) fail(400, 'App id is required.');
     const canonical = await resolveCanonical(contentRef);
     const contentSha256 = createHash('sha256').update(canonical.body).digest('hex');
     const id = randomUUID();
@@ -44,10 +44,10 @@ export function createPublishAdapter({readCanonical} = {}) {
   }
 
   function pinClassroom({roomId, publishedId, actor}) {
-    if (!roomId || !publishedId) fail(400, 'Pin mist kamer of publicatie.');
-    if (actor?.role !== 'facilitator') fail(403, 'Alleen de facilitator pint een classroom.');
+    if (!roomId || !publishedId) fail(400, 'Pin is missing a room or publication.');
+    if (actor?.role !== 'facilitator') fail(403, 'Only the facilitator pins a classroom.');
     const artifact = published.get(publishedId);
-    if (!artifact) fail(404, 'Publicatie niet gevonden.');
+    if (!artifact) fail(404, 'Publication not found.');
     const key = `${roomId}:${artifact.appId}`;
     pins.set(key, publishedId);
     return {roomId, appId: artifact.appId, publishedId, contentSha256: artifact.contentSha256};

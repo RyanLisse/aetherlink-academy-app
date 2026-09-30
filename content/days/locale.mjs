@@ -53,6 +53,8 @@ export function projectPackLocale(pack, locale = 'en') {
     title: copy.title ?? pack.title,
     tag: copy.tag ?? pack.tag,
     blurb: copy.blurb ?? pack.blurb,
+    source: copy.source ?? pack.source,
+    deepHelp: copy.deepHelp ?? pack.deepHelp,
     leerdoel: copy.leerdoel ?? pack.leerdoel,
     lesson,
     steps,

@@ -18,9 +18,21 @@ export const openMaterial=(kind,label,open)=>({kind,label,href:null,open});
 export const question=(text,options,answer,ref)=>({question:text,options,answer,...(ref?{slide:ref}:{source:'authored-adaptation'})});
 export const diagram=(src,title,alt)=>({src,title,alt:alt||title});
 
-export const SOURCE='Afgeleid van het lesplan en de dagdeck; iedere stap verwijst naar zijn dia.';
-export const DEEP_HELP='Diepere hulp, zoals uitleg van een concept of feedback op je eigen werk, vraag je aan je eigen Claude via MCP. Verbind Claude Code via “Mijn leercoach”; Claude leest dan met get_screen_state en get_mission wat jij nu ziet. De chat in de Academy beantwoordt korte vragen over de lesstof met een verwijzing naar de bron; voor meedenken over je eigen werk gebruik je je eigen Claude.';
-export const DEFAULT_STOP='Stop bij geheimen, ontbrekende toegang, productiesystemen of een resultaat dat je niet werkelijk hebt uitgevoerd. Markeer het als OPEN; verzin geen uitvoer.';
+const SOURCE_COPY={
+ en:'Derived from the lesson plan and the day deck; every step points to its slide.',
+ nl:'Afgeleid van het lesplan en de dagdeck; iedere stap verwijst naar zijn dia.'
+};
+const DEEP_HELP_COPY={
+ en:'For deeper help, such as an explanation of a concept or feedback on your own work, ask your own Claude through MCP. Connect Claude Code via “My learning coach”; Claude then reads what you see right now with get_screen_state and get_mission.',
+ nl:'Diepere hulp, zoals uitleg van een concept of feedback op je eigen werk, vraag je aan je eigen Claude via MCP. Verbind Claude Code via “Mijn leercoach”; Claude leest dan met get_screen_state en get_mission wat jij nu ziet. De chat in de Academy beantwoordt korte vragen over de lesstof met een verwijzing naar de bron; voor meedenken over je eigen werk gebruik je je eigen Claude.'
+};
+const DEFAULT_STOP_COPY={
+ en:'Stop on secrets, missing access, production systems or a result you did not actually run. Mark it as OPEN; do not make up output.',
+ nl:'Stop bij geheimen, ontbrekende toegang, productiesystemen of een resultaat dat je niet werkelijk hebt uitgevoerd. Markeer het als OPEN; verzin geen uitvoer.'
+};
+export const SOURCE=SOURCE_COPY.nl;
+export const DEEP_HELP=DEEP_HELP_COPY.nl;
+export const DEFAULT_STOP=DEFAULT_STOP_COPY.nl;
 
 const OPTION_IDS='abcdefgh';
 
@@ -42,6 +54,9 @@ function bakeCopy(day,copy){
   return {
    ...c,
    quiz:Array.isArray(c.quiz)?dayQuiz(day,c.quiz):c.quiz,
+   source:c.source??SOURCE_COPY[lang],
+   deepHelp:c.deepHelp??DEEP_HELP_COPY[lang],
+   ...(c.mission?{mission:{stop:DEFAULT_STOP_COPY[lang],...c.mission}}:{}),
    workedExample:c.workedExample??(open?`OPEN: ${open}`:script.join(' '))
   };
  };

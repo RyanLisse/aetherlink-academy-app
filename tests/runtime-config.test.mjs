@@ -17,5 +17,5 @@ test('local runtime still requires Postgres while allowing loopback verification
 });
 test('Google facilitator login configuration is all-or-nothing',()=>{
  assert.doesNotThrow(()=>validateRuntimeEnvironment({...fixture,GOOGLE_CLIENT_ID:'client',GOOGLE_CLIENT_SECRET:'secret',ACADEMY_FACILITATOR_DOMAINS:'example.nl'}));
- for(const key of ['GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','ACADEMY_FACILITATOR_DOMAINS'])assert.throws(()=>validateRuntimeEnvironment({...fixture,GOOGLE_CLIENT_ID:'client',GOOGLE_CLIENT_SECRET:'secret',ACADEMY_FACILITATOR_DOMAINS:'example.nl',[key]:undefined}),/Google-login vereist/);
+ for(const key of ['GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','ACADEMY_FACILITATOR_DOMAINS'])assert.throws(()=>validateRuntimeEnvironment({...fixture,GOOGLE_CLIENT_ID:'client',GOOGLE_CLIENT_SECRET:'secret',ACADEMY_FACILITATOR_DOMAINS:'example.nl',[key]:undefined}),/Google sign-in requires/);
 });

@@ -1,19 +1,19 @@
 import {Data} from 'effect';
 
 export class FileNotFound extends Data.TaggedError('FileNotFound')<{fileId:string}>{
- get message(){return 'Bestand niet gevonden.';}
+ get message(){return 'File not found.';}
 }
 export class InvalidInput extends Data.TaggedError('InvalidInput')<{reason:string}>{
  get message(){return this.reason;}
 }
 export class FileTooLarge extends Data.TaggedError('FileTooLarge')<{sizeBytes:number;maxBytes:number}>{
- get message(){return `Bestand is ${(Math.ceil(this.sizeBytes/104857.6)/10).toFixed(1)} MiB; maximaal ${Math.round(this.maxBytes/1048576)} MiB.`;}
+ get message(){return `File is ${(Math.ceil(this.sizeBytes/104857.6)/10).toFixed(1)} MiB; at most ${Math.round(this.maxBytes/1048576)} MiB.`;}
 }
 export class StorageUnavailable extends Data.TaggedError('StorageUnavailable')<{reason?:string;cause?:unknown}>{
- get message(){return this.reason??'Bestandsopslag is tijdelijk niet beschikbaar.';}
+ get message(){return this.reason??'File storage is temporarily unavailable.';}
 }
 export class ObjectStoreFailure extends Data.TaggedError('ObjectStoreFailure')<{operation:string;cause:unknown}>{
- get message(){return 'De objectopslag is niet bereikbaar. Probeer het later opnieuw.';}
+ get message(){return 'Object storage is unreachable. Try again later.';}
 }
 export class Forbidden extends Data.TaggedError('Forbidden')<{reason:string}>{
  get message(){return this.reason;}

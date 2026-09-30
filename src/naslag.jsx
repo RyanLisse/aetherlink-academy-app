@@ -16,7 +16,7 @@ export function Naslag({room,action,busy,onNavigate}){
   const [query,setQuery]=useState('');
   const [result,setResult]=useState(null);
   const releasedKey=room.released?.join(',');
-  const remote=useRemote('day-route',[releasedKey]),days=remote.data?.days||[];
+  const remote=useRemote(`day-route?locale=${locale}`,[releasedKey]),days=remote.data?.days||[];
   useEffect(()=>{reportScreen({view:'naslag',day:selected});},[selected]);
   async function search(e){
     e.preventDefault();

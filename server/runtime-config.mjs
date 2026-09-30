@@ -2,7 +2,7 @@ import {readCoachConfig} from './coach.mjs';
 
 export function validateRuntimeEnvironment(env) {
  const google=['GOOGLE_CLIENT_ID','GOOGLE_CLIENT_SECRET','ACADEMY_FACILITATOR_DOMAINS'],configured=google.filter(key=>String(env[key]||'').trim());
- if(configured.length&&configured.length!==google.length)throw Error('Google-login vereist dat GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET en ACADEMY_FACILITATOR_DOMAINS alle drie zijn ingesteld.');
+ if(configured.length&&configured.length!==google.length)throw Error('Google sign-in requires GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET and ACADEMY_FACILITATOR_DOMAINS to all be set.');
  readCoachConfig(env);
  if ((env.ACADEMY_STORAGE || 'postgres') !== 'postgres') throw Error('Academy requires ACADEMY_STORAGE=postgres. LocalStore remains available only for isolated tests.');
  if (!env.DATABASE_URL) throw Error('DATABASE_URL is required. Load the 1Password environment before starting Academy.');

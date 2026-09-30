@@ -1,6 +1,6 @@
 import {randomUUID} from 'node:crypto';
 import {fail} from './store.mjs';
-export const BOARD_COLUMNS=['Werkte goed','Lastig','Volgende keer'];
+export const BOARD_COLUMNS=['Went well','Hard','Next time'];
 export const BOARD_ACTIONS={open:'open',close:'closed'};
 export const MAX_BOARD_CARDS=300;
 export const boardColumns=board=>BOARD_COLUMNS.map((title,index)=>({title,cards:(board?.cards||[]).filter(card=>card.column===index).map(card=>card.text)}));

@@ -63,7 +63,7 @@
   <!-- Pedagogy -->
   <rect x="24" y="318" width="450" height="138" rx="8" fill="#fff" stroke="#e2e8f0" stroke-width="1.5"/>
   <text x="40" y="344" fill="#1e3a5f" font-size="13" font-weight="700">How each block works</text>
-  <text x="40" y="366" fill="#475569" font-size="12">Uitleg → Voordoen → Zelf doen on Classroom 2.</text>
+  <text x="40" y="366" fill="#475569" font-size="12">Explain → Demo → Your turn on Classroom 2.</text>
   <text x="40" y="386" fill="#475569" font-size="12">Practise in A6–A13 and mission CLASSROOM-02.</text>
   <text x="40" y="406" fill="#64748b" font-size="11">The stack builds on your assignments.</text>
   <text x="40" y="426" fill="#64748b" font-size="11">ConceptSim steps the stack without API keys.</text>

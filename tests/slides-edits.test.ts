@@ -12,11 +12,11 @@ const failWith=(content:string,edits:any[],pattern:RegExp)=>{const exit=run(cont
 
 test('replace: unique literal, expectedMatches guard and occurrence selection',()=>{
  assert.equal(ok('<p>a b a</p>',[{find:'b',replace:'c',expectedMatches:1}]).content,'<p>a c a</p>');
- failWith('<p>a b a</p>',[{find:'a',replace:'x'}],/2 keer voor/);
+ failWith('<p>a b a</p>',[{find:'a',replace:'x'}],/occurs 2 times/);
  assert.equal(ok('<p>a b a</p>',[{find:'a',replace:'x',occurrence:2}]).content,'<p>a b x</p>');
  assert.equal(ok('<p>a b a</p>',[{find:'a',replace:'x',all:true}]).content,'<p>x b x</p>');
  failWith('<p>a</p>',[{find:'a',replace:'x',expectedMatches:2}],/verwachtte 2/);
- failWith('<p>a</p>',[{find:'zzz',replace:'x'}],/niet gevonden/);
+ failWith('<p>a</p>',[{find:'zzz',replace:'x'}],/not found/);
  assert.deepEqual(ok('<p>a</p>',[{find:'zzz',replace:'x',required:false}]).summaries,['replace:0']);
 });
 
@@ -25,8 +25,8 @@ test('insert, replace-between and regex-replace are ordered and atomic',()=>{
  const out=ok(html,[{op:'insert-after',find:'<li>1</li>',content:'<li>2</li>'},{op:'replace-between',start:'<h2>',end:'</h2>',replace:'Titel'},{op:'regex-replace',pattern:'<li>(\\d)</li>',replace:'<li>punt $1</li>',all:true}]);
  assert.equal(out.content,'<h2>Titel</h2><ul><li>punt 1</li><li>punt 2</li></ul>');
  assert.deepEqual(out.summaries,['insert-after:1','replace-between:1','regex-replace:2']);
- failWith(html,[{op:'insert-before',find:'<li>1</li>',content:'x'},{find:'missing',replace:'y'}],/Bewerking 2/);
- failWith(html,[{op:'regex-replace',pattern:'(',replace:'x'}],/ongeldige expressie/);
+ failWith(html,[{op:'insert-before',find:'<li>1</li>',content:'x'},{find:'missing',replace:'y'}],/Edit 2/);
+ failWith(html,[{op:'regex-replace',pattern:'(',replace:'x'}],/invalid expression/);
 });
 
 test('hash matches upstream FNV-1a and sanitizer strips active content',()=>{

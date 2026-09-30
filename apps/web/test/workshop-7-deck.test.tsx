@@ -49,25 +49,25 @@ describe('AET-85 workshop 7 ultra-minimal eigen-opdracht finish+present deck', (
   });
 
   it('pedagogy: Polish / Review / Proof / Present cycles (uitleg→voordoen→zelf doen)', () => {
-    const demos = workshop7SourceSlides.filter((s) => String(s.kicker ?? '').startsWith('Voordoen'));
+    const demos = workshop7SourceSlides.filter((s) => String(s.kicker ?? '').startsWith('Demo'));
     expect(demos.length).toBeGreaterThanOrEqual(3);
     expect(practice.length).toBeGreaterThanOrEqual(3);
     // First practice arrives before late Present — no theory-dump then practice
     const firstPractice = workshop7SourceSlides.findIndex((s) => s.type === 'practice');
     const presentUitleg = workshop7SourceSlides.findIndex((s) =>
-      String(s.kicker ?? '').includes('Present') && String(s.kicker ?? '').startsWith('Uitleg'),
+      String(s.kicker ?? '').includes('Present') && String(s.kicker ?? '').startsWith('Explain'),
     );
     expect(firstPractice).toBeGreaterThanOrEqual(0);
     expect(presentUitleg).toBeGreaterThan(firstPractice);
     // Each Voordoen has a following Zelf doen nearby
     for (const cycle of ['Polish', 'Review', 'Present']) {
       const demoIdx = workshop7SourceSlides.findIndex(
-        (s) => String(s.kicker ?? '') === `Voordoen · ${cycle}`,
+        (s) => String(s.kicker ?? '') === `Demo · ${cycle}`,
       );
       expect(demoIdx, `demo ${cycle}`).toBeGreaterThanOrEqual(0);
       const zelfAfter = workshop7SourceSlides
         .slice(demoIdx + 1)
-        .findIndex((s) => s.type === 'practice' && String(s.kicker ?? '').includes('Zelf doen'));
+        .findIndex((s) => s.type === 'practice' && String(s.kicker ?? '').includes('Your turn'));
       expect(zelfAfter, `zelf after ${cycle}`).toBeGreaterThanOrEqual(0);
     }
   });
@@ -96,7 +96,7 @@ describe('AET-85 workshop 7 ultra-minimal eigen-opdracht finish+present deck', (
       expect(notes, String(slide.title)).toMatch(/Timer:\s*\d+\s*min/i);
       expect(typeof slide.timer, String(slide.title)).toBe('number');
       expect(notes.toLowerCase()).toMatch(/checklist:/);
-      expect(notes, String(slide.title)).toMatch(/Zelf doen/i);
+      expect(notes, String(slide.title)).toMatch(/Your turn/i);
     });
   });
 

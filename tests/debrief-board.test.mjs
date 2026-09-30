@@ -21,8 +21,8 @@ test('board cards are stored per column and exported after the squad handoff',()
   {title:BOARD_COLUMNS[2],cards:[]},
  ]});
  const markdown=exportDebrief(r,boardView(r.board).columns);
- assert.ok(markdown.endsWith('## Debriefbord\n\n### Werkte goed\n- Pairing met de n8n-agent\n- Snelle review\n\n### Lastig\n- Tokens roteren\n\n### Volgende keer\nGeen kaarten.'),markdown);
- assert.doesNotMatch(exportDebrief(r),/Debriefbord/);
+ assert.ok(markdown.endsWith('## Debrief board\n\n### Went well\n- Pairing met de n8n-agent\n- Snelle review\n\n### Hard\n- Tokens roteren\n\n### Next time\nNo cards.'),markdown);
+ assert.doesNotMatch(exportDebrief(r),/Debrief board/);
 });
 
 test('board cards are rejected for unknown columns, empty text, a closed board or a full board',()=>{
@@ -88,7 +88,7 @@ test('debrief board routes are room-scoped, facilitator-controlled and read-only
 
   const exported=await fetch(base+'/game/debrief/export',{headers:{authorization:`Bearer ${host.token}`}});
   assert.equal(exported.status,200);
-  assert.match(await exported.text(),/## Debriefbord\n\n### Werkte goed\n- Pairing met de n8n-agent\n\n### Lastig\n- Tokens roteren/);
+  assert.match(await exported.text(),/## Debrief board\n\n### Went well\n- Pairing met de n8n-agent\n\n### Hard\n- Tokens roteren/);
 
   const reopened=await post('/game/board',host.token,{action:'open'});
   assert.deepEqual((await reopened.json()).columns.map(c=>c.cards),[['Pairing met de n8n-agent'],['Tokens roteren'],[]]);

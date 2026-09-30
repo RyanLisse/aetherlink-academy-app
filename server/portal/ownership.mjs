@@ -10,9 +10,9 @@ export function createOwnershipRegistry() {
   }
 
   function grant({appId, ownerKind, ownerId, orgId = null, resourceId = null, role, grantedBy, ttlMs = 12 * 60 * 60 * 1000}) {
-    if (!appId || !ownerKind || !ownerId || !role) fail(400, 'Grant mist app, eigenaar of rol.');
+    if (!appId || !ownerKind || !ownerId || !role) fail(400, 'Grant is missing an app, owner or role.');
     if (!['facilitator', 'participant', 'org'].includes(ownerKind)) fail(400, 'Ongeldige eigenaarsoort.');
-    if (!['facilitator', 'participant'].includes(role)) fail(400, 'Ongeldige launch-rol.');
+    if (!['facilitator', 'participant'].includes(role)) fail(400, 'Invalid launch role.');
     const id = randomUUID();
     const now = Date.now();
     const record = {
@@ -45,17 +45,17 @@ export function createOwnershipRegistry() {
 
   function revoke({grantId, actorId}) {
     const record = grants.get(grantId);
-    if (!record || record.revokedAt) fail(404, 'Grant niet gevonden.');
-    if (record.ownerId !== actorId && record.grantedBy !== actorId) fail(403, 'Alleen de eigenaar of uitgever trekt toegang in.');
+    if (!record || record.revokedAt) fail(404, 'Grant not found.');
+    if (record.ownerId !== actorId && record.grantedBy !== actorId) fail(403, 'Only the owner or publisher revokes access.');
     record.revokedAt = Date.now();
     return {...record};
   }
 
   function assertCanLaunch({appId, actor}) {
-    if (!actor?.ownerId || !actor?.role) fail(403, 'Geen geldige portal-identiteit.');
+    if (!actor?.ownerId || !actor?.role) fail(403, 'No valid portal identity.');
     if (actor.role === 'facilitator') return;
     if (actor.role === 'participant' && actor.roomId) return;
-    fail(403, 'Deelnemers starten apps alleen vanuit een kamer.');
+    fail(403, 'Participants launch apps only from a room.');
   }
 
   return {grant, get, revoke, listForOwner, assertCanLaunch, _grants: grants};

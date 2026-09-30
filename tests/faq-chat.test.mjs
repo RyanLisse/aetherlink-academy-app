@@ -24,7 +24,14 @@ function fixture(){
 }
 
 test('literal questions return the expected day-pack entry with its source link',()=>{
- const credential=answerQuestion({day:3,query:'Heb ik een credential nodig voor L1?'});
+ const english=answerQuestion({day:3,query:'Do I need a credential for L1?'});
+ assert.equal(english.hits[0].id,'d3:step:w3-l1');
+ assert.equal(english.hits[0].title,'Step L1 · L1 · Switch without LLM');
+ assert.match(english.hits[0].answer,/Tip: Import n8n-triage-l1-switch\.json; no credential needed\.$/);
+ assert.deepEqual(english.hits[0].links,[{view:'solo'},{label:'Slide 7 · Build or inspect L1 on your machine.',href:'/workshop/3?index=6'}]);
+ assert.deepEqual(english.hits[0].source,{label:'Workshop 3 · Agents in n8n · slide 7',href:'/workshop/3?index=6'});
+
+ const credential=answerQuestion({day:3,locale:'nl',query:'Heb ik een credential nodig voor L1?'});
  assert.equal(credential.mode,'answer');
  assert.equal(credential.hits[0].id,'d3:step:w3-l1');
  assert.equal(credential.hits[0].title,'Stap L1 · L1 · Switch zonder LLM');
@@ -32,7 +39,7 @@ test('literal questions return the expected day-pack entry with its source link'
  assert.deepEqual(credential.hits[0].links,[{view:'solo'},{label:'Dia 7 · Build or inspect L1 on your machine.',href:'/workshop/3?index=6'}]);
  assert.deepEqual(credential.hits[0].source,{label:'Workshop 3 · Agents in n8n · dia 7',href:'/workshop/3?index=6'});
 
- const setup=answerQuestion({day:1,query:'oefenrepository opzetten'});
+ const setup=answerQuestion({day:1,locale:'nl',query:'oefenrepository opzetten'});
  assert.equal(setup.hits[0].id,'d1:step:c1-setup');
  assert.equal(setup.hits[0].source.href,'/classroom/1?index=46');
 });
@@ -51,7 +58,11 @@ test('navigation intents answer with an in-app view link',()=>{
 });
 
 test('facts the lesson plan leaves open come back marked OPEN, not invented',()=>{
- const result=answerQuestion({day:3,query:'Wat is de URL van de n8n-instantie?'});
+ const english=answerQuestion({day:3,query:'What is the URL of the n8n instance?'});
+ assert.equal(english.hits[0].id,'d3:open:1');
+ assert.equal(english.hits[0].title,'Workshop n8n instance URL is missing from the lesson plan.');
+ assert.equal(english.hits[0].answer,'OPEN: this is not settled in the lesson plan yet. Ask your facilitator.');
+ const result=answerQuestion({day:3,locale:'nl',query:'Wat is de URL van de n8n-instantie?'});
  assert.equal(result.hits[0].id,'d3:open:1');
  assert.equal(result.hits[0].title,'URL van de workshop-n8n-instantie ontbreekt in het lesplan.');
  assert.equal(result.hits[0].open,true);
@@ -106,7 +117,7 @@ test('facilitator toggle: off hides the chat and the endpoint answers 403 to par
  assert.equal(off.body.chat,false);
  const blocked=await ask(participant.token);
  assert.equal(blocked.statusCode,403);
- assert.equal(blocked.body.error,'De facilitator heeft de chat voor deze kamer uitgezet.');
+ assert.equal(blocked.body.error,'The facilitator has turned off chat for this room.');
  assert.equal((await ask(host.token)).statusCode,200);
 
  assert.equal((await invoke(instance.app,'/game/control',{body:{action:'chat',value:false},cookies:{academy:participant.token}})).statusCode,403);
@@ -123,7 +134,7 @@ test('the chat handler makes no network call',async()=>{
  const original=globalThis.fetch;
  globalThis.fetch=async(...args)=>{calls.push(String(args[0]));throw new Error('network disabled in test');};
  try{
-  const result=await invoke(instance.app,'/game/chat',{body:{q:'oefenrepository opzetten'},cookies:{academy:participant.token}});
+  const result=await invoke(instance.app,'/game/chat',{body:{q:'oefenrepository opzetten',locale:'nl'},cookies:{academy:participant.token}});
   assert.equal(result.statusCode,200);
   assert.equal(result.body.day,1);
   assert.equal(result.body.hits[0].id,'d1:step:c1-setup');
