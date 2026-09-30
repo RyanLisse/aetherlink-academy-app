@@ -1006,13 +1006,15 @@ function renderVisual(stage: HTMLElement, body: HTMLElement, main: HTMLElement, 
   else if (v.place === 'aside' && ex.aside) { fig.classList.add('place-aside'); const tg = ex.aside.querySelector(':scope > .tagline'); if (tg) tg.before(fig); else ex.aside.append(fig); }
   else if (v.place === 'stack' && ex.slot) { fig.classList.add('place-stack'); ex.slot.append(fig); }
   else if (v.place === 'pointer') {
-    const target = v.pointAt == null ? undefined : main.querySelectorAll<HTMLElement>('.card')[v.pointAt]; fig.classList.add('pointer-bot'); stage.append(fig);
-    const H = v.pointH || 230; fig.style.height = H + 'px';
-    const put = () => { if (!target || !bot.tip || bot.ratio === undefined) return; const t = rel(target, stage); const W = H * bot.ratio;
+    const target = v.pointAt == null ? undefined : main.querySelectorAll<HTMLElement>('.card')[v.pointAt]; fig.classList.add('pointer-bot'); fig.style.setProperty('--pointer-slide-in', '0px'); stage.append(fig);
+    const put = () => { if (!target || !bot.tip || bot.ratio === undefined) return; const t = rel(target, stage);
+      const H = Math.min(v.pointH || 230, stage.clientWidth * 0.4 / bot.ratio); const W = H * bot.ratio; fig.style.height = H + 'px';
       const tipX = W * bot.tip[0] / 100, tipY = H * bot.tip[1] / 100;
-      fig.style.left = (bot.tip[0] < 50 ? t.x + t.w - 18 - tipX : t.x + 18 - tipX) + 'px';
+      const left = bot.tip[0] < 50 ? t.x + t.w - 18 - tipX : t.x + 18 - tipX;
+      const room = stage.clientWidth - W, x = Math.max(0, Math.min(left, room));
+      fig.style.left = x + 'px'; fig.style.setProperty('--pointer-slide-in', Math.max(0, Math.min(60, room - x)) + 'px');
       fig.style.top = (t.y + t.h / 2 - tipY) + 'px'; };
-    requestAnimationFrame(() => requestAnimationFrame(put)); view?.addEventListener('resize', put, { signal: slideController.signal });
+    put(); requestAnimationFrame(() => requestAnimationFrame(put)); view?.addEventListener('resize', put, { signal: slideController.signal });
     ex.pointer = fig;
     if (v.spotlight != null) { const tm = view?.setTimeout(() => fig.classList.add('show'), 1600); slideController.signal.addEventListener('abort', () => view?.clearTimeout(tm)); }
   }

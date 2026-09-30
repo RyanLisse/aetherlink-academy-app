@@ -6,7 +6,7 @@ const viewports = [
   {name: 'mobile', width: 390, height: 844},
 ] as const;
 
-/** Sample across the 91-slide deck (83 = Day 2 flexible-timer assignment). Mobile skips image/bars-heavy indexes owned by deck CSS. */
+/** Sample across the 113-slide deck (20/25 = quizzes with a pointer bot, 83 = Day 2 assignment). Mobile skips image/bars-heavy indexes owned by deck CSS. */
 const indexesByViewport: Record<(typeof viewports)[number]['name'], number[]> = {
   desktop: [0, 20, 40, 60, 83, 90],
   tablet: [0, 20, 40, 60, 83, 90],

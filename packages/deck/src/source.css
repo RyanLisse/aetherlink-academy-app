@@ -522,6 +522,7 @@
 /* ---- pointer bot (stretch arm reaches a card) ---- */
 .academy-deck .pointer-bot{position:absolute;z-index:6;margin:0;pointer-events:none;opacity:0;transform:translateX(60px);transition:opacity .5s,transform .7s cubic-bezier(.2,1.3,.4,1)}
 .academy-deck .pointer-bot.show{opacity:1;transform:none}
+.academy-deck .pointer-bot:not(.show){transform:translateX(var(--pointer-slide-in,60px))}
 .academy-deck .pointer-bot .bot-live{height:100%}
 .academy-deck .narrow .cards{max-width:860px}
 /* ---- slide 14: quiz ---- */

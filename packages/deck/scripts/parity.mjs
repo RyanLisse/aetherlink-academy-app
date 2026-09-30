@@ -14,6 +14,11 @@ const portUrl = process.env.DECK_URL || 'http://localhost:5178/deck';
 const output = process.env.PARITY_OUTPUT || '/tmp/aetherlink-deck-parity';
 const pixelThreshold = Number(process.env.PARITY_PIXEL_THRESHOLD ?? '0.1');
 const fixedEpoch = Number(process.env.PARITY_FIXED_EPOCH ?? Date.parse('2025-01-01T12:00:00Z'));
+/** Cases where the port deliberately differs from the source deck, keyed `viewport:slide`. */
+const INTENDED_DIFFERENCES = new Map([
+  ['tablet:28', 'pointer bot scaled and kept inside #stage; the source clips it to a hand at the right edge'],
+  ['mobile:28', 'pointer bot scaled and kept inside #stage; the source clips it at the right edge'],
+]);
 const viewports = [
   {name: 'desktop', width: 1440, height: 900},
   {name: 'tablet', width: 1024, height: 768},
@@ -216,9 +221,11 @@ try {
         const [sourceBuffer, portBuffer] = await Promise.all([source.screenshot({fullPage: true}), port.screenshot({fullPage: true})]);
         const comparison = comparePng(sourceBuffer, portBuffer);
         item = {...item, source: [comparison.sourcePng.width, comparison.sourcePng.height], port: [comparison.portPng.width, comparison.portPng.height], geometryMismatch: !comparison.sameDimensions, differentPixels: comparison.differentPixels, comparedPixels: comparison.comparedPixels};
-        const failed = item.titleMismatch || item.geometryMismatch || (item.differentPixels ?? 1) > 0;
-        if (failed) item.artifacts = await saveFailureArtifacts(caseOutput, sourceBuffer, portBuffer, comparison.diff);
-        item.passed = !failed;
+        const differs = item.titleMismatch || item.geometryMismatch || (item.differentPixels ?? 1) > 0;
+        const intended = INTENDED_DIFFERENCES.get(`${viewport.name}:${slide}`);
+        if (differs) item.artifacts = await saveFailureArtifacts(caseOutput, sourceBuffer, portBuffer, comparison.diff);
+        if (differs && intended && !item.titleMismatch && !item.geometryMismatch) item.intendedDifference = intended;
+        item.passed = !differs || item.intendedDifference !== undefined;
       } catch (error) {
         item.failures = [error instanceof Error ? error.message : String(error), ...sourceFailures, ...portFailures];
         try {
@@ -252,5 +259,6 @@ const result = {
 };
 await writeFile(join(output, 'report.json'), JSON.stringify(result, null, 2));
 const failures = report.filter((item) => !item.passed);
-console.log(JSON.stringify({output, cases: report.length, mismatches: failures.length, exactMatches: report.length - failures.length, threshold: pixelThreshold, slides}));
+const intended = report.filter((item) => item.intendedDifference !== undefined);
+console.log(JSON.stringify({output, cases: report.length, mismatches: failures.length, intendedDifferences: intended.length, exactMatches: report.length - failures.length - intended.length, threshold: pixelThreshold, slides}));
 if (failures.length) process.exitCode = 1;
