@@ -9,7 +9,6 @@
     "react/set-state-in-effect": "warn",
     "react/rules-of-hooks": "error",
     "react/exhaustive-deps": "error",
-    "no-undef": "error",
     "eslint/no-unused-vars": ["error", {"ignoreRestSiblings": true}]
   }
 }
