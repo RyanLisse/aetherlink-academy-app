@@ -1,6 +1,6 @@
 {
   "version": "w4-ticket-priority",
-  "attribution": "Academy-authored ConceptSim for Workshop 4 / AET-80 (n8n → Claude Agent SDK). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches ticket→tool_use→priority (s01–s02 territory). Not a port of an upstream chapter.",
+  "attribution": "Academy-authored ConceptSim for Workshop 4 (n8n → Claude Agent SDK). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches ticket→tool_use→priority (s01–s02 territory). Not a port of an upstream chapter.",
   "locales": {
     "en": {
       "title": "Ticket → tool_use → priority",
@@ -48,7 +48,7 @@
           "type": "tool_result",
           "toolName": "write_acceptance_row",
           "content": "Row recorded. gradeTriage so far: 1/1 match. Continue remaining fixtures for SOLO 4.",
-          "annotation": "Proof stays on the shared fixture; SOLO 0–4 pedagogy unchanged."
+          "annotation": "Proof stays on the shared fixture."
         },
         {
           "type": "assistant_text",
@@ -56,7 +56,7 @@
           "annotation": "Loop closes for one ticket. Stretch SOLO 3 can split Reply/Risk specialists."
         }
       ],
-      "attribution": "Academy-authored ConceptSim for Workshop 4 / AET-80 (n8n → Claude Agent SDK). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches ticket→tool_use→priority (s01–s02 territory). Not a port of an upstream chapter."
+      "attribution": "Academy-authored ConceptSim for Workshop 4 (n8n → Claude Agent SDK). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches ticket→tool_use→priority (s01–s02 territory). Not a port of an upstream chapter."
     },
     "nl": {
       "title": "Ticket → tool_use → prioriteit",
@@ -104,7 +104,7 @@
           "type": "tool_result",
           "toolName": "write_acceptance_row",
           "content": "Rij vastgelegd. gradeTriage tot nu toe: 1/1 match. Ga door met de overige fixtures voor SOLO 4.",
-          "annotation": "Bewijs blijft op de gedeelde fixture; SOLO 0–4-pedagogie ongewijzigd."
+          "annotation": "Bewijs blijft op de gedeelde fixture."
         },
         {
           "type": "assistant_text",
@@ -112,7 +112,7 @@
           "annotation": "Lus sluit voor één ticket. Stretch SOLO 3 kan Reply/Risk-specialisten afsplitsen."
         }
       ],
-      "attribution": "Door Academy geschreven ConceptSim voor Workshop 4 / AET-80 (n8n → Claude Agent SDK). Scenariovorm compatibel met shareAI-lab/learn-claude-code (MIT). Leert ticket→tool_use→priority (s01–s02-terrein). Geen port van een upstream-hoofdstuk."
+      "attribution": "Door Academy geschreven ConceptSim voor Workshop 4 (n8n → Claude Agent SDK). Scenariovorm compatibel met shareAI-lab/learn-claude-code (MIT). Leert ticket→tool_use→priority (s01–s02-terrein). Geen port van een upstream-hoofdstuk."
     }
   }
 }

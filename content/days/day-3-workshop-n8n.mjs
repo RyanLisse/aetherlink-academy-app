@@ -31,7 +31,7 @@ const en = {
  narrative:[
   'Workshop 3 teaches the agency ladder on a stable n8n vehicle: one fixture ticket climbs L1 (Switch, no LLM), L2 (one AI Agent with memory), and stretch L3 (Customer Reply + Risk behind one human gate).',
   'Labels stay fixed — low, medium, high on the shared fixture. More agency does not invent new exits. A human decides before anything customer-facing; never silent auto-send.',
-  'Keep the Apple bar rhythm — Uitleg → Voordoen → Zelf doen — on the Worldline deck. The new ladder diagram and ConceptSim teach L1→L2→L3; the n8n starters stay the vehicle.',
+  'Every block follows the same rhythm: explanation, demonstration, then you do it yourself. The ladder diagram and ConceptSim walk through L1→L2→L3; you build with the n8n starters.',
  ],
  workedExample:'Mechanism: agency ladder L1→L2→L3 on n8n triage starters. Motto: same tickets, more agency, fixed labels. Step the ConceptSim without API keys, then run L1→L2 (L3 stretch) on your machine.',
  loop:[
@@ -64,7 +64,7 @@ const en = {
   starter('triage-fixtures.json','Shared fixture tickets (the server checks your labels)'),
   openMaterial('vehicle','Workshop n8n instance','The deck refers to “the workshop n8n instance”; the URL is not in the lesson plan.'),
   link('naslag','Facilitator guide · n8n L1–L3','https://github.com/RyanLisse/aetherlink-academy-app/blob/main/docs/facilitator-n8n-triage.md','docs/facilitator-n8n-triage.md · materials path · not a live n8n import'),
-  link('diagram','Agency ladder diagram','/diagrams/workshop/w3-agency-ladder.svg','Workshop 3 · AET-79 P2 retrofit')
+  link('diagram','Agency ladder diagram','/diagrams/workshop/w3-agency-ladder.svg','Workshop 3')
  ],
  diagrams:[DIAGRAM_EN],
  simTitles:{'w3-agency-ladder':'Concept sim · L1 → L2 → L3'},
@@ -109,7 +109,7 @@ const nl = {
  narrative:[
   'Workshop 3 leert de agency-ladder op een stabiel n8n-voertuig: één fixture-ticket klimt L1 (Switch, geen LLM), L2 (één AI Agent met memory) en stretch L3 (Customer Reply + Risk achter één menselijke gate).',
   'Labels blijven vast — low, medium, high op de gedeelde fixture. Meer agency verzint geen nieuwe exits. Een mens beslist vóór iets klantgericht wordt; nooit stille auto-send.',
-  'Houd het Apple-bar-ritme — Uitleg → Voordoen → Zelf doen — op het Worldline-deck. Het nieuwe ladderdiagram en de ConceptSim leren L1→L2→L3; de n8n-starters blijven het voertuig.',
+  'Elk blok volgt hetzelfde ritme: uitleg, voordoen en daarna zelf doen. Het ladderdiagram en de ConceptSim lopen L1→L2→L3 door; je bouwt met de n8n-starters.',
  ],
  workedExample:'Mechanisme: agency-ladder L1→L2→L3 op n8n-triage-starters. Motto: dezelfde tickets, meer agency, vaste labels. Stap de ConceptSim zonder API-sleutels, daarna L1→L2 (L3 stretch) op je machine.',
  loop:[
@@ -142,7 +142,7 @@ const nl = {
   starter('triage-fixtures.json','Gedeelde fixture-tickets (de server controleert je labels)'),
   openMaterial('vehicle','Workshop-n8n-instantie','De deck verwijst naar “the workshop n8n instance”; de URL staat niet in het lesplan.'),
   link('naslag','Facilitator-handleiding · n8n L1–L3','https://github.com/RyanLisse/aetherlink-academy-app/blob/main/docs/facilitator-n8n-triage.md','docs/facilitator-n8n-triage.md · materialenpad · geen live n8n-import'),
-  link('diagram','Agency-ladderdiagram','/diagrams/workshop/w3-agency-ladder.svg','Workshop 3 · AET-79 P2-retrofit')
+  link('diagram','Agency-ladderdiagram','/diagrams/workshop/w3-agency-ladder.svg','Workshop 3')
  ],
  diagrams:[DIAGRAM_NL],
  simTitles:{'w3-agency-ladder':'Concept-sim · L1 → L2 → L3'},

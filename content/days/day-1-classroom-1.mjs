@@ -45,7 +45,7 @@ const en = {
  narrative:[
   'Classroom 1 teaches the Claude Code loop on the Aether Library practice repo: explore the tree with evidence, plan the smallest change, change only after approval, verify with a real command, then commit / handoff with file · command · result · owner.',
   'Tokens, context windows, and hallucinations are supporting beats. The mechanism is the loop — never silent edits, never invent OPEN facts.',
-  'Keep the Apple bar rhythm — Uitleg → Voordoen → Zelf doen — and solos A1–A4. The new loop diagram and ConceptSim teach explore→plan→change→verify→commit; Jessy/Cons TD1 stays the pedagogy SoT.',
+  'Every block follows the same rhythm: explanation, demonstration, then you do it yourself in assignments A1–A4. The loop diagram and ConceptSim walk through explore→plan→change→verify→commit.',
  ],
  workedExample:'Mechanism: Claude Code loop explore→plan→change→verify→commit on aetherlink-classroom-starter. Motto: explore → plan → change → verify → commit. Step the ConceptSim without API keys, then run A1–A4 on your machine.',
  loop:[
@@ -67,13 +67,13 @@ const en = {
  },
  solo:SOLO,
  materials:[
-  link('solo','Solo-in-Claude · C1–C2 concepts','/solos/c1-c2-concepts/index.html','AET-132 · clone/open → claude → /start-solo → Proof'),
-  link('assignment','Proof · artifact card','/solos/c1-c2-concepts/proof/artifact-card.html','AET-132 · paste into Academy Review'),
+  link('solo','Solo-in-Claude · C1–C2 concepts','/solos/c1-c2-concepts/index.html','clone/open → claude → /start-solo → Proof'),
+  link('assignment','Proof · artifact card','/solos/c1-c2-concepts/proof/artifact-card.html','paste into Academy Review'),
   link('vehicle','Practice repo aetherlink-classroom-starter','https://github.com/jyse/aetherlink-classroom-starter','Slide 34'),
   link('naslag','Claude Code 101','https://anthropic.skilljar.com/claude-code-101','Anthropic Academy; lesson-plan reference'),
   link('naslag','Claude Code in Action','https://anthropic.skilljar.com/claude-code-in-action','Anthropic Academy; lesson-plan reference'),
-  link('naslag','Claude Code concepts (Carl)','https://ccforeveryone.com/guides/claude-code-concepts-explained','Naslag only · CC BY-NC-ND · no re-host'),
-  link('diagram','Claude Code loop diagram','/diagrams/classroom/c1-explore-plan-change-verify-commit.svg','Classroom 1 · AET-129 P3 retrofit')
+  link('naslag','Claude Code concepts (Carl)','https://ccforeveryone.com/guides/claude-code-concepts-explained','External guide · CC BY-NC-ND'),
+  link('diagram','Claude Code loop diagram','/diagrams/classroom/c1-explore-plan-change-verify-commit.svg','Classroom 1')
  ],
  diagrams:[DIAGRAM_EN],
  simTitles:{'c1-agent-loop':'Concept sim · explore → commit'},
@@ -114,7 +114,7 @@ const nl = {
  narrative:[
   'Classroom 1 leert de Claude Code-loop op de Aether Library-oefenrepo: explore de boom met bewijs, plan de kleinste wijziging, change pas na akkoord, verify met een echt commando, daarna commit / handoff met bestand · commando · uitkomst · eigenaar.',
   'Tokens, contextvensters en hallucinaties zijn ondersteunende beats. Het mechanisme is de loop — nooit stille edits, nooit OPEN-feiten verzinnen.',
-  'Houd het Apple-bar-ritme — Uitleg → Voordoen → Zelf doen — en solos A1–A4. Het nieuwe loopdiagram en de ConceptSim leren explore→plan→change→verify→commit; Jessy/Cons TD1 blijft de pedagogie-SoT.',
+  'Elk blok volgt hetzelfde ritme: uitleg, voordoen en daarna zelf doen in opdrachten A1–A4. Het loopdiagram en de ConceptSim lopen explore→plan→change→verify→commit door.',
  ],
  workedExample:'Mechanisme: Claude Code-loop explore→plan→change→verify→commit op aetherlink-classroom-starter. Motto: explore → plan → change → verify → commit. Stap de ConceptSim zonder API-sleutels, daarna A1–A4 op je machine.',
  loop:[
@@ -136,13 +136,13 @@ const nl = {
  },
  solo:SOLO_NL,
  materials:[
-  link('solo','Solo-in-Claude · C1–C2-concepten','/solos/c1-c2-concepts/index.html','AET-132 · clone/open → claude → /start-solo → Proof'),
-  link('assignment','Proof · artefactkaart','/solos/c1-c2-concepts/proof/artifact-card.html','AET-132 · plak in Academy Review'),
+  link('solo','Solo-in-Claude · C1–C2-concepten','/solos/c1-c2-concepts/index.html','clone/open → claude → /start-solo → Proof'),
+  link('assignment','Proof · artefactkaart','/solos/c1-c2-concepts/proof/artifact-card.html','plak in Academy Review'),
   link('vehicle','Oefenrepository aetherlink-classroom-starter','https://github.com/jyse/aetherlink-classroom-starter','Dia 34'),
   link('naslag','Claude Code 101','https://anthropic.skilljar.com/claude-code-101','Anthropic Academy; lesplan-naslag'),
   link('naslag','Claude Code in Action','https://anthropic.skilljar.com/claude-code-in-action','Anthropic Academy; lesplan-naslag'),
   link('naslag','Claude Code-concepten (Carl)','https://ccforeveryone.com/guides/claude-code-concepts-explained','Naslag alleen · CC BY-NC-ND · niet herhosten'),
-  link('diagram','Claude Code-loopdiagram','/diagrams/classroom/c1-explore-plan-change-verify-commit.svg','Classroom 1 · AET-129 P3-retrofit')
+  link('diagram','Claude Code-loopdiagram','/diagrams/classroom/c1-explore-plan-change-verify-commit.svg','Classroom 1')
  ],
  diagrams:[DIAGRAM_NL],
  simTitles:{'c1-agent-loop':'Concept-sim · explore → commit'},

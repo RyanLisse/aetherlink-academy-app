@@ -34,7 +34,7 @@ const en = {
  narrative:[
   'An AI-native SDLC is not “let the agent loose.” It is a harness loop around a stable lab vehicle: intent, spec, plan, build, test, review, gate — then handoff back into the next intent.',
   'Two human gates keep the loop honest: accept the plan before build, and fill docs/gate.md (PASS / FAIL / OPEN) with citations before you claim ship. The agent may use one read-only tool; no shell, no write.',
-  'Keep the Apple bar rhythm — Uitleg → Voordoen → Zelf doen — on the Worldline deck. The new diagram and ConceptSim teach the harness; the lab still produces the seven files.',
+  'Every block follows the same rhythm: explanation, demonstration, then you do it yourself. The diagram and ConceptSim explain the harness; the lab produces the seven files.',
  ],
  workedExample:'Mechanism: Plan→…→gate harness around aetherlink-daily-brief-lab-s1. Motto: human gates keep the harness honest. Step the ConceptSim without API keys, walk the HTML course + Assignments + SOLO under /courses/aetherlink-daily-brief-lab-s1/ (modules 01–06), then run SOLO 1–7 on your branch if you clone the vehicle.',
  loop:[
@@ -67,16 +67,16 @@ const en = {
   {id:'w5-solo7',badge:'7',level:'required',timerMinutes:15,title:'SOLO 7 · gate and PR',goal:'Fill docs/gate.md with PASS, FAIL, or OPEN and citations; refuse PASS on unread checks; keep credentials out of the repo; open the PR.',doneWhen:'Gate filled, no secrets in the repo, and the PR is open.',slide:slide(d,45,'Fill the gate. Open the PR.')}
  ],
  materials:[
-  link('solo','HTML course · daily-brief modules 01–06','/courses/aetherlink-daily-brief-lab-s1/index.html','AET-131 · modules 01–06 · empty-main pedagogy'),
-  link('assignment','Assignment · intent','/courses/aetherlink-daily-brief-lab-s1/intent.md','AET-131 · intent.md template'),
-  link('assignment','Assignment · spec (flight plan)','/courses/aetherlink-daily-brief-lab-s1/docs/spec.md','AET-131 · docs/spec.md (+ design/plan)'),
-  link('assignment','Assignment · gate (evidence)','/courses/aetherlink-daily-brief-lab-s1/docs/gate.md','AET-131 · docs/gate.md (+ evidence.md)'),
-  link('solo','SOLO · seven-step loop','/courses/aetherlink-daily-brief-lab-s1/SOLO.md','AET-131 · walk alone · preserve empty-main'),
-  link('naslag','Rulebook · CLAUDE.md / AGENTS.md / progress.md','/courses/aetherlink-daily-brief-lab-s1/CLAUDE.md','AET-131 · companions learner-reachable'),
+  link('solo','HTML course · daily-brief modules 01–06','/courses/aetherlink-daily-brief-lab-s1/index.html','modules 01–06 · empty-main pedagogy'),
+  link('assignment','Assignment · intent','/courses/aetherlink-daily-brief-lab-s1/intent.md','intent.md template'),
+  link('assignment','Assignment · spec (flight plan)','/courses/aetherlink-daily-brief-lab-s1/docs/spec.md','docs/spec.md (+ design/plan)'),
+  link('assignment','Assignment · gate (evidence)','/courses/aetherlink-daily-brief-lab-s1/docs/gate.md','docs/gate.md (+ evidence.md)'),
+  link('solo','SOLO · seven-step loop','/courses/aetherlink-daily-brief-lab-s1/SOLO.md','walk alone · preserve empty-main'),
+  link('naslag','Rulebook · CLAUDE.md / AGENTS.md / progress.md','/courses/aetherlink-daily-brief-lab-s1/CLAUDE.md','companions learner-reachable'),
   link('vehicle','Lab repo aetherlink-daily-brief-lab-s1','https://github.com/RyanLisse/aetherlink-daily-brief-lab-s1','Slide 2; main is intentionally empty; private repo'),
   link('naslag','AI-native SDLC playbook','https://academy.claude.com/courses/ai-native-sdlc-playbook','NASLAG.md Support Day 1–2 · Anthropic Academy'),
   link('naslag','AI-native SDLC blog playbook','https://claude.com/blog/the-ai-native-sdlc-playbook','NASLAG.md Support Day 1–2 · claude.com/blog'),
-  link('diagram','SDLC harness-loop diagram','/diagrams/workshop/w5-harness-loop.svg','Workshop 5 · AET-77 P0 retrofit')
+  link('diagram','SDLC harness-loop diagram','/diagrams/workshop/w5-harness-loop.svg','Workshop 5')
  ],
  diagrams:[DIAGRAM_EN],
  simTitles:{'w5-sdlc-loop':'Concept sim · Plan → gate'},
@@ -120,7 +120,7 @@ const nl = {
  narrative:[
   'Een AI-native SDLC is niet “laat de agent los.” Het is een harnesslus om een stabiel lab-voertuig: intent, spec, plan, build, test, review, gate — en daarna handoff terug naar de volgende intent.',
   'Twee menselijke gates houden de lus eerlijk: accepteer het plan vóór de build, en vul docs/gate.md (PASS / FAIL / OPEN) met citaten vóór je ship claimt. De agent mag één read-only tool; geen shell, geen write.',
-  'Houd het Apple-bar-ritme — Uitleg → Voordoen → Zelf doen — op het Worldline-deck. Het nieuwe diagram en de ConceptSim leren de harness; het lab levert nog steeds de zeven bestanden.',
+  'Elk blok volgt hetzelfde ritme: uitleg, voordoen en daarna zelf doen. Het diagram en de ConceptSim leggen de harness uit; het lab levert de zeven bestanden.',
  ],
  workedExample:'Mechanisme: Plan→…→gate-harness om aetherlink-daily-brief-lab-s1. Motto: menselijke gates houden de harness eerlijk. Stap de ConceptSim zonder API-sleutels, loop de HTML-cursus + Opdrachten + SOLO onder /courses/aetherlink-daily-brief-lab-s1/ (modules 01–06), daarna SOLO 1–7 op je branch als je de repository clonet.',
  loop:[
@@ -153,16 +153,16 @@ const nl = {
   {id:'w5-solo7',badge:'7',level:'required',timerMinutes:15,title:'SOLO 7 · gate en PR',goal:'Vul docs/gate.md met PASS, FAIL of OPEN en citaten, weiger PASS op ongelezen checks, houd credentials buiten de repo en open de PR.',doneWhen:'Gate ingevuld, geen secrets in de repo en de PR staat open.',slide:slide(d,45,'Fill the gate. Open the PR.')}
  ],
  materials:[
-  link('solo','HTML-cursus · daily-brief modules 01–06','/courses/aetherlink-daily-brief-lab-s1/index.html','AET-131 · modules 01–06 · lege-main-pedagogiek'),
-  link('assignment','Opdracht · intent','/courses/aetherlink-daily-brief-lab-s1/intent.md','AET-131 · intent.md-sjabloon'),
-  link('assignment','Opdracht · spec (vluchtplan)','/courses/aetherlink-daily-brief-lab-s1/docs/spec.md','AET-131 · docs/spec.md (+ design/plan)'),
-  link('assignment','Opdracht · gate (bewijs)','/courses/aetherlink-daily-brief-lab-s1/docs/gate.md','AET-131 · docs/gate.md (+ evidence.md)'),
-  link('solo','SOLO · zevenstappenlus','/courses/aetherlink-daily-brief-lab-s1/SOLO.md','AET-131 · alleen lopen · lege main behouden'),
-  link('naslag','Rulebook · CLAUDE.md / AGENTS.md / progress.md','/courses/aetherlink-daily-brief-lab-s1/CLAUDE.md','AET-131 · companions bereikbaar voor lerenden'),
+  link('solo','HTML-cursus · daily-brief modules 01–06','/courses/aetherlink-daily-brief-lab-s1/index.html','modules 01–06 · lege-main-pedagogiek'),
+  link('assignment','Opdracht · intent','/courses/aetherlink-daily-brief-lab-s1/intent.md','intent.md-sjabloon'),
+  link('assignment','Opdracht · spec (vluchtplan)','/courses/aetherlink-daily-brief-lab-s1/docs/spec.md','docs/spec.md (+ design/plan)'),
+  link('assignment','Opdracht · gate (bewijs)','/courses/aetherlink-daily-brief-lab-s1/docs/gate.md','docs/gate.md (+ evidence.md)'),
+  link('solo','SOLO · zevenstappenlus','/courses/aetherlink-daily-brief-lab-s1/SOLO.md','alleen lopen · lege main behouden'),
+  link('naslag','Rulebook · CLAUDE.md / AGENTS.md / progress.md','/courses/aetherlink-daily-brief-lab-s1/CLAUDE.md','companions bereikbaar voor lerenden'),
   link('vehicle','Lab-repository aetherlink-daily-brief-lab-s1','https://github.com/RyanLisse/aetherlink-daily-brief-lab-s1','Dia 2; main is expres leeg; privé-repository'),
   link('naslag','AI-native SDLC playbook','https://academy.claude.com/courses/ai-native-sdlc-playbook','NASLAG.md Support Day 1–2 · Anthropic Academy'),
   link('naslag','AI-native SDLC blog-playbook','https://claude.com/blog/the-ai-native-sdlc-playbook','NASLAG.md Support Day 1–2 · claude.com/blog'),
-  link('diagram','SDLC-harnesslus-diagram','/diagrams/workshop/w5-harness-loop.svg','Workshop 5 · AET-77 P0-retrofit')
+  link('diagram','SDLC-harnesslus-diagram','/diagrams/workshop/w5-harness-loop.svg','Workshop 5')
  ],
  diagrams:[DIAGRAM_NL],
  simTitles:{'w5-sdlc-loop':'Concept-sim · Plan → gate'},
