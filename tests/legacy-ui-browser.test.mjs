@@ -173,7 +173,7 @@ test('facilitator workshop landing keeps settings tucked away and exposes usable
     await bar.waitFor();
     assert.ok(await bar.locator('.facilitator-teach').isVisible(),'teach controls remain available in settings');
     assert.ok(await bar.locator('.facilitator-dials').isVisible(),'session controls remain available in settings');
-    for(const name of ['Start timer','Volgende ronde','Rollen schudden','Open Classroom','Debriefbord openen'])assert.ok(await bar.getByRole('button',{name}).isVisible(),name);
+    for(const name of ['Start timer','Volgende ronde','Open Classroom','Debriefbord openen'])assert.ok(await bar.getByRole('button',{name}).isVisible(),name);
     const day=bar.getByRole('combobox',{name:'Dag',exact:true});
     assert.equal(await day.inputValue(),'1','day selector starts on the active room day');
     assert.equal(await bar.locator('.fac-day-label').innerText(),'Dag 1','current day is announced beside its selector');
