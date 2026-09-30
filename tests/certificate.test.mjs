@@ -226,13 +226,18 @@ test('public verification confirms only name, cohort and date, and fails for rev
 
   const valid=await call('GET',`/verify/${id}`);
   assert.equal(valid.status,200);
-  assert.match(valid.text,/<h1>Alice Jansen<\/h1><p>heeft het Wave-cohort <strong>Wave oktober \(synthetisch\)<\/strong> afgerond\.<\/p><p>Uitgegeven op 6 oktober 2026\.<\/p>/);
-  for(const hidden of [alice.memberId,cohortId,'Bob','Squad Orion','2 van 2','5 oktober 2026','bevinding','facilitator'])assert.ok(!valid.text.includes(hidden),`public page leaks ${hidden}`);
+  assert.match(valid.text,/<html lang="en">/);
+  assert.match(valid.text,/<h1>Alice Jansen<\/h1><p>has completed the Wave cohort <strong>Wave oktober \(synthetisch\)<\/strong>\.<\/p><p>Issued on 6 October 2026\.<\/p>/);
+  const dutch=await call('GET',`/verify/${id}?locale=nl`);
+  assert.equal(dutch.status,200);
+  assert.match(dutch.text,/<h1>Alice Jansen<\/h1><p>heeft het Wave-cohort <strong>Wave oktober \(synthetisch\)<\/strong> afgerond\.<\/p><p>Uitgegeven op 6 oktober 2026\.<\/p>/);
+  for(const page of [valid.text,dutch.text])for(const hidden of [alice.memberId,cohortId,'Bob','Squad Orion','2 van 2','2 of 2','5 oktober 2026','5 October 2026','bevinding','finding','facilitator'])assert.ok(!page.includes(hidden),`public page leaks ${hidden}`);
   assert.equal((await call('GET',`/verify/${id.replaceAll('-','').toLowerCase()}`)).status,200);
 
   const unknown=await call('GET','/verify/0000-0000-0000-0000');
   assert.equal(unknown.status,404);
-  assert.ok(unknown.text.includes('Geen geldig certificaat gevonden voor deze code.'));
+  assert.ok(unknown.text.includes('No valid certificate found for this code.'));
+  assert.ok((await call('GET','/verify/0000-0000-0000-0000?locale=nl')).text.includes('Geen geldig certificaat gevonden voor deze code.'));
   assert.equal((await call('GET','/verify/not-a-code')).status,404);
 
   await call('POST','/game/facilitator/cohort/certificate/revoke',host({cohortId,certificateId:id}));

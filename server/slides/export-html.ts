@@ -20,7 +20,7 @@ export function renderDeckHtml(deck:Deck,{includeNotes=false}={}):string{
  ].map(([k,v])=>`${k}: ${v};`).join(' ');
  const slides=deck.slides.map((slide,index)=>`      <section class="slide" data-slide-id="${escapeHtml(slide.id)}" style="display:${index===0?'flex':'none'};${slide.background?` background:${cssToken(slide.background,'transparent')};`:''}">${sanitizeSlideContent(slide.content)}${includeNotes&&slide.notes?`<aside class="notes" hidden>${escapeHtml(slide.notes)}</aside>`:''}</section>`).join('\n');
  return `<!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">

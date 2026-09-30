@@ -139,7 +139,7 @@ export function registerCohortRoutes(app, deps) {
   );
   const certLocale = (req) => {
     const raw = req.body?.locale ?? req.query?.locale;
-    return raw === 'en' || raw === 'nl' ? raw : 'nl';
+    return raw === 'en' || raw === 'nl' ? raw : 'en';
   };
   const sendCertificate = (res, certificate, locale) => {
     if (!certificate || certificate.revokedAt)

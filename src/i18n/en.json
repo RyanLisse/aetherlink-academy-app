@@ -533,6 +533,8 @@
   "peer.lede": "Submitted tasks from other participants in your room, for today. Your decision is recorded with the evidence.",
   "peer.title": "To review ({count})",
   "review.taskLabel": "Task {task}",
+  "review.source.participant": "Participant",
+  "review.source.mcp": "MCP client",
   "overview.awaitingReview": "Awaiting review: {count}",
   "chat.title": "Ask the Academy",
   "chat.lede": "Navigation and FAQ from released day packs (cumulative unlock). No AI: ask your own Claude for deeper help.",

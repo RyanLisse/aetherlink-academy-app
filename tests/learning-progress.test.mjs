@@ -39,6 +39,6 @@ test('five-day progress survives restart; private reflection and debrief stay ac
  await call(app,'/game/control',host.token,{action:'day',value:1});
  assert.equal(store.auth(alice.token).p.route,'guided');
  assert.equal(store.auth(bob.token).p.route,'standard');
- const exported=exportDebrief(r);assert.match(exported,/## Dag 7\n/);assert.doesNotMatch(exported,/Supportdag/);assert.doesNotMatch(exported,/quizScore|guided|stretch/);
+ const exported=exportDebrief(r);assert.match(exported,/## Day 7\n/);assert.doesNotMatch(exported,/Supportdag|Support day/);assert.doesNotMatch(exported,/quizScore|guided|stretch/);
  }finally{rmSync(dir,{recursive:true,force:true});}
 });

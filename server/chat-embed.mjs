@@ -43,7 +43,7 @@ function validStartUrl(startUrl, config) {
 
 export async function createChatEmbedStartUrl({roomId, participantId}, {config, env = process.env, fetchImpl = fetch} = {}) {
   config = config !== undefined ? config : readChatConfig(env);
-  if (!config) throw Object.assign(new Error('Chat is niet geconfigureerd.'), {code: 'config'});
+  if (!config) throw Object.assign(new Error('Chat is not configured.'), {code: 'config'});
   const issuedAt = Date.now();
   const claims = {
     version: 1,
@@ -67,14 +67,14 @@ export async function createChatEmbedStartUrl({roomId, participantId}, {config, 
       signal: AbortSignal.timeout(8000),
     });
   } catch {
-    throw Object.assign(new Error('Chat is niet bereikbaar.'), {code: 'upstream'});
+    throw Object.assign(new Error('Chat is unreachable.'), {code: 'upstream'});
   }
-  if (!response.ok) throw Object.assign(new Error('Chat wees het verzoek af.'), {code: 'upstream'});
+  if (!response.ok) throw Object.assign(new Error('Chat rejected the request.'), {code: 'upstream'});
   let payload;
-  try { payload = await response.json(); } catch { throw Object.assign(new Error('Ongeldig antwoord van Chat.'), {code: 'upstream'}); }
+  try { payload = await response.json(); } catch { throw Object.assign(new Error('Invalid response from Chat.'), {code: 'upstream'}); }
   const startUrl = payload && typeof payload.startUrl === 'string' ? payload.startUrl : null;
-  if (!startUrl) throw Object.assign(new Error('Chat gaf geen geldige start-URL.'), {code: 'upstream'});
-  if (!validStartUrl(startUrl, config)) throw Object.assign(new Error('Chat gaf een onverwachte start-URL.'), {code: 'upstream'});
+  if (!startUrl) throw Object.assign(new Error('Chat did not return a valid start URL.'), {code: 'upstream'});
+  if (!validStartUrl(startUrl, config)) throw Object.assign(new Error('Chat returned an unexpected start URL.'), {code: 'upstream'});
   return new URL(startUrl, config.origin).toString();
 }
 

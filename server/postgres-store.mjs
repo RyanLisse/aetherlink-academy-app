@@ -61,12 +61,12 @@ export class PostgresStore {
  async authenticated(client,token,kind,lock=false) {
   const key=hash(token||'');
   const found=await client.query('SELECT room_id FROM sessions WHERE token_hash=$1',[key]);
-  if (!found.rows[0]) fail(401,'Geen geldige toegang. Meld je opnieuw aan.');
+  if (!found.rows[0]) fail(401,'No valid access. Sign in again.');
   const room=await client.query(`SELECT data FROM rooms WHERE id=$1${lock?' FOR UPDATE':''}`,[found.rows[0].room_id]);
   const session=await client.query('SELECT room_id,person_id,kind,expires_at,display_name,read_only FROM sessions WHERE token_hash=$1',[key]);
   const row=session.rows[0];
-  if (!row || Number(row.expires_at)<=this.now() || kind&&row.kind!==kind) fail(401,'Geen geldige toegang. Meld je opnieuw aan.');
-  if (!room.rows[0]) fail(401,'Kamer bestaat niet.');
+  if (!row || Number(row.expires_at)<=this.now() || kind&&row.kind!==kind) fail(401,'No valid access. Sign in again.');
+  if (!room.rows[0]) fail(401,'Room does not exist.');
   const s={roomId:row.room_id,personId:row.person_id,kind:row.kind,expiresAt:Number(row.expires_at),displayName:row.display_name||undefined,...(row.read_only?{readOnly:true}:{})};
   const r=room.rows[0].data;
   return {s,r,p:r.members.find(member=>member.id===s.personId)};
@@ -103,11 +103,11 @@ export class PostgresStore {
   return this.transaction(async client=>{
    const result=await client.query('SELECT data FROM rooms WHERE code=$1 FOR UPDATE',[code.toUpperCase()]);
    const r=result.rows[0]?.data;
-   if (!r) fail(404,'Kamercode niet gevonden.');
+   if (!r) fail(404,'Room code not found.');
    if (r.cohortId) fail(403,COHORT_ROOM_JOIN_MESSAGE);
    const existing=r.members.find(m=>m.name.toLowerCase()===name.toLowerCase());
    if (existing) fail(409,DUPLICATE_PARTICIPANT_MESSAGE);
-   if (r.members.length>=MAX_SQUAD_SIZE) fail(409,`Squad is vol (maximaal ${MAX_SQUAD_SIZE}).`);
+   if (r.members.length>=MAX_SQUAD_SIZE) fail(409,`Squad is full (at most ${MAX_SQUAD_SIZE}).`);
    const resumeToken=secret();
    const p={id:randomUUID(),name,help:false,quiz:null,route:'standard',progressByDay:{},lastMcp:null};
    r.members.push(p);r.version++;
@@ -131,7 +131,7 @@ export class PostgresStore {
  async rotateParticipantAccess(token) {
   return this.transaction(async client=>{
    const {r,p}=writable(await this.authenticated(client,token,'browser',true));
-   if(!p)fail(403,'Gebruik hiervoor een deelnemerssessie.');
+   if(!p)fail(403,'Use a participant session for this.');
    if(p.cohortMemberId)fail(409,COHORT_SEAT_ACCESS_MESSAGE);
    const resumeToken=secret();
    await client.query('INSERT INTO participant_access(room_id,person_id,secret_hash) VALUES ($1,$2,$3) ON CONFLICT (room_id,person_id) DO UPDATE SET secret_hash=EXCLUDED.secret_hash,created_at=now()',[r.id,p.id,hash(resumeToken)]);
@@ -148,14 +148,14 @@ export class PostgresStore {
   return this.transaction(async client=>{
    const result=await client.query('SELECT data FROM rooms WHERE id=$1 FOR UPDATE',[roomId]);
    const r=result.rows[0]?.data;
-   if(!r) fail(404,'Kamer bestaat niet.');
+   if(!r) fail(404,'Room does not exist.');
    return {token:await this.session(client,roomId,'facilitator','browser',displayName),roomId,code:r.code};
   });
  }
  async rotateMcpToken(token) {
   return this.transaction(async client=>{
    const {r,p,s}=writable(await this.authenticated(client,token,'browser',true));
-   if (!p&&s.personId!=='facilitator') fail(403,'Gebruik hiervoor een facilitator- of deelnemerssessie.');
+   if (!p&&s.personId!=='facilitator') fail(403,'Use a facilitator or participant session for this.');
    const personId=p?.id??'facilitator';
    await client.query("DELETE FROM sessions WHERE room_id=$1 AND person_id=$2 AND kind='mcp'",[r.id,personId]);
    return {token:await this.session(client,r.id,personId,'mcp',p?undefined:s.displayName,{expiresAt:s.expiresAt})};
@@ -163,15 +163,15 @@ export class PostgresStore {
  }
  async control(token,action,value) {
   return this.withSession(token,'browser',({r,s})=>{
-   if (s.personId!=='facilitator') fail(403,'Alleen de facilitator bedient de ronde.');
+   if (s.personId!=='facilitator') fail(403,'Only the facilitator runs the round.');
    Store.prototype.control.call({remaining:this.remaining,save(){}},r,action,value);
    return this.view(r,s);
   });
  }
  async updateParticipant(token,patch) {
-  if (Object.keys(patch).some(key=>!['help','quiz','route','progressByDay','lastMcp'].includes(key))) fail(400,'Ongeldig deelnemersveld.');
+  if (Object.keys(patch).some(key=>!['help','quiz','route','progressByDay','lastMcp'].includes(key))) fail(400,'Invalid participant field.');
   return this.withSession(token,'browser',({p})=>{
-   if (!p) fail(400,'Alleen deelnemers.');
+   if (!p) fail(400,'Participants only.');
    Object.assign(p,patch);
    return p;
   });
@@ -184,7 +184,7 @@ export class PostgresStore {
    const found=await client.query('SELECT payload_hash,intent,result FROM requests WHERE room_id=$1 AND person_id=$2 AND kind=$3 AND request_id=$4',values);
    const row=found.rows[0];
    if (row) {
-    if(row.payload_hash!==payloadHash) fail(409,'Dit verzoeknummer is al gebruikt met andere invoer.');
+    if(row.payload_hash!==payloadHash) fail(409,'This request id was already used with different input.');
     return {intent:row.intent,result:row.result,completed:row.result!==null};
    }
    await validate(context);
@@ -198,8 +198,8 @@ export class PostgresStore {
    const values=[context.r.id,context.s.personId,kind,requestId];
    const found=await client.query('SELECT payload_hash,intent,result FROM requests WHERE room_id=$1 AND person_id=$2 AND kind=$3 AND request_id=$4',values);
    const row=found.rows[0];
-   if (!row) fail(404,'Verzoek niet gevonden.');
-   if (row.payload_hash!==payloadHash) fail(409,'Dit verzoeknummer is al gebruikt met andere invoer.');
+   if (!row) fail(404,'Request not found.');
+   if (row.payload_hash!==payloadHash) fail(409,'This request id was already used with different input.');
    if (row.result!==null) return row.result;
    const result=await apply(context,row.intent);
    if (result===undefined||result===null) throw new Error('Completed request requires a result');
@@ -221,7 +221,7 @@ export class PostgresStore {
  async cohortRow(client,cohortId,lock=false) {
   const result=await client.query(`SELECT id,name,starts_at,days,read_only_export,current_room_id,created_at FROM cohorts WHERE id=$1${lock?' FOR UPDATE':''}`,[cohortId]);
   const row=result.rows[0];
-  if(!row)fail(404,'Cohort niet gevonden.');
+  if(!row)fail(404,'Cohort not found.');
   return {id:row.id,name:row.name,startsAt:Number(row.starts_at),days:row.days,readOnlyExport:row.read_only_export,currentRoomId:row.current_room_id,createdAt:Number(row.created_at)};
  }
  async cohortFacts(client,cohort) {
@@ -265,7 +265,7 @@ export class PostgresStore {
   return this.transaction(async client=>{
    await this.cohortRow(client,cohortId,true);
    const taken=await client.query('SELECT 1 FROM cohort_members WHERE cohort_id=$1 AND lower(name)=ANY($2)',[cohortId,names.map(name=>name.toLowerCase())]);
-   if(taken.rowCount)fail(409,'Deze naam staat al in dit cohort.');
+   if(taken.rowCount)fail(409,'This name is already in this cohort.');
    return {codes:await this.addMembers(client,cohortId,names)};
   });
  }
@@ -273,7 +273,7 @@ export class PostgresStore {
   const normalized=String(code||'').trim().toUpperCase();
   return this.transaction(async client=>{
    const found=await client.query('SELECT id FROM rooms WHERE code=$1',[normalized]);
-   if(!found.rowCount)fail(404,'Kamer bestaat niet.');
+   if(!found.rowCount)fail(404,'Room does not exist.');
    return found.rows[0].id;
   });
  }
@@ -282,8 +282,8 @@ export class PostgresStore {
    const cohort=await this.cohortRow(client,cohortId,true);
    const found=await client.query('SELECT data FROM rooms WHERE id=$1 FOR UPDATE',[roomId]);
    const r=found.rows[0]?.data;
-   if(!r)fail(404,'Kamer bestaat niet.');
-   if(r.cohortId&&r.cohortId!==cohortId)fail(409,'Deze kamer hoort al bij een ander cohort.');
+   if(!r)fail(404,'Room does not exist.');
+   if(r.cohortId&&r.cohortId!==cohortId)fail(409,'This room already belongs to another cohort.');
    r.cohortId=cohortId;r.cohortName=cohort.name;r.cohortAttachedAt=this.now();r.version++;
    await this.save(client,r);
    await client.query('UPDATE cohorts SET current_room_id=$2 WHERE id=$1',[cohortId,roomId]);
@@ -292,7 +292,7 @@ export class PostgresStore {
  }
  async revokeMember(client,cohortId,memberId) {
   const member=await client.query('SELECT name FROM cohort_members WHERE id=$1 AND cohort_id=$2 FOR UPDATE',[memberId,cohortId]);
-  if(!member.rowCount)fail(404,'Deelnemer niet gevonden in dit cohort.');
+  if(!member.rowCount)fail(404,'Participant not found in this cohort.');
   await client.query('UPDATE cohort_access_codes SET revoked_at=$2 WHERE member_id=$1 AND revoked_at IS NULL',[memberId,this.now()]);
   await client.query('DELETE FROM sessions WHERE person_id=$1',[memberId]);
   return member.rows[0].name;
@@ -322,11 +322,11 @@ export class PostgresStore {
   return this.transaction(async client=>{
    const cohort=await this.cohortRow(client,cohortId,true);
    const memberRow=await client.query('SELECT id,name FROM cohort_members WHERE id=$1 AND cohort_id=$2 FOR UPDATE',[memberId,cohortId]);
-   if(!memberRow.rowCount)fail(404,'Deelnemer niet gevonden in dit cohort.');
+   if(!memberRow.rowCount)fail(404,'Participant not found in this cohort.');
    const member=memberRow.rows[0];
    const facts=await this.cohortFacts(client,cohort);
    const summary=memberCertificate({...facts,memberId,codes:facts.codes.filter(code=>code.memberId===memberId)});
-   if(!canIssueCertificate(summary))fail(409,summary.eligible===false?'Deelnemer voldoet nog niet aan de afrondingsregels.':'Certificaat is al uitgegeven.');
+   if(!canIssueCertificate(summary))fail(409,summary.eligible===false?'Participant does not meet the completion rules yet.':'Certificaat is al uitgegeven.');
    const certificate=draftCertificate({cohort,member:{id:member.id,name:member.name},now:this.now(),issuedBy});
    await client.query('INSERT INTO cohort_certificates(id,cohort_id,member_id,member_name,cohort_name,starts_at,ends_at,days,issued_at,issued_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)',[certificate.id,cohort.id,certificate.memberId,certificate.name,certificate.cohortName,certificate.startsAt,certificate.endsAt,certificate.days,certificate.issuedAt,issuedBy?JSON.stringify(issuedBy):null]);
    return this.cohortSnapshot(client,cohort);
@@ -336,7 +336,7 @@ export class PostgresStore {
   return this.transaction(async client=>{
    const cohort=await this.cohortRow(client,cohortId,true);
    const found=await client.query('UPDATE cohort_certificates SET revoked_at=COALESCE(revoked_at,$3) WHERE id=$1 AND cohort_id=$2 RETURNING id',[certificateId,cohortId,this.now()]);
-   if(!found.rowCount)fail(404,'Certificaat niet gevonden in dit cohort.');
+   if(!found.rowCount)fail(404,'Certificate not found in this cohort.');
    return this.cohortSnapshot(client,cohort);
   });
  }
@@ -404,7 +404,7 @@ export class PostgresStore {
   const rooms=await this.cohortRooms(client,cohort.id,true);
   const r=rooms.find(room=>room.id===cohort.currentRoomId);
   if(!r)fail(409,COHORT_NO_ROOM_MESSAGE);
-  if(!r.members.some(seat=>seat.id===member.id)&&r.members.length>=MAX_SQUAD_SIZE)fail(409,`Squad is vol (maximaal ${MAX_SQUAD_SIZE}).`);
+  if(!r.members.some(seat=>seat.id===member.id)&&r.members.length>=MAX_SQUAD_SIZE)fail(409,`Squad is full (at most ${MAX_SQUAD_SIZE}).`);
   seatMember(r,member,mergeSeatProgress(rooms,member.id),now);r.version++;
   await this.save(client,r);
   return {token:await this.session(client,r.id,member.id,'browser',member.name,grant),roomId:r.id,cohortId:cohort.id,readOnly:grant.readOnly};

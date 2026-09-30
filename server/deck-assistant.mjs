@@ -14,7 +14,7 @@ const HISTORY_TURNS = 6;
 const positiveInt = (raw, fallback, name) => {
   if (raw === undefined || raw === '') return fallback;
   const value = Number(raw);
-  if (!Number.isInteger(value) || value < 1) throw Error(`${name} moet een positief geheel getal zijn.`);
+  if (!Number.isInteger(value) || value < 1) throw Error(`${name} must be a positive integer.`);
   return value;
 };
 
@@ -22,7 +22,7 @@ export function readDeckAssistantConfig(env = process.env) {
   const apiKey = String(env.OPENROUTER_API_KEY || '').trim();
   if (!apiKey) return null;
   const model = String(env.ACADEMY_DECK_ASSISTANT_MODEL || env.ACADEMY_COACH_MODEL || COACH_DEFAULT_MODEL).trim();
-  if (!model.endsWith(':free')) throw Error(`ACADEMY_DECK_ASSISTANT_MODEL moet een gratis OpenRouter-model zijn (id eindigt op ':free'); kreeg '${model}'.`);
+  if (!model.endsWith(':free')) throw Error(`ACADEMY_DECK_ASSISTANT_MODEL must be a free OpenRouter model (id ends in ':free'); got '${model}'.`);
   return {
     apiKey,
     model,
@@ -138,23 +138,23 @@ export function toDeckOperations(operations, deck) {
     switch (op.op) {
       case 'add-slide': {
         const parts = splitSlide(op.slide);
-        if (!parts) fail(502, 'De assistent gaf een ongeldige slide terug.');
+        if (!parts) fail(502, 'The assistant returned an invalid slide.');
         return {op: 'add-slide', ...(typeof op.afterSlideId === 'string' && byId.has(op.afterSlideId) ? {afterSlideId: op.afterSlideId} : {}), slide: {classroom: parts.classroom, ...(parts.notes !== undefined ? {notes: parts.notes} : {})}};
       }
       case 'update-slide': {
         const current = byId.get(op.slideId), parts = splitSlide(op.slide);
-        if (!current || !parts) fail(502, 'De assistent verwees naar een slide die niet bestaat.');
+        if (!current || !parts) fail(502, 'The assistant referred to a slide that does not exist.');
         const classroom = {...(current.classroom || {}), ...parts.classroom};
         if (current.classroom && op.slide.visual && typeof op.slide.visual === 'object') classroom.visual = {...(current.classroom.visual || {}), ...op.slide.visual};
         return {op: 'patch-slide', slideId: op.slideId, fields: {classroom, ...(parts.notes !== undefined ? {notes: parts.notes} : {})}};
       }
       case 'delete-slide':
-        if (!byId.has(op.slideId)) fail(502, 'De assistent verwees naar een slide die niet bestaat.');
+        if (!byId.has(op.slideId)) fail(502, 'The assistant referred to a slide that does not exist.');
         return {op: 'delete-slide', slideId: op.slideId};
       case 'reorder-slides':
         return {op: 'reorder-slides', slideIds: Array.isArray(op.slideIds) ? op.slideIds : []};
       default:
-        return fail(502, `De assistent stelde een onbekende actie voor: ${String(op.op).slice(0, 40)}.`);
+        return fail(502, `The assistant proposed an unknown action: ${String(op.op).slice(0, 40)}.`);
     }
   });
 }
@@ -164,32 +164,32 @@ async function callModel({config, fetchImpl, body}) {
   try {
     response = await fetchImpl(config.url, {method: 'POST', headers: {authorization: `Bearer ${config.apiKey}`, 'content-type': 'application/json', 'x-title': 'AetherLink Academy'}, body: JSON.stringify(body), signal: AbortSignal.timeout(config.timeoutMs)});
   } catch (error) {
-    fail(504, error?.name === 'TimeoutError' || error?.name === 'AbortError' ? 'De deck-assistent reageerde niet op tijd. Probeer een kleinere vraag.' : 'De deck-assistent is nu niet bereikbaar.');
+    fail(504, error?.name === 'TimeoutError' || error?.name === 'AbortError' ? 'The deck assistant did not respond in time. Try a smaller request.' : 'The deck assistant is unavailable right now.');
   }
-  if (response.status === 429) fail(429, 'Het gratis model is even druk. Probeer het over een minuut opnieuw.');
-  if (!response.ok) fail(502, 'De deck-assistent is nu niet bereikbaar.');
+  if (response.status === 429) fail(429, 'The free model is busy. Try again in a minute.');
+  if (!response.ok) fail(502, 'The deck assistant is unavailable right now.');
   const content = (await response.json().catch(() => null))?.choices?.[0]?.message?.content;
   const parsed = parseDeckAssistantReply(content);
-  if (!parsed) fail(502, 'De deck-assistent gaf geen bruikbaar antwoord. Probeer het opnieuw.');
+  if (!parsed) fail(502, 'The deck assistant gave no usable answer. Try again.');
   return parsed;
 }
 
 export async function runDeckAssistant({config, store, slides, actor, fetchImpl, input, redact, personKey, now = store.now()}) {
-  if (!config) fail(503, 'De deck-assistent staat uit: stel OPENROUTER_API_KEY in op de server. Je eigen Claude Code kan via MCP wel decks bouwen.');
+  if (!config) fail(503, 'The deck assistant is off: set OPENROUTER_API_KEY on the server. Your own Claude Code can still build decks over MCP.');
   const message = text(input?.message, MAX_MESSAGE).trim();
-  if (!message) fail(400, 'Beschrijf welke slides je wilt.');
+  if (!message) fail(400, 'Describe the slides you want.');
   const deckId = typeof input?.deckId === 'string' && input.deckId ? input.deckId : null;
   const deck = deckId ? await slides.run('getDeck', actor, {deckId}) : null;
   const keys = deckAssistantQuotaKeys({config, personKey, now});
   const {allowed, counts} = await store.coachQuota(keys, {consume: true});
-  if (!allowed) fail(429, counts[0] >= config.facilitatorCap ? 'Je daglimiet voor de deck-assistent is bereikt.' : 'Het gedeelde daglimiet voor het gratis model is bereikt.');
+  if (!allowed) fail(429, counts[0] >= config.facilitatorCap ? 'You have reached your daily deck assistant limit.' : 'The shared daily limit for the free model has been reached.');
   const history = Array.isArray(input?.history) ? input.history.filter((turn) => turn && typeof turn === 'object') : [];
   const proposal = await callModel({config, fetchImpl, body: deckAssistantRequestBody({config, message: redact(message), deck, slideId: typeof input?.slideId === 'string' ? input.slideId : null, history: history.map((turn) => ({...turn, message: redact(text(turn.message, MAX_MESSAGE))})), locale: input?.locale})});
   const operations = toDeckOperations(proposal.operations, deck);
   const assistant = usage(config, counts);
   if (!deck) {
     if (!operations.length) return {reply: proposal.reply, deckId: null, changes: null, assistant};
-    if (operations.some((op) => op.op !== 'add-slide')) fail(502, 'De assistent probeerde een deck te wijzigen dat nog niet bestaat.');
+    if (operations.some((op) => op.op !== 'add-slide')) fail(502, 'The assistant tried to change a deck that does not exist yet.');
     const created = await slides.run('createDeck', actor, {title: proposal.title || message.slice(0, 80), slides: operations.map((op) => op.slide)});
     return {reply: proposal.reply, deckId: created.id, revision: created.revision, changes: {created: true, added: created.slides.map((slide) => slide.id), updated: [], deleted: []}, assistant};
   }

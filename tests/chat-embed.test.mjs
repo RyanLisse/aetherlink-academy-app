@@ -62,7 +62,7 @@ test('createChatEmbedStartUrl derives a stable pseudonymous email per room+parti
 
 test('createChatEmbedStartUrl rejects a startUrl on a different origin', async () => {
   const fetchImpl = async () => ({ok: true, json: async () => ({startUrl: 'https://evil.example.test/_agent-native/embed/start?ticket=x'})});
-  await assert.rejects(() => createChatEmbedStartUrl({roomId: 'r', participantId: 'p'}, {config, fetchImpl}), /onverwachte start-url|Chat gaf/i);
+  await assert.rejects(() => createChatEmbedStartUrl({roomId: 'r', participantId: 'p'}, {config, fetchImpl}), /unexpected start URL/i);
 });
 
 test('createChatEmbedStartUrl rejects a startUrl with an unexpected path', async () => {
@@ -101,7 +101,7 @@ test('createChatEmbedStartUrl rejects a startUrl carrying a fragment', async () 
 });
 
 test('createChatEmbedStartUrl throws a config error when unconfigured', async () => {
-  await assert.rejects(() => createChatEmbedStartUrl({roomId: 'r', participantId: 'p'}, {config: null, fetchImpl: async () => {}}), /niet geconfigureerd/);
+  await assert.rejects(() => createChatEmbedStartUrl({roomId: 'r', participantId: 'p'}, {config: null, fetchImpl: async () => {}}), /not configured/);
 });
 
 test('createChatEmbedStartUrl throws on upstream failure without leaking response text', async () => {

@@ -13,17 +13,17 @@ const releasedLessonIds=({r,s})=>releasedDays(r,{readOnly:s?.readOnly}).filter(g
 // Everything else comes from the server-side room and participant, so a tab
 // cannot claim a lesson, quiz or release it was never served.
 export function screenBinding({r,p,s},report,now=Date.now()){
- if(!p)fail(403,'Alleen deelnemers melden hun scherm.');
+ if(!p)fail(403,'Only participants report their screen.');
  const {tabId,view,deckId,slideId,slideIndex,day}=report||{};
- if(typeof tabId!=='string'||!UUID.test(tabId))fail(400,'Ongeldige tab.');
- if(!VIEWS.has(view))fail(400,'Onbekende weergave.');
+ if(typeof tabId!=='string'||!UUID.test(tabId))fail(400,'Invalid tab.');
+ if(!VIEWS.has(view))fail(400,'Unknown view.');
  const deck=view==='decks'&&deckId!==undefined&&deckId!==null;
- if(deck&&(typeof deckId!=='string'||!UUID.test(deckId)))fail(400,'Ongeldig deck.');
- if(deck&&(!Number.isInteger(slideIndex)||slideIndex<0||slideIndex>999))fail(400,'Ongeldige slide.');
- if(deck&&slideId!==undefined&&slideId!==null&&(typeof slideId!=='string'||slideId.length>64))fail(400,'Ongeldige slide.');
+ if(deck&&(typeof deckId!=='string'||!UUID.test(deckId)))fail(400,'Invalid deck.');
+ if(deck&&(!Number.isInteger(slideIndex)||slideIndex<0||slideIndex>999))fail(400,'Invalid slide.');
+ if(deck&&slideId!==undefined&&slideId!==null&&(typeof slideId!=='string'||slideId.length>64))fail(400,'Invalid slide.');
  const released=releasedLessonIds({r,s});
  const naslagDay=view==='naslag'&&day!==undefined&&day!==null;
- if(naslagDay&&(!Number.isInteger(day)||!released.includes(dayLessonId(day))))fail(403,'Deze dag is nog niet vrijgegeven.');
+ if(naslagDay&&(!Number.isInteger(day)||!released.includes(dayLessonId(day))))fail(403,'This day has not been released yet.');
  const lessonDay=['lesson','solo'].includes(view)?r.day:naslagDay?day:null;
  const lesson=lessonDay!==null&&getDayPack(lessonDay)?dayLessonId(lessonDay):null;
  const quizView=['lesson','naslag'].includes(view)&&lesson;

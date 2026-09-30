@@ -38,6 +38,10 @@ import {
 } from '../quiz.mjs';
 import { createChatEmbedStartUrl, chatEmbedErrorHtml } from '../chat-embed.mjs';
 import { createScreenStore, screenBinding } from '../screen-state.mjs';
+import {
+  normalizeContentLocale,
+  projectPackLocale,
+} from '../../content/days/locale.mjs';
 import { bearer, intentUrl, namedCookie, text } from './shared.mjs';
 
 export function registerRoomRoutes(app, deps) {
@@ -146,7 +150,7 @@ export function registerRoomRoutes(app, deps) {
       res.json(
         await store.withSession(token(req), 'browser', ({ r, s }) => {
           if (s.personId !== 'facilitator')
-            fail(403, 'Alleen de facilitator bedient de ronde.');
+            fail(403, 'Only the facilitator runs the round.');
           const value = ['time', 'duration'].includes(req.body.action)
             ? Number(req.body.value)
             : req.body.value;
@@ -166,8 +170,8 @@ export function registerRoomRoutes(app, deps) {
     wrap(async (req, res) => {
       const pack = getDayPack(chosenDay(await browser(req), req.query.day));
       res.json({
-        lessons: searchKnowledge(String(req.query.q || '')),
-        mission: pack?.mission || mission,
+        lessons: searchKnowledge(String(req.query.q || ''), req.query.locale),
+        mission: pack ? projectPackLocale(pack, req.query.locale).mission : mission,
       });
     }),
   );
@@ -191,7 +195,7 @@ export function registerLiveRoutes(app, deps) {
     wrap(async (req, res) =>
       res.json(
         await store.withSession(token(req), 'browser', ({ r, p }) => {
-          if (!p) fail(403, 'Alleen deelnemers schrijven een eigen reflectie.');
+          if (!p) fail(403, 'Only participants write their own reflection.');
           const reflection = {
             learned: text(req.body.learned),
             next: text(req.body.next),
@@ -212,7 +216,7 @@ export function registerLiveRoutes(app, deps) {
     wrap(async (req, res) => {
       const { r, s } = await browser(req);
       if (s.personId !== 'facilitator')
-        fail(403, 'Alleen de facilitator bekijkt de debrief.');
+        fail(403, 'Only the facilitator views the debrief.');
       res.json(debrief(r));
     }),
   );
@@ -221,13 +225,13 @@ export function registerLiveRoutes(app, deps) {
     wrap(async (req, res) => {
       const { r, s } = await browser(req);
       if (s.personId !== 'facilitator')
-        fail(403, 'Alleen de facilitator exporteert de debrief.');
+        fail(403, 'Only the facilitator exports the debrief.');
       const board = r.board ? boardColumns(r.board) : null;
       res
         .type('text/markdown')
         .set(
           'Content-Disposition',
-          'attachment; filename="squad-overdracht.md"',
+          'attachment; filename="squad-handoff.md"',
         )
         .send(exportDebrief(r, board));
     }),
@@ -241,7 +245,7 @@ export function registerLiveRoutes(app, deps) {
             if (s.personId !== 'facilitator')
               fail(
                 403,
-                'Alleen de facilitator opent of sluit het debriefbord.',
+                'Only the facilitator opens or closes the debrief board.',
               );
             return applyBoardAction(r, req.body?.action, {
               at: new Date().toISOString(),
@@ -282,7 +286,7 @@ export function registerLiveRoutes(app, deps) {
     wrap(async (req, res) =>
       res.json(
         await store.withSession(token(req), 'browser', ({ p }) => {
-          if (!p) fail(400, 'De facilitator heeft geen solo-profiel.');
+          if (!p) fail(400, 'The facilitator has no solo profile.');
           p.help = !p.help;
           return { help: p.help };
         }),
@@ -290,7 +294,7 @@ export function registerLiveRoutes(app, deps) {
     ),
   );
   const quizDay = (context, body) => {
-    if (!context.p) fail(400, 'Alleen deelnemers.');
+    if (!context.p) fail(400, 'Participants only.');
     return chosenDay(context, body?.day);
   };
   app.post(
@@ -327,9 +331,9 @@ export function registerLiveRoutes(app, deps) {
     '/game/route',
     wrap(async (req, res) => {
       if (!['guided', 'standard', 'stretch'].includes(req.body.route))
-        fail(400, 'Ongeldige hulpkeuze.');
+        fail(400, 'Invalid help choice.');
       await store.withSession(token(req), 'browser', ({ r, p }) => {
-        if (!p) fail(400, 'Alleen deelnemers.');
+        if (!p) fail(400, 'Participants only.');
         p.route = req.body.route;
         p.progressByDay ??= {};
         p.progressByDay[String(r.day)] = {
@@ -348,7 +352,7 @@ export function registerLiveRoutes(app, deps) {
       if (!p && !facilitator)
         fail(
           403,
-          'Neem als facilitator of deelnemer deel om je eigen Claude te verbinden.',
+          'Join as a facilitator or participant to connect your own Claude.',
         );
       if (publicUrl.protocol !== 'https:')
         fail(
@@ -416,11 +420,11 @@ export function registerLiveRoutes(app, deps) {
   );
   function reviewer({ r, s }) {
     if (s.personId !== 'facilitator' && s.personId !== r.members[r.driver]?.id)
-      fail(403, 'Driver of facilitator beoordeelt het bewijs.');
+      fail(403, 'The driver or facilitator reviews the evidence.');
   }
   async function evidence(token, input) {
     const { r, p, s } = await store.auth(token);
-    if (!p) fail(403, 'Alleen een deelnemer kan bewijs indienen.');
+    if (!p) fail(403, 'Only a participant can submit evidence.');
     const taskId =
       input.taskId == null || input.taskId === ''
         ? undefined
@@ -448,7 +452,7 @@ export function registerLiveRoutes(app, deps) {
           requestId: key,
           personId: p.id,
           name: p.name,
-          source: s.kind === 'mcp' ? 'MCP-client' : 'Deelnemer',
+          source: s.kind === 'mcp' ? 'MCP-client' : 'Participant',
           ...fields,
           day: r.day,
           at: new Date().toISOString(),
@@ -457,7 +461,7 @@ export function registerLiveRoutes(app, deps) {
         actor: `${s.kind === 'mcp' ? 'ai' : 'human'}:${p.name}:${p.id}`,
       },
       (context) => {
-        if (!context.p) fail(403, 'Alleen deelnemers.');
+        if (!context.p) fail(403, 'Participants only.');
         canSubmit(context, { taskId, day: context.r.day });
       },
     );
@@ -496,8 +500,11 @@ export function registerLiveRoutes(app, deps) {
     '/game/tasks',
     wrap(async (req, res) => {
       const { r, p } = await browser(req);
-      if (!p) fail(403, 'Alleen deelnemers hebben een eigen opdrachtenlijst.');
-      res.json({ day: r.day, tasks: taskTrail(r, p.id, r.day) });
+      if (!p) fail(403, 'Only participants have their own assignment list.');
+      res.json({
+        day: r.day,
+        tasks: taskTrail(r, p.id, r.day, normalizeContentLocale(req.query.locale)),
+      });
     }),
   );
   app.post(
@@ -508,7 +515,7 @@ export function registerLiveRoutes(app, deps) {
           if (!p)
             fail(
               403,
-              'Alleen deelnemers leveren labels in voor automatische beoordeling.',
+              'Only participants submit labels for automatic grading.',
             );
           return submitAutograde(
             r,
@@ -525,8 +532,8 @@ export function registerLiveRoutes(app, deps) {
     '/game/tasks/peer',
     wrap(async (req, res) => {
       const { r, p } = await browser(req);
-      if (!p) fail(403, 'Alleen deelnemers beoordelen elkaars opdrachten.');
-      res.json(peerQueue(r, p.id));
+      if (!p) fail(403, 'Only participants review each other’s assignments.');
+      res.json(peerQueue(r, p.id, normalizeContentLocale(req.query.locale)));
     }),
   );
   app.get(
@@ -534,8 +541,8 @@ export function registerLiveRoutes(app, deps) {
     wrap(async (req, res) => {
       const { r, s } = await browser(req);
       if (s.personId !== 'facilitator')
-        fail(403, 'Alleen de facilitator ziet de beoordelingswachtrij.');
-      res.json(reviewQueue(r));
+        fail(403, 'Only the facilitator sees the review queue.');
+      res.json(reviewQueue(r, normalizeContentLocale(req.query.locale)));
     }),
   );
   app.post(
@@ -543,7 +550,7 @@ export function registerLiveRoutes(app, deps) {
     wrap(async (req, res) => {
       const { r, s, p } = await browser(req);
       if (!['accepted', 'needs-work'].includes(req.body.status))
-        fail(400, 'Ongeldige beoordeling.');
+        fail(400, 'Invalid review.');
       const fields = {
           id: text(req.body.id, 100),
           status: req.body.status,
@@ -585,9 +592,9 @@ export function registerLiveRoutes(app, deps) {
         (context) => {
           const e = context.r.evidence.find((e) => e.id === fields.id);
           if (!e?.taskId) reviewer(context);
-          if (!e) fail(404, 'Bewijs niet gevonden.');
+          if (!e) fail(404, 'Evidence not found.');
           if (e.personId === context.s.personId)
-            fail(403, 'Laat een andere deelnemer jouw bewijs beoordelen.');
+            fail(403, 'Ask another participant to review your evidence.');
           canReview(context, e);
         },
       );
@@ -601,7 +608,7 @@ export function registerLiveRoutes(app, deps) {
           fingerprint,
           (context) => {
             const target = context.r.evidence.find((x) => x.id === intent.id);
-            if (!target) fail(404, 'Bewijs niet gevonden.');
+            if (!target) fail(404, 'Evidence not found.');
             canReview(context, target);
             target.status = intent.status;
             target.review = {
@@ -640,7 +647,7 @@ export function registerLiveRoutes(app, deps) {
             ...fields,
             next:
               r.members[(r.driver + 1) % r.members.length]?.name ||
-              'Nog te bepalen',
+              'To be decided',
             at: new Date().toISOString(),
           },
           actor: `human:${s.personId}`,

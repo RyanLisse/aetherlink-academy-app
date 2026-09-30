@@ -15,7 +15,7 @@ test('browser reads and intent-link changes enforce credential and driver roles'
  const setIntent=(token,url)=>request('/game/intent',token,'POST',{url});
  try{
   const host=instance.store.create('Auth room');
-  for(const [route,body] of [['/game/facilitator/overview',{hostKey:'wrong'}],['/game/facilitator/attach',{hostKey:'wrong',roomId:host.roomId}]]){const response=await jsonRequest(route,body);assert.equal(response.status,403);assert.deepEqual(await response.json(),{error:'Ongeldige facilitator-startsleutel.'});}
+  for(const [route,body] of [['/game/facilitator/overview',{hostKey:'wrong'}],['/game/facilitator/attach',{hostKey:'wrong',roomId:host.roomId}]]){const response=await jsonRequest(route,body);assert.equal(response.status,403);assert.deepEqual(await response.json(),{error:'Invalid facilitator start key.'});}
   const overview=await jsonRequest('/game/facilitator/overview',{hostKey:'test-host'});assert.equal(overview.status,200);assert.ok(Array.isArray(await overview.json()));
   const driver=instance.store.join(host.code,'Driver');
   const navigator=instance.store.join(host.code,'Navigator');
@@ -29,7 +29,7 @@ test('browser reads and intent-link changes enforce credential and driver roles'
   }
   const template=await request('/game/intent.md',navigator.token);
   assert.match(template.headers.get('content-disposition'),/intent\.md/);
-  assert.match(await template.text(),/^# Onze intent/);
+  assert.match(await template.text(),/^# Our intent/);
   for(const route of ['/d/auth-room','/api/documents/auth-room','/documents/auth-room/ops','/game/document','/game/suggestions'])assert.equal((await request(route,navigator.token)).status,404,route);
 
   const link='https://proof.example.test/d/squad-intent';

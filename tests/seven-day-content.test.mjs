@@ -21,7 +21,8 @@ test('Wave 1–7 stay locked; Harness packs 8–24 are opt-in',()=>{
  assert.equal(getDayPack(22)?.mission.id,'HARNESS-S15');
  assert.equal(getDayPack(24)?.mission.id,'HARNESS-S17');
  assert.equal(getDayPack(24)?.code,'harness');
- assert.equal(listRouteDays()[6].title,'Workshop 7 · Eigen opdracht: afronden');
+ assert.equal(listRouteDays()[6].title,'Workshop 7 · Own assignment: ship it');
+ assert.equal(getDayPack(7).copy.nl.title,'Workshop 7 · Eigen opdracht: afronden');
  assert.equal(listRouteDays().length,7,'default route stays Wave 1–7');
 });
 

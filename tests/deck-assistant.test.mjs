@@ -90,7 +90,7 @@ test('update-slide proposals merge onto the stored slide, including visual setti
  assert.deepEqual(toDeckOperations([{op:'update-slide',slideId:'s1',slide:{title:'Nieuw',visual:{stagger:'pop'},notes:'n'}}],deck),[
   {op:'patch-slide',slideId:'s1',fields:{classroom:{title:'Nieuw',cards:[{title:'A',body:'B'}],keyPoints:['k'],visual:{reveal:'click',stagger:'pop'}},notes:'n'}},
  ]);
- assert.throws(()=>toDeckOperations([{op:'drop-table'}],deck),/onbekende actie/);
+ assert.throws(()=>toDeckOperations([{op:'drop-table'}],deck),/unknown action/);
 });
 
 test('only the facilitator uses the assistant, and it is off without an OpenRouter key',async()=>{

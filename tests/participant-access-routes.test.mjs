@@ -47,6 +47,6 @@ test('personal access route rejects an unknown secret',async()=>{
  const instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-access-route-invalid-')),hostKey:'test-host',publicBaseUrl:'http://127.0.0.1:4317'});
  const result=await invoke(instance.app,'/game/participant/resume',{resumeToken:'unknown-secret'});
  assert.equal(result.statusCode,401);
- assert.match(result.body.error,/persoonlijke deelnemerslink/);
+ assert.match(result.body.error,/personal participant link/);
  assert.equal(result.cookies.length,0);
 });

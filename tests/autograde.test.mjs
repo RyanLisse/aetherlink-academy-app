@@ -84,7 +84,7 @@ test('an autograde pass closes pending evidence: it leaves the peer queue and ca
  assert.equal((await grade(bo.token,'w3-l1',ALL_CORRECT)).body.status,'approved');
  assert.deepEqual((await call(cy.token,'tasks/peer')).body.queue,[]);
  const late=await call(cy.token,'review',{id:sent.body.id,status:'accepted',note:'Goed',requestId:'r-2'});
- assert.deepEqual([late.status,late.body.error],[409,'Alleen ingediende opdrachten kunnen worden beoordeeld.']);
+ assert.deepEqual([late.status,late.body.error],[409,'Only submitted assignments can be reviewed.']);
  const again=await call(bo.token,'evidence',{requestId:'e-3',finding:'x',command:'y',observed:'z',limitation:'w',taskId:'w3-l1'});
  assert.equal(again.status,409);
 });
@@ -94,13 +94,13 @@ test('a task a human already approved rejects a later autograde',async t=>{
  const sent=await call(bo.token,'evidence',{requestId:'e-4',finding:'Flow draait',command:'n8n execute',observed:'4 items',limitation:'Fixture',taskId:'w3-l3'});
  assert.equal((await call(cy.token,'review',{id:sent.body.id,status:'accepted',note:'Goed',requestId:'r-3'})).status,200);
  const late=await grade(bo.token,'w3-l3',ALL_CORRECT);
- assert.deepEqual([late.status,late.body.error],[409,'Deze opdracht is al goedgekeurd.']);
+ assert.deepEqual([late.status,late.body.error],[409,'This assignment has already been approved.']);
 });
 
 test('tasks without an autograder keep peer or facilitator review',async t=>{
  const {bo,cy,call,grade,task}=await room(t);
  const refused=await grade(bo.token,'w3-proof',ALL_CORRECT);
- assert.deepEqual([refused.status,refused.body.error],[409,'Deze opdracht wordt door een mens beoordeeld, niet automatisch.']);
+ assert.deepEqual([refused.status,refused.body.error],[409,'This assignment is reviewed by a person, not automatically.']);
  const proofCard=await task(bo.token,'w3-proof');
  assert.equal(proofCard.status,'open');
  assert.equal(proofCard.autograde,undefined);
@@ -116,7 +116,7 @@ test('autograde applies to the triage tasks of day 3 and SOLO 1 plus the accepta
  assert.deepEqual(day4.filter(task=>task.autograde).map(task=>task.id),['w4-solo1','w4-solo4']);
  assert.equal((await call(bo.token,'tasks/w4-solo4/autograde',{labels:ALL_CORRECT})).body.status,'approved');
  const wrongDay=await call(bo.token,'tasks/w3-l1/autograde',{labels:ALL_CORRECT});
- assert.deepEqual([wrongDay.status,wrongDay.body.error],[400,'Onbekende opdracht voor supportdag 4.']);
+ assert.deepEqual([wrongDay.status,wrongDay.body.error],[400,'Unknown assignment for support day 4.']);
 });
 
 test('participant isolation: a pass is personal and the facilitator cannot submit labels',async t=>{
@@ -125,24 +125,24 @@ test('participant isolation: a pass is personal and the facilitator cannot submi
  const other=await task(cy.token,'w3-l1');
  assert.deepEqual([other.status,other.autograde.attempts,other.autograde.results],['open',0,[]]);
  const facilitator=await grade(host.token,'w3-l1',ALL_CORRECT);
- assert.deepEqual([facilitator.status,facilitator.body.error],[403,'Alleen deelnemers leveren labels in voor automatische beoordeling.']);
+ assert.deepEqual([facilitator.status,facilitator.body.error],[403,'Only participants submit labels for automatic grading.']);
  assert.equal((await grade('not-a-token','w3-l1',ALL_CORRECT)).status,401);
 });
 
 test('malformed submissions are rejected before grading and do not count as attempts',async t=>{
  const {bo,grade,task}=await room(t);
  const cases=[
-  [{'WL-1026':'urgent'},'Ongeldig label bij WL-1026. Kies low, medium of high.'],
-  [{'WL-4242':'low'},'Onbekend ticket: WL-4242.'],
-  [['high'],'Stuur per ticket-id een label (low, medium of high) en optioneel een antwoord.'],
-  [{'WL-1026':3},'Ongeldig label bij WL-1026. Kies low, medium of high.']
+  [{'WL-1026':'urgent'},'Invalid label for WL-1026. Choose low, medium or high.'],
+  [{'WL-4242':'low'},'Unknown ticket: WL-4242.'],
+  [['high'],'Send one label (low, medium or high) per ticket id, plus an optional reply.'],
+  [{'WL-1026':3},'Invalid label for WL-1026. Choose low, medium or high.']
  ];
  for(const [labels,error] of cases){
   const response=await grade(bo.token,'w3-l1',labels);
   assert.deepEqual([response.status,response.body.error],[400,error]);
  }
  const reply=await grade(bo.token,'w3-l1',ALL_CORRECT,{replies:{'WL-1026':'x'.repeat(2001)}});
- assert.deepEqual([reply.status,reply.body.error],[400,'Een antwoord is tekst van maximaal 2000 tekens.']);
+ assert.deepEqual([reply.status,reply.body.error],[400,'A reply is text of at most 2000 characters.']);
  assert.equal((await task(bo.token,'w3-l1')).autograde.attempts,0);
  const missing=await grade(bo.token,'w3-l1',{'WL-1026':'high'});
  assert.deepEqual([missing.status,missing.body.autograde.score,missing.body.autograde.results[1]],[200,1,{ticketId:'WL-1027',label:null,correct:false}]);

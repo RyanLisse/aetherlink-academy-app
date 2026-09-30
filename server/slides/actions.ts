@@ -25,7 +25,7 @@ const buildSlide=(input:SlideInput,id=input.id??newSlideId()):Effect.Effect<Slid
   if(!content.trim())return Effect.fail(new InvalidInput({reason:'Slide-inhoud is leeg na opschonen.'}));
   return Effect.succeed(new Slide({id,content,notes:input.notes??'',layout:input.layout??'content',background:input.background,transition:input.transition}));
  }
- if(!input.heading&&!input.body?.length)return Effect.fail(new InvalidInput({reason:'Geef content (HTML) of heading/body op voor een slide.'}));
+ if(!input.heading&&!input.body?.length)return Effect.fail(new InvalidInput({reason:'Provide content (HTML) or heading/body for a slide.'}));
  const built=templateSlide(input);
  return Effect.succeed(new Slide({id,content:built.content,notes:input.notes??'',layout:built.layout,background:input.background,transition:input.transition}));
 };
@@ -85,8 +85,8 @@ export const makeDeckActions=Effect.gen(function*(){
  const updateSlide=(actor:Actor,raw:unknown)=>Effect.gen(function*(){
   const input=yield* parse(UpdateSlideInput)(raw);
   const modes=[input.edits,input.fullContent].filter(value=>value!==undefined).length;
-  if(modes>1)return yield* Effect.fail(new InvalidInput({reason:'Gebruik precies één invoermodus: edits of fullContent.'}));
-  if(modes===0&&input.notes===undefined)return yield* Effect.fail(new InvalidInput({reason:'Geef edits, fullContent of notes op.'}));
+  if(modes>1)return yield* Effect.fail(new InvalidInput({reason:'Use exactly one input mode: edits or fullContent.'}));
+  if(modes===0&&input.notes===undefined)return yield* Effect.fail(new InvalidInput({reason:'Provide edits, fullContent or notes.'}));
   let previousHash='';let summaries:string[]=[];
   const deck=yield* modifyOwned(actor,input.deckId,deck=>Effect.gen(function*(){
    const index=yield* slideIndex(deck,input.slideId);
@@ -98,7 +98,7 @@ export const makeDeckActions=Effect.gen(function*(){
    if(input.edits){const outcome=yield* applySlideEdits(slide.content,input.edits);content=outcome.content;summaries=outcome.summaries;}
    else if(input.fullContent!==undefined){content=input.fullContent;summaries=['fullContent'];}
    content=sanitizeSlideContent(content);
-   if(!content.trim())return yield* Effect.fail(new EditFailed({index:0,reason:'De slide zou leeg worden.'}));
+   if(!content.trim())return yield* Effect.fail(new EditFailed({index:0,reason:'The slide would become empty.'}));
    const slides=[...deck.slides];slides[index]=new Slide({...slide,content,notes:input.notes??slide.notes,classroom:content===slide.content?slide.classroom:undefined});
    return new Deck({...deck,slides});
   }));
@@ -113,7 +113,7 @@ export const makeDeckActions=Effect.gen(function*(){
    case 'delete-slide':return Effect.map(slideIndex(deck,operation.slideId),index=>new Deck({...deck,slides:deck.slides.filter((_,i)=>i!==index)}));
    case 'reorder-slides':{
     const ids=new Set(deck.slides.map(slide=>slide.id));
-    if(operation.slideIds.length!==ids.size||new Set(operation.slideIds).size!==operation.slideIds.length||operation.slideIds.some(id=>!ids.has(id)))return Effect.fail(new InvalidInput({reason:'reorder-slides moet elke bestaande slide-id precies één keer bevatten.'}));
+    if(operation.slideIds.length!==ids.size||new Set(operation.slideIds).size!==operation.slideIds.length||operation.slideIds.some(id=>!ids.has(id)))return Effect.fail(new InvalidInput({reason:'reorder-slides must contain every existing slide id exactly once.'}));
     return Effect.succeed(new Deck({...deck,slides:operation.slideIds.map(id=>deck.slides.find(slide=>slide.id===id)!)}));
    }
    case 'add-slide':return Effect.gen(function*(){if(operation.afterSlideId)yield* slideIndex(deck,operation.afterSlideId);const existing=new Set(deck.slides.map(slide=>slide.id));const slide=yield* buildSlide({...operation.slide,id:operation.slide.id&&!existing.has(operation.slide.id)?operation.slide.id:undefined});return new Deck({...deck,slides:insertAt(deck.slides,slide,operation.afterSlideId)});});
@@ -144,7 +144,7 @@ export const makeDeckActions=Effect.gen(function*(){
  const deleteDeck=(actor:Actor,raw:unknown)=>Effect.gen(function*(){
   const {deckId}=yield* parse(DeckIdInput)(raw);
   const deck=yield* owned(actor,deckId);
-  if(actor.role!=='facilitator'&&deck.createdBy.id!==actor.id)return yield* Effect.fail(new Forbidden({reason:'Alleen de facilitator of de maker verwijdert een deck.'}));
+  if(actor.role!=='facilitator'&&deck.createdBy.id!==actor.id)return yield* Effect.fail(new Forbidden({reason:'Only the facilitator or the creator deletes a deck.'}));
   yield* repo.remove(deckId);
   return {deleted:true,deckId};
  });
@@ -160,7 +160,7 @@ export const makeDeckActions=Effect.gen(function*(){
  const exportHtml=(actor:Actor,raw:unknown)=>Effect.gen(function*(){
   const {deckId}=yield* parse(DeckIdInput)(raw);
   const deck=yield* owned(actor,deckId);
-  if(!deck.slides.length)return yield* Effect.fail(new InvalidInput({reason:'Een leeg deck kan niet geëxporteerd worden.'}));
+  if(!deck.slides.length)return yield* Effect.fail(new InvalidInput({reason:'An empty deck cannot be exported.'}));
   return {deckId:deck.id,title:deck.title,filename:`${deck.title.replace(/[^\p{L}\p{N}]+/gu,'-').replace(/^-|-$/g,'').toLowerCase()||'deck'}.html`,html:renderDeckHtml(deck,{includeNotes:actor.role==='facilitator'})};
  });
 

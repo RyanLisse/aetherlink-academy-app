@@ -112,7 +112,7 @@ test('facilitator agent setup issues a room-bound MCP token and exposes facilita
  const replacement=await invoke(app,'post','/game/agent-setup',{bearer:host.token});
  const nextToken=/Authorization: Bearer ([a-f0-9]+)/.exec(replacement.body.instructions)?.[1];
  assert.ok(nextToken);assert.notEqual(nextToken,facilitatorToken);
- assert.throws(()=>instance.store.auth(facilitatorToken,'mcp'),/Geen geldige toegang/,'rotating access revokes the previous facilitator token');
+ assert.throws(()=>instance.store.auth(facilitatorToken,'mcp'),/No valid access/,'rotating access revokes the previous facilitator token');
  assert.equal(instance.store.auth(nextToken,'mcp').s.personId,'facilitator');
  const participantSetup=await invoke(app,'post','/game/agent-setup',{bearer:participant.token});
  assert.equal(participantSetup.statusCode,200);assert.equal(participantSetup.body.role,'participant');assert.equal(participantSetup.body.participantId,instance.store.auth(participant.token,'browser').p.id);

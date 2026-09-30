@@ -11,7 +11,7 @@ export const COACH_RETENTION_MS=36*60*60*1000;
 const positiveInt=(raw,fallback,name)=>{
  if(raw===undefined||raw==='')return fallback;
  const value=Number(raw);
- if(!Number.isInteger(value)||value<1)throw Error(`${name} moet een positief geheel getal zijn.`);
+ if(!Number.isInteger(value)||value<1)throw Error(`${name} must be a positive integer.`);
  return value;
 };
 
@@ -20,7 +20,7 @@ export function readCoachConfig(env=process.env){
  const apiKey=String(env.OPENROUTER_API_KEY||'').trim();
  if(!apiKey)return null;
  const model=String(env.ACADEMY_COACH_MODEL||COACH_DEFAULT_MODEL).trim();
- if(!model.endsWith(':free'))throw Error(`ACADEMY_COACH_MODEL moet een gratis OpenRouter-model zijn (id eindigt op ':free'); kreeg '${model}'.`);
+ if(!model.endsWith(':free'))throw Error(`ACADEMY_COACH_MODEL must be a free OpenRouter model (id ends in ':free'); got '${model}'.`);
  return {
   apiKey,model,
   url:String(env.OPENROUTER_BASE_URL||'').trim()||OPENROUTER_URL,
@@ -55,7 +55,7 @@ const INSTRUCTIONS={
 const FORMAT='Reply with JSON only, no other text: {"answer": string, "citations": [passage id, ...], "outOfScope": boolean}';
 
 export function coachRequestBody({config,question,passages,locale}){
- const lang=locale==='en'?'en':'nl';
+ const lang=locale==='nl'?'nl':'en';
  const context=passages.map(p=>`[${p.id}] ${p.title}\n${p.answer}`).join('\n\n');
  return {
   model:config.model,

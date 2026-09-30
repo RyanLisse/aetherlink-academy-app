@@ -1,8 +1,8 @@
-import {lessons,getDayPack} from './content.mjs';
+import {localizedLessons,getDayPack} from './content.mjs';
 import {DAY_PACKS} from '../content/days/index.mjs';
 import {NAVIGATION,CHAT_COPY} from '../content/faq/navigation.mjs';
 import {releasedDays} from './release.mjs';
-import {normalizeContentLocale} from '../content/days/locale.mjs';
+import {normalizeContentLocale,projectPackLocale} from '../content/days/locale.mjs';
 
 const STOPWORDS=new Set('de het een en of in op aan van voor met bij naar om te tot uit als dat die dit deze is zijn wordt word ben bent was er ik je jij jou jouw mijn me mij we wij ons onze u uw hij zij ze hoe wat wie welke wanneer moet moeten kan kun kunnen mag mogen wil zal niet geen wel ook nog dan maar dus zo hier daar the a an and or of in on at to for with by from is are be do does can how what which who when my me i you your it this that there'.split(' '));
 const NAVIGATION_CUES=new Set(['waar','vind','vinden','staat','staan','where','find','locate']);
@@ -15,34 +15,40 @@ const contentTerms=list=>list.filter(t=>!STOPWORDS.has(t));
 
 // Only the participant-facing fields of a released pack become documents:
 // the quiz (and its key) and the facilitator demo script are never indexed.
-function packDocs(pack){
+const DOC_COPY={
+ en:{slide:'Slide',goal:day=>`Learning goal day ${day}`,mission:'Assignment',allowed:'What is and is not allowed · stop rule',hints:'Assignment hints',starters:'Starter files',step:'Step',doneWhen:'Done when',tip:'Tip',demoAnswer:n=>`The facilitator shows this on slide ${n}.`,proof:'What counts as evidence · review criteria',openAnswer:'OPEN: this is not settled in the lesson plan yet. Ask your facilitator.',deepHelp:'Deeper help through your own Claude',tryIt:'Try',reference:'Reference'},
+ nl:{slide:'Dia',goal:day=>`Leerdoel dag ${day}`,mission:'Opdracht',allowed:'Wat mag wel en wat niet · stopregel',hints:'Hints bij de opdracht',starters:'Starterbestanden',step:'Stap',doneWhen:'Klaar als',tip:'Tip',demoAnswer:n=>`De facilitator laat dit zien op dia ${n}.`,proof:'Wat telt als bewijs · reviewcriteria',openAnswer:'OPEN: dit staat nog niet vast in het lesplan. Vraag je facilitator.',deepHelp:'Diepere hulp via je eigen Claude',tryIt:'Probeer',reference:'Naslag'}
+};
+
+function packDocs(basePack,locale){
+ const pack=projectPackLocale(basePack,locale),c=DOC_COPY[locale];
  // Soft-live F1: every day-pack hit carries an explicit `day` so the UI can cite source + day.
  const day=pack.day,source={label:pack.title,href:pack.deck.route};
- const slideLink=s=>({label:`Dia ${s.slide} · ${s.title}`,href:s.href});
+ const slideLink=s=>({label:`${c.slide} ${s.slide} · ${s.title}`,href:s.href});
  const starters=pack.materials.filter(m=>m.kind==='starter');
  return [
-  {id:`d${day}:goal`,kind:'goal',day,title:`Leerdoel dag ${day} · ${pack.title}`,answer:pack.leerdoel,links:[{label:pack.materials[0].label,href:pack.deck.route}],source},
-  {id:`d${day}:mission`,kind:'mission',day,title:`Opdracht · ${pack.mission.title}`,answer:`${pack.mission.goal} (${pack.mission.minutes} min)`,links:[{view:'solo'}],source},
-  {id:`d${day}:allowed`,kind:'mission',day,title:'Wat mag wel en wat niet · stopregel',answer:[...pack.mission.allowed,pack.mission.stop].join(' '),links:[{view:'solo'}],source},
-  ...(pack.mission.hints?.length?[{id:`d${day}:hints`,kind:'mission',day,title:'Hints bij de opdracht',answer:pack.mission.hints.join(' '),links:[{view:'solo'}],source}]:[]),
+  {id:`d${day}:goal`,kind:'goal',day,title:`${c.goal(day)} · ${pack.title}`,answer:pack.leerdoel,links:[{label:pack.materials[0].label,href:pack.deck.route}],source},
+  {id:`d${day}:mission`,kind:'mission',day,title:`${c.mission} · ${pack.mission.title}`,answer:`${pack.mission.goal} (${pack.mission.minutes} min)`,links:[{view:'solo'}],source},
+  {id:`d${day}:allowed`,kind:'mission',day,title:c.allowed,answer:[...pack.mission.allowed,pack.mission.stop].join(' '),links:[{view:'solo'}],source},
+  ...(pack.mission.hints?.length?[{id:`d${day}:hints`,kind:'mission',day,title:c.hints,answer:pack.mission.hints.join(' '),links:[{view:'solo'}],source}]:[]),
   ...(pack.mission.stretch?[{id:`d${day}:stretch`,kind:'mission',day,title:'Stretch',answer:pack.mission.stretch,links:[{view:'solo'}],source}]:[]),
-  ...(pack.mission.starterFiles?.length?[{id:`d${day}:starters`,kind:'material',day,title:'Starterbestanden',answer:pack.mission.starterFiles.join(', '),links:starters.length?starters.map(m=>({label:m.label,href:m.href})):[{view:'solo'}],source}]:[]),
-  ...pack.steps.map(s=>({id:`d${day}:step:${s.id}`,kind:'step',day,title:`Stap ${s.badge} · ${s.title}`,answer:[s.goal,`Klaar als: ${s.doneWhen}`,s.hint&&`Tip: ${s.hint}`].filter(Boolean).join(' '),links:[{view:'solo'},...(s.slide?[slideLink(s.slide)]:[])],source:s.slide?{label:`${pack.title} · dia ${s.slide.slide}`,href:s.slide.href}:source})),
-  ...(pack.demo?.slides||[]).map((s,i)=>({id:`d${day}:demo:${i+1}`,kind:'demo',day,title:`Demo · ${s.title}`,answer:`De facilitator laat dit zien op dia ${s.slide}.`,links:[slideLink(s)],source:{label:`${pack.title} · dia ${s.slide}`,href:s.href}})),
+  ...(pack.mission.starterFiles?.length?[{id:`d${day}:starters`,kind:'material',day,title:c.starters,answer:pack.mission.starterFiles.join(', '),links:starters.length?starters.map(m=>({label:m.label,href:m.href})):[{view:'solo'}],source}]:[]),
+  ...pack.steps.map(s=>({id:`d${day}:step:${s.id}`,kind:'step',day,title:`${c.step} ${s.badge} · ${s.title}`,answer:[s.goal,`${c.doneWhen}: ${s.doneWhen}`,s.hint&&`${c.tip}: ${s.hint}`].filter(Boolean).join(' '),links:[{view:'solo'},...(s.slide?[slideLink(s.slide)]:[])],source:s.slide?{label:`${pack.title} · ${c.slide.toLowerCase()} ${s.slide.slide}`,href:s.slide.href}:source})),
+  ...(pack.demo?.slides||[]).map((s,i)=>({id:`d${day}:demo:${i+1}`,kind:'demo',day,title:`Demo · ${s.title}`,answer:c.demoAnswer(s.slide),links:[slideLink(s)],source:{label:`${pack.title} · ${c.slide.toLowerCase()} ${s.slide}`,href:s.href}})),
   ...pack.materials.filter(m=>m.kind!=='starter').map((m,i)=>({id:`d${day}:material:${i+1}`,kind:'material',day,title:m.label,answer:m.href?(m.note||m.label):`OPEN: ${m.open}`,links:m.href?[{label:m.label,href:m.href}]:[],source,...(m.href?{}:{open:true})})),
-  {id:`d${day}:proof`,kind:'proof',day,title:'Wat telt als bewijs · reviewcriteria',answer:pack.reviewCriteria.join(' '),links:[{view:'review'}],source},
-  ...pack.openItems.map((item,i)=>({id:`d${day}:open:${i+1}`,kind:'open',day,title:item,answer:`OPEN: dit staat nog niet vast in het lesplan. Vraag je facilitator.`,links:[],source,open:true})),
-  {id:`d${day}:deep-help`,kind:'help',day,title:'Diepere hulp via je eigen Claude',answer:pack.deepHelp,links:[{view:'coach'}],source}
+  {id:`d${day}:proof`,kind:'proof',day,title:c.proof,answer:pack.reviewCriteria.join(' '),links:[{view:'review'}],source},
+  ...pack.openItems.map((item,i)=>({id:`d${day}:open:${i+1}`,kind:'open',day,title:item,answer:c.openAnswer,links:[],source,open:true})),
+  {id:`d${day}:deep-help`,kind:'help',day,title:c.deepHelp,answer:pack.deepHelp,links:[{view:'coach'}],source}
  ];
 }
 
-const knowledgeDocs=lessons.map(l=>({id:`lesson:${l.id}`,kind:'lesson',title:l.title,answer:`${l.body} Probeer: ${l.exercise}`,links:[{view:'coach'}],source:{label:`Naslag ${l.id}`,view:'coach'}}));
+const knowledgeDocs=locale=>localizedLessons(locale).map(l=>({id:`lesson:${l.id}`,kind:'lesson',title:l.title,answer:`${l.body} ${DOC_COPY[locale].tryIt}: ${l.exercise}`,links:[{view:'coach'}],source:{label:`${DOC_COPY[locale].reference} ${l.id}`,view:'coach'}}));
 
 const navigationDocs=locale=>NAVIGATION.map(n=>({id:`nav:${n.view||'help'}`,kind:'nav',title:n.title[locale],answer:n.answer[locale],keywords:n.keywords,links:n.view?[{view:n.view}]:[],source:{label:'Academy',view:n.view}}));
 
 const index=doc=>({doc,fields:{title:tokens(doc.title),keywords:doc.keywords||[],body:tokens(doc.answer)}});
-const general={nl:[...navigationDocs('nl'),...knowledgeDocs].map(index),en:[...navigationDocs('en'),...knowledgeDocs].map(index)};
-const byDay=new Map(DAY_PACKS.map(pack=>[pack.day,packDocs(pack).map(index)]));
+const general={nl:[...navigationDocs('nl'),...knowledgeDocs('nl')].map(index),en:[...navigationDocs('en'),...knowledgeDocs('en')].map(index)};
+const byDay={nl:new Map(DAY_PACKS.map(pack=>[pack.day,packDocs(pack,'nl').map(index)])),en:new Map(DAY_PACKS.map(pack=>[pack.day,packDocs(pack,'en').map(index)]))};
 
 function termWeight(term,fields){
  let best=0;
@@ -63,7 +69,7 @@ export function rankDocuments(query,{day,days,locale='en'}={}){
  const terms=[...new Set(contentTerms(words).filter(w=>!NAVIGATION_CUES.has(w)&&!CONCEPT_CUES.has(w)))];
  if(!terms.length)return {terms,conceptual,hits:[]};
  const earlier=days.filter(d=>d!==day).reverse();
- const corpus=[...(days.includes(day)?byDay.get(day)||[]:[]),...general[locale],...earlier.flatMap(d=>byDay.get(d)||[])];
+ const corpus=[...(days.includes(day)?byDay[locale].get(day)||[]:[]),...general[locale],...earlier.flatMap(d=>byDay[locale].get(d)||[])];
  const hits=corpus.map(({doc,fields},order)=>{
   const weights=terms.map(term=>termWeight(term,fields));
   const matched=weights.filter(Boolean).length;
@@ -81,5 +87,5 @@ export function answerQuestion({day,released=releasedDays({day}),query,locale='e
  const lang=normalizeContentLocale(locale);
  const {conceptual,hits}=rankDocuments(query,{day,days:released,locale:lang});
  const mode=hits.length&&!conceptual?'answer':'handoff';
- return {day,query,mode,hits,handoff:mode==='handoff'?{title:CHAT_COPY.handoffTitle[lang],text:pack?.deepHelp??null,prompt:CHAT_COPY.handoffPrompt[lang](query),link:{view:'coach',label:CHAT_COPY.coachLabel[lang]}}:null};
+ return {day,query,mode,hits,handoff:mode==='handoff'?{title:CHAT_COPY.handoffTitle[lang],text:pack?projectPackLocale(pack,lang).deepHelp??null:null,prompt:CHAT_COPY.handoffPrompt[lang](query),link:{view:'coach',label:CHAT_COPY.coachLabel[lang]}}:null};
 }

@@ -70,7 +70,7 @@
   <text x="44" y="308" fill="#475569" font-size="12">Fixture tickets + labels do not move — Claude must match n8n.</text>
   <text x="44" y="328" fill="#475569" font-size="12">Mismatch → fix prompt or tools, never invent a new label.</text>
   <text x="44" y="348" fill="#475569" font-size="12">Offline dry-run proves the chain; it is not model proof.</text>
-  <text x="44" y="368" fill="#64748b" font-size="11">Keep Uitleg → Voordoen → Zelf doen · SOLO 0–4.</text>
+  <text x="44" y="368" fill="#64748b" font-size="11">Keep Explain → Demo → Your turn · SOLO 0–4.</text>
 
   <rect x="462" y="260" width="416" height="130" rx="8" fill="#fff8f0" stroke="#fcd34d" stroke-width="1.5"/>
   <text x="478" y="286" fill="#92400e" font-size="13" font-weight="700">Human gate before accept</text>

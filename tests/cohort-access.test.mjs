@@ -255,9 +255,9 @@ for (const [label,backend,options] of backends) {
    await rejectsWith(()=>authOf(env.store,alice.token,'browser'),401);
    await rejectsWith(()=>activate(env.store,old.code('Alice').code),401);
    const {r}=await authOf(env.store,(await env.store.attachFacilitator(old.room.roomId,'Facilitator')).token,'browser');
-   assert.deepEqual(r.members.map(member=>[member.name,member.progressByDay]),[['Geanonimiseerd',{}]]);
+   assert.deepEqual(r.members.map(member=>[member.name,member.progressByDay]),[['Anonymized',{}]]);
    assert.deepEqual(r.evidence,[]);
-   assert.deepEqual([r.handoffs[0].next,r.handoffs[0].decision],['Geanonimiseerd','Geanonimiseerd']);
+   assert.deepEqual([r.handoffs[0].next,r.handoffs[0].decision],['Anonymized','Anonymized']);
    assert.equal(r.cohortId,undefined);
    assert.equal((await env.dump()).includes('Alice'),false);
   } finally {await env.close();}

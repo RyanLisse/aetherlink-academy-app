@@ -35,20 +35,20 @@ describe('AET-79 workshop 3 ultra-minimal n8n L1→L3 deck', () => {
   });
 
   it('pedagogy: three uitleg→voordoen→zelf-doen cycles (L1/L2/L3)', () => {
-    const demos = workshop3SourceSlides.filter((s) => String(s.kicker ?? '').startsWith('Voordoen'));
+    const demos = workshop3SourceSlides.filter((s) => String(s.kicker ?? '').startsWith('Demo'));
     expect(demos).toHaveLength(3);
     expect(practice.length).toBeGreaterThanOrEqual(3); // L1 L2 L3 (+ Proof)
     for (const level of ['L1', 'L2', 'L3']) {
-      const demoIdx = workshop3SourceSlides.findIndex((s) => String(s.kicker ?? '') === `Voordoen · ${level}`);
+      const demoIdx = workshop3SourceSlides.findIndex((s) => String(s.kicker ?? '') === `Demo · ${level}`);
       const soloIdx = workshop3SourceSlides.findIndex(
-        (s) => String(s.kicker ?? '').startsWith(level) && String(s.kicker ?? '').includes('Zelf doen'),
+        (s) => String(s.kicker ?? '').startsWith(level) && String(s.kicker ?? '').includes('Your turn'),
       );
       expect(demoIdx, `demo ${level}`).toBeGreaterThanOrEqual(0);
       expect(soloIdx, `solo ${level}`).toBe(demoIdx + 1);
     }
     // First practice must not be after all theory — L1 zelf doen arrives before L2 uitleg
     const firstPractice = workshop3SourceSlides.findIndex((s) => s.type === 'practice');
-    const l2Uitleg = workshop3SourceSlides.findIndex((s) => String(s.kicker ?? '').includes('Uitleg · L2'));
+    const l2Uitleg = workshop3SourceSlides.findIndex((s) => String(s.kicker ?? '').includes('Explain · L2'));
     expect(firstPractice).toBeGreaterThanOrEqual(0);
     expect(l2Uitleg).toBeGreaterThan(firstPractice);
   });
@@ -59,7 +59,7 @@ describe('AET-79 workshop 3 ultra-minimal n8n L1→L3 deck', () => {
       'workshop-3/02-n8n.jpeg',
       'workshop-3/03-n8n.jpeg',
     ];
-    const demos = workshop3SourceSlides.filter((s) => String(s.kicker ?? '').startsWith('Voordoen'));
+    const demos = workshop3SourceSlides.filter((s) => String(s.kicker ?? '').startsWith('Demo'));
     expect(demos).toHaveLength(3);
     demos.forEach((slide, i) => {
       const visual = visualOf(slide);
@@ -87,7 +87,7 @@ describe('AET-79 workshop 3 ultra-minimal n8n L1→L3 deck', () => {
       expect(notes, String(slide.title)).toMatch(/Timer:\s*\d+\s*min/i);
       expect(typeof slide.timer, String(slide.title)).toBe('number');
       expect(notes.toLowerCase()).toMatch(/checklist:/);
-      expect(notes, String(slide.title)).toMatch(/Zelf doen/i);
+      expect(notes, String(slide.title)).toMatch(/Your turn/i);
     });
   });
 

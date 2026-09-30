@@ -33,7 +33,7 @@ test('duplicate participant names require the personal link',()=>{
  const {dir,store,room}=localFixture();
  try {
   store.join(room.code,'Alice');
-  assert.throws(()=>store.join(room.code,'alice'),error=>error.status===409&&error.message.includes('persoonlijke deelnemerslink'));
+  assert.throws(()=>store.join(room.code,'alice'),error=>error.status===409&&error.message.includes('personal participant link'));
   assert.equal(store.auth(room.token).r.members.length,1);
  } finally {rmSync(dir,{recursive:true,force:true});}
 });
@@ -62,7 +62,7 @@ test('unknown personal resume links are rejected',()=>{
  const {dir,store,room}=localFixture();
  try {
   store.join(room.code,'Alice');
-  assert.throws(()=>store.resumeParticipant('not-a-personal-link'),error=>error.status===401&&error.message.includes('persoonlijke deelnemerslink'));
+  assert.throws(()=>store.resumeParticipant('not-a-personal-link'),error=>error.status===401&&error.message.includes('personal participant link'));
  } finally {rmSync(dir,{recursive:true,force:true});}
 });
 
@@ -100,7 +100,7 @@ test('Postgres stores durable participant access separately from room data',{ski
   assert.equal(stored.rows[0].secret_hash.length,64);
   assert.equal(stored.rows[0].verified_email,null);
   assert.notEqual(stored.rows[0].secret_hash,joined.resumeToken);
-  await assert.rejects(store.join(room.code,'alice'),error=>error.status===409&&error.message.includes('persoonlijke deelnemerslink'));
+  await assert.rejects(store.join(room.code,'alice'),error=>error.status===409&&error.message.includes('personal participant link'));
   const resumed=await store.resumeParticipant(joined.resumeToken);
   assert.equal((await store.auth(resumed.token)).p.name,'Alice');
   const resumedAgain=await store.resumeParticipant(joined.resumeToken);

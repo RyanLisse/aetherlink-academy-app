@@ -205,8 +205,8 @@ export function registerSlidesRoutes(app, deps) {
       fail(
         400,
         r.course
-          ? `Dag ${day} zit niet in de cursus.`
-          : 'Kies een geldige cursusdag.',
+          ? `Day ${day} is not part of the course.`
+          : 'Choose a valid course day.',
       );
     return day;
   };
@@ -219,7 +219,7 @@ export function registerSlidesRoutes(app, deps) {
           if (s.personId !== 'facilitator')
             fail(
               403,
-              'Alleen de facilitator mag het Classroom-overlay pinnen.',
+              'Only the facilitator can pin the Classroom overlay.',
             );
           const day = overlayDay(r, req.body?.day);
           await slides.run('getDeck', deckActor({ r, s, p }), {
@@ -244,7 +244,7 @@ export function registerSlidesRoutes(app, deps) {
           if (s.personId !== 'facilitator')
             fail(
               403,
-              'Alleen de facilitator mag het Classroom-overlay pinnen.',
+              'Only the facilitator can pin the Classroom overlay.',
             );
           const day = overlayDay(r, req.body?.day ?? req.query?.day);
           if (r.classroomOverlayByDay) {

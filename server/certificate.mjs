@@ -2,7 +2,7 @@ import {createHash} from 'node:crypto';
 import {dayChecks} from './progress.mjs';
 import {dayTasks,taskPassed} from './proof-trail.mjs';
 
-export const CERTIFICATE_INVALID_MESSAGE='Geen geldig certificaat gevonden voor deze code.';
+export const CERTIFICATE_INVALID_MESSAGE='No valid certificate found for this code.';
 
 // Certificate eligibility reads the same pass signals as the rest of the Academy (AET-103): a quiz
 // passes with every answer right and a day task when the Proof trail approves it, by an accepted peer
@@ -58,7 +58,7 @@ export function publicVerification(certificate){
 }
 
 const escapeHtml=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-const normalizeCertLocale=value=>value==='en'||value==='nl'?value:'nl';
+const normalizeCertLocale=value=>value==='en'||value==='nl'?value:'en';
 const localeDate=(ms,locale)=>new Date(ms).toLocaleDateString(locale==='en'?'en-GB':'nl-NL',{day:'numeric',month:'long',year:'numeric',timeZone:'UTC'});
 const PRINT_SCRIPT="document.getElementById('print').addEventListener('click',()=>print())";
 export const CERTIFICATE_CSP=`default-src 'none'; style-src 'unsafe-inline'; script-src 'sha256-${createHash('sha256').update(PRINT_SCRIPT).digest('base64')}; base-uri 'none'; form-action 'none'; frame-ancestors 'none'`;
@@ -96,6 +96,7 @@ const COPY={
   until:'verifiable through',
   of:'of',
   invalidTitle:'Certificate not valid',
+  invalidHeading:CERTIFICATE_INVALID_MESSAGE,
   invalidKicker:'Not valid',
   invalidBody:'The code does not exist, was revoked, or was removed after the retention period.',
   validTitle:'Certificate valid',
@@ -116,6 +117,7 @@ const COPY={
   until:'verifieerbaar tot en met',
   of:'van',
   invalidTitle:'Certificaat niet geldig',
+  invalidHeading:'Geen geldig certificaat gevonden voor deze code.',
   invalidKicker:'Niet geldig',
   invalidBody:'De code bestaat niet, is ingetrokken of is na de bewaartermijn verwijderd.',
   validTitle:'Certificaat geldig',
@@ -143,7 +145,7 @@ export function renderCertificatePage(certificate,{verifyUrl,verifiableUntil,loc
 export function renderVerificationPage(verification,{locale}={}){
  const lang=normalizeCertLocale(locale);
  const c=COPY[lang];
- if(!verification)return page(c.invalidTitle,`<section class="status"><p class="kicker bad">${c.invalidKicker}</p><h1>${CERTIFICATE_INVALID_MESSAGE}</h1><p>${c.invalidBody}</p></section>`,lang);
+ if(!verification)return page(c.invalidTitle,`<section class="status"><p class="kicker bad">${c.invalidKicker}</p><h1>${c.invalidHeading}</h1><p>${c.invalidBody}</p></section>`,lang);
  const completedLine=lang==='en'
   ?`has completed the Wave cohort <strong>${escapeHtml(verification.cohortName)}</strong>.`
   :`heeft het Wave-cohort <strong>${escapeHtml(verification.cohortName)}</strong> afgerond.`;

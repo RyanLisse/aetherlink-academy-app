@@ -23,17 +23,17 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 function revisionAuthor(revision: Revision): string {
   const author = revision.publishedBy ?? revision.createdBy;
   if (author === 'host-key') return 'Host-sleutel';
-  return author ?? 'Import (geen auteur)';
+  return author ?? 'Import (no author)';
 }
 
 function revisionTime(revision: Revision): string {
-  return new Date(revision.publishedAt ?? revision.createdAt).toLocaleString('nl-NL', {dateStyle: 'medium', timeStyle: 'short'});
+  return new Date(revision.publishedAt ?? revision.createdAt).toLocaleString('en-GB', {dateStyle: 'medium', timeStyle: 'short'});
 }
 
 function actionError(error: unknown): string {
   if (error instanceof AuthoringApiError) return error.message;
   if (error instanceof Error) return error.message;
-  return 'Er ging iets mis. Probeer het opnieuw.';
+  return 'Something went wrong. Try again.';
 }
 
 function replaceLesson(lessons: readonly Lesson[], next: Lesson): readonly Lesson[] {
@@ -45,7 +45,7 @@ function replaceLesson(lessons: readonly Lesson[], next: Lesson): readonly Lesso
 export function AuthoringPage() {
   useEffect(() => {
     const previousLanguage = document.documentElement.lang;
-    document.documentElement.lang = 'nl';
+    document.documentElement.lang = 'en';
     return () => {
       document.documentElement.lang = previousLanguage;
     };
@@ -81,7 +81,7 @@ export function AuthoringPage() {
       const next = await listLessons(passphrase);
       setLessons(next);
       setSelectedId(next[0]?.id ?? null);
-      setNotice(`${next.length} ${next.length === 1 ? 'les' : 'lessen'} geladen.`);
+      setNotice(`${next.length} ${next.length === 1 ? 'lesson' : 'lessons'} loaded.`);
     } catch (loadError) {
       setError(actionError(loadError));
     } finally {
@@ -95,7 +95,7 @@ export function AuthoringPage() {
     const cleanObjective = objective.trim();
     const outline = outlineText.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
     if (!cleanTitle || !cleanObjective || outline.length === 0) {
-      setError('Vul titel, doel en minstens één outline-regel in.');
+      setError('Enter a title, a goal and at least one outline line.');
       return;
     }
     begin('create');
@@ -106,7 +106,7 @@ export function AuthoringPage() {
       setTitle('');
       setObjective('');
       setOutlineText('');
-      setNotice('Les aangemaakt.');
+      setNotice('Lesson created.');
     } catch (createError) {
       setError(actionError(createError));
     } finally {
@@ -137,7 +137,7 @@ export function AuthoringPage() {
 
   async function loadRevisions() {
     if (!UUID.test(target.courseId)) {
-      setError('Vul een geldig cursus-ID (UUID) in.');
+      setError('Enter a valid course ID (UUID).');
       return;
     }
     begin('revisions');
@@ -156,8 +156,8 @@ export function AuthoringPage() {
     try {
       const publication = await publishSnapshot(passphrase, selected.id, target);
       setNotice(publication.unchanged
-        ? `Geen wijzigingen: revisie ${publication.version} blijft actueel.`
-        : `Revisie ${publication.version} gepubliceerd (op basis van ${publication.baseVersion}). Lopende sessies blijven op hun eigen versie.`);
+        ? `No changes: revision ${publication.version} stays current.`
+        : `Revision ${publication.version} published (based on ${publication.baseVersion}). Running sessions stay on their own version.`);
       setRevisions(await listRevisions(passphrase, target.courseId));
     } catch (publishError) {
       setError(actionError(publishError));
@@ -174,7 +174,7 @@ export function AuthoringPage() {
       const url = URL.createObjectURL(new Blob([markdown], {type: 'text/markdown'}));
       const link = document.createElement('a');
       link.href = url;
-      link.download = `les-${target.curriculumLessonId}-v${version}.md`;
+      link.download = `lesson-${target.curriculumLessonId}-v${version}.md`;
       link.click();
       URL.revokeObjectURL(url);
     } catch (exportError) {
@@ -187,10 +187,10 @@ export function AuthoringPage() {
   function reconcileExistingDeck() {
     const deckId = reconcileDeckId.trim();
     if (!deckId) {
-      setError('Vul eerst het bestaande deck-ID in.');
+      setError('Enter the existing deck ID first.');
       return;
     }
-    void runLessonAction('reconcile', (id) => reconcileDeck(passphrase, id, deckId), 'Bestaand deck gekoppeld.');
+    void runLessonAction('reconcile', (id) => reconcileDeck(passphrase, id, deckId), 'Existing deck linked.');
   }
 
   return (
@@ -198,20 +198,20 @@ export function AuthoringPage() {
       <header className="authoring-header">
         <div>
           <p className="authoring-kicker">AetherLink Academy</p>
-          <h1>Les-auteur</h1>
-          <p className="authoring-intro">Maak een les, open de echte BuilderIO Slides-editor en lees een snapshot terug.</p>
+          <h1>Lesson author</h1>
+          <p className="authoring-intro">Create a lesson, open the real BuilderIO Slides editor and read a snapshot back.</p>
         </div>
-        <span className="authoring-environment">Proefomgeving</span>
+        <span className="authoring-environment">Trial environment</span>
       </header>
 
       <main className="authoring-main">
         <section className="authoring-access" aria-labelledby="authoring-access-title">
           <div>
-            <h2 id="authoring-access-title">Toegang</h2>
-            <p>Ingelogd als facilitator via Google? Laat de passphrase leeg. Een passphrase blijft alleen in dit tabblad in het geheugen.</p>
+            <h2 id="authoring-access-title">Access</h2>
+            <p>Signed in as a facilitator through Google? Leave the passphrase empty. A passphrase stays in memory in this tab only.</p>
           </div>
           <div className="authoring-access-form">
-            <label htmlFor="authoring-passphrase">Project-passphrase</label>
+            <label htmlFor="authoring-passphrase">Project passphrase</label>
             <div className="authoring-access-controls">
               <input
                 id="authoring-passphrase"
@@ -222,7 +222,7 @@ export function AuthoringPage() {
                 spellCheck={false}
               />
               <button type="button" onClick={() => void load()} disabled={busy !== null}>
-                {busy === 'load' ? 'Laden…' : 'Lessen laden'}
+                {busy === 'load' ? 'Loading…' : 'Load lessons'}
               </button>
             </div>
           </div>
@@ -237,13 +237,13 @@ export function AuthoringPage() {
           <section className="authoring-panel authoring-lessons" aria-labelledby="authoring-lessons-title">
             <div className="authoring-panel-heading">
               <div>
-                <p className="authoring-kicker">Bibliotheek</p>
-                <h2 id="authoring-lessons-title">Lessen</h2>
+                <p className="authoring-kicker">Library</p>
+                <h2 id="authoring-lessons-title">Lessons</h2>
               </div>
               <span className="authoring-count">{lessons.length}</span>
             </div>
             {lessons.length === 0 ? (
-              <p className="authoring-empty">Nog geen lessen geladen. Klik op Lessen laden om te beginnen.</p>
+              <p className="authoring-empty">No lessons loaded yet. Click Load lessons to start.</p>
             ) : (
               <ul className="authoring-lesson-list">
                 {lessons.map((lesson) => (
@@ -256,7 +256,7 @@ export function AuthoringPage() {
                       disabled={busy !== null}
                     >
                       <strong>{lesson.title}</strong>
-                      <span>{lesson.outline.length} {lesson.outline.length === 1 ? 'onderdeel' : 'onderdelen'}</span>
+                      <span>{lesson.outline.length} {lesson.outline.length === 1 ? 'section' : 'sections'}</span>
                     </button>
                   </li>
                 ))}
@@ -265,33 +265,33 @@ export function AuthoringPage() {
           </section>
 
           <section className="authoring-panel authoring-create" aria-labelledby="authoring-create-title">
-            <p className="authoring-kicker">Nieuw</p>
-            <h2 id="authoring-create-title">Les maken</h2>
+            <p className="authoring-kicker">New</p>
+            <h2 id="authoring-create-title">Create lesson</h2>
             <form onSubmit={(event) => void submitLesson(event)}>
-              <label htmlFor="lesson-title">Titel</label>
+              <label htmlFor="lesson-title">Title</label>
               <input id="lesson-title" value={title} onChange={(event) => setTitle(event.target.value)} disabled={busy !== null} />
 
-              <label htmlFor="lesson-objective">Leerdoel</label>
+              <label htmlFor="lesson-objective">Learning goal</label>
               <textarea id="lesson-objective" rows={3} value={objective} onChange={(event) => setObjective(event.target.value)} disabled={busy !== null} />
 
-              <label htmlFor="lesson-outline">Outline <span>(één regel per onderdeel)</span></label>
+              <label htmlFor="lesson-outline">Outline <span>(one line per section)</span></label>
               <textarea id="lesson-outline" rows={6} value={outlineText} onChange={(event) => setOutlineText(event.target.value)} disabled={busy !== null} />
 
               <button type="submit" className="authoring-primary" disabled={busy !== null}>
-                {busy === 'create' ? 'Aanmaken…' : 'Les aanmaken'}
+                {busy === 'create' ? 'Creating…' : 'Create lesson'}
               </button>
             </form>
           </section>
 
           <section className="authoring-panel authoring-detail" aria-labelledby="authoring-detail-title">
-            <p className="authoring-kicker">Slides-koppeling</p>
-            <h2 id="authoring-detail-title">{selected?.title ?? 'Selecteer een les'}</h2>
+            <p className="authoring-kicker">Slides link</p>
+            <h2 id="authoring-detail-title">{selected?.title ?? 'Select a lesson'}</h2>
             {!selected ? (
-              <p className="authoring-empty">Kies een les uit de bibliotheek om een deck te maken.</p>
+              <p className="authoring-empty">Choose a lesson from the library to create a deck.</p>
             ) : (
               <>
                 <p className="authoring-objective">{selected.objective}</p>
-                <div className="authoring-outline" aria-label="Lesoutline">
+                <div className="authoring-outline" aria-label="Lesson outline">
                   <h3>Outline</h3>
                   <ol>
                     {selected.outline.map((line, index) => <li key={`${selected.id}-${index}`}>{line}</li>)}
@@ -303,23 +303,23 @@ export function AuthoringPage() {
                       <div className="authoring-deck-meta">
                         <span>Deck</span>
                         <strong>{selected.deck.title}</strong>
-                        <small>{selected.deck.slideCount} slides · revisie {String(selected.deck.revision).slice(0, 12)}</small>
+                        <small>{selected.deck.slideCount} slides · revision {String(selected.deck.revision).slice(0, 12)}</small>
                       </div>
                       <a className="authoring-primary authoring-link" href={selected.deck.url} target="_blank" rel="noreferrer">
                         Open in Slides <span aria-hidden="true">↗</span>
                       </a>
-                      <button type="button" onClick={() => void runLessonAction('refresh', (id) => refreshFromSlides(passphrase, id), 'Readback uit Slides opgehaald.')} disabled={busy !== null}>
-                        {busy === 'refresh' ? 'Verversen…' : 'Ververs vanuit Slides'}
+                      <button type="button" onClick={() => void runLessonAction('refresh', (id) => refreshFromSlides(passphrase, id), 'Readback fetched from Slides.')} disabled={busy !== null}>
+                        {busy === 'refresh' ? 'Refreshing…' : 'Refresh from Slides'}
                       </button>
                     </>
                   ) : selected.deckCreation ? (
                     <div>
                       <div className="authoring-deck-meta">
-                        <span>Deckaanmaak</span>
-                        <strong>{selected.deckCreation.status === 'uncertain' ? 'Resultaat onbekend' : 'Nog bezig'}</strong>
-                        <small>Zoek het deck in Slides en koppel het met het deck-ID.</small>
+                        <span>Deck creation</span>
+                        <strong>{selected.deckCreation.status === 'uncertain' ? 'Result unknown' : 'Still running'}</strong>
+                        <small>Find the deck in Slides and link it with the deck ID.</small>
                       </div>
-                      <label htmlFor="reconcile-deck-id">Bestaand deck-ID</label>
+                      <label htmlFor="reconcile-deck-id">Existing deck ID</label>
                       <input
                         id="reconcile-deck-id"
                         value={reconcileDeckId}
@@ -329,33 +329,33 @@ export function AuthoringPage() {
                         spellCheck={false}
                       />
                       <button type="button" className="authoring-primary" onClick={reconcileExistingDeck} disabled={busy !== null || !reconcileDeckId.trim()}>
-                        {busy === 'reconcile' ? 'Koppelen…' : 'Bestaand deck koppelen'}
+                        {busy === 'reconcile' ? 'Linking…' : 'Link existing deck'}
                       </button>
                     </div>
                   ) : (
-                    <button type="button" className="authoring-primary" onClick={() => void runLessonAction('deck', (id) => createDeck(passphrase, id), 'Deck aangemaakt.')} disabled={busy !== null}>
-                      {busy === 'deck' ? 'Deck maken…' : 'Maak deck in Slides'}
+                    <button type="button" className="authoring-primary" onClick={() => void runLessonAction('deck', (id) => createDeck(passphrase, id), 'Deck created.')} disabled={busy !== null}>
+                      {busy === 'deck' ? 'Creating deck…' : 'Create deck in Slides'}
                     </button>
                   )}
                 </div>
                 {selected.deck && !selected.snapshot ? (
-                  <button type="button" onClick={() => void runLessonAction('snapshot', (id) => saveSnapshot(passphrase, id), 'Snapshot opgeslagen.')} disabled={busy !== null}>
-                    {busy === 'snapshot' ? 'Opslaan…' : 'Snapshot opslaan'}
+                  <button type="button" onClick={() => void runLessonAction('snapshot', (id) => saveSnapshot(passphrase, id), 'Snapshot saved.')} disabled={busy !== null}>
+                    {busy === 'snapshot' ? 'Saving…' : 'Save snapshot'}
                   </button>
                 ) : null}
                 {selected.snapshot ? (
                   <div className="authoring-snapshot" aria-live="polite">
                     <div>
-                      <p className="authoring-kicker">Opgeslagen snapshot</p>
+                      <p className="authoring-kicker">Saved snapshot</p>
                       <h3>{selected.snapshot.title}</h3>
                       <dl>
                         <div><dt>Slides</dt><dd>{selected.snapshot.slideCount}</dd></div>
-                        <div><dt>Revisie</dt><dd title={String(selected.snapshot.revision)}>{String(selected.snapshot.revision).slice(0, 12)}</dd></div>
-                        <div><dt>Opgehaald</dt><dd>{new Date(selected.snapshot.capturedAt).toLocaleString('nl-NL')}</dd></div>
+                        <div><dt>Revision</dt><dd title={String(selected.snapshot.revision)}>{String(selected.snapshot.revision).slice(0, 12)}</dd></div>
+                        <div><dt>Fetched</dt><dd>{new Date(selected.snapshot.capturedAt).toLocaleString('en-GB')}</dd></div>
                       </dl>
                     </div>
-                    <button type="button" onClick={() => void runLessonAction('snapshot', (id) => saveSnapshot(passphrase, id), 'Snapshot opgeslagen.')} disabled={busy !== null}>
-                      {busy === 'snapshot' ? 'Opslaan…' : 'Snapshot opslaan'}
+                    <button type="button" onClick={() => void runLessonAction('snapshot', (id) => saveSnapshot(passphrase, id), 'Snapshot saved.')} disabled={busy !== null}>
+                      {busy === 'snapshot' ? 'Saving…' : 'Save snapshot'}
                     </button>
                   </div>
                 ) : null}
@@ -368,41 +368,41 @@ export function AuthoringPage() {
           <div className="authoring-panel-heading">
             <div>
               <p className="authoring-kicker">Curriculum</p>
-              <h2 id="authoring-publish-title">Publiceren en revisies</h2>
+              <h2 id="authoring-publish-title">Publishing and revisions</h2>
             </div>
           </div>
           <p className="authoring-publish-intro">
-            Publiceer de laatste snapshot van de geselecteerde les als nieuwe, onveranderlijke revisie. Lopende sessies blijven op hun vastgezette versie.
+            Publish the latest snapshot of the selected lesson as a new, immutable revision. Running sessions stay on their pinned version.
           </p>
           <div className="authoring-publish-fields">
             <div>
-              <label htmlFor="publish-course-id">Cursus-ID</label>
+              <label htmlFor="publish-course-id">Course ID</label>
               <input id="publish-course-id" value={courseId} onChange={(event) => setCourseId(event.target.value)} disabled={busy !== null} autoComplete="off" spellCheck={false} />
             </div>
             <div>
-              <label htmlFor="publish-lesson-id">Curriculum-les-ID</label>
+              <label htmlFor="publish-lesson-id">Curriculum lesson ID</label>
               <input id="publish-lesson-id" value={curriculumLessonId} onChange={(event) => setCurriculumLessonId(event.target.value)} disabled={busy !== null} autoComplete="off" spellCheck={false} />
             </div>
           </div>
           <div className="authoring-publish-actions">
             <button type="button" className="authoring-primary" onClick={() => void publish()} disabled={busy !== null || !selected?.snapshot || !targetValid}>
-              {busy === 'publish' ? 'Publiceren…' : 'Publiceer snapshot'}
+              {busy === 'publish' ? 'Publishing…' : 'Publish snapshot'}
             </button>
             <button type="button" onClick={() => void loadRevisions()} disabled={busy !== null || !UUID.test(target.courseId)}>
-              {busy === 'revisions' ? 'Laden…' : 'Revisies laden'}
+              {busy === 'revisions' ? 'Loading…' : 'Load revisions'}
             </button>
           </div>
           {revisions ? (
             revisions.revisions.length === 0 ? (
-              <p className="authoring-empty">Deze cursus heeft nog geen revisies.</p>
+              <p className="authoring-empty">This course has no revisions yet.</p>
             ) : (
-              <ol className="authoring-revisions" aria-label="Revisies">
+              <ol className="authoring-revisions" aria-label="Revisions">
                 {[...revisions.revisions].reverse().map((revision) => (
                   <li key={revision.version} className={revision.version === revisions.currentVersion ? 'authoring-revision current' : 'authoring-revision'}>
                     <span className="authoring-revision-version">v{revision.version}</span>
                     <span className="authoring-revision-status">
-                      {revision.status === 'published' ? 'Gepubliceerd' : 'Concept'}
-                      {revision.version === revisions.currentVersion ? ' · actueel' : ''}
+                      {revision.status === 'published' ? 'Published' : 'Draft'}
+                      {revision.version === revisions.currentVersion ? ' · current' : ''}
                     </span>
                     <span className="authoring-revision-author">{revisionAuthor(revision)}</span>
                     <time className="authoring-revision-time" dateTime={revision.publishedAt ?? revision.createdAt}>{revisionTime(revision)}</time>
@@ -416,7 +416,7 @@ export function AuthoringPage() {
           ) : null}
         </section>
       </main>
-      <footer className="authoring-footer">Academy authoring · uitsluitend voor proefgebruik</footer>
+      <footer className="authoring-footer">Academy authoring · trial use only</footer>
     </div>
   );
 }
