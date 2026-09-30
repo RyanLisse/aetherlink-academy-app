@@ -26,6 +26,7 @@ export function Decks({room,action,busy,onRoom,onContext}){
  const [decks,setDecks]=useState(null);
  const [listError,setListError]=useState('');
  const [open,setOpen]=useState(null);
+ const [assistantTurns,setAssistantTurns]=useState([]);
  const [title,setTitle]=useState('');
  const createRef=useRef(null);
  const refresh=useCallback(async()=>{
@@ -39,7 +40,7 @@ export function Decks({room,action,busy,onRoom,onContext}){
   }
  },[t]);
  useEffect(()=>{refresh();const timer=setInterval(refresh,5000);return()=>clearInterval(timer);},[refresh]);
- if(open)return <DeckView room={room} deckId={open} action={action} busy={busy} onRoom={onRoom} onContext={onContext} onBack={()=>{setOpen(null);refresh();}}/>;
+ if(open)return <DeckView room={room} deckId={open} assistantTurns={assistantTurns} action={action} busy={busy} onRoom={onRoom} onContext={onContext} onBack={()=>{setOpen(null);setAssistantTurns([]);refresh();}}/>;
  const canDelete=deck=>room.me.role==='Facilitator'||deck.createdBy?.id===room.me.id;
  return <section className="panel content-panel decks">
   <p className="cyan"><Presentation size={16}/>{t('decks.eyebrow')}</p>
@@ -55,7 +56,7 @@ export function Decks({room,action,busy,onRoom,onContext}){
    <button type="submit" className="gradient" disabled={busy||!title.trim()}><Plus size={16}/>{t('decks.create')}</button>
   </form>
   <div className="notice"><strong><Sparkles size={14}/> {t('decks.agentTitle')}</strong><p>{t('decks.agentBody')}</p></div>
-  {room.me.role==='Facilitator'&&<DeckAssistant onApplied={result=>{if(result.deckId)setOpen(result.deckId);else refresh();}}/>}
+  {room.me.role==='Facilitator'&&<DeckAssistant onApplied={(result,turns)=>{if(result.deckId){setAssistantTurns(turns);setOpen(result.deckId);}else refresh();}}/>}
   {listError&&<StatusState kind="error" title={t('decks.loadFailed')} action={<button type="button" onClick={refresh}>{t('status.retry')}</button>}>{listError}<p>{t('decks.loadFailedHelp')}</p></StatusState>}
   {decks===null&&!listError&&<StatusState kind="loading" title={t('common.loading')}/>}
   {decks&&!decks.length&&!listError&&<StatusState kind="empty" title={t('decks.empty')}>{t('decks.emptyHelp')}</StatusState>}
@@ -69,7 +70,7 @@ export function Decks({room,action,busy,onRoom,onContext}){
  </section>;
 }
 
-function DeckView({room,deckId,action,busy,onRoom,onContext,onBack}){
+function DeckView({room,deckId,assistantTurns=[],action,busy,onRoom,onContext,onBack}){
  const t=useT();
  const {locale}=useI18n();
  const [deck,setDeck]=useState(null);
@@ -179,7 +180,7 @@ function DeckView({room,deckId,action,busy,onRoom,onContext,onBack}){
      <span>{index+1} / {count}</span>
      <button type="button" onClick={()=>go(1)} disabled={index>=count-1} aria-label={t('decks.next')}><ChevronRight size={16}/></button>
     </div>
-    {facilitator&&<DeckAssistant deckId={deckId} slideId={slideId} onApplied={async result=>{const next=await load();const first=result.changes?.added?.[0]||result.changes?.updated?.[0];const at=first?next?.slides.findIndex(slide=>slide.id===first)??-1:-1;if(at!==-1)setIndex(at);}}/>}
+    {facilitator&&<DeckAssistant deckId={deckId} slideId={slideId} initialTurns={assistantTurns} onApplied={async result=>{const next=await load();const first=result.changes?.added?.[0]||result.changes?.updated?.[0];const at=first?next?.slides.findIndex(slide=>slide.id===first)??-1:-1;if(at!==-1)setIndex(at);}}/>}
     {showNotes&&current?.notes&&<details className="simple-speaker-notes"><summary>{t('decks.notes')}</summary><div className="notice deck-notes"><p>{current.notes}</p></div></details>}
     <details className="simple-technical-details"><summary>{locale==='nl'?'Technische details':'Technical details'}</summary><p>{t('decks.editHint',{id:current?.id||'',deckId:deck.id})}</p></details>
    </div>

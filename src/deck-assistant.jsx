@@ -28,12 +28,12 @@ function changeSummary(t,changes){
 }
 
 /** Facilitator in-app chat that creates and edits classroom slides through the deck actions. */
-export function DeckAssistant({deckId=null,slideId=null,onApplied}){
+export function DeckAssistant({deckId=null,slideId=null,initialTurns=[],onApplied}){
  const t=useT();
  const {locale}=useI18n();
  const [status,setStatus]=useState(null);
  const [query,setQuery]=useState('');
- const [turns,setTurns]=useState([]);
+ const [turns,setTurns]=useState(initialTurns);
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState('');
  useEffect(()=>{let live=true;api('decks/assistant').then(next=>{if(live)setStatus(next);}).catch(()=>{if(live)setStatus({enabled:false});});return()=>{live=false;};},[]);
@@ -44,10 +44,11 @@ export function DeckAssistant({deckId=null,slideId=null,onApplied}){
   setBusy(true);setError('');
   try{
    const result=await api('decks/assistant',{message:text,deckId,slideId,locale,history:turns.map(({message,reply})=>({message,reply}))});
-   setTurns(list=>[...list.slice(1-MAX_TURNS),{message:text,reply:result.reply,changes:result.changes}]);
+   const next=[...turns.slice(1-MAX_TURNS),{message:text,reply:result.reply,changes:result.changes}];
+   setTurns(next);
    setQuery('');
    if(result.assistant)setStatus(current=>({...current,...result.assistant}));
-   onApplied?.(result);
+   onApplied?.(result,next);
   }catch(err){setError(err.message);}
   finally{setBusy(false);}
  }
