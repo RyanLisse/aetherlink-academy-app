@@ -16,11 +16,9 @@ async function gateway() {
   const instance = createApp({
     dir,
     hostKey: "test-host",
-    proofBase: "http://127.0.0.1:9",
     publicBaseUrl: "https://academy.example.test/",
     slidesService: {run: async () => null},
   });
-  instance.proof.create = async () => ({slug: "aet-83-proof", editor: "editor-token"});
   await new Promise((resolve) => instance.server.listen(0, "127.0.0.1", resolve));
   const base = `http://127.0.0.1:${instance.server.address().port}`;
   const call = async (method, route, {body, cookie} = {}) => {

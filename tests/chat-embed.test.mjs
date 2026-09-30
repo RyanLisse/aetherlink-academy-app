@@ -130,7 +130,7 @@ async function withAcademy(chatConfig, fetchImpl, run) {
 test('GET /game/chat/embed redirects a participant to the ticketed Chat start URL', async () => {
   const fetchImpl = async () => ({ok: true, json: async () => ({startUrl: '/_agent-native/embed/start?ticket=t1'})});
   await withAcademy(config, fetchImpl, async ({store, get}) => {
-    const host = store.create('Squad', {slug: 'intent'});
+    const host = store.create('Squad');
     const alice = store.join(host.code, 'Alice');
     const participant = await get('/game/chat/embed', alice.token);
     assert.equal(participant.status, 302);
@@ -144,7 +144,7 @@ test('GET /game/chat/embed redirects a participant to the ticketed Chat start UR
 
 test('GET /game/chat/embed fails closed with a 502 page when Chat is not configured', async () => {
   await withAcademy(null, async () => { throw new Error('must not call upstream'); }, async ({store, get}) => {
-    const host = store.create('Squad', {slug: 'intent'});
+    const host = store.create('Squad');
     const alice = store.join(host.code, 'Alice');
     const response = await get('/game/chat/embed', alice.token);
     assert.equal(response.status, 502);

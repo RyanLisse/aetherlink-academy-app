@@ -22,7 +22,7 @@ async function answerQuiz(app,token,answers){
 
 function fixture(){
  const instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-day-packs-')),hostKey:'test-host',publicBaseUrl:'http://127.0.0.1:4317'});
- const host=instance.store.create('Day packs',{slug:'day-packs'});
+ const host=instance.store.create('Day packs');
  const participant=instance.store.join(host.code,'Deelnemer');
  return {instance,host,participant};
 }

@@ -7,7 +7,6 @@ import {AxeBuilder} from '@axe-core/playwright';
 import {startLegacyFixture,root,HOST_KEY,ROOM_CODE} from './support/legacy-fixture.mjs';
 
 const screenshotDir=process.env.ACADEMY_SCREENSHOT_DIR;
-const PROOF_STUB='<!doctype html><html lang="nl"><head><title>Proof</title></head><body><main><p>Synthetisch Proof-document</p></main></body></html>';
 
 async function shot(page,name){
   if(!screenshotDir)return;
@@ -29,7 +28,6 @@ async function withBrowser(run){
   const open=async({width,height,token=null})=>{
     const context=await browser.newContext({viewport:{width,height},reducedMotion:'reduce'});
     await context.addInitScript(value=>{localStorage.setItem('academy-locale','nl');if(value)sessionStorage.setItem('academy-token',value);},token);
-    await context.route('**/d/**',route=>route.fulfill({contentType:'text/html',body:PROOF_STUB}));
     return context.newPage();
   };
   try{await run({fixture,open});}
@@ -225,7 +223,7 @@ test('facilitator overview and read-only cohort room pass axe and show their sta
     assert.equal(await participantNavigation.getByRole('button',{name:'Naslag',exact:true}).getAttribute('aria-current'),'page','read-only cohort participants land on Reference');
     await participantNavigation.getByRole('button',{name:'Meer',exact:true}).click();
     assert.match(await banner.innerText(),/Alleen-lezen\s+De schrijfperiode van je cohort is voorbij/);
-    assert.ok(await banner.getByRole('button',{name:'Exporteer het document'}).isVisible());
+    assert.equal(await banner.getByRole('button',{name:'Exporteer het document'}).count(),0,'no embedded document export');
     assert.deepEqual(await blockingViolations(reader),[],'read-only room 390');
     assert.equal(await overflow(reader),0);
     await shot(reader,'readonly-390.png');

@@ -40,9 +40,8 @@ test('F5 empty/offline/error surfaces use StatusState + next action', () => {
   assert.match(main, /roster\.emptyHelp/);
   assert.match(main, /roster\.copyCodeShort/);
   assert.match(main, /status\.reload/);
-  assert.match(main, /doc\.offlineHelp/);
-  assert.match(main, /proofKind/);
-  assert.match(main, /retryProof/);
+  assert.match(main, /data-testid="intent-document"/);
+  assert.match(main, /doc\.emptyTitle/);
   assert.match(main, /StatusState kind="empty" title=\{t\('roster\.empty'\)\}/);
   assert.match(main, /StatusState kind="offline" title=\{t\('status\.offline'\)\}/);
 });
@@ -61,7 +60,6 @@ test('AET-110 i18n keys present EN+NL', () => {
     'fac.session',
     'roster.emptyHelp',
     'roster.copyCodeShort',
-    'doc.offlineHelp',
     'status.reload',
     'classroom.open',
   ]) {

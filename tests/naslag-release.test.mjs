@@ -18,8 +18,7 @@ const LABS={2:[{id:'synthetic-day2-lab',src:'/arcade-lab/?lesson=synthetic-day2-
 async function gateway(){
  const dir=mkdtempSync(path.join(os.tmpdir(),'academy-naslag-'));
  const clock={now:START};
- const instance=createApp({dir,repository:new LocalStore(dir,{now:()=>clock.now}),hostKey:'test-host',proofBase:'http://127.0.0.1:9',publicBaseUrl:'http://127.0.0.1:4317',slidesService:{run:async()=>null},labsForDay:day=>LABS[day]});
- instance.proof.create=async()=>({slug:'naslag-proof',editor:'editor-token'});
+ const instance=createApp({dir,repository:new LocalStore(dir,{now:()=>clock.now}),hostKey:'test-host',publicBaseUrl:'http://127.0.0.1:4317',slidesService:{run:async()=>null},labsForDay:day=>LABS[day]});
  await new Promise(resolve=>instance.server.listen(0,'127.0.0.1',resolve));
  const base=`http://127.0.0.1:${instance.server.address().port}`;
  const call=async(method,route,{body,token}={})=>{
@@ -27,7 +26,7 @@ async function gateway(){
   const text=await response.text();
   return {status:response.status,body:text?JSON.parse(text):null};
  };
- const room=instance.store.create('Naslag',{slug:'naslag'});
+ const room=instance.store.create('Naslag');
  const ann=instance.store.join(room.code,'Ann');
  const setDay=async day=>assert.equal((await call('POST','/game/control',{token:room.token,body:{action:'day',value:day}})).status,200);
  return {instance,clock,call,room,ann,setDay,close:async()=>{await new Promise(resolve=>instance.server.close(resolve));rmSync(dir,{recursive:true,force:true});}};

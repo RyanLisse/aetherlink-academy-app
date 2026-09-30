@@ -21,7 +21,7 @@ async function answerQuiz(app,token,answers){
 
 function room(slug){
  const {app,store}=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-day3-')),hostKey:`${slug}-host`,publicBaseUrl:'http://127.0.0.1:4371'});
- const host=store.create('Day3 triage',{slug});
+ const host=store.create('Day3 triage');
  return {app,host,participant:store.join(host.code,'Sam')};
 }
 

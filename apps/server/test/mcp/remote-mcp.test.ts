@@ -55,9 +55,7 @@ describe('AET-44 streamable HTTP MCP', () => {
       'get_my_progress',
       'get_connection_state',
       'get_mission',
-      'get_document',
       'search_knowledge',
-      'suggest_document',
     ]) {
       expect(names).toContain(required);
     }

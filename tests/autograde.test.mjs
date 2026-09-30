@@ -17,11 +17,9 @@ const close=server=>new Promise(resolve=>{server.closeAllConnections();server.cl
 
 async function room(t,day=3){
  const instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-autograde-')),hostKey:'test-host',publicBaseUrl:'http://127.0.0.1:4322'});
- instance.proof.comment=async()=>({ok:true});
- instance.proof.state=async()=>({markdown:'# Intent\nDoel',marks:{}});
  const base=await listen(instance.server);
  t.after(()=>close(instance.server));
- const host=instance.store.create('Triage squad',{slug:'triage'});
+ const host=instance.store.create('Triage squad');
  const bo=instance.store.join(host.code,'Bo'),cy=instance.store.join(host.code,'Cy');
  const call=async(token,route,body)=>{
   const response=await fetch(`${base}/game/${route}`,{method:body?'POST':'GET',headers:{authorization:`Bearer ${token}`,...(body?{'content-type':'application/json'}:{})},body:body&&JSON.stringify(body)});

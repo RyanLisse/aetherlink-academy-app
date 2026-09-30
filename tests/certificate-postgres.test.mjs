@@ -18,7 +18,7 @@ test('PostgresStore: facilitator-gated issue, revoke + re-issue, retention casca
  const clock={now:START};
  try {
   const store=await new PostgresStore(pool,{schema,now:()=>clock.now}).init();
-  const room=await store.create('Squad Orion',{slug:`proof-${randomUUID()}`});
+  const room=await store.create('Squad Orion');
   const {cohort,codes:[alice,bob]}=await store.createCohort(WAVE,['Alice Jansen','Bob'],{email:'facilitator@example.test',name:'Facilitator (synthetisch)'});
   await store.attachCohortRoom(cohort.id,room.roomId);
   const session=(await store.activateCohortCode(alice.code,{ip:'203.0.113.7'})).token;

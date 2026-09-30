@@ -31,3 +31,16 @@ export const bearer = (req) =>
   req.headers.authorization?.startsWith('Bearer ')
     ? req.headers.authorization.slice(7)
     : null;
+// Intent documents live outside the Academy: a Proof cloud link or the squad repo's intent.md.
+export const intentUrl = (v) => {
+  if (v === undefined || v === null || v === '') return null;
+  let url;
+  try {
+    url = new URL(String(v).trim());
+  } catch {
+    fail(400, 'Enter a full https:// link to the intent document.');
+  }
+  if (url.protocol !== 'https:' || url.username || url.password || url.href.length > 500)
+    fail(400, 'Enter a full https:// link to the intent document.');
+  return url.href;
+};

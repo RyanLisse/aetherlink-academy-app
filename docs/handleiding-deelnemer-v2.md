@@ -57,7 +57,7 @@ De UI vult sessienaam, origin en header al in via **Claude Code koppelcommando**
 | `get_my_progress` | read | Eigen voortgang |
 | `get_connection_state` | read | configured / connected / verified |
 
-**Legacy (blijven tot migratie):** `get_mission`, `get_document`, `search_knowledge`, `submit_evidence`, `suggest_document`.
+**Legacy (blijven tot migratie):** `get_mission`, `search_knowledge`, `submit_evidence`.
 
 ## Regels (kort)
 

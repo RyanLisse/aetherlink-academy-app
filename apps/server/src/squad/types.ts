@@ -26,11 +26,6 @@ export interface Member {
   lastMcp: number | null;
 }
 
-export interface RoomProof {
-  readonly slug: string;
-  readonly [key: string]: unknown;
-}
-
 export interface CreatedBy {
   readonly name?: string;
   readonly email?: string;
@@ -41,7 +36,6 @@ export interface Room {
   readonly id: string;
   readonly code: string;
   name: string;
-  proof: RoomProof;
   createdBy: CreatedBy | null;
   createdAt: number;
   roundSeconds: number;

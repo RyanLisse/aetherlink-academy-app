@@ -22,7 +22,6 @@ export function registerCohortRoutes(app, deps) {
     requireFacilitator,
     wrap,
     setSession,
-    liveSockets,
   } = deps;
 
   const certificateId = (v) => {
@@ -88,10 +87,6 @@ export function registerCohortRoutes(app, deps) {
       res.json(await store.attachCohortRoom(cohortId, roomId));
     }),
   );
-  const closeSockets = (personId) => {
-    for (const socket of liveSockets.get(personId) || []) socket.destroy();
-    liveSockets.delete(personId);
-  };
   app.post(
     '/game/facilitator/cohort/revoke',
     wrap(async (req, res) => {
@@ -100,7 +95,6 @@ export function registerCohortRoutes(app, deps) {
         uuid(req.body.cohortId),
         uuid(req.body.memberId),
       );
-      closeSockets(req.body.memberId);
       res.json(result);
     }),
   );
@@ -112,7 +106,6 @@ export function registerCohortRoutes(app, deps) {
         uuid(req.body.cohortId),
         uuid(req.body.memberId),
       );
-      closeSockets(req.body.memberId);
       res.json(result);
     }),
   );

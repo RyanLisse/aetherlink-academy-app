@@ -32,7 +32,7 @@ const guarded = async (name, fn) => {
 };
 
 let health, config;
-await guarded('Academy and Proof ready', async () => {
+await guarded('Academy ready', async () => {
   health = await request('/game/health');
   record(evaluateHealth(health));
   record(evaluateRevision(health, process.env.EXPECTED_REVISION));
@@ -46,7 +46,7 @@ await guarded('Public runtime config', async () => {
   config = await request('/game/config');
   record(evaluateConfig(config));
 });
-for (const path of ['/game/state', '/game/document', '/game/knowledge', '/mcp']) {
+for (const path of ['/game/state', '/game/intent.md', '/game/knowledge', '/mcp']) {
   for (const invalid of [false, true]) {
     const name = `${path} rejects ${invalid ? 'invalid' : 'missing'} credentials`;
     await guarded(name, async () => {

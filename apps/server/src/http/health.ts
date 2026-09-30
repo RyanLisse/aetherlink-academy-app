@@ -4,13 +4,11 @@ import {Connectivity} from '../layers/connectivity.ts';
 
 export const HealthBody = Schema.Struct({
   ok: Schema.Boolean,
-  proof: Schema.Boolean,
   revision: Schema.NullOr(Schema.String),
 });
 
 export const HealthUnavailable = Schema.Struct({
   ok: Schema.Literal(false),
-  proof: Schema.Boolean,
   revision: Schema.NullOr(Schema.String),
 }).pipe(HttpApiSchema.status(503));
 
@@ -24,7 +22,6 @@ export const ProbeBody = Schema.Struct({
 export const ConnectionBody = Schema.Struct({
   postgres: ProbeBody,
   redis: ProbeBody,
-  proof: ProbeBody,
   checkedAt: Schema.String,
 });
 
@@ -43,7 +40,7 @@ export const SystemGroupLive = HttpApiBuilder.group(AcademyApi, 'system', (handl
           Effect.flatMap((report) =>
             report.ok
               ? Effect.succeed(report)
-              : Effect.fail({ok: false as const, proof: report.proof, revision: report.revision}),
+              : Effect.fail({ok: false as const, revision: report.revision}),
           ),
         ),
       )

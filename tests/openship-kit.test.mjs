@@ -630,7 +630,7 @@ describe('OpenShip app env: omit DATABASE_URL (no compose shadow)', () => {
       assert.doesNotMatch(line, /^\s+(DATABASE_URL|REDIS_URL|SOURCE_REVISION):/, line);
     }
     // Keep other non-secret app env.
-    for (const key of ['ACADEMY_STORAGE', 'HOST', 'PORT', 'PROOF_PORT', 'ACADEMY_DATA', 'NODE_EXTRA_CA_CERTS']) {
+    for (const key of ['ACADEMY_STORAGE', 'HOST', 'PORT', 'ACADEMY_DATA', 'NODE_EXTRA_CA_CERTS']) {
       assert.ok(Object.hasOwn(app.environment, key), key);
     }
   });

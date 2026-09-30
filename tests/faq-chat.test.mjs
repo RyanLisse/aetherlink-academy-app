@@ -18,7 +18,7 @@ async function invoke(app,route,{body={},cookies={}}={}){
 
 function fixture(){
  const instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-faq-chat-')),hostKey:'test-host',publicBaseUrl:'http://127.0.0.1:4317'});
- const host=instance.store.create('FAQ chat',{slug:'faq-chat'});
+ const host=instance.store.create('FAQ chat');
  const participant=instance.store.join(host.code,'Deelnemer');
  return {instance,host,participant};
 }

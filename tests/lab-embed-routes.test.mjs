@@ -26,7 +26,7 @@ const LABS={
 
 function fixture(){
  const instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-lab-embed-')),hostKey:'test-host',publicBaseUrl:'https://academy.example',labOrigins:'https://labs.example, *',labsForDay:day=>LABS[day]});
- const host=instance.store.create('Labs',{slug:'labs'});
+ const host=instance.store.create('Labs');
  const ada=instance.store.join(host.code,'Ada');
  const bo=instance.store.join(host.code,'Bo');
  return {app:instance.app,host,ada,bo};

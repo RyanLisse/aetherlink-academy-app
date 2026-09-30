@@ -5,7 +5,7 @@ import tailwindcss from 'tailwindcss';
 import autoprefixer from 'autoprefixer';
 
 // AET-120: `@` resolves to src/ so shadcn/ui and AI Elements keep their generated import paths.
-// PostCSS/Tailwind is wired here (not a root postcss.config) so vendor/proof-sdk and apps/web
+// PostCSS/Tailwind is wired here (not a root postcss.config) so apps/web
 // Vite builds do not inherit Academy Tailwind and crash on `blocklist`.
 export default defineConfig({
   plugins: [react()],

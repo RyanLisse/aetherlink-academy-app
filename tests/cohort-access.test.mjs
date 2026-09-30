@@ -43,7 +43,7 @@ const rejectsWith=(run,code)=>assert.rejects(async()=>run(),error=>error.status=
 const authOf=async(store,token,kind)=>store.auth(token,kind);
 
 async function wave(store,names=['Alice','Bob'],input=WAVE){
- const room=await store.create('Squad Orion',{slug:`proof-${randomUUID()}`});
+ const room=await store.create('Squad Orion');
  const created=await store.createCohort(input,names,{email:'facilitator@example.test',name:'Facilitator (synthetisch)'});
  const code=name=>created.codes.find(entry=>entry.name===name);
  return {room,cohort:created.cohort,codes:created.codes,code};
@@ -118,7 +118,7 @@ for (const [label,backend,options] of backends) {
    env.clock.now=START+104*DAY;
    await rejectsWith(()=>activate(env.store,code('Alice').code),403);
    const strict=await env.store.createCohort({...WAVE,name:'Wave zonder export (synthetisch)',readOnlyExport:false},['Carol'],null);
-   const strictRoom=await env.store.create('Squad Lyra',{slug:`proof-${randomUUID()}`});
+   const strictRoom=await env.store.create('Squad Lyra');
    await env.store.attachCohortRoom(strict.cohort.id,strictRoom.roomId);
    env.clock.now=START+90*DAY;
    await rejectsWith(()=>activate(env.store,strict.codes[0].code),403);
@@ -206,7 +206,7 @@ for (const [label,backend,options] of backends) {
    await env.store.attachCohortRoom(cohort.id,first.roomId);
    const day1=await activate(env.store,code('Alice').code);
    await env.store.withSession(day1.token,'browser',({p})=>{p.route='guided';p.quiz={score:1,at:'2026-10-05T09:00:00.000Z',day:1};p.progressByDay={'1':{quizScore:1,route:'guided',quizAt:'2026-10-05T09:00:00.000Z',labs:{'lab-1':{source:'arcade-lab',score:2,completedAt:'2026-10-05T11:00:00.000Z'}},reflection:{learned:'Intent eerst',next:'Kleinere stappen',at:'2026-10-05T15:00:00.000Z'}}};});
-   const second=await env.store.create('Squad Orion dag 2',{slug:`proof-${randomUUID()}`});
+   const second=await env.store.create('Squad Orion dag 2');
    env.clock.now+=DAY;
    await env.store.attachCohortRoom(cohort.id,second.roomId);
    const day2=await activate(env.store,code('Alice').code);

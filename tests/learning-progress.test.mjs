@@ -15,9 +15,8 @@ async function call(app,route,token,body={}){
 test('five-day progress survives restart; private reflection and debrief stay access scoped',async()=>{
  const dir=mkdtempSync(path.join(os.tmpdir(),'academy-learning-'));
  try{
- const {app,store,proof}=createApp({dir,hostKey:'test'});
- proof.state=async()=>({markdown:'# Intent'});proof.comment=async()=>({});
- const host=store.create('Test squad',{slug:'test'}),alice=store.join(host.code,'Alice'),bob=store.join(host.code,'Bob');
+ const {app,store}=createApp({dir,hostKey:'test'});
+ const host=store.create('Test squad'),alice=store.join(host.code,'Alice'),bob=store.join(host.code,'Bob');
  for(let day=1;day<=7;day++){
   assert.equal((await call(app,'/game/control',host.token,{action:'day',value:day})).status,200);
   assert.equal(store.auth(alice.token).p.route,'standard');

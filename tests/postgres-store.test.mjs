@@ -18,7 +18,7 @@ test('Postgres Academy state survives independent concurrent instances', {skip:!
   const migration=(await pool.query(`SELECT value FROM "${schema}".system_metadata WHERE key='academy_schema_migration'`)).rows[0]?.value;
   assert.match(migration,/^12:[a-f0-9]{64}$/);
   await two.init();
-  const room=await one.create('Concurrency',{slug:'test-document',editor:'test-editor'});
+  const room=await one.create('Concurrency');
   const joined=await Promise.allSettled(Array.from({length:15},(_,i)=>(i%2?one:two).join(room.code,`Participant ${i}`)));
   assert.equal(joined.filter(r=>r.status==='fulfilled').length,12);
   assert.equal(joined.filter(r=>r.status==='rejected'&&r.reason.status===409).length,3);
@@ -82,7 +82,7 @@ test('Postgres Academy state survives independent concurrent instances', {skip:!
   }
   await two.logout(participant.token);
   await assert.rejects(one.auth(participant.token),error=>error.status===401);
-  assert.equal(one.view(after.r,after.s).documentSlug,'test-document');
+  assert.equal(one.view(after.r,after.s).intentUrl,null);
  } finally {
   await pool.query(`DROP SCHEMA IF EXISTS "${schema}" CASCADE`);
   await pool.end();

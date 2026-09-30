@@ -18,14 +18,19 @@ import {
   submitAutograde,
 } from '../proof-trail.mjs';
 import {
+  addBoardCard,
   applyBoardAction,
-  boardMarkdown,
+  boardColumns,
   boardView,
-  parseBoard,
 } from '../debrief-board.mjs';
 import { randomUUID } from 'node:crypto';
 import { Store, hash, fail } from '../store.mjs';
-import { mission, searchKnowledge, getDayPack } from '../content.mjs';
+import {
+  mission,
+  searchKnowledge,
+  getDayPack,
+  initialDocument,
+} from '../content.mjs';
 import {
   openQuizAttempt,
   requireDayQuiz,
@@ -33,16 +38,14 @@ import {
 } from '../quiz.mjs';
 import { createChatEmbedStartUrl, chatEmbedErrorHtml } from '../chat-embed.mjs';
 import { createScreenStore, screenBinding } from '../screen-state.mjs';
-import { bearer, namedCookie, text } from './shared.mjs';
+import { bearer, intentUrl, namedCookie, text } from './shared.mjs';
 
 export function registerRoomRoutes(app, deps) {
   const {
     store,
-    proof,
     token,
     browser,
     chosenDay,
-    suggestionReviewer,
     requireFacilitator,
     publicUrl,
     presence,
@@ -78,34 +81,31 @@ export function registerRoomRoutes(app, deps) {
       res.json({ ok: true });
     }),
   );
-  app.get(
-    '/game/suggestions',
-    wrap(async (req, res) => {
-      const { r } = await browser(req);
-      const d = await proof.state(r);
-      res.json(
-        Object.entries(d.marks || {})
-          .filter(([, m]) => ['insert', 'replace', 'delete'].includes(m.kind))
-          .map(([id, m]) => ({ id, ...m })),
-      );
-    }),
-  );
   app.post(
-    '/game/suggestion-review',
+    '/game/intent',
+    wrap(async (req, res) =>
+      res.json(
+        await store.withSession(token(req), 'browser', ({ r, s }) => {
+          if (
+            s.personId !== 'facilitator' &&
+            s.personId !== r.members[r.driver]?.id
+          )
+            fail(403, 'Only the driver or facilitator sets the intent link.');
+          r.intentUrl = intentUrl(req.body?.url);
+          r.version++;
+          return { intentUrl: r.intentUrl };
+        }),
+      ),
+    ),
+  );
+  app.get(
+    '/game/intent.md',
     wrap(async (req, res) => {
-      const { r, s } = await browser(req);
-      suggestionReviewer({ r, s });
-      if (!['accept', 'reject'].includes(req.body.decision))
-        fail(400, 'Ongeldig besluit.');
-      const id = text(req.body.id, 100);
-      const result = await proof.suggestionReview(
-        r,
-        req.body.decision,
-        id,
-        `human:${s.personId}`,
-        text(req.body.requestId, 100),
-      );
-      res.json(result);
+      await browser(req);
+      res
+        .type('text/markdown')
+        .set('Content-Disposition', 'attachment; filename="intent.md"')
+        .send(initialDocument);
     }),
   );
   app.post(
@@ -176,7 +176,6 @@ export function registerRoomRoutes(app, deps) {
 export function registerLiveRoutes(app, deps) {
   const {
     store,
-    proof,
     token,
     browser,
     chosenDay,
@@ -223,9 +222,7 @@ export function registerLiveRoutes(app, deps) {
       const { r, s } = await browser(req);
       if (s.personId !== 'facilitator')
         fail(403, 'Alleen de facilitator exporteert de debrief.');
-      const board = r.board
-        ? parseBoard((await proof.state({ proof: r.board.proof })).markdown)
-        : null;
+      const board = r.board ? boardColumns(r.board) : null;
       res
         .type('text/markdown')
         .set(
@@ -235,62 +232,42 @@ export function registerLiveRoutes(app, deps) {
         .send(exportDebrief(r, board));
     }),
   );
-  // Fencing drops Proof's loaded doc, so wait until its debounced persist has stored every card that is already live.
-  async function settleBoard(p) {
-    for (let attempt = 0; attempt < 25; attempt++) {
-      const [live, stored] = await Promise.all([
-        proof.state({ proof: p }),
-        proof.stored(p),
-      ]);
-      if (
-        JSON.stringify(parseBoard(live.markdown)) ===
-        JSON.stringify(parseBoard(stored.markdown))
-      )
-        return;
-      await new Promise((resolve) => setTimeout(resolve, 200));
-    }
-    fail(503, 'Proof slaat het bord nog op. Sluit het bord opnieuw.');
-  }
   app.post(
     '/game/board',
-    wrap(async (req, res) => {
-      const { r, s } = await browser(req);
-      if (s.personId !== 'facilitator')
-        fail(403, 'Alleen de facilitator opent of sluit het debriefbord.');
-      const action = req.body?.action,
-        created =
-          action === 'open' && !r.board
-            ? await proof.createBoard(
-                boardMarkdown(),
-                `${r.name} — Debriefbord`,
-              )
-            : null;
-      const board = await store.withSession(
-        token(req),
-        'browser',
-        ({ r, s }) => {
-          if (s.personId !== 'facilitator')
-            fail(403, 'Alleen de facilitator opent of sluit het debriefbord.');
-          return applyBoardAction(r, action, {
-            created,
-            at: new Date().toISOString(),
-            by: s.displayName || 'Facilitator',
-          });
-        },
-      );
-      if (board.status === 'closed') {
-        await settleBoard(board.proof);
-        await proof.fence(board.proof);
-      }
-      res.json(boardView(board));
-    }),
+    wrap(async (req, res) =>
+      res.json(
+        boardView(
+          await store.withSession(token(req), 'browser', ({ r, s }) => {
+            if (s.personId !== 'facilitator')
+              fail(
+                403,
+                'Alleen de facilitator opent of sluit het debriefbord.',
+              );
+            return applyBoardAction(r, req.body?.action, {
+              at: new Date().toISOString(),
+              by: s.displayName || 'Facilitator',
+            });
+          }),
+        ),
+      ),
+    ),
   );
-  app.get(
-    '/game/document',
-    wrap(async (req, res) => {
-      const { r } = await browser(req);
-      res.json(await proof.state(r));
-    }),
+  app.post(
+    '/game/board/card',
+    wrap(async (req, res) =>
+      res.json(
+        boardView(
+          await store.withSession(token(req), 'browser', ({ r, s, p }) =>
+            addBoardCard(r, {
+              column: Number(req.body?.column),
+              text: text(req.body?.text, 280),
+              by: p?.name || s.displayName || 'Facilitator',
+              at: new Date().toISOString(),
+            }),
+          ),
+        ),
+      ),
+    ),
   );
   const screens = createScreenStore(presence);
   app.post(
@@ -441,16 +418,6 @@ export function registerLiveRoutes(app, deps) {
     if (s.personId !== 'facilitator' && s.personId !== r.members[r.driver]?.id)
       fail(403, 'Driver of facilitator beoordeelt het bewijs.');
   }
-  async function commentQuote(r) {
-    const state = await proof.state(r);
-    const quote = state.markdown
-      .split('\n')
-      .find((line) => line.trim())
-      ?.replace(/^#+\s*/, '')
-      .trim();
-    if (!quote) fail(409, 'Het document heeft nog geen tekst voor commentaar.');
-    return quote;
-  }
   async function evidence(token, input) {
     const { r, p, s } = await store.auth(token);
     if (!p) fail(403, 'Alleen een deelnemer kan bewijs indienen.');
@@ -488,7 +455,6 @@ export function registerLiveRoutes(app, deps) {
           status: 'pending',
         },
         actor: `${s.kind === 'mcp' ? 'ai' : 'human'}:${p.name}:${p.id}`,
-        quote: await commentQuote(r),
       },
       (context) => {
         if (!context.p) fail(403, 'Alleen deelnemers.');
@@ -496,14 +462,7 @@ export function registerLiveRoutes(app, deps) {
       },
     );
     if (reserved.completed) return reserved.result;
-    const { value: e, actor, quote } = reserved.intent;
-    await proof.comment(
-      r,
-      actor,
-      `Bewijs ${e.id}\n${e.finding}\nControle: ${e.command}\nWaargenomen: ${e.observed}\nBeperking: ${e.limitation}\n${e.taskId ? `Opdracht: ${e.taskId}\n` : ''}Status: ingediend, nog niet door een mens beoordeeld.`,
-      quote,
-      `${p.id}:${key}`,
-    );
+    const { value: e } = reserved.intent;
     return store.completeRequest(
       token,
       'evidence',
@@ -622,7 +581,6 @@ export function registerLiveRoutes(app, deps) {
             at: new Date().toISOString(),
           },
           actor: `human:${s.personId}`,
-          quote: await commentQuote(r),
         },
         (context) => {
           const e = context.r.evidence.find((e) => e.id === fields.id);
@@ -634,14 +592,7 @@ export function registerLiveRoutes(app, deps) {
         },
       );
       if (saved.completed) return res.json(saved.result);
-      const { value: intent, actor, quote } = saved.intent;
-      await proof.comment(
-        r,
-        actor,
-        `Review bewijs ${intent.id}: ${intent.status}\n${intent.note}`,
-        quote,
-        `review:${s.personId}:${key}`,
-      );
+      const { value: intent } = saved.intent;
       res.json(
         await store.completeRequest(
           token(req),
@@ -693,19 +644,11 @@ export function registerLiveRoutes(app, deps) {
             at: new Date().toISOString(),
           },
           actor: `human:${s.personId}`,
-          quote: await commentQuote(r),
         },
         reviewer,
       );
       if (saved.completed) return res.json(saved.result);
-      const { value: h, actor, quote } = saved.intent;
-      await proof.comment(
-        r,
-        actor,
-        `Overdracht\nBesluit: ${h.decision}\nGecontroleerd: ${h.checked}\nOpen: ${h.open}\nVolgende eigenaar: ${h.next}`,
-        quote,
-        h.id,
-      );
+      const { value: h } = saved.intent;
       res.json(
         await store.completeRequest(
           token(req),

@@ -2,7 +2,7 @@
 
 Current delivery direction: [incremental refactor and agent authoring](docs/decisions/2026-09-28-academy-agent-authoring.md). This decision describes planned changes; existing runtime behavior below is not a claim that hosted chat is already delivered.
 
-Nederlandse leeromgeving met een echt, doorlopend Proof-document, flexibele squads (standaard ~4–5, soft max ~12), één driver, facilitatorbediening, privé-quiz, brongebonden kennisbank en bewijs/review/handoff. Eigen Claude Code werkt via een beperkte MCP-bridge. De app bevat geen modelchat en vraagt geen Anthropic API-key.
+Nederlandse leeromgeving met een gedeeld intent-document per squad (een Proof-cloudlink of `intent.md` in de squad-repo), flexibele squads (standaard ~4–5, soft max ~12), één driver, facilitatorbediening, privé-quiz, brongebonden kennisbank en bewijs/review/handoff. Eigen Claude Code werkt via een beperkte MCP-bridge. De app bevat geen modelchat en vraagt geen Anthropic API-key.
 
 Zie [de vijf supportdagen](docs/LEARNING-ROUTE.md) voor inhoud, voortgang en de grenzen van de oefeningen. Squads bewaren bestanden in [objectopslag](docs/OBJECT-STORAGE.md) en bouwen en presenteren ook [slidedecks](docs/SLIDES.md) via de UI of via de eigen Claude Code (MCP-tools `create_deck`, `add_slide`, `update_slide`, `patch_deck`, `export_deck_html`).
 
@@ -15,11 +15,11 @@ node scripts/setup.mjs
 node --env-file=.env scripts/start.mjs
 ```
 
-Setup installeert de vastgelegde afhankelijkheden en bouwt app plus Proof. De runtime vereist de bestaande Postgres- en Redis-variabelen uit een afgeschermde `.env` of een werkende 1Password-mount. Gebruik bij een mount `--env-file=.env.1password`. Er worden geen model-providercredentials gevraagd. Open na de healthcheck http://127.0.0.1:4317; deze README bewijst niet dat daar momenteel een proces draait.
+Setup installeert de vastgelegde afhankelijkheden en bouwt de app. De runtime vereist de bestaande Postgres- en Redis-variabelen uit een afgeschermde `.env` of een werkende 1Password-mount. Gebruik bij een mount `--env-file=.env.1password`. Er worden geen model-providercredentials gevraagd. Open na de healthcheck http://127.0.0.1:4317; deze README bewijst niet dat daar momenteel een proces draait.
 
 De lokale facilitatorcode staat in `.data/host-key` (alleen lokaal bekijken) en blijft beschikbaar als break-glass fallback. Maak via het startscherm een squad; deel de getoonde squadcode met deelnemers. Gebruik afzonderlijke browserprofielen: het Proof-iframe deelt de sessiecookie binnen één profiel. Praktijk start pas bij vier leden. De timer roteert nooit automatisch. Facilitator kiest fase en driver afzonderlijk.
 
-Squads, sessies, Proof-documenten, marks, Yjs-geschiedenis en private snapshots staan in Postgres. Redis synchroniseert live samenwerking en aanwezigheid. `.data/` bewaart alleen lokale ontwikkelsleutels en eventueel historische fixturebestanden. Productie gebruikt gedeelde signing- en facilitatorgeheimen uit de serveromgeving. Stop met Ctrl-C. Browser-, MCP- en facilitator-logintokens verlopen na twaalf uur.
+Squads, sessies, intent-links, bewijs, reviews, het debriefbord en private snapshots staan in Postgres. Redis synchroniseert aanwezigheid en schermstatus. `.data/` bewaart alleen lokale ontwikkelsleutels en eventueel historische fixturebestanden. Productie gebruikt gedeelde signing- en facilitatorgeheimen uit de serveromgeving. Stop met Ctrl-C. Browser-, MCP- en facilitator-logintokens verlopen na twaalf uur.
 
 ## Facilitator-login met Google
 
@@ -46,11 +46,11 @@ Claude configureert de remote MCP in lokale projectscope, controleert de sessie-
 
 ## Twee eigen accounts: nog uit te voeren
 
-Na de HTTPS-deployment verbinden twee deelnemers ieder hun eigen Claude Code met hun eigen gametoken. Laat beide dezelfde missie/documentcontext ophalen, echte tests in hun eigen starter uitvoeren en bewijs met een unieke `requestId` indienen. Controleer toegeschreven bijdragen, gelijktijdige documentbewerkingen, herverbinding en tokenrevocatie. Voeg voor de squadgrootte twee testdeelnemers in aparte browserprofielen toe. Menselijk accepteren en afwijzen via Academy zijn lokaal met echte Proof-voorstellen getest. De accounttest en publieke regressie zijn nog niet afgerond.
+Na de HTTPS-deployment verbinden twee deelnemers ieder hun eigen Claude Code met hun eigen gametoken. Laat beide dezelfde missie en intent-link ophalen, echte tests in hun eigen starter uitvoeren en bewijs met een unieke `requestId` indienen. Controleer toegeschreven bijdragen, herverbinding en tokenrevocatie. Voeg voor de squadgrootte twee testdeelnemers in aparte browserprofielen toe. De accounttest en publieke regressie zijn nog niet afgerond.
 
 ## Docker
 
-`Dockerfile` bouwt app plus Proof en is wat de Hetzner-productieruntime via Compose bouwt. De lokale Compose-configuratie vereist runtimecredentials en bewaart ontwikkelsleutels in een volume. Duurzame applicatietoestand staat extern. Docker is hier niet beschikbaar; de aparte CI/CD-taak verzorgt een echte build. Zie [deploymentstatus](docs/DEPLOYMENT.md). Domain cutover runbook: [GoDaddy → academy.aetherlink.ai](docs/domain-godaddy.md). Vercel is afgebouwd; de historische takedown staat in [Vercel Academy takedown](docs/vercel-academy-takedown.md).
+`Dockerfile` bouwt de app en is wat de Hetzner-productieruntime via Compose bouwt. De lokale Compose-configuratie vereist runtimecredentials en bewaart ontwikkelsleutels in een volume. Duurzame applicatietoestand staat extern. Docker is hier niet beschikbaar; de aparte CI/CD-taak verzorgt een echte build. Zie [deploymentstatus](docs/DEPLOYMENT.md). Domain cutover runbook: [GoDaddy → academy.aetherlink.ai](docs/domain-godaddy.md). Vercel is afgebouwd; de historische takedown staat in [Vercel Academy takedown](docs/vercel-academy-takedown.md).
 
 ## Controles en grenzen
 
@@ -59,11 +59,11 @@ pnpm test
 node --test starter/status.test.mjs
 ```
 
-De eerdere integratie- en samenwerkingstests vereisen een draaiende server via `ACADEMY_URL` (standaard poort 4317). Ze maken eigen testsquads. Gerichte databasechecks vereisen de bestaande Postgres-omgeving. `tests/distributed.test.mjs` start zelf twee echte app/Proof-processen wanneer `ACADEMY_DISTRIBUTED_TEST=1` is ingesteld; gebruik daarvoor exclusief poorten 4351/4352 en 4451/4452. Het testcommando neemt ook de TypeScript canonical-test mee.
+De eerdere integratie- en samenwerkingstests vereisen een draaiende server via `ACADEMY_URL` (standaard poort 4317). Ze maken eigen testsquads. Gerichte databasechecks vereisen de bestaande Postgres-omgeving. `tests/distributed.test.mjs` start zelf twee echte Academy-processen wanneer `ACADEMY_DISTRIBUTED_TEST=1` is ingesteld; gebruik daarvoor exclusief poorten 4351/4352.
 
 De oorspronkelijke rendererhang is lokaal opgelost en opnieuw in de browser gecontroleerd. Publieke acceptatie en de volledige gedistribueerde regressie zijn nog niet geslaagd. [progress.md](progress.md) bevat de actuele resultaten en beperkingen. Het [gedateerde browserrapport](../demo/VERIFICATION.md) is een werkmapartefact buiten deze repository. Zie ook [architectuur](docs/ARCHITECTURE.md).
 
-Dit is een lokaal pilot-MVP: de driverrol stuurt de werkvorm, geen exclusief schrijfrecht in Proof. Alle menselijke editors kunnen het document bewerken. Namen/squadcodes zijn geen geverifieerde identiteit. De tien ingebouwde lessen zijn een compacte MVP-inhoud; het volledige externe curriculumdocument is niet geïmporteerd. Enkele native Proof-bedieningen zijn Engels. Liveblocks is beoordeeld maar niet geïntegreerd. De broncoderepository is [RyanLisse/aetherlink-academy-app](https://github.com/RyanLisse/aetherlink-academy-app) en de publieke deployment draait op de Hetzner CX33 `aetherlink-academy` via OpenShip edge (`https://academy.91-99-78-17.sslip.io/`; na de domain-stap is raw host `:4317` mogelijk alleen loopback — `academy.aetherlink.ai` / AET-42 volgt wanneer DNS bestaat). Deployed acceptatie wordt bewezen met `scripts/deployed-mcp-check.mjs` en `scripts/deployed-browser-acceptance.mjs`; zie [handleiding deelnemer](docs/handleiding-deelnemer.md) en [handleiding facilitator](docs/handleiding-facilitator.md).
+Dit is een lokaal pilot-MVP: de driverrol stuurt de werkvorm. Het intent-document zelf staat buiten de Academy (Proof cloud of de squad-repo); alleen driver en facilitator zetten de link. Namen/squadcodes zijn geen geverifieerde identiteit. De tien ingebouwde lessen zijn een compacte MVP-inhoud; het volledige externe curriculumdocument is niet geïmporteerd. Liveblocks is beoordeeld maar niet geïntegreerd. De broncoderepository is [RyanLisse/aetherlink-academy-app](https://github.com/RyanLisse/aetherlink-academy-app) en de publieke deployment draait op de Hetzner CX33 `aetherlink-academy` via OpenShip edge (`https://academy.91-99-78-17.sslip.io/`; na de domain-stap is raw host `:4317` mogelijk alleen loopback — `academy.aetherlink.ai` / AET-42 volgt wanneer DNS bestaat). Deployed acceptatie wordt bewezen met `scripts/deployed-mcp-check.mjs` en `scripts/deployed-browser-acceptance.mjs`; zie [handleiding deelnemer](docs/handleiding-deelnemer.md) en [handleiding facilitator](docs/handleiding-facilitator.md).
 
 ## Kwaliteitschecks
 
@@ -75,6 +75,6 @@ qlty check --all --no-fix
 qlty githooks install
 ```
 
-React Doctor scant de React-frontend in `src/`; `doctor.config.json` sluit de vendored Proof SDK en buildoutput uit. Qlty draait actionlint, zizmor, shellcheck, hadolint, radarlint-iac, osv-scanner, trufflehog en ripgrep vanuit `.qlty/qlty.toml`; er zijn bewust geen formatters ingeschakeld. De git hooks in `.qlty/hooks` draaien de checks op gewijzigde bestanden voor elke push. Installeer de Qlty CLI met `curl -fsSL https://qlty.sh | bash`.
+React Doctor scant de React-frontend in `src/`; `doctor.config.json` sluit buildoutput uit. Qlty draait actionlint, zizmor, shellcheck, hadolint, radarlint-iac, osv-scanner, trufflehog en ripgrep vanuit `.qlty/qlty.toml`; er zijn bewust geen formatters ingeschakeld. De git hooks in `.qlty/hooks` draaien de checks op gewijzigde bestanden voor elke push. Installeer de Qlty CLI met `curl -fsSL https://qlty.sh | bash`.
 
-Proof is vendored vanaf [EveryInc/proof-sdk](https://github.com/EveryInc/proof-sdk), commit `fb2578758f1c62776301209131181643c5f4a19a`, inclusief MIT-licentie. Lokale integratieaanpassingen staan in de architectuurnotitie.
+De Academy bevat geen documenteditor meer. Het intent-document van een squad is een Proof-clouddocument of `intent.md` in de squad-repo; de room bewaart alleen de https-link (`POST /game/intent`) en `/game/intent.md` levert een sjabloon.

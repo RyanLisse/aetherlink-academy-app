@@ -31,8 +31,8 @@ test('day-complete · arcade-stop · proof-milestone badges wire to existing sig
 test('GET /game/badges returns learner earnables; facilitator roster includes badges',async()=>{
  const dir=mkdtempSync(path.join(os.tmpdir(),'academy-badges-'));
  const store=new LocalStore(dir);
- const instance=createApp({dir,repository:store,hostKey:'test-host',proofBase:'http://127.0.0.1:9',publicBaseUrl:'http://127.0.0.1:4317',slidesService:{run:async()=>null}});
- Object.assign(instance.proof,{create:async()=>({slug:'badge-proof',editor:'editor-token'}),state:async()=>({markdown:'# Intent\n',marks:{}}),comment:async()=>({ok:true})});
+ const instance=createApp({dir,repository:store,hostKey:'test-host',publicBaseUrl:'http://127.0.0.1:4317',slidesService:{run:async()=>null}});
+
  await new Promise(resolve=>instance.server.listen(0,'127.0.0.1',resolve));
  const base=`http://127.0.0.1:${instance.server.address().port}`;
  const call=async(method,route,{body,cookie}={})=>{

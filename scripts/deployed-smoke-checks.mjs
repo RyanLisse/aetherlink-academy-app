@@ -26,12 +26,11 @@ const parseJson = body => { try { return JSON.parse(body); } catch { return unde
 const SHA = /^[0-9a-f]{40}$/;
 
 export function evaluateHealth(health) {
-  const name = 'Academy and Proof ready';
+  const name = 'Academy ready';
   if (health.status !== 200) return result(name, FAIL, `/game/health HTTP ${health.status}`);
   const body = parseJson(health.body);
   if (body?.ok !== true) return result(name, FAIL, '/game/health ok is not true');
-  if (body.proof !== true) return result(name, FAIL, '/game/health proof is not true (Proof sidecar unreachable)');
-  return result(name, PASS, 'ok=true proof=true');
+  return result(name, PASS, 'ok=true');
 }
 
 export function evaluateRevision(health, expectedRevision) {

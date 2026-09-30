@@ -35,15 +35,11 @@ if [[ ! -f "$env_file" ]]; then
   # Passwords: >=20 chars, only [A-Za-z0-9_-] per infra/deploy/README.md
   pg="$(openssl rand -hex 32)"
   rd="$(openssl rand -hex 32)"
-  sig="$(openssl rand -hex 32)"
   umask 077
   cat >"$env_file" <<ENV
 POSTGRES_PASSWORD=${pg}
 REDIS_PASSWORD=${rd}
-PROOF_COLLAB_SIGNING_SECRET=${sig}
 ACADEMY_PUBLIC_URL=http://127.0.0.1:4318
-PROOF_DATABASE_SCHEMA=proof_wave
-PROOF_REDIS_PREFIX=proof-wave
 SOURCE_REVISION=${sha}
 ENV
   chmod 600 "$env_file"

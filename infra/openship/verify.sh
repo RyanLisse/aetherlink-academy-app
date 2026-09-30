@@ -25,7 +25,7 @@ check() {
 }
 
 health_ok() {
-  curl -fsS --max-time 10 "$base/game/health" | jq -e --arg sha "$sha" '.ok == true and .proof == true and .revision == $sha' >/dev/null
+  curl -fsS --max-time 10 "$base/game/health" | jq -e --arg sha "$sha" '.ok == true and .revision == $sha' >/dev/null
 }
 config_ok() {
   curl -fsS --max-time 10 "$base/game/config" | jq -e '.portal == true and (.googleSso | type) == "boolean"' >/dev/null
@@ -63,7 +63,7 @@ row_counts_match() {
 
 echo "Verifying $base (revision $sha)"
 check "per-table row counts match the migrated dump" row_counts_match
-check "Academy and Proof healthy at the deployed revision" health_ok
+check "Academy healthy at the deployed revision" health_ok
 check "/game/config answers" config_ok
 check "join with an unknown room code reaches the database and is refused" unknown_room_rejected
 check "join an existing room (VERIFY_ROOM_CODE, runs last because it writes)" room_join_ok

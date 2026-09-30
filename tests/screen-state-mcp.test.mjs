@@ -32,7 +32,7 @@ const expected=(roomId,overrides={})=>({lessonId:null,route:'squad',slideIndex:0
 test('public /mcp lists get_screen_state and returns the caller\'s live screen after a heartbeat',async()=>{
  const g=await gateway();
  try{
-  const room=g.instance.store.create('Squad',{slug:'s'}),ann=g.participant(room,'Ann');
+  const room=g.instance.store.create('Squad'),ann=g.participant(room,'Ann');
   const c=await g.connect(ann.mcp);
   assert.ok((await c.listTools()).tools.some(t=>t.name==='get_screen_state'),'get_screen_state is listed on the public /mcp');
   assert.deepEqual(await g.screen(c),{error:'No active browser view for this participant. Open the follow view first.'});
@@ -48,7 +48,7 @@ test('public /mcp lists get_screen_state and returns the caller\'s live screen a
 test('release filter is cumulative and a naslag heartbeat for an unreleased day is refused',async()=>{
  const g=await gateway();
  try{
-  const room=g.instance.store.create('Squad',{slug:'s'}),ann=g.participant(room,'Ann');
+  const room=g.instance.store.create('Squad'),ann=g.participant(room,'Ann');
   const c=await g.connect(ann.mcp);
   const setDay=async day=>assert.equal((await g.post('/game/control',room.token,{action:'day',value:day})).status,200);
   await g.post('/game/screen-state',ann.browser,{tabId:TAB_A,view:'squad'});
@@ -70,7 +70,7 @@ test('release filter is cumulative and a naslag heartbeat for an unreleased day 
 test('a participant token reads only its own participant\'s screen',async()=>{
  const g=await gateway();
  try{
-  const room=g.instance.store.create('Squad',{slug:'s'}),other=g.instance.store.create('Other',{slug:'o'});
+  const room=g.instance.store.create('Squad'),other=g.instance.store.create('Other');
   const ann=g.participant(room,'Ann'),bob=g.participant(room,'Bob'),eve=g.participant(other,'Eve');
   const [ca,cb,ce]=await Promise.all([g.connect(ann.mcp),g.connect(bob.mcp),g.connect(eve.mcp)]);
   await g.post('/game/screen-state',ann.browser,{tabId:TAB_A,view:'squad'});
@@ -87,7 +87,7 @@ test('a participant token reads only its own participant\'s screen',async()=>{
 test('missing, invalid and wrong-kind tokens are rejected on both the MCP read and the heartbeat',async()=>{
  const g=await gateway();
  try{
-  const room=g.instance.store.create('Squad',{slug:'s'}),ann=g.participant(room,'Ann');
+  const room=g.instance.store.create('Squad'),ann=g.participant(room,'Ann');
   const call={jsonrpc:'2.0',id:1,method:'tools/call',params:{name:'get_screen_state',arguments:{}}};
   for(const token of [undefined,'invalid',ann.browser])assert.equal((await g.post('/mcp',token,call)).status,401);
   for(const token of [undefined,'invalid',ann.mcp])assert.equal((await g.post('/game/screen-state',token,{tabId:TAB_A,view:'squad'})).status,401);

@@ -61,7 +61,7 @@ function fixture() {
     hostKey: 'test-host',
     publicBaseUrl: 'http://127.0.0.1:4317',
   });
-  const host = instance.store.create('Overlay pin', {slug: 'overlay-pin'});
+  const host = instance.store.create('Overlay pin');
   const participant = instance.store.join(host.code, 'Deelnemer');
   return {instance, host, participant};
 }

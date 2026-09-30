@@ -18,12 +18,10 @@ async function gateway({now = START, trustProxy} = {}) {
     dir,
     repository: new LocalStore(dir, {now: () => clock.now}),
     hostKey: "test-host",
-    proofBase: "http://127.0.0.1:9",
     publicBaseUrl: "https://academy.example.test/",
     trustProxy,
     slidesService: {run: async () => null},
   });
-  instance.proof.create = async () => ({slug: "aet-82-proof", editor: "editor-token"});
   await new Promise((resolve) => instance.server.listen(0, "127.0.0.1", resolve));
   const base = `http://127.0.0.1:${instance.server.address().port}`;
   const call = async (method, route, {body, cookie} = {}) => {

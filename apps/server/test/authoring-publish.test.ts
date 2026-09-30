@@ -66,7 +66,7 @@ const participantTokens = () =>
   Effect.runPromise(Effect.gen(function* () {
     const squad = yield* SquadStore;
     const tokens = yield* TokenService;
-    const room = yield* squad.create('Synthetic test squad', {slug: 'synthetic-test'});
+    const room = yield* squad.create('Synthetic test squad');
     const joined = yield* squad.join(room.code, 'Synthetic participant');
     const session = yield* tokens.authenticate(joined.token, 'browser');
     const mcp = yield* tokens.mint(room.roomId, session.personId, 'mcp');

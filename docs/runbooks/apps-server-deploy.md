@@ -9,26 +9,24 @@ For: the operator who puts `apps/server` (Effect + Drizzle, AET-45 to AET-55, AE
 | Process | Port | Reachable from | Deployed by |
 | --- | --- | --- | --- |
 | Legacy gateway `academy-app` (`server/app.mjs`) | 4317 | public today (http://91.99.78.17:4317) | push to `main`, workflow **Deploy Hetzner Academy** |
-| Legacy Proof | 4400 | loopback | same container |
 | `apps/server` (Compose project `academy-wave`, service `app`) | 4318 | loopback only (`127.0.0.1:4318`) | manual workflow **Wave foundation sibling deploy (manual)** |
-| Wave Proof (service `proof`) | 4418 | Compose network only | same workflow |
 | Wave Postgres 16 and Redis 7 (TLS) | none published | Compose network only | same workflow |
 | OpenShip edge | 80, 443 | public | OpenShip |
 
-The two stacks share nothing. `academy-wave` has its own Postgres, Redis, Proof, volumes and network (`infra/compose.yaml`). The legacy gateway does not proxy to apps/server; there is no shared path. apps/server also serves the apps/web SPA from `ACADEMY_WEB_DIST`, so it is a complete origin on its own.
+The two stacks share nothing. `academy-wave` has its own Postgres, Redis, volumes and network (`infra/compose.yaml`). The legacy gateway does not proxy to apps/server; there is no shared path. apps/server also serves the apps/web SPA from `ACADEMY_WEB_DIST`, so it is a complete origin on its own.
 
 To reach apps/server from a browser you need a separate HTTPS hostname on the OpenShip edge that points at `127.0.0.1:4318` (see step 7). Google OAuth needs that hostname too: Google refuses raw IPs and plain HTTP for non-localhost redirect URIs.
 
 ## 2. What must exist first
 
 1. GitHub secrets `ACADEMY_HETZNER_HOST`, `ACADEMY_HETZNER_USER`, `ACADEMY_HETZNER_SSH_KEY`. They already exist; the legacy deploy uses them.
-2. Enough disk on the host. `infra/native-apps/CAPACITY.md` recorded 15 GB free on 2026-09-21. The wave image builds apps/server, apps/web and Proof in one image. Check first:
+2. Enough disk on the host. `infra/native-apps/CAPACITY.md` recorded 15 GB free on 2026-09-21. The wave image builds apps/server and apps/web in one image. Check first:
 
    ```sh
    ssh root@91.99.78.17 'df -h / && docker system df'
    ```
 
-3. Postgres, Redis and Proof: nothing to buy or create. The Compose stack starts its own. `bootstrap-wave-foundation.sh` writes `/root/aetherlink-academy-wave/.env` with random passwords the first time.
+3. Postgres and Redis: nothing to buy or create. The Compose stack starts its own. `bootstrap-wave-foundation.sh` writes `/root/aetherlink-academy-wave/.env` with random passwords the first time.
 4. For Google login on apps/server only: a public HTTPS hostname (step 7) and a Google OAuth client ([google-oauth.md](google-oauth.md)).
 
 ## 3. Environment variables for apps/server
@@ -44,12 +42,6 @@ Names come from `apps/server/src/layers/config.ts`, `src/identity/google-sso.ts`
 | `ACADEMY_PUBLIC_URL` | no | `http://127.0.0.1:<PORT>` | `.env`. Set it to the HTTPS hostname before enabling Google. It builds the Google callback and decides the `Secure` cookie flag |
 | `SOURCE_REVISION` | no | none (`/health` shows `null`) | set by the rebuild script to the deployed SHA |
 | `ACADEMY_WEB_DIST` | no | none (no SPA served) | `/app/apps/web/dist` |
-| `PROOF_URL` | no | unset, so apps/server spawns Proof itself | `http://proof:4418` (separate `proof` service) |
-| `PROOF_PORT` | no | `4418` | image default |
-| `PROOF_SDK_DIR` | no | `vendor/proof-sdk` | image default |
-| `PROOF_COLLAB_SIGNING_SECRET` | yes in practice | none | `.env`, random 64 hex characters |
-| `PROOF_DATABASE_SCHEMA` | no | `proof_wave` | `.env` |
-| `PROOF_REDIS_PREFIX` | no | `proof-wave` | `.env` |
 | `NODE_EXTRA_CA_CERTS` | no | none | `/tls/ca.crt` (the stack's own CA) |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `ACADEMY_FACILITATOR_DOMAINS` | all three or none | SSO off | add to `.env`. If only one or two are set, apps/server refuses to boot |
 | `ACADEMY_AUTHORING_ENABLED` (`true`), `ACADEMY_AUTHORING_KEY`, `ACADEMY_AUTHORING_DATA_DIR`, `AGENT_SLIDES_URL` (https), `AGENT_SLIDES_TOKEN` | all or the authoring API stays off | off | leave out unless you want the authoring PoC routes |
@@ -57,7 +49,7 @@ Names come from `apps/server/src/layers/config.ts`, `src/identity/google-sso.ts`
 
 The server itself does not read `ACADEMY_URL`, `ACADEMY_TOKEN`, `ACADEMY_LIVE_HOST` or `ACADEMY_LIVE_PORT`. They belong to the MCP stdio client and the standalone live dev servers.
 
-The host file `/root/aetherlink-academy-wave/.env` is the only place to edit values. The rebuild script copies it into the checkout on every run. Compose passes the whole file to both `app` and `proof`.
+The host file `/root/aetherlink-academy-wave/.env` is the only place to edit values. The rebuild script copies it into the checkout on every run. Compose passes the whole file to `app`.
 
 ## 4. First deploy (sibling Compose)
 
@@ -67,7 +59,7 @@ The host file `/root/aetherlink-academy-wave/.env` is the only place to edit val
    SHA=$(gh api repos/RyanLisse/aetherlink-academy-app/commits/main --jq .sha); echo "$SHA"
    ```
 
-2. Start the manual workflow. It bootstraps the host the first time, builds `infra/Dockerfile`, runs `compose up`, waits until `/health` reports `ok`, `proof` and the SHA, and checks that `:4317/game/health` still answers:
+2. Start the manual workflow. It bootstraps the host the first time, builds `infra/Dockerfile`, runs `compose up`, waits until `/health` reports `ok` and the SHA, and checks that `:4317/game/health` still answers:
 
    ```sh
    gh workflow run wave-foundation-deploy.yml --repo RyanLisse/aetherlink-academy-app --ref main -f sha="$SHA" -f confirm=deploy-sibling
@@ -126,17 +118,17 @@ From inside the app container, with the `dc` helper from step 5. The image conta
 dc exec -T app node scripts/verify/apps-server.mjs http://127.0.0.1:4318 --revision "$SHA" --skip-google
 ```
 
-Done when it ends with `all 6 checks passed`: `/health ok and proof`, `/health revision`, `/connection postgres`, `/connection redis`, `/connection proof`, `drizzle migrations applied (7 of 7, latest 7_facilitator_sessions)`.
+Done when it ends with `all 5 checks passed`: `/health ok`, `/health revision`, `/connection postgres`, `/connection redis`, `drizzle migrations applied (7 of 7, latest 7_facilitator_sessions)`.
 
 After Google is configured (step 8), drop `--skip-google` and add `--public-url https://<apps-server-host>`.
 
 ## 7. Public hostname through the OpenShip edge (optional, needed for Google)
 
 1. Choose a hostname, for example `academy-next.aetherlink.ai`. Add an `A` record for it to `91.99.78.17` in GoDaddy. Do not touch `@`, `www`, MX, SPF, DKIM or DMARC.
-2. In OpenShip, attach the hostname and route it to `127.0.0.1:4318`. OpenShip owns ports 80 and 443; do not start a second proxy. Keep WebSocket upgrades and streaming responses on (Proof collaboration uses `/ws`).
+2. In OpenShip, attach the hostname and route it to `127.0.0.1:4318`. OpenShip owns ports 80 and 443; do not start a second proxy. Keep streaming responses on (`/mcp` streams).
 3. Set `ACADEMY_PUBLIC_URL=https://academy-next.aetherlink.ai` in `/root/aetherlink-academy-wave/.env` and rerun the rebuild script with the same SHA.
 
-Done when `curl -fsS https://academy-next.aetherlink.ai/health` returns `"ok":true,"proof":true` and the SHA.
+Done when `curl -fsS https://academy-next.aetherlink.ai/health` returns `"ok":true` and the SHA.
 
 Open: it is not verified from the repository whether the OpenShip edge can route a hostname to a container it does not manage. If it cannot, deploy apps/server as an OpenShip project instead. The authoring PoC did exactly that (`infra/poc/academy.Dockerfile`, `docs/poc-evidence/ACCEPTANCE.md`). That path needs its own Postgres and Redis URLs, the same env table as step 3, `PORT` set to the port OpenShip routes to, health check `GET /health`, and the step 5 migration run once against its `DATABASE_URL`.
 
@@ -160,7 +152,7 @@ Open: it is not verified from the repository whether the OpenShip edge can route
 - Stop only the new stack. The legacy gateway keeps running:
 
   ```sh
-  dc stop app proof
+  dc stop app
   ```
 
 - Or redeploy an earlier SHA with the same workflow or `rebuild-wave-foundation.sh <older-sha>`.
@@ -184,7 +176,7 @@ Least privilege first. Each line says what it unlocks.
 ```text
 $ node scripts/verify/apps-server.mjs http://91.99.78.17:4318
 apps/server on http://91.99.78.17:4318
-  FAIL  /health ok and proof  (The operation was aborted due to timeout)
+  FAIL  /health ok  (The operation was aborted due to timeout)
   FAIL  start redirects to Google  (The operation was aborted due to timeout)
 2 of 2 checks failed
 ```

@@ -43,8 +43,6 @@ serveStdio(() => {
   server.registerTool('get_my_progress', {description: 'Own progress in this squad.', inputSchema: Empty}, (a) => invoke('get_my_progress', a));
   server.registerTool('get_connection_state', {description: 'MCP connection state: configured|connected|verified.', inputSchema: Empty}, (a) => invoke('get_connection_state', a));
   server.registerTool('get_mission', {description: 'Legacy: mission and role.', inputSchema: Empty}, (a) => invoke('get_mission', a));
-  server.registerTool('get_document', {description: 'Legacy: shared Proof intent.', inputSchema: Empty}, (a) => invoke('get_document', a));
   server.registerTool('search_knowledge', {description: 'Legacy: search curriculum lessons.', inputSchema: z.object({query: z.string().max(200).default('')})}, (a) => invoke('search_knowledge', a));
-  server.registerTool('suggest_document', {description: 'Legacy: propose Proof replacement (explicit).', inputSchema: z.object({requestId: z.string(), quote: z.string(), content: z.string()})}, (a) => invoke('suggest_document', a));
   return server;
 });

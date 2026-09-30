@@ -28,7 +28,7 @@ const KEYS={
 
 function fixture(){
  const instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-lab-grading-')),hostKey:'test-host',publicBaseUrl:'https://academy.example',labsForDay:day=>LABS[day],labKeys:KEYS});
- const host=instance.store.create('Graded labs',{slug:'graded-labs'});
+ const host=instance.store.create('Graded labs');
  return {app:instance.app,host,ada:instance.store.join(host.code,'Ada'),bo:instance.store.join(host.code,'Bo')};
 }
 

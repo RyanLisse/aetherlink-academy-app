@@ -17,8 +17,7 @@ async function invoke(app,route,body,headers={}){
 
 test('personal access route exchanges a durable secret for a fresh browser session',async()=>{
  const instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-access-route-')),hostKey:'test-host',publicBaseUrl:'https://academy.example.test'});
- instance.proof.create=async()=>({slug:'access-proof',editor:'editor'});
- const room=await instance.store.create('Access room',await instance.proof.create());
+ const room=await instance.store.create('Access room');
  const joined=await instance.store.join(room.code,'Alice');
  const result=await invoke(instance.app,'/game/participant/resume',{resumeToken:joined.resumeToken});
  assert.equal(result.statusCode,200);
@@ -34,7 +33,7 @@ test('personal access route exchanges a durable secret for a fresh browser sessi
 
 test('an authenticated participant can mint a personal access link',async()=>{
  const instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-access-mint-')),hostKey:'test-host',publicBaseUrl:'https://academy.example.test'});
- const room=await instance.store.create('Access room',{slug:'access-proof'});
+ const room=await instance.store.create('Access room');
  const joined=await instance.store.join(room.code,'Alice');
  delete instance.store.auth(joined.token).p.access;
  instance.store.save();

@@ -110,7 +110,7 @@ test('day-pack includes resolved sims; sim-catalog lists fixture', async () => {
     hostKey: 'test-host',
     publicBaseUrl: 'https://academy.example',
   });
-  const host = instance.store.create('Sims', {slug: 'sims'});
+  const host = instance.store.create('Sims');
   const ada = instance.store.join(host.code, 'Ada');
   const cookies = {academy: ada.token};
   const app = instance.app;

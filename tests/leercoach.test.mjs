@@ -45,7 +45,7 @@ async function invoke(app,route,{method='post',body={},cookies={}}={}){
 
 async function classroom(coachConfig,{day=3,name='Deelnemer'}={}){
  const instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-leercoach-')),hostKey:'test-host',publicBaseUrl:'http://127.0.0.1:4317',coachConfig});
- const host=instance.store.create('Squad Noordzee',{slug:'noordzee'});
+ const host=instance.store.create('Squad Noordzee');
  const participant=instance.store.join(host.code,name);
  if(day!==1)assert.equal((await invoke(instance.app,'/game/control',{body:{action:'day',value:day},cookies:{academy:host.token}})).statusCode,200);
  const ask=(q,token=participant.token)=>invoke(instance.app,'/game/chat',{body:{q},cookies:{academy:token}});

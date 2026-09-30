@@ -8,15 +8,14 @@ import {GoogleSsoRoutes} from './identity/google-routes.ts';
 import {ServerConfig, ServerConfigLive} from './layers/config.ts';
 import {Connectivity, ConnectivityLive} from './layers/connectivity.ts';
 import {Postgres, PostgresFromConfig} from './layers/postgres.ts';
-import {ProofBridge, ProofBridgeLive} from './layers/proof-bridge.ts';
 import {Redis, RedisLive} from './layers/redis.ts';
 
 export const ApiRoutes = HttpApiBuilder.layer(AcademyApi).pipe(Layer.provide(SystemGroupLive));
 
 export const routes = (webDist: string | null) => Layer.mergeAll(ApiRoutes, StaticWebLive(webDist));
 
-export const ServicesLive: Layer.Layer<Connectivity | Postgres | Redis | ProofBridge, never, ServerConfig> = ConnectivityLive.pipe(
-  Layer.provideMerge(Layer.mergeAll(PostgresFromConfig, RedisLive, ProofBridgeLive)),
+export const ServicesLive: Layer.Layer<Connectivity | Postgres | Redis, never, ServerConfig> = ConnectivityLive.pipe(
+  Layer.provideMerge(Layer.mergeAll(PostgresFromConfig, RedisLive)),
 );
 
 export const AppLive = (env: NodeJS.ProcessEnv = process.env) => {

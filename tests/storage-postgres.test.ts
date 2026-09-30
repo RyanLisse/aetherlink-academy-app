@@ -38,7 +38,7 @@ test('Postgres file storage reports commit failures and preserves object consist
  const two=createFileStorage({pool,schema,objectStore});
  try{
   const store=await new PostgresStore(pool,{schema}).init();
-  const host=await store.create('Files',{slug:'files'});
+  const host=await store.create('Files');
   const {r}=await store.auth(host.token,'browser');
   const actor={roomId:r.id,id:'p1',name:'P',role:'participant',source:'human'} as const;
   const input={filename:'saved.txt',contentType:'text/plain',bytes:Buffer.from('durable bytes')};

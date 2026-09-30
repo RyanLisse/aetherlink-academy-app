@@ -11,7 +11,7 @@ Academy runs on the Hetzner CX33 `aetherlink-academy` as sibling Docker. `main` 
    - **Actions:** run **Deploy Hetzner Academy** via `workflow_dispatch` against the known-good ref. The workflow takes no SHA input — it deploys the commit at the ref you dispatch, so point it at a branch or tag on that commit.
    - **Direct:** SSH to the box and run `/root/aetherlink-academy/rebuild-from-git.sh <known-good-sha>`.
 3. The rebuild touches `academy-app` only. It must never wipe `academy-postgres` or `academy-redis` — if a procedure asks you to, stop and escalate.
-4. Verify `GET /game/health` returns `{"ok":true,"proof":true}` with `revision` equal to the known-good SHA. Recheck document read/edit, reconnect, room state and MCP authentication.
+4. Verify `GET /game/health` returns `{"ok":true}` with `revision` equal to the known-good SHA. Recheck the intent link, reconnect, room state and MCP authentication.
 5. Record operator, timestamp, both SHAs, the smoke artifact and any data compatibility issue.
 
 The first deployment has no previous healthy version: it must remain unaccepted if it fails. Do not invent a recovery target.

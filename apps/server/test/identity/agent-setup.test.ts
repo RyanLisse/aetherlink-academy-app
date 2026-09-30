@@ -8,7 +8,7 @@ describe('agent setup + MCP revoke', () => {
   test('instructions bind agent to participant and never leak browser token', async () => {
     await runSquad(Effect.gen(function* () {
       const store = yield* SquadStore;
-      const host = yield* store.create('Squad', {slug: 'intent'});
+      const host = yield* store.create('Squad');
       const alice = yield* store.join(host.code, 'Alice');
       const auth = yield* store.auth(alice.token);
       const mcpToken = yield* store.mintSession(auth.r.id, auth.p!.id, 'mcp');
@@ -36,7 +36,7 @@ describe('agent setup + MCP revoke', () => {
       Effect.gen(function* () {
         const store = yield* SquadStore;
         const tokens = yield* TokenService;
-        const host = yield* store.create('Revoke', {slug: 'revoke'});
+        const host = yield* store.create('Revoke');
         const join = yield* store.join(host.code, 'Ada');
         const auth = yield* store.auth(join.token);
         const mcp = yield* tokens.mint(auth.r.id, auth.p!.id, 'mcp');
@@ -53,7 +53,7 @@ describe('agent setup + MCP revoke', () => {
   test('codex client emits bearer-token-env-var setup', async () => {
     await runSquad(Effect.gen(function* () {
       const store = yield* SquadStore;
-      const host = yield* store.create('Squad', {slug: 'intent'});
+      const host = yield* store.create('Squad');
       const alice = yield* store.join(host.code, 'Alice');
       const auth = yield* store.auth(alice.token);
       const mcpToken = yield* store.mintSession(auth.r.id, auth.p!.id, 'mcp');
