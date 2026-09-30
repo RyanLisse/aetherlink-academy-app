@@ -40,7 +40,7 @@ test('request retries replay across processes and round advances',{skip:process.
   await two.control(host.token,'next');
   assert.equal((await two.auth(host.token)).r.evidence[0].status,'accepted');
   await request(1,'review',people[0].token,review);
-  await request(1,'review',people[0].token,{...review,requestId:'unauthorized-new'},403);
+  await request(1,'review',people[1].token,{...review,requestId:'self-review'},403);
   const handoff={requestId:'handoff-1',decision:'decision',checked:'checked',open:'open'};
   await request(0,'handoff',people[1].token,handoff);
   await two.control(host.token,'next');
