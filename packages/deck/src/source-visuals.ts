@@ -1,4 +1,5 @@
 import type {JsonValue, Slide} from '@academy/schema';
+import {mountSourceTimer, sourceTimerKey} from './source-timer.js';
 
 type ArtKind = 'sliders' | 'thermo' | 'route' | 'timeline' | 'thought';
 type BotName = 'multiarm' | 'wave' | 'think' | 'point' | 'head' | 'stretchLeft' | 'sleepy' | 'happy' | 'peek' | 'stretchUp' | 'stretchRight';
@@ -590,13 +591,9 @@ function renderExtras(stage: HTMLElement, main: HTMLElement, s: Slide, v: Visual
     g.addEventListener('click', () => { if (next()) advanceReveal?.(); }); registerReveal(next);
     slideController.signal.addEventListener('abort', () => { revealFns.splice(revealFns.indexOf(next), 1); });
   }
-  if (v.countdown) {                                             // pauses: live countdown + real clock time
-    const box = node('div', 'pause-box'); const face = node('div', 'pause-clock'); const back = node('p', 'pause-back');
-    const end = Date.now() + v.countdown * 60000; const hhmm = new Date(end).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    back.append(document.createTextNode('Back at '), node('strong', null, hhmm));
-    const tick = () => { const left = Math.max(0, Math.round((end - Date.now()) / 1000)); face.textContent = String(Math.floor(left / 60)).padStart(2, '0') + ':' + String(left % 60).padStart(2, '0'); box.classList.toggle('late', left <= 60); box.classList.toggle('done', left === 0); };
-    tick(); const iv = view?.setInterval(tick, 1000); slideController.signal.addEventListener('abort', () => view?.clearInterval(iv));
-    box.append(face, back); const nextBody = sourceBody(0); if (nextBody) box.append(node('p', 'pause-next', nextBody));
+  if (v.countdown) {                                             // pauses: countdown waits for ▶, keeps time across slides, shows the real return time
+    const box = mountSourceTimer({doc, key: sourceTimerKey(`pause:${s.id}`), defaultSec: v.countdown * 60, back: true, boxCls: 'pause-box', faceCls: 'pause-clock', lateCls: 'late', signal: slideController.signal});
+    const nextBody = sourceBody(0); if (nextBody) box.append(node('p', 'pause-next', nextBody));
     grid.replaceWith(box);
   }
   if (v.term) {                                                  // 20: a terminal that types a few commands, then asks
@@ -723,11 +720,10 @@ function renderExtras(stage: HTMLElement, main: HTMLElement, s: Slide, v: Visual
     const c = cards[v.notebook]; if (!c) return x; c.classList.add('notebook'); const ul = node('ul', 'nb-lines');
     sourceBody(v.notebook).split('\n').forEach((t, i) => { const li = node('li', null, t); li.style.setProperty('--i', String(i)); ul.append(li); }); c.querySelector('p')?.replaceWith(ul);
   }
-  if (v.quietTimer) {                                            // 39: a quiet countdown without "Back at"
-    main.classList.add('has-quiet'); const box = node('div', 'pause-box quiet'); const face = node('div', 'pause-clock'); const end = Date.now() + v.quietTimer * 60000;
-    const tick = () => { const left = Math.max(0, Math.round((end - Date.now()) / 1000)); face.textContent = String(Math.floor(left / 60)).padStart(2, '0') + ':' + String(left % 60).padStart(2, '0'); box.classList.toggle('late', left <= 30 && left > 0); box.classList.toggle('done', left === 0); };
-    tick(); const iv = view?.setInterval(tick, 1000); slideController.signal.addEventListener('abort', () => view?.clearInterval(iv));
-    box.append(node('span', 'quiet-ico', '✍'), face); grid.after(box);
+  if (v.quietTimer) {                                            // 39: a quiet countdown without "Back at", waits for ▶
+    main.classList.add('has-quiet');
+    const box = mountSourceTimer({doc, key: sourceTimerKey(`quiet:${s.id}`), defaultSec: v.quietTimer * 60, boxCls: 'pause-box quiet', faceCls: 'pause-clock', lateCls: 'late', lateAt: 30, prefix: node('span', 'quiet-ico', '✍'), signal: slideController.signal});
+    grid.after(box);
   }
   if (v.badges) {                                               // 40: achievements unlocking one by one
     const badges = v.badges;
