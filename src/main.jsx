@@ -141,10 +141,10 @@ function ClassroomOverlay({room,onClose}){
   const t=useT();
   const frameRef=useRef(null);
   const shellRef=useRef(null);
-  // Keep latest onClose without re-running the mount effect (room poll recreates
-  // inline closers; unstable deps were exiting+requesting fullscreen every ~2s).
+  // Keep the latest onClose available to mount-only listeners (room polling recreates
+  // inline closers; adding it to their deps would exit fullscreen every ~2s).
   const onCloseRef=useRef(onClose);
-  useEffect(()=>{onCloseRef.current=onClose;},[onClose]);
+  useEffect(()=>{onCloseRef.current=onClose;});
   const [isFullscreen,setIsFullscreen]=useState(()=>typeof document!=='undefined'&&!!document.fullscreenElement);
   useEffect(()=>{
     const sync=()=>setIsFullscreen(!!document.fullscreenElement);
@@ -271,7 +271,7 @@ function EmailLogin({action,busy,joined}){
 
 function EmailAccess(){
   const t=useT();
-  const {busy,error,action}=useAsyncAction({formatError:message=>emailError(t,message)});
+  const {busy,error,setError,action}=useAsyncAction({formatError:message=>emailError(t,message)});
   const [status,setStatus]=useState(null);
   const [draft,setDraft]=useState('');
   const [pending,setPending]=useState(null);
