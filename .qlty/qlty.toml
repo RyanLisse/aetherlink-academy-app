@@ -90,12 +90,12 @@ name = "zizmor"
 # Debian package versions follow the selected base image.
 [[ignore]]
 rules = ["hadolint:DL3008"]
-file_patterns = ["Dockerfile", "Dockerfile.vercel", "infra/Dockerfile"]
+file_patterns = ["Dockerfile", "infra/Dockerfile"]
 
 # Dockerfile style rules that would only reshuffle already-readable RUN lines.
 [[ignore]]
 rules = ["radarlint-iac:docker:S7031", "radarlint-iac:docker:S7020", "radarlint-iac:docker:S7018", "radarlint-iac:docker:S7019"]
-file_patterns = ["Dockerfile", "Dockerfile.vercel", "infra/Dockerfile"]
+file_patterns = ["Dockerfile", "infra/Dockerfile"]
 
 # CDPATH= cd -- is the idiomatic POSIX pattern, not a broken assignment.
 [[ignore]]

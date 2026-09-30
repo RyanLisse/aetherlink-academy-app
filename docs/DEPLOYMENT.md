@@ -28,9 +28,7 @@ docker compose down
 
 Compose leest de private `.env`, bindt alleen de gateway op `127.0.0.1:4317` en bewaart lokale ontwikkelsleutels in `academy-data`. Document- en squadgegevens staan extern in Postgres. `down -v` verwijdert de lokale sleutels en hoort niet bij normale cleanup.
 
-`Dockerfile` bouwt de productie-image die Compose op Hetzner draait: `ACADEMY_STORAGE=postgres`, een niet-rootgebruiker en `tini`. Alleen de gateway ontvangt publiek verkeer; Proof blijft op loopback.
-
-`Dockerfile.vercel` bestaat nog en is de gehardde variant (vastgepinde base-digest, `SOURCE_REVISION` build-arg, OCI-labels). De CI-job `container` bouwt en draait die image. Ondanks de naam is dit geen Vercel-afhankelijkheid meer; het samenvoegen met `Dockerfile` is een openstaande opruimactie.
+`Dockerfile` bouwt de productie-image die Compose op Hetzner draait: een niet-rootgebruiker, `tini`, een vastgepinde base-digest, de `SOURCE_REVISION` build-arg en OCI-labels. Compose zet `ACADEMY_STORAGE=postgres`. Alleen de gateway ontvangt publiek verkeer; Proof blijft op loopback. De CI-job `container` bouwt en draait precies deze image.
 
 De startcode valideert de productieconfiguratie vóór opslag of subprocessen worden geopend. De strengste set (Postgres, TLS-Redis, gedeelde host- en signing-geheimen van minimaal 32 tekens, canonieke HTTPS-origin) zit achter de `VERCEL`-guard en is op Hetzner inactief; de guard blijft staan zodat een noodterugval naar een gedeelde runtime goedkoop blijft. Native acceptatie, afwijzing, herladen en procesherstart zijn lokaal bewezen; echte containerbuild en publieke acceptatie blijven aparte releasegates.
 
