@@ -21,7 +21,7 @@ describe('reference view per day', () => {
     expect(matchReference('/reference/glossary')).toEqual({kind: 'glossary'});
     expect(matchReference('/reference/day/3')).toMatchObject({kind: 'day', day: {day: 3, lessonId: 'workshop-3'}});
     expect(matchReference('/reference/day/8')).toBeNull();
-    expect(REFERENCE_DAYS.map((day) => [day.day, day.slides.length])).toEqual([[1, 44], [2, 47], [3, 18], [4, 16], [5, 48], [6, 14], [7, 14]]);
+    expect(REFERENCE_DAYS.map((day) => [day.day, day.slides.length])).toEqual([[1, 67], [2, 46], [3, 18], [4, 16], [5, 48], [6, 14], [7, 14]]);
   });
 
   test('a day renders every slide as an anchored reading article through the deck reader mode, without speaker notes', async () => {
@@ -101,8 +101,8 @@ describe('reference view per day', () => {
 
 describe('bundled reference search', () => {
   test('hits link to the day and the slide anchor', () => {
-    const [first] = searchBundledDays(REFERENCE_DAYS, 'glossary contribution');
-    expect(first).toMatchObject({type: 'slide', day: 1, lessonId: 'teaching-day-1', slideAnchor: 'slide-teaching-day-1-40', title: 'Assignment 3: Glossary contribution'});
+    const [first] = searchBundledDays(REFERENCE_DAYS, '20 AI terms that matter');
+    expect(first).toMatchObject({type: 'slide', day: 1, lessonId: 'teaching-day-1', slideAnchor: 'slide-teaching-day-1-51', title: 'Assignment 3: The 20 AI terms that matter'});
   });
 
   test('terms that only occur in speaker notes are not searchable', () => {

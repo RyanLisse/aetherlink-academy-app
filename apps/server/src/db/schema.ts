@@ -159,7 +159,7 @@ export const slides = curriculum.table(
     title: text('title').notNull(),
     kicker: text('kicker'),
     subtitle: text('subtitle'),
-    type: text('type', {enum: ['context', 'concept', 'practice', 'review', 'recap', 'pause']}).notNull(),
+    type: text('type', {enum: ['context', 'concept', 'practice', 'review', 'quiz', 'recap', 'pause']}).notNull(),
     layout: text('layout', {enum: ['pillars', 'steps', 'compare', 'exercise', 'recap', 'cards', 'image', 'bars']}),
     cards: jsonb('cards'),
     items: jsonb('items'),

@@ -126,6 +126,9 @@ interface VisualData {
   readonly imageLink: string | undefined;
   readonly cardImages: ReadonlyArray<string> | undefined;
   readonly compact: boolean | undefined;
+  readonly stepThrough: boolean | string | undefined;
+  readonly oneCol: boolean | undefined;
+  readonly code: number | undefined;
 }
 
 interface BotData {
@@ -277,6 +280,9 @@ const parseVisual = (value: JsonValue | undefined): VisualData | undefined => {
     imageLink: stringValue(value.imageLink),
     cardImages: stringArray(value.cardImages),
     compact: booleanValue(value.compact),
+    stepThrough: booleanValue(value.stepThrough) ?? stringValue(value.stepThrough),
+    oneCol: booleanValue(value.oneCol),
+    code: numberValue(value.code),
   };
 };
 
@@ -480,7 +486,8 @@ const PILLAR_ICONS: readonly string[] = [
   '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.3"/>',
   '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
   '<circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/><path d="M7.5 10.5l2 2 3.5-4"/>',
-  '<path d="M4 12a8 8 0 0 1 14-5l2 2"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-14 5l-2-2"/><path d="M4 20v-5h5"/>'];
+  '<path d="M4 12a8 8 0 0 1 14-5l2 2"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-14 5l-2-2"/><path d="M4 20v-5h5"/>',
+  '<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19a6 6 0 0 1 12 0"/><path d="M15 19a4 4 0 0 1 6-3.5"/>'];
 const ART: Record<ArtKind, () => SVGSVGElement> = {
   sliders: () => svg('0 0 300 96', [0, 1, 2].map(i => '<g class="sl" style="--i:' + i + '"><path class="sl-track" d="M20 ' + (18 + i * 30) + 'H280"/><circle class="sl-knob" cx="' + [210, 120, 70][i] + '" cy="' + (18 + i * 30) + '" r="10"/></g>').join(''), 'art art-sliders'),
   thermo: () => svg('0 0 300 96', '<rect class="th-tube" x="22" y="10" width="20" height="62" rx="10"/><circle class="th-bulb" cx="32" cy="78" r="14"/><rect class="th-fill" x="27" y="22" width="10" height="56" rx="5"/>' +
@@ -675,6 +682,10 @@ function renderExtras(stage: HTMLElement, main: HTMLElement, s: Slide, v: Visual
     sourceBody(ci).split('\n').forEach((ln, i) => { const isCmd = !/[:.]$/.test(ln.trim()) || /^https?:/.test(ln.trim()); const row = node('div', isCmd ? 'cmd-l' : 'cmd-note');
         row.style.setProperty('--d', (0.5 + ci * 0.9 + i * 0.35) + 's'); if (isCmd) row.append(node('span', 'prompt-sign', '$ '), node('span', null, ln)); else row.textContent = ln; box.append(row); });
       p?.replaceWith(box); });
+  }
+  if (v.code != null && cards[v.code]) {    // card body as a code block (e.g. a settings.json), indentation kept
+    const codeCard = cards[v.code]; const pre = node('pre', 'code-block', sourceBody(v.code));
+    codeCard?.querySelector('p')?.replaceWith(pre); codeCard?.classList.add('code-card');
   }
   if (v.browser != null) {                  // 30: a tiny browser with the starting state
     const browserCard = cards[v.browser]; if (!browserCard) return x;
@@ -950,13 +961,17 @@ function buildOpener(stage: HTMLElement, main: HTMLElement, s: Slide, v: VisualD
   }
 }
 
+/** stepThrough: every main item starts hidden; click / → shows the next one. */
+const STEP_ITEMS = '.cards > .card, .pillars > .pillar, .compare > .compare-col, .pop-chips > .pop-chip, .slide-main > .tagline';
+
 function renderVisual(stage: HTMLElement, body: HTMLElement, main: HTMLElement, s: Slide, v: VisualData | undefined, advanceReveal?: (step?: number) => void): void {
   if (!v) return;
   if (v.keynote) { stage.closest('.academy-deck')?.classList.add('keynote'); main.classList.add('keynote-main'); body.classList.add('keynote-body'); }
   if (v.art === 'timeline') main.prepend(ART.timeline());
   if (v.cardArt) { const cards = main.querySelectorAll<HTMLElement>('.card'); Object.entries(v.cardArt).forEach(([index, kind]) => { const card = cards[Number(index)]; if (card) card.append(ART[kind]()); }); }
-  if (v.pillarIcons) main.querySelectorAll<HTMLElement>('.pillar').forEach((p, i) => p.prepend(svg('0 0 24 24', PILLAR_ICONS[i % 4] || '', 'pillar-icon')));
+  if (v.pillarIcons) main.querySelectorAll<HTMLElement>('.pillar').forEach((p, i) => p.prepend(svg('0 0 24 24', PILLAR_ICONS[i % PILLAR_ICONS.length] || '', 'pillar-icon')));
   if (v.stagger) main.classList.add('stagger-' + v.stagger);
+  if (v.oneCol) main.querySelector('.cards')?.classList.add('one-col', 'full-col');
   if (v.hero != null) { main.classList.add('has-hero'); main.querySelectorAll<HTMLElement>('.card')[v.hero]?.classList.add('card-hero'); }
   let popRow: HTMLElement | null = null, nest: NestVisual | null = null; const ex = renderExtras(stage, main, s, v, advanceReveal);
   if (v.art === 'nested') nest = buildNest(main, s);
@@ -1031,7 +1046,7 @@ function renderVisual(stage: HTMLElement, body: HTMLElement, main: HTMLElement, 
         const t = rel(ic, stage); const f = node('span', 'fly'); f.style.setProperty('--i', String(i));
         f.style.left = from.x + 'px'; f.style.top = from.y + 'px';
         f.style.setProperty('--dx', (t.x + t.w / 2 - from.x) + 'px'); f.style.setProperty('--dy', (t.y + t.h / 2 - from.y) + 'px');
-        f.append(svg('0 0 24 24', PILLAR_ICONS[i % 4] || '')); stage.append(f);
+        f.append(svg('0 0 24 24', PILLAR_ICONS[i % PILLAR_ICONS.length] || '')); stage.append(f);
       });
     }
   };
@@ -1079,6 +1094,17 @@ function renderVisual(stage: HTMLElement, body: HTMLElement, main: HTMLElement, 
     options.onRevealStepChange?.(revealCursor);
   };
   renderVisual(stage, body, main, s, visual, advanceReveal);
+  if (visual?.stepThrough && revealFns.length === 0) {
+    const selector = typeof visual.stepThrough === 'string' ? visual.stepThrough : STEP_ITEMS;
+    const items = Array.from(main.querySelectorAll<HTMLElement>(selector));
+    if (items.length) {
+      items.forEach((item) => item.classList.add('st-pending'));
+      main.classList.add('step-through');
+      const next = (): boolean => { const item = items.find((e) => e.classList.contains('st-pending')); if (!item) return false; item.classList.remove('st-pending'); item.classList.add('st-shown'); return true; };
+      main.addEventListener('click', (event) => { const target = event.target; if (target instanceof Element && target.closest('button, a, input, textarea')) return; if (next()) advanceReveal(); }, {signal: slideController.signal});
+      registerReveal(next);
+    }
+  }
   if (visual?.cardImages || (visual?.compact && body.classList.contains('with-side'))) {
     const instructions = body.querySelector<HTMLElement>('.exercise-instructions');
     if (visual.compact && instructions) {

@@ -193,10 +193,10 @@ describe('AET-77 workshop 5 ultra-minimal AI-native SDLC deck', () => {
     expect(isWorkshop5Path('/deck')).toBe(false);
   });
 
-  it('does not break Classroom 1 SoT cut of 86 / Day1=44', () => {
-    expect(sourceSlides).toHaveLength(91);
+  it('does not break Classroom 1 SoT cut of 113 / Day1=67', () => {
+    expect(sourceSlides).toHaveLength(113);
     const classroom = normalizeSlides(sourceSlides);
-    expect(classroom.filter((s) => s.lessonId === 'teaching-day-1')).toHaveLength(44);
+    expect(classroom.filter((s) => s.lessonId === 'teaching-day-1')).toHaveLength(67);
     expect(classroom.filter((s) => s.lessonId === 'workshop-5')).toHaveLength(0);
   });
 });

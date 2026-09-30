@@ -1163,3 +1163,96 @@
 .academy-deck .deck-companions::before{content:"Solo";font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:#7f93b0;margin-right:.15rem}
 .academy-deck .deck-companion-link{font-size:.78rem;padding:.22rem .65rem;border-radius:999px;border:1px solid #3a4f73;color:#9ed7ff;text-decoration:none;background:#0d1b2e}
 .academy-deck .deck-companion-link:hover,.academy-deck .deck-companion-link:focus-visible{border-color:#5eeaf1;color:#fff;outline:none}
+
+/* Synced from aetherlink-classroom-slides styles.css (hidden slides, stepThrough, quiz, assignment layout, code cards). */
+/* hide a slide (H) */
+.academy-deck .hidden-chip{display:inline-flex;align-items:center;padding:.25rem .6rem;border-radius:999px;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;font-weight:800;color:#ff9f5a;border:1px dashed #ff9f5a}
+.academy-deck .progress .seg.is-hidden{opacity:.12;background:repeating-linear-gradient(90deg,var(--muted) 0 2px,transparent 2px 4px)}
+.academy-deck .chapter-row{display:flex;gap:.5rem;align-items:stretch}
+.academy-deck .chapter-row .chapter-link{flex:1}
+.academy-deck .chapter-hide{flex:0 0 auto;min-width:4.4rem;font-size:.8rem;color:var(--muted);border-color:var(--border);background:transparent}
+.academy-deck .chapter-row.is-hidden .chapter-link strong{text-decoration:line-through;opacity:.5}
+.academy-deck .chapter-row.is-hidden .chapter-hide{color:#ff9f5a;border-color:#ff9f5a}
+
+/* stepThrough: items wait for a click or → (their own entrance animation plays on reveal) */
+.academy-deck .step-through{cursor:pointer}
+.academy-deck .st-pending{visibility:hidden}
+.academy-deck .st-pending,.academy-deck .st-pending *{animation:none!important}
+.academy-deck .st-shown{animation:enter .45s both}
+
+/* quiz slides: their own colour and look, so quiz moments stand out */
+.academy-deck{--quiz:#ff4fa3}
+.academy-deck[data-type=quiz] .type-chip{background:linear-gradient(105deg,var(--quiz),var(--aether-orange));color:#fff}
+.academy-deck .progress .seg[data-type=quiz]{background:var(--quiz)}
+.academy-deck[data-type=quiz]{background:radial-gradient(1200px 520px at 50% -10%,color-mix(in srgb,var(--quiz) 22%,transparent),transparent 70%),radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--quiz) 18%,transparent) 1px,transparent 0) 0 0/26px 26px,var(--bg)}
+.academy-deck[data-type=quiz] #stage{border:2px solid color-mix(in srgb,var(--quiz) 55%,transparent);box-shadow:0 0 0 6px color-mix(in srgb,var(--quiz) 10%,transparent);padding-inline:clamp(1rem,3vw,2.5rem)}
+.academy-deck[data-type=quiz] .heading h1{background:linear-gradient(105deg,var(--quiz),var(--aether-orange));-webkit-background-clip:text;background-clip:text;color:transparent}
+.academy-deck[data-type=quiz] .cards{gap:1rem}
+.academy-deck[data-type=quiz] .card{border:2px solid color-mix(in srgb,var(--quiz) 40%,var(--border));cursor:pointer}
+.academy-deck[data-type=quiz] .card-head .card-icon{display:none}
+.academy-deck[data-type=quiz] .card-head h2{width:2.8rem;height:2.8rem;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--quiz),var(--aether-orange));color:#fff;font-size:1.35rem}
+.academy-deck[data-type=quiz] .card p{font-size:clamp(1.05rem,1.6vw,1.35rem)}
+
+.academy-deck .timer{grid-template-columns:auto 1fr}
+.academy-deck .timer .timer-bar{grid-column:1/-1;order:3}
+.academy-deck .timer .timer-controls{justify-content:flex-end}
+.academy-deck .timer .timer-controls button{min-height:34px;padding:.35rem .65rem;font-size:.85rem}
+.academy-deck .timer .timer-field input{min-height:34px}
+.academy-deck .cards.one-col.full-col{grid-template-columns:minmax(0,1fr)}
+
+/* ==========================================================================
+.academy-deck Assignment slides: one label,.academy-deck big steps,.academy-deck a picture of the result,
+.academy-deck and the timer as a pill in the top-right corner (click for controls).
+   ========================================================================== */
+.academy-deck .asg-head .heading-top{align-items:center}
+.academy-deck .asg-head h1{margin-top:.1rem}
+.academy-deck .asg-top-right{display:flex;align-items:center;gap:1rem}
+.academy-deck .tpill-wrap{position:relative}
+.academy-deck .tpill{display:inline-flex;align-items:center;gap:.55rem;min-height:0;padding:.4rem 1rem .4rem .8rem;border-radius:999px;border:2px solid transparent;background:linear-gradient(var(--surface),var(--surface)) padding-box,linear-gradient(105deg,var(--aether-purple),var(--aether-orange)) border-box;color:var(--text);font:inherit;font-weight:900;font-size:clamp(1.35rem,2.2vw,1.9rem);letter-spacing:.03em;font-variant-numeric:tabular-nums;cursor:pointer;line-height:1}
+.academy-deck .tpill-ico{font-size:.8em;opacity:.8}
+.academy-deck .tpill.running .tpill-ico{animation:tpill-tick 1s steps(2) infinite}
+@keyframes tpill-tick{50%{opacity:.25}}
+.academy-deck .tpill.late{color:#ff5a5a;animation:timer-pulse 1s ease-in-out infinite}
+.academy-deck .tpill.done{color:#ff5a5a}
+.academy-deck .tpill-pop{position:absolute;right:0;top:calc(100% + .6rem);z-index:30;width:min(430px,86vw)}
+.academy-deck .tpill-pop[hidden]{display:none}
+.academy-deck .tpill-pop .timer{margin:0;box-shadow:0 18px 40px rgba(0,0,0,.45)}
+.academy-deck .asg-body{display:grid;grid-template-columns:minmax(0,2fr) minmax(240px,1fr);gap:clamp(1rem,2.6vw,2.2rem);align-items:start;margin-top:.4rem}
+.academy-deck .asg-steps{list-style:none;margin:0;padding:0;display:grid;gap:clamp(.55rem,1.3vh,.9rem)}
+.academy-deck .asg-step{display:flex;gap:1rem;align-items:center;padding:clamp(.75rem,1.8vh,1.15rem) 1.3rem;border-radius:16px;background:var(--surface);border:1px solid var(--border);cursor:pointer;font-size:clamp(1.15rem,2.05vw,1.65rem);font-weight:800;line-height:1.28;animation:enter .45s both;animation-delay:calc(var(--i) * .08s);transition:opacity .2s,border-color .2s}
+.academy-deck .asg-step:hover{border-color:color-mix(in srgb,var(--aether-orange) 60%,var(--border))}
+.academy-deck .asg-num{flex:0 0 auto;display:grid;place-items:center;width:2.1em;height:2.1em;border-radius:50%;background:linear-gradient(135deg,var(--aether-purple),var(--aether-orange));color:#fff;font-size:.8em;font-weight:900}
+.academy-deck .asg-step.done{opacity:.5}
+.academy-deck .asg-step.done .asg-num{background:var(--ok);color:var(--ink)}
+.academy-deck .asg-step.done .asg-text{text-decoration:line-through;text-decoration-thickness:2px}
+.academy-deck .asg-done{margin:1.1rem 0 0;display:flex;gap:.8rem;align-items:baseline;flex-wrap:wrap;font-size:clamp(1rem,1.55vw,1.3rem);font-weight:700;color:var(--text)}
+.academy-deck .asg-done-k{font-size:.72em;letter-spacing:.12em;text-transform:uppercase;font-weight:900;color:var(--aether-orange)}
+.academy-deck .asg-side{background:var(--surface2);border:1px dashed var(--border);border-radius:16px;padding:1rem 1rem 1.1rem}
+.academy-deck .asg-side-k{margin:0 0 .7rem;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:900}
+.academy-deck .asg-shot{margin:0}
+.academy-deck .asg-shot img{display:block;width:100%;max-height:min(52vh,470px);object-fit:contain;object-position:top;border-radius:10px}
+.academy-deck .asg-thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem}
+.academy-deck .asg-thumbs .thumb{margin:0}
+.academy-deck .asg-thumbs img{width:100%;border-radius:10px;display:block}
+.academy-deck .asg-thumbs figcaption{font-size:.72rem;color:var(--muted);text-align:center;margin-top:.3rem}
+.academy-deck .asg-mini{font-size:.82em}
+.academy-deck .asg-mini .cards{gap:.6rem}
+.academy-deck .asg-mini .card{padding:.8rem .9rem}
+@media(max-width:900px){.academy-deck .asg-body{grid-template-columns:1fr}}
+/* timer pill: controls slide out sideways in the header row (no overlay) */
+.academy-deck .tpill-wrap{display:flex;align-items:center;gap:.6rem}
+.academy-deck .tpill-bar{display:flex;align-items:center;animation:tpill-slide .2s ease-out both}
+.academy-deck .tpill-bar[hidden]{display:none}
+@keyframes tpill-slide{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:none}}
+.academy-deck .tpill-controls{display:flex;align-items:center}
+.academy-deck .tpill-controls .tpill-face-hidden{display:none}
+.academy-deck .tpill-controls .widget-controls{flex-wrap:nowrap;gap:.35rem}
+.academy-deck .tpill-controls .widget-controls button{min-height:34px;padding:.3rem .65rem;font-size:.85rem;white-space:nowrap}
+.academy-deck .tpill-controls .timer-field input{width:3.4rem;min-height:34px;font-size:1rem}
+.academy-deck .tpill-controls .timer-play{min-width:6.2rem}
+.academy-deck .asg-head .heading-top{flex-wrap:nowrap}
+.academy-deck .asg-steps.many{gap:clamp(.4rem,.9vh,.6rem)}
+.academy-deck .asg-steps.many .asg-step{padding:clamp(.5rem,1.1vh,.75rem) 1.1rem;font-size:clamp(1.02rem,1.65vw,1.3rem)}
+
+.academy-deck .code-card .code-block{margin:.5rem 0 0;background:#0b0f19;border:1px solid #2a3350;border-radius:10px;padding:.7rem .9rem;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:clamp(.66rem,.82vw,.8rem);line-height:1.4;white-space:pre;overflow-x:auto;color:#dbe4ff}
+
