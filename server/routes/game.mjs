@@ -231,7 +231,7 @@ export function registerLiveRoutes(app, deps) {
         .type('text/markdown')
         .set(
           'Content-Disposition',
-          'attachment; filename="squad-overdracht.md"',
+          'attachment; filename="squad-handoff.md"',
         )
         .send(exportDebrief(r, board));
     }),
@@ -452,7 +452,7 @@ export function registerLiveRoutes(app, deps) {
           requestId: key,
           personId: p.id,
           name: p.name,
-          source: s.kind === 'mcp' ? 'MCP-client' : 'Deelnemer',
+          source: s.kind === 'mcp' ? 'MCP-client' : 'Participant',
           ...fields,
           day: r.day,
           at: new Date().toISOString(),

@@ -237,6 +237,7 @@ export function registerContentRoutes(app, deps) {
             ...d,
             title: entryTitle || projected.title || d.title,
             blurb: projected.blurb ?? d.blurb,
+            tag: projected.tag ?? d.tag,
             released: released.includes(d.day),
             labsTotal: dayLabs(d.day, r).length,
             progress: dayProgress(r, p, d.day),

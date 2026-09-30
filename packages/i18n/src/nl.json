@@ -533,6 +533,8 @@
   "peer.lede": "Ingediende opdrachten van andere deelnemers in jouw kamer, voor vandaag. Je besluit wordt bij het bewijs vastgelegd.",
   "peer.title": "Te beoordelen ({count})",
   "review.taskLabel": "Opdracht {task}",
+  "review.source.participant": "Deelnemer",
+  "review.source.mcp": "MCP-client",
   "overview.awaitingReview": "Wacht op beoordeling: {count}",
   "chat.title": "Vraag de Academy",
   "chat.lede": "Navigatie en veelgestelde vragen uit de vrijgegeven dagen (cumulatief vrijgegeven). Geen AI: diepere hulp vraag je aan je eigen Claude.",
