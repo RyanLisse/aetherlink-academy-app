@@ -4,8 +4,9 @@ import {normalizeSlides} from '../src/deck/normalize.ts';
 import {isWorkshop3Path, isWorkshop5Path} from '../src/routes.tsx';
 import {sourceSlides} from '../src/deck/slides.ts';
 import {workshop5SourceSlides} from '../src/deck/workshop5-slides.ts';
+import {expectWorkshopClassroomContract} from './workshop-classroom-contract.ts';
 
-describe('AET-79 workshop 3 ultra-minimal n8n L1→L3 deck', () => {
+describe('AET-79 workshop 3 n8n L1→L3 deck', () => {
   const slides = normalizeSlides(workshop3SourceSlides);
   const practice = workshop3SourceSlides.filter((s) => s.type === 'practice');
   const visualOf = (s: Record<string, unknown>): Record<string, unknown> =>
@@ -13,7 +14,7 @@ describe('AET-79 workshop 3 ultra-minimal n8n L1→L3 deck', () => {
       ? (s.visual as Record<string, unknown>)
       : {};
 
-  it('ships workshop-3 ultra-minimal faces (18 ±2)', () => {
+  it('ships the workshop-3 faces (18 ±2)', () => {
     expect(workshop3SourceSlides.length).toBeGreaterThanOrEqual(16);
     expect(workshop3SourceSlides.length).toBeLessThanOrEqual(20);
     expect(slides).toHaveLength(workshop3SourceSlides.length);
@@ -63,13 +64,13 @@ describe('AET-79 workshop 3 ultra-minimal n8n L1→L3 deck', () => {
     expect(demos).toHaveLength(3);
     demos.forEach((slide, i) => {
       const visual = visualOf(slide);
-      expect(visual.keynote).toBe(true);
       expect(visual.opener).toBe('showcase');
+      expect(visual.bot).toBeUndefined();
       expect(String(visual.image ?? '')).toBe(expected[i]);
     });
   });
 
-  it('zelf doen faces: one prompt + ≤1 chip; timers/checklists in notes only', () => {
+  it('zelf doen faces: retain level chips and facilitator checklist notes', () => {
     const expectedChips = ['L1', 'L2', 'L3', 'Proof'];
     expect(practice).toHaveLength(4);
     practice.forEach((slide, i) => {
@@ -77,12 +78,9 @@ describe('AET-79 workshop 3 ultra-minimal n8n L1→L3 deck', () => {
       const cards = Array.isArray(slide.cards) ? slide.cards : [];
       expect(cards).toHaveLength(1);
       expect(String((cards[0] as {body?: string}).body ?? '')).toBe(expectedChips[i]);
-      expect(visualOf(slide).popOut, String(slide.title)).toBe(0);
-      expect(visualOf(slide).keynote, String(slide.title)).toBe(true);
-      expect(slide.layout, String(slide.title)).not.toBe('exercise');
-      expect(slide.steps, String(slide.title)).toBeUndefined();
-      expect(slide.columns, String(slide.title)).toBeUndefined();
-      expect(slide.items, String(slide.title)).toBeUndefined();
+      expect(slide.layout, String(slide.title)).toBe('exercise');
+      expect(Array.isArray(slide.steps) && slide.steps.length, String(slide.title)).toBeGreaterThanOrEqual(2);
+      expect(String(slide.expected ?? '').trim(), String(slide.title)).not.toBe('');
       const notes = String(slide.notes ?? '');
       expect(notes, String(slide.title)).toMatch(/Timer:\s*\d+\s*min/i);
       expect(typeof slide.timer, String(slide.title)).toBe('number');
@@ -91,19 +89,8 @@ describe('AET-79 workshop 3 ultra-minimal n8n L1→L3 deck', () => {
     });
   });
 
-  it('ultra-minimal: every face is keynote; no card walls / compare / steps layouts', () => {
-    for (const slide of workshop3SourceSlides) {
-      expect(visualOf(slide).keynote, String(slide.title)).toBe(true);
-      expect(slide.subtitle, String(slide.title)).toBeUndefined();
-      expect(slide.layout, String(slide.title)).toBeUndefined();
-      expect(['compare', 'steps', 'pillars', 'recap', 'exercise']).not.toContain(slide.layout);
-      const cards = Array.isArray(slide.cards) ? slide.cards : [];
-      expect(cards.length, String(slide.title)).toBeLessThanOrEqual(1);
-      if (cards.length === 1) {
-        expect(visualOf(slide).popOut, String(slide.title)).toBe(0);
-        expect(String((cards[0] as {body?: string}).body ?? '')).not.toMatch(/\n/);
-      }
-    }
+  it('uses the Classroom visual and assignment contract', () => {
+    expectWorkshopClassroomContract(workshop3SourceSlides);
   });
 
   it('bridge names Workshop 4 / Claude; n8n→Claude lock', () => {
@@ -127,7 +114,7 @@ describe('AET-79 workshop 3 ultra-minimal n8n L1→L3 deck', () => {
     const classroom = normalizeSlides(sourceSlides);
     expect(classroom.filter((s) => s.lessonId === 'teaching-day-1')).toHaveLength(67);
     expect(classroom.filter((s) => s.lessonId === 'workshop-3')).toHaveLength(0);
-    expect(workshop5SourceSlides.length).toBe(48);
+    expect(workshop5SourceSlides.length).toBe(49);
     expect(workshop5SourceSlides.every((s) => s.lessonId === 'workshop-5')).toBe(true);
   });
 });

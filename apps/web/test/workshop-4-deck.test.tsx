@@ -6,8 +6,9 @@ import {isWorkshop3Path, isWorkshop4Path, isWorkshop5Path} from '../src/routes.t
 import {sourceSlides} from '../src/deck/slides.ts';
 import {workshop3SourceSlides} from '../src/deck/workshop3-slides.ts';
 import {workshop5SourceSlides} from '../src/deck/workshop5-slides.ts';
+import {expectWorkshopClassroomContract} from './workshop-classroom-contract.ts';
 
-describe('AET-80 workshop 4 ultra-minimal n8n→Claude Agent SDK deck', () => {
+describe('AET-80 workshop 4 n8n→Claude Agent SDK deck', () => {
   const slides = normalizeSlides(workshop4SourceSlides);
   const practice = workshop4SourceSlides.filter((s) => s.type === 'practice');
   const visualOf = (s: Record<string, unknown>): Record<string, unknown> =>
@@ -15,7 +16,7 @@ describe('AET-80 workshop 4 ultra-minimal n8n→Claude Agent SDK deck', () => {
       ? (s.visual as Record<string, unknown>)
       : {};
 
-  it('ships workshop-4 ultra-minimal faces (16 ±2)', () => {
+  it('ships the workshop-4 faces (16 ±2)', () => {
     expect(workshop4SourceSlides.length).toBeGreaterThanOrEqual(14);
     expect(workshop4SourceSlides.length).toBeLessThanOrEqual(18);
     expect(slides).toHaveLength(workshop4SourceSlides.length);
@@ -67,11 +68,10 @@ describe('AET-80 workshop 4 ultra-minimal n8n→Claude Agent SDK deck', () => {
     const vehicle = workshop4SourceSlides.find((s) => String(s.kicker ?? '').startsWith('Vehicle'));
     expect(vehicle).toBeTruthy();
     const vCards = Array.isArray(vehicle!.cards) ? vehicle!.cards : [];
-    expect(vCards).toHaveLength(1);
+    expect(vCards.length).toBeGreaterThanOrEqual(2);
     expect(String((vCards[0] as {body?: string}).body ?? '')).toMatch(
       /github\.com\/RyanLisse\/aetherlink-day5-n8n-to-agent/,
     );
-    expect(visualOf(vehicle!).popOut).toBe(0);
 
     const expectedChips = ['SOLO 0', 'SOLO 1', 'SOLO 2', 'SOLO 3', 'SOLO 4'];
     expect(practice).toHaveLength(5);
@@ -80,12 +80,9 @@ describe('AET-80 workshop 4 ultra-minimal n8n→Claude Agent SDK deck', () => {
       const cards = Array.isArray(slide.cards) ? slide.cards : [];
       expect(cards).toHaveLength(1);
       expect(String((cards[0] as {body?: string}).body ?? '')).toBe(expectedChips[i]);
-      expect(visualOf(slide).popOut, String(slide.title)).toBe(0);
-      expect(visualOf(slide).keynote, String(slide.title)).toBe(true);
-      expect(slide.layout, String(slide.title)).not.toBe('exercise');
-      expect(slide.steps, String(slide.title)).toBeUndefined();
-      expect(slide.columns, String(slide.title)).toBeUndefined();
-      expect(slide.items, String(slide.title)).toBeUndefined();
+      expect(slide.layout, String(slide.title)).toBe('exercise');
+      expect(Array.isArray(slide.steps) && slide.steps.length, String(slide.title)).toBeGreaterThanOrEqual(2);
+      expect(String(slide.expected ?? '').trim(), String(slide.title)).not.toBe('');
       const notes = String(slide.notes ?? '');
       expect(notes, String(slide.title)).toMatch(/Timer:\s*\d+\s*min/i);
       expect(typeof slide.timer, String(slide.title)).toBe('number');
@@ -94,19 +91,8 @@ describe('AET-80 workshop 4 ultra-minimal n8n→Claude Agent SDK deck', () => {
     });
   });
 
-  it('ultra-minimal: every face is keynote; no card walls / compare / steps layouts', () => {
-    for (const slide of workshop4SourceSlides) {
-      expect(visualOf(slide).keynote, String(slide.title)).toBe(true);
-      expect(slide.subtitle, String(slide.title)).toBeUndefined();
-      expect(slide.layout, String(slide.title)).toBeUndefined();
-      expect(['compare', 'steps', 'pillars', 'recap', 'exercise']).not.toContain(slide.layout);
-      const cards = Array.isArray(slide.cards) ? slide.cards : [];
-      expect(cards.length, String(slide.title)).toBeLessThanOrEqual(1);
-      if (cards.length === 1) {
-        expect(visualOf(slide).popOut, String(slide.title)).toBe(0);
-        expect(String((cards[0] as {body?: string}).body ?? '')).not.toMatch(/\n/);
-      }
-    }
+  it('uses the Classroom visual and assignment contract', () => {
+    expectWorkshopClassroomContract(workshop4SourceSlides);
   });
 
   it('solo bar ≥ SOLO 2; SOLO 3 stretch; bridge to W5 different repo', () => {
@@ -138,7 +124,7 @@ describe('AET-80 workshop 4 ultra-minimal n8n→Claude Agent SDK deck', () => {
     expect(classroom.filter((s) => s.lessonId === 'workshop-4')).toHaveLength(0);
     expect(workshop3SourceSlides.length).toBe(18);
     expect(workshop3SourceSlides.every((s) => s.lessonId === 'workshop-3')).toBe(true);
-    expect(workshop5SourceSlides.length).toBe(48);
+    expect(workshop5SourceSlides.length).toBe(49);
     expect(workshop5SourceSlides.every((s) => s.lessonId === 'workshop-5')).toBe(true);
   });
 

@@ -13,8 +13,9 @@ import {workshop3SourceSlides} from '../src/deck/workshop3-slides.ts';
 import {workshop4SourceSlides} from '../src/deck/workshop4-slides.ts';
 import {workshop5SourceSlides} from '../src/deck/workshop5-slides.ts';
 import {workshop6SourceSlides} from '../src/deck/workshop6-slides.ts';
+import {expectWorkshopClassroomContract} from './workshop-classroom-contract.ts';
 
-describe('AET-85 workshop 7 ultra-minimal eigen-opdracht finish+present deck', () => {
+describe('AET-85 workshop 7 eigen-opdracht finish+present deck', () => {
   const slides = normalizeSlides(workshop7SourceSlides);
   const practice = workshop7SourceSlides.filter((s) => s.type === 'practice');
   const visualOf = (s: Record<string, unknown>): Record<string, unknown> =>
@@ -22,7 +23,7 @@ describe('AET-85 workshop 7 ultra-minimal eigen-opdracht finish+present deck', (
       ? (s.visual as Record<string, unknown>)
       : {};
 
-  it('ships workshop-7 ultra-minimal faces (~14)', () => {
+  it('ships the workshop-7 faces (~14)', () => {
     expect(workshop7SourceSlides.length).toBe(14);
     expect(slides).toHaveLength(14);
     expect(slides.every((s) => s.lessonId === 'workshop-7')).toBe(true);
@@ -76,9 +77,8 @@ describe('AET-85 workshop 7 ultra-minimal eigen-opdracht finish+present deck', (
     const bar = workshop7SourceSlides.find((s) => String(s.kicker ?? '').startsWith('Bar'));
     expect(bar).toBeTruthy();
     const bCards = Array.isArray(bar!.cards) ? bar!.cards : [];
-    expect(bCards).toHaveLength(1);
+    expect(bCards.length).toBeGreaterThanOrEqual(2);
     expect(String((bCards[0] as {body?: string}).body ?? '')).toMatch(/W6|thin/i);
-    expect(visualOf(bar!).popOut).toBe(0);
 
     expect(practice.length).toBeGreaterThanOrEqual(4);
     practice.forEach((slide) => {
@@ -86,12 +86,9 @@ describe('AET-85 workshop 7 ultra-minimal eigen-opdracht finish+present deck', (
       const cards = Array.isArray(slide.cards) ? slide.cards : [];
       expect(cards).toHaveLength(1);
       expect(String((cards[0] as {body?: string}).body ?? '')).toMatch(/^SOLO/);
-      expect(visualOf(slide).popOut, String(slide.title)).toBe(0);
-      expect(visualOf(slide).keynote, String(slide.title)).toBe(true);
-      expect(slide.layout, String(slide.title)).not.toBe('exercise');
-      expect(slide.steps, String(slide.title)).toBeUndefined();
-      expect(slide.columns, String(slide.title)).toBeUndefined();
-      expect(slide.items, String(slide.title)).toBeUndefined();
+      expect(slide.layout, String(slide.title)).toBe('exercise');
+      expect(Array.isArray(slide.steps) && slide.steps.length, String(slide.title)).toBeGreaterThanOrEqual(2);
+      expect(String(slide.expected ?? '').trim(), String(slide.title)).not.toBe('');
       const notes = String(slide.notes ?? '');
       expect(notes, String(slide.title)).toMatch(/Timer:\s*\d+\s*min/i);
       expect(typeof slide.timer, String(slide.title)).toBe('number');
@@ -100,19 +97,8 @@ describe('AET-85 workshop 7 ultra-minimal eigen-opdracht finish+present deck', (
     });
   });
 
-  it('ultra-minimal: every face is keynote; no card walls / compare / steps layouts', () => {
-    for (const slide of workshop7SourceSlides) {
-      expect(visualOf(slide).keynote, String(slide.title)).toBe(true);
-      expect(slide.subtitle, String(slide.title)).toBeUndefined();
-      expect(slide.layout, String(slide.title)).toBeUndefined();
-      expect(['compare', 'steps', 'pillars', 'recap', 'exercise']).not.toContain(slide.layout);
-      const cards = Array.isArray(slide.cards) ? slide.cards : [];
-      expect(cards.length, String(slide.title)).toBeLessThanOrEqual(1);
-      if (cards.length === 1) {
-        expect(visualOf(slide).popOut, String(slide.title)).toBe(0);
-        expect(String((cards[0] as {body?: string}).body ?? '')).not.toMatch(/\n/);
-      }
-    }
+  it('uses the Classroom visual and assignment contract', () => {
+    expectWorkshopClassroomContract(workshop7SourceSlides);
   });
 
   it('close ships 90d next steps; same W6 vehicle finish+present', () => {
@@ -144,7 +130,7 @@ describe('AET-85 workshop 7 ultra-minimal eigen-opdracht finish+present deck', (
     expect(workshop3SourceSlides.every((s) => s.lessonId === 'workshop-3')).toBe(true);
     expect(workshop4SourceSlides.length).toBe(16);
     expect(workshop4SourceSlides.every((s) => s.lessonId === 'workshop-4')).toBe(true);
-    expect(workshop5SourceSlides.length).toBe(48);
+    expect(workshop5SourceSlides.length).toBe(49);
     expect(workshop5SourceSlides.every((s) => s.lessonId === 'workshop-5')).toBe(true);
     expect(workshop6SourceSlides.length).toBe(14);
     expect(workshop6SourceSlides.every((s) => s.lessonId === 'workshop-6')).toBe(true);
