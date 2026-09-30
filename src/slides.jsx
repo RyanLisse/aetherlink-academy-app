@@ -4,6 +4,7 @@ import {api,apiMethod,getToken} from './api';
 import {useI18n,useT} from './i18n';
 import {reportScreen} from './screen';
 import {StatusState} from './status';
+import {CLASSROOM_SANDBOX} from './classroom';
 import './slides-simple.css';
 
 const DIMS={'16:9':[960,540],'4:3':[960,720],'1:1':[1080,1080],'9:16':[540,960],'4:5':[864,1080]};
@@ -186,7 +187,7 @@ function DeckView({room,deckId,action,busy,onRoom,onContext,onBack}){
     </div>
     <button type="button" className="gradient" onClick={()=>setPreview(false)}><X size={14}/>{t('decks.previewClose')}</button>
    </div>
-   <iframe className="deck-preview-frame" title={t('decks.previewTitle')} src={`/game/decks/${deckId}/present`}/>
+   <iframe className="deck-preview-frame" title={t('decks.previewTitle')} src={`/game/decks/${deckId}/present`} sandbox={CLASSROOM_SANDBOX}/>
   </div>}
  </section>;
 }

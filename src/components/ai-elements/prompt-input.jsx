@@ -9,7 +9,6 @@
  * picker — and keeping those pulled cmdk + five more Radix packages into the legacy bundle.
  * Re-add from the registry when the surface grows a model picker.
  */
-import { Button } from "@/components/ui/button";
 import {
   InputGroup,
   InputGroupAddon,
@@ -27,7 +26,6 @@ import { nanoid } from "nanoid";
 import {
   Children,
   createContext,
-  Fragment,
   useCallback,
   useContext,
   useEffect,
@@ -125,7 +123,9 @@ export function PromptInputProvider({
 
   // Keep a ref to attachments for cleanup on unmount (avoids stale closure)
   const attachmentsRef = useRef(attachmentFiles);
-  attachmentsRef.current = attachmentFiles;
+  useEffect(() => {
+    attachmentsRef.current = attachmentFiles;
+  }, [attachmentFiles]);
 
   // Cleanup blob URLs on unmount to prevent memory leaks
   useEffect(() => {
@@ -224,7 +224,9 @@ export const PromptInput = ({
 
   // Keep a ref to files for cleanup on unmount (avoids stale closure)
   const filesRef = useRef(files);
-  filesRef.current = files;
+  useEffect(() => {
+    filesRef.current = files;
+  }, [files]);
 
   const openFileDialogLocal = useCallback(() => {
     inputRef.current?.click();

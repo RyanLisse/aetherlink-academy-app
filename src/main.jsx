@@ -3,7 +3,7 @@ import {createRoot} from 'react-dom/client';
 import {Library,Users,BookOpen,Compass,Target,Sparkles,ClipboardCheck,Sun,Moon,ArrowRight,Clock,Play,Pause,RotateCw,Shuffle,HelpCircle,Check,LogOut,Copy,FileText,ExternalLink,Presentation,FlaskConical,X,LayoutGrid,Link,Columns3,Plus,Download,Award,ListOrdered,MessageSquare,Mail,StickyNote,Type,Wrench,MoreHorizontal} from 'lucide-react';
 import {api,authApi,getToken,getParticipantAccess,saveParticipantAccess,forgetParticipantAccess,participantAccessUrl,saveSession} from './api';
 import {AppsLauncher} from './portal/AppsLauncher.jsx';
-import {Knowledge,Coach,Lesson,Solo,Review,Route,Debrief,CourseComposer,coursePosition} from './panels';
+import {Coach,Lesson,Solo,Review,Route,Debrief,CourseComposer,coursePosition} from './panels';
 import {Decks} from './slides';
 import {Chat} from './chat';
 import {AgentChatPanel} from './agent-chat';
@@ -15,11 +15,14 @@ import {connectBoard} from './board-doc';
 import {ArcadeApp, isArcadePath} from './arcade/ArcadeApp.jsx';
 import {StatusState} from './status';
 import {classifyJoinError} from './join-errors.mjs';
+import {useAsyncAction} from './use-async-action';
 import './tailwind.css';
 import './style.css';
 import {FacilitatorWorkspace} from './facilitator-workspace';
 
 const phases=['Plan','Design','Build','Test','Deploy','Maintain'];
+// Same-origin Proof editor styled via contentWindow; uses prompt/open, but not top navigation.
+const PROOF_SANDBOX='allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox allow-modals allow-downloads';
 // AET-115: teach-path primary (learner order 1–7). Apps / Reference / Decks → tertiary Tools.
 const teachNavIds=[
   ['squad','nav.squad',Users],
@@ -52,27 +55,26 @@ function initialLoginError(t){
 function App(){
   const t=useT();
   const {locale}=useI18n();
+  const {busy,setBusy,error,setError,action}=useAsyncAction({initialError:()=>initialLoginError(t)});
   const [theme,setTheme]=useState(()=>localStorage.getItem('academy-theme')||'dark');
   const [session,setSession]=useState(!!getToken());
   const [room,setRoom]=useState(null);
   const [view,setView]=useState('lesson');
-  const [error,setError]=useState(()=>initialLoginError(t));
   const [connected,setConnected]=useState(false);
-  const [busy,setBusy]=useState(false);
   const [copied,setCopied]=useState(null);
   const [classroomOpen,setClassroomOpen]=useState(false);
   const [moreOpen,setMoreOpen]=useState(false);
   const [squadHelpOpen,setSquadHelpOpen]=useState(false);
   const closeClassroom=useCallback(()=>setClassroomOpen(false),[]);
   const [agentChatAvailable,setAgentChatAvailable]=useState(false);
-  const accessFromUrl=useRef(new URLSearchParams(location.hash.slice(1)).get('access')).current;
+  const [accessFromUrl]=useState(()=>new URLSearchParams(location.hash.slice(1)).get('access'));
   const [participantAccess,setParticipantAccess]=useState(()=>accessFromUrl||getParticipantAccess());
   const copiedTimer=useRef(null);
   useEffect(()=>()=>clearTimeout(copiedTimer.current),[]);
   useEffect(()=>{document.documentElement.dataset.theme=theme;localStorage.setItem('academy-theme',theme);},[theme]);
   useEffect(()=>{if(!accessFromUrl)return;const url=new URL(location.href);url.hash='';history.replaceState(null,'',url.pathname+url.search);},[accessFromUrl]);
-  useEffect(()=>{if(session||!participantAccess)return;let active=true;setBusy(true);api('participant/resume',{resumeToken:participantAccess}).then(result=>{if(!active)return;saveParticipantAccess(participantAccess);saveSession(result);setSession(true);}).catch(e=>{if(!active)return;if(getParticipantAccess()===participantAccess)forgetParticipantAccess();setParticipantAccess(null);setError(e.message);}).finally(()=>{if(active)setBusy(false);});return()=>{active=false;};},[session,participantAccess]);
-  useEffect(()=>{if(!session)return;let active=true;const poll=async()=>{try{const r=await api('state');if(active){setRoom(r);setConnected(true);}}catch(e){if(active){setConnected(false);if(e.status&&e.status<500)setError(e.message);}}};api('resume',{}).then(poll).catch(e=>{sessionStorage.removeItem('academy-token');setRoom(null);setConnected(false);setSession(false);if(!participantAccess)setError(e.message);});const timer=setInterval(poll,2000);return()=>{active=false;clearInterval(timer);};},[session,participantAccess]);
+  useEffect(()=>{if(session||!participantAccess)return;let active=true;setBusy(true);api('participant/resume',{resumeToken:participantAccess}).then(result=>{if(!active)return;saveParticipantAccess(participantAccess);saveSession(result);setSession(true);}).catch(e=>{if(!active)return;if(getParticipantAccess()===participantAccess)forgetParticipantAccess();setParticipantAccess(null);setError(e.message);}).finally(()=>{if(active)setBusy(false);});return()=>{active=false;};},[session,participantAccess,setBusy,setError]);
+  useEffect(()=>{if(!session)return;let active=true;const poll=async()=>{try{const r=await api('state');if(active){setRoom(r);setConnected(true);}}catch(e){if(active){setConnected(false);if(e.status&&e.status<500)setError(e.message);}}};api('resume',{}).then(poll).catch(e=>{sessionStorage.removeItem('academy-token');setRoom(null);setConnected(false);setSession(false);if(!participantAccess)setError(e.message);});const timer=setInterval(poll,2000);return()=>{active=false;clearInterval(timer);};},[session,participantAccess,setError]);
   useEffect(()=>{if(!session)return;let active=true;api('config').then(config=>{if(active)setAgentChatAvailable(Boolean(config.agentChatAvailable));}).catch(()=>{if(active)setAgentChatAvailable(false);});return()=>{active=false;};},[session]);
   const participant=Boolean(room)&&room.me.role!=='Facilitator';
   const naslagLanding=participant&&(room.readOnly||(room.allReleased&&Boolean(room.me.cohortMemberId)));
@@ -80,7 +82,6 @@ function App(){
   useEffect(()=>{if(room?.me.role==='Facilitator')setView(current=>current==='lesson'?'squad':current);},[room?.me.role]);
   useEffect(()=>{if(!participant)return;reportScreen({view});return startScreenReporting();},[participant,view]);
   const showCopied=kind=>{setCopied(kind);clearTimeout(copiedTimer.current);copiedTimer.current=setTimeout(()=>setCopied(null),1500);};
-  async function action(fn){setBusy(true);setError('');try{return await fn();}catch(e){setError(e.message);return null;}finally{setBusy(false);}}
   async function leaveSession(){setBusy(true);setError('');try{await api('logout',{});sessionStorage.removeItem('academy-token');sessionStorage.removeItem('academy-mcp-'+room.me.id);sessionStorage.removeItem(`academy-agent-setup:${room.id}:${room.me.id}`);forgetParticipantAccess();location.reload();}catch(err){setError(err.message);}finally{setBusy(false);}}
   const themeButton=<button className="icon-button" aria-label={theme==='dark'?t('theme.light'):t('theme.dark')} onClick={()=>setTheme(theme==='dark'?'light':'dark')}>{theme==='dark'?<Sun size={19}/>:<Moon size={19}/>}</button>;
   const localeToggle=<LanguageToggle/>;
@@ -126,9 +127,9 @@ function App(){
             {room.members.length<4&&<small className="muted">{t('roster.minMembers')}</small>}
           </section>
           <section className="panel contribution"><FileText size={20}/><h2>{t('roster.contribution')}</h2><p>{contribution}</p><small className="muted">{t('roster.modeLabel',{mode:modeLabel})}</small></section>
-          <button className="gradient coach-cta" onClick={()=>setView('coach')}><Sparkles size={18}/>{t('roster.askCoach')}<ArrowRight size={17}/></button>
+          <button type="button" className="gradient coach-cta" onClick={()=>setView('coach')}><Sparkles size={18}/>{t('roster.askCoach')}<ArrowRight size={17}/></button>
           {(facilitator||room.chat)&&<Chat room={room} onNavigate={setView}/>}
-          {!facilitator&&<button className="help-button" onClick={()=>action(()=>api('help',{}))}><HelpCircle size={16}/>{room.me.help?t('roster.helpOn'):t('roster.helpOff')}</button>}
+          {!facilitator&&<button type="button" className="help-button" onClick={()=>action(()=>api('help',{}))}><HelpCircle size={16}/>{room.me.help?t('roster.helpOn'):t('roster.helpOff')}</button>}
         </aside>}
       </div>
       {facilitator&&<footer>{t('room.footer')}</footer>}
@@ -140,10 +141,10 @@ function ClassroomOverlay({room,onClose}){
   const t=useT();
   const frameRef=useRef(null);
   const shellRef=useRef(null);
-  // Keep latest onClose without re-running the mount effect (room poll recreates
-  // inline closers; unstable deps were exiting+requesting fullscreen every ~2s).
+  // Keep the latest onClose available to mount-only listeners (room polling recreates
+  // inline closers; adding it to their deps would exit fullscreen every ~2s).
   const onCloseRef=useRef(onClose);
-  onCloseRef.current=onClose;
+  useEffect(()=>{onCloseRef.current=onClose;});
   const [isFullscreen,setIsFullscreen]=useState(()=>typeof document!=='undefined'&&!!document.fullscreenElement);
   useEffect(()=>{
     const sync=()=>setIsFullscreen(!!document.fullscreenElement);
@@ -270,15 +271,14 @@ function EmailLogin({action,busy,joined}){
 
 function EmailAccess(){
   const t=useT();
+  const {busy,error,setError,action}=useAsyncAction({formatError:message=>emailError(t,message)});
   const [status,setStatus]=useState(null);
   const [draft,setDraft]=useState('');
   const [pending,setPending]=useState(null);
   const [editing,setEditing]=useState(false);
-  const [busy,setBusy]=useState(false);
-  const [error,setError]=useState('');
   useEffect(()=>{let active=true;api('email').then(result=>{if(active)setStatus(result);}).catch(()=>{});return()=>{active=false;};},[]);
   if(!status)return null;
-  const run=fn=>async event=>{event?.preventDefault();setBusy(true);setError('');try{await fn(event);}catch(e){setError(emailError(t,e.message));}finally{setBusy(false);}};
+  const run=fn=>event=>{event?.preventDefault();return action(()=>fn(event));};
   const send=run(async()=>{await api('email/attach/start',{email:draft});setPending(draft);});
   const reset=()=>{setPending(null);setEditing(false);setDraft('');setError('');};
   return <div className="participant-access email-access">
@@ -313,7 +313,11 @@ function Join({ready,action,busy,error,clearError,joined}){
   const [emailLogin,setEmailLogin]=useState(false);
   const [facilitator,setFacilitator]=useState(null);
   const nameRef=useRef(null);
+  // Focus only from the initial join code; later edits should not steal focus.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- this focus is intentionally mount-only
   useEffect(()=>{if(code)nameRef.current?.focus();},[]);
+  // Read URL parameters once when the Join screen mounts.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- params represents the initial URL query
   useEffect(()=>{let active=true;(async()=>{try{const config=await api('config');if(!active)return;setGoogleSso(config.googleSso);setEmailLogin(Boolean(config.emailLogin));if(params.get('facilitator')==='1'||config.googleSso)try{const identity=await api('facilitator/me');if(active){setFacilitator(identity);if(!params.get('code'))setMode('create');}}catch{}}catch{}})();return()=>{active=false;};},[]);
   const create=mode==='create',facilitatorOverview=mode==='overview',participant=!create&&!facilitatorOverview,cohortPath=participant&&joinPath==='cohort',emailPath=participant&&emailLogin&&joinPath==='email';
   const setRole=next=>{setMode(next);setOverview(null);clearError();};
@@ -442,6 +446,8 @@ function CohortPanel({squads,hostKey,action}){
   const [copied,setCopied]=useState(false);
   const [rosterCopied,setRosterCopied]=useState(null);
   const refresh=async()=>setCohorts(await api('facilitator/cohorts',{hostKey}));
+  // Refresh when hostKey changes; action and refresh are recreated on render.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- refresh is intentionally keyed only by hostKey
   useEffect(()=>{action(refresh);},[hostKey]);
   const reveal=list=>{setCodes(current=>[...current,...list]);setCopied(false);};
   const names=value=>String(value||'').split('\n').map(name=>name.trim()).filter(Boolean);
@@ -460,9 +466,10 @@ function CohortPanel({squads,hostKey,action}){
     const csv=rosterCsvText(cohort);
     if(mode==='copy'){await navigator.clipboard.writeText(csv);setRosterCopied(cohort.id);return;}
     const link=document.createElement('a');
-    link.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+    const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+    link.href=url;
     link.download=`${cohort.name.replace(/[^\w.-]+/g,'_')||'wave-cohort'}-roster.csv`;
-    link.click();URL.revokeObjectURL(link.href);
+    link.click();URL.revokeObjectURL(url);
   });
   return <section className="cohort-panel" aria-labelledby="cohort-heading" data-testid="wave-cohort-panel">
     <h3 id="cohort-heading">{t('cohort.title')}</h3>
@@ -580,7 +587,15 @@ function MyCertificate({room}){
 
 const formatSeconds=seconds=>`${String(Math.floor(seconds/60)).padStart(2,'0')}:${String(seconds%60).padStart(2,'0')}`;
 
-function Timer({room}){const [now,setNow]=useState(Date.now());const offset=useRef(0);useEffect(()=>{offset.current=room.serverTime-Date.now();},[room.serverTime]);useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),500);return()=>clearInterval(timer);},[]);const seconds=room.running?Math.max(0,Math.ceil((room.deadline-now-offset.current)/1000)):room.remaining;return <>{formatSeconds(seconds)}</>;}
+function Timer({room}){
+  const [now,setNow]=useState(()=>Date.now());
+  const offset=useRef(0);
+  useEffect(()=>{offset.current=room.serverTime-Date.now();},[room.serverTime]);
+  useEffect(()=>{const timer=setInterval(()=>setNow(Date.now()),500);return()=>clearInterval(timer);},[]);
+  // eslint-disable-next-line react/refs -- offset is synced from server time in an effect; read at render for countdown
+  const seconds=room.running?Math.max(0,Math.ceil((room.deadline-now-offset.current)/1000)):room.remaining;
+  return <>{formatSeconds(seconds)}</>;
+}
 
 function Document({room,theme}){
   const t=useT();
@@ -596,20 +611,28 @@ function Document({room,theme}){
     update();const timer=setInterval(update,1500);return()=>clearInterval(timer);
   },[theme,t]);
   const proofBad=proofKind==='offline'||proofKind==='fail'||proofKind==='unavailable';
-  const retryProof=()=>{const el=frame.current;if(!el)return;setProofKind('loading');setState(t('doc.loading'));el.src=el.src;};
-  return <section className="panel document"><div className="document-heading"><div><h2>{t('doc.title')}</h2><p>{t('doc.subtitle')}</p></div><span><FileText size={15}/>{t('doc.badge')}</span></div><div className="document-status"><i/>{state}</div>{proofBad&&<StatusState kind="offline" title={state} action={<button type="button" onClick={retryProof}>{t('status.retry')}</button>}>{t('doc.offlineHelp')}</StatusState>}<iframe ref={frame} key={room.documentSlug} src={'/d/'+room.documentSlug} title={t('doc.badge')}/><div className="document-foot"><span>{t('doc.footDriver')}</span><small>{t('doc.footAll')}</small></div></section>;
+  const retryProof=()=>{
+    const el=frame.current;
+    if(!el)return;
+    setProofKind('loading');
+    setState(t('doc.loading'));
+    // eslint-disable-next-line no-self-assign -- assigning the current iframe URL reloads its document
+    el.src=el.src;
+  };
+  return <section className="panel document"><div className="document-heading"><div><h2>{t('doc.title')}</h2><p>{t('doc.subtitle')}</p></div><span><FileText size={15}/>{t('doc.badge')}</span></div><div className="document-status"><i/>{state}</div>{proofBad&&<StatusState kind="offline" title={state} action={<button type="button" onClick={retryProof}>{t('status.retry')}</button>}>{t('doc.offlineHelp')}</StatusState>}<iframe ref={frame} key={room.documentSlug} src={'/d/'+room.documentSlug} title={t('doc.badge')} sandbox={PROOF_SANDBOX}/><div className="document-foot"><span>{t('doc.footDriver')}</span><small>{t('doc.footAll')}</small></div></section>;
 }
 
 function Board({room,action,busy,onBoard}){
   const t=useT();
   const board=room.board,facilitator=room.me.role==='Facilitator',closed=board?.status==='closed';
+  const boardSlug=board?.slug,boardStatus=board?.status;
   const [columns,setColumns]=useState([]);
   const [sync,setSync]=useState('connecting');
   const [drafts,setDrafts]=useState({});
   const [tool,setTool]=useState('sticky');
   const link=useRef(null);
   const firstCard=useRef(null);
-  useEffect(()=>{if(!board)return;let active=true,connection=null;setSync('connecting');connectBoard(board.slug,{onColumns:columns=>active&&setColumns(columns),onStatus:status=>active&&setSync(status)}).then(next=>{if(active){connection=next;link.current=next;}else next.close();}).catch(()=>active&&setSync('denied'));return()=>{active=false;link.current=null;connection?.close();};},[board?.slug,board?.status]);
+  useEffect(()=>{if(!boardSlug)return;let active=true,connection=null;setSync('connecting');connectBoard(boardSlug,{onColumns:columns=>active&&setColumns(columns),onStatus:status=>active&&setSync(status)}).then(next=>{if(active){connection=next;link.current=next;}else next.close();}).catch(()=>active&&setSync('denied'));return()=>{active=false;link.current=null;connection?.close();};},[boardSlug,boardStatus]);
   const change=kind=>action(async()=>onBoard(await api('board',{action:kind})));
   const add=(event,index)=>{event.preventDefault();const text=(drafts[index]||'').trim();if(!text||!link.current)return;link.current.add(index,text);setDrafts(current=>({...current,[index]:''}));};
   const focusAdd=()=>{setTool('sticky');(firstCard.current||document.getElementById('card-0'))?.focus();};

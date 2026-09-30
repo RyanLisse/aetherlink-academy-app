@@ -54,7 +54,7 @@ export function LabEmbed({lab,saved,preview}){
     bridge.current=connection;connection.sendInit();
     const timer=setTimeout(()=>{if(!readyRef.current)setTimedOut(true);},READY_TIMEOUT_MS);
     return ()=>{clearTimeout(timer);connection.dispose();bridge.current=null;};
-  },[lab,locale,preview,playing,reloadKey]);
+  },[lab,locale,preview,playing,reloadKey,t]);
 
   const retry=()=>{setError('');setTimedOut(false);setReady(false);setReloadKey(k=>k+1);};
 
