@@ -1279,7 +1279,7 @@ Explain what the application does, how it is structured and how I can verify you
   steps: [
     "Ask: “Make an artifact that turns my glossary into flip cards: term on the front, definition on the back.”",
     "Your browser opens the page. Flip a few cards.",
-    "Ask for one change, e.g. “Add a theme toggle and republish.” Watch the same page update.",
+    "Ask for one change, e.g. “Add a shuffle button and republish.” Watch the same page update.",
     "Type /artifacts: find your page in the list.",
     "Don't share it publicly. It stays private unless you choose otherwise."
   ],
