@@ -17,7 +17,7 @@ export function createFileStorage({pool,schema='academy',config=readStorageConfi
  const repository=pool?PostgresFileRepository(pool,schema):MemoryFileRepository;
  const runtime=ManagedRuntime.make(Layer.effect(FileActionsTag,makeFileActions).pipe(Layer.provide(Layer.mergeAll(repository,objectStore??S3ObjectStore(config)))));
  const run=async(action:FileActionName,actor:Actor,input:unknown={})=>{
-  if(!configured)throw Object.assign(new Error('Bestandsopslag is niet geconfigureerd op deze omgeving.'),{status:503,tag:'StorageUnavailable'});
+  if(!configured)throw Object.assign(new Error('File storage is not configured in this environment.'),{status:503,tag:'StorageUnavailable'});
   const exit=await runtime.runPromiseExit(Effect.flatMap(FileActionsTag,actions=>(actions[action] as (actor:Actor,input:unknown)=>Effect.Effect<unknown,StorageError>)(actor,input)));
   if(Exit.isSuccess(exit))return exit.value;
   const failure=Cause.failureOption(exit.cause);

@@ -58,11 +58,11 @@ test('a room without a course keeps the fixed 1..7 route and plain day pack',asy
  assert.equal(route.statusCode,200);
  assert.equal(route.body.course,undefined);
  assert.deepEqual(route.body.days.map(d=>[d.position,d.day,d.date]),[[1,1,null],[2,2,null],[3,3,null],[4,4,null],[5,5,null],[6,6,null],[7,7,null]]);
- assert.equal(route.body.days[6].title,'Workshop 7 · Eigen opdracht: afronden');
+ assert.equal(route.body.days[6].title,'Workshop 7 · Own assignment: ship it');
  assert.equal((await invoke(app,'/game/control',{...host,method:'post',body:{action:'day',value:7}})).body.day,7);
  const pack=await invoke(app,'/game/day-pack',participant);
  assert.equal(pack.body.day,7);
- assert.equal(pack.body.title,'Workshop 7 · Eigen opdracht: afronden');
+ assert.equal(pack.body.title,'Workshop 7 · Own assignment: ship it');
  assert.equal(pack.body.course,undefined);
 });
 
@@ -85,7 +85,7 @@ test('with a course the day route, day control and day pack follow the course or
 
  const excluded=await invoke(app,'/game/control',{...host,method:'post',body:{action:'day',value:2}});
  assert.equal(excluded.statusCode,400);
- assert.equal(excluded.body.error,'Dag 2 zit niet in de cursus.');
+ assert.equal(excluded.body.error,'Day 2 is not part of the course.');
 
  assert.equal((await invoke(app,'/game/control',{...host,method:'post',body:{action:'day',value:3}})).body.day,3);
  const second=await invoke(app,'/game/day-pack',participant);
@@ -102,7 +102,7 @@ test('participants cannot read the composer or change the course',async()=>{
  const {app,host,participant}=fixture();
  const write=await invoke(app,'/game/control',{...participant,method:'post',body:{action:'course',value:SYNTHETIC_COURSE}});
  assert.equal(write.statusCode,403);
- assert.equal(write.body.error,'Alleen de facilitator bedient de ronde.');
+ assert.equal(write.body.error,'Only the facilitator runs the round.');
  const read=await invoke(app,'/game/course',participant);
  assert.equal(read.statusCode,403);
  assert.equal((await invoke(app,'/game/day-route',participant)).body.days.length,7);
@@ -134,7 +134,7 @@ test('a course survives a committed cross-instance Postgres round trip',{skip:!p
   const {r}=await two.auth(person.token,'browser');
   assert.equal(r.day,1,'day 1 stays current because the course includes it');
   assert.deepEqual(listRouteDays(r.course).map(d=>[d.position,d.day,d.title]),[[1,5,'Start met SDLC'],[2,3,'Workshop 3 · Agents in n8n'],[3,1,'Classroom 1 · AI and Claude Code']]);
-  await assert.rejects(control(two,host.token,'day',6),{status:400,message:'Dag 6 zit niet in de cursus.'});
+  await assert.rejects(control(two,host.token,'day',6),{status:400,message:'Day 6 is not part of the course.'});
   await assert.rejects(two.control(person.token,'course',null),{status:403});
   await control(two,host.token,'course',null);
   assert.equal((await one.auth(person.token,'browser')).r.course,undefined);

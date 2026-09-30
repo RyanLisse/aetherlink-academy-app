@@ -5,7 +5,7 @@ const CACHE_TTL=60*60*1000;
 const CLOCK_SKEW=5*60;
 const encoded=value=>Buffer.from(value).toString('base64url');
 const decoded=value=>JSON.parse(Buffer.from(value,'base64url').toString('utf8'));
-const failure=(code,reason)=>Object.assign(new Error(`Google-login mislukt (${code}${reason?`:${reason}`:''}).`),{code,reason:reason||null});
+const failure=(code,reason)=>Object.assign(new Error(`Google sign-in failed (${code}${reason?`:${reason}`:''}).`),{code,reason:reason||null});
 const same=(left,right)=>{const a=Buffer.from(String(left||'')),b=Buffer.from(String(right||''));return a.length===b.length&&timingSafeEqual(a,b);};
 const audienceMatches=(aud,clientId)=>{
  if(typeof aud==='string')return aud===clientId;

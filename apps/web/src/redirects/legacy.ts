@@ -94,7 +94,7 @@ export const legacyStubHtml = (site: LegacySite, academyOrigin: string): string 
   const endpoint = `${academyOrigin}/legacy-redirect?site=${site}&from=`;
   const fallback = `${academyOrigin}${FALLBACK[site]}`;
   return `<!doctype html>
-<html lang="nl">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="robots" content="noindex">

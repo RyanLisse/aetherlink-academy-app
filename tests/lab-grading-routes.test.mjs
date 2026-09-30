@@ -79,7 +79,7 @@ test('completion is refused until every graded stop has passed, then recorded as
  const {app,ada}=fixture();
  const early=await complete(app,ada.token,'ws-2-eve-state');
  assert.equal(early.statusCode,409);
- assert.equal(early.body.error,'Nog niet alle beoordeelde stops gehaald (0/2).');
+ assert.equal(early.body.error,'Not all graded stops passed yet (0/2).');
  await answer(app,ada.token,{labId:'ws-2-eve-state',stopId:'stop-2',answer:1});
  await answer(app,ada.token,{labId:'ws-2-eve-state',stopId:'stop-1',answer:`see ${MARKER}`});
  const done=await complete(app,ada.token,'ws-2-eve-state');

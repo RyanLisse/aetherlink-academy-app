@@ -57,23 +57,23 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function requiredString(value: unknown, field: string): string {
-  if (typeof value !== 'string') throw new Error(`Ongeldige ${field} in serverantwoord`);
+  if (typeof value !== 'string') throw new Error(`Invalid ${field} in server response`);
   return value;
 }
 
 function requiredNumber(value: unknown, field: string): number {
-  if (typeof value !== 'number' || !Number.isFinite(value)) throw new Error(`Ongeldige ${field} in serverantwoord`);
+  if (typeof value !== 'number' || !Number.isFinite(value)) throw new Error(`Invalid ${field} in server response`);
   return value;
 }
 
 function revision(value: unknown): string | number {
   if (typeof value === 'string' || typeof value === 'number') return value;
-  throw new Error('Ongeldige revisie in serverantwoord');
+  throw new Error('Invalid revision in server response');
 }
 
 function parseDeck(value: unknown): LessonDeck | null {
   if (value === null) return null;
-  if (!isRecord(value)) throw new Error('Ongeldige deck in serverantwoord');
+  if (!isRecord(value)) throw new Error('Invalid deck in server response');
   return {
     id: requiredString(value.id, 'deck-id'),
     url: requiredString(value.url, 'deck-url'),
@@ -85,7 +85,7 @@ function parseDeck(value: unknown): LessonDeck | null {
 
 function parseSnapshot(value: unknown): LessonSnapshot | null {
   if (value === null) return null;
-  if (!isRecord(value)) throw new Error('Ongeldige snapshot in serverantwoord');
+  if (!isRecord(value)) throw new Error('Invalid snapshot in server response');
   return {
     title: requiredString(value.title, 'snapshot-titel'),
     slideCount: requiredNumber(value.slideCount, 'snapshot-aantal slides'),
@@ -96,9 +96,9 @@ function parseSnapshot(value: unknown): LessonSnapshot | null {
 
 function parseDeckCreation(value: unknown): LessonDeckCreation | null {
   if (value === undefined || value === null) return null;
-  if (!isRecord(value)) throw new Error('Ongeldige deckaanmaakstatus in serverantwoord');
+  if (!isRecord(value)) throw new Error('Invalid deck creation status in server response');
   const status = value.status;
-  if (status !== 'pending' && status !== 'uncertain') throw new Error('Ongeldige deckaanmaakstatus in serverantwoord');
+  if (status !== 'pending' && status !== 'uncertain') throw new Error('Invalid deck creation status in server response');
   return {
     status,
     startedAt: requiredString(value.startedAt, 'starttijd deckaanmaak'),
@@ -106,9 +106,9 @@ function parseDeckCreation(value: unknown): LessonDeckCreation | null {
 }
 
 export function parseLesson(value: unknown): Lesson {
-  if (!isRecord(value)) throw new Error('Ongeldige les in serverantwoord');
+  if (!isRecord(value)) throw new Error('Invalid lesson in server response');
   if (!Array.isArray(value.outline) || !value.outline.every((item) => typeof item === 'string')) {
-    throw new Error('Ongeldige outline in serverantwoord');
+    throw new Error('Invalid outline in server response');
   }
   return {
     id: requiredString(value.id, 'les-id'),
@@ -130,7 +130,7 @@ async function readJson(response: Response): Promise<unknown> {
 }
 
 function serverError(payload: unknown, status: number): AuthoringApiError {
-  const message = isRecord(payload) && typeof payload.error === 'string' ? payload.error : `Verzoek mislukt (HTTP ${status})`;
+  const message = isRecord(payload) && typeof payload.error === 'string' ? payload.error : `Request failed (HTTP ${status})`;
   return new AuthoringApiError(message, status);
 }
 
@@ -148,7 +148,7 @@ async function request<T>(passphrase: string, path: string, init: RequestInit = 
 
 export async function listLessons(passphrase: string): Promise<readonly Lesson[]> {
   const payload = await request<LessonsPayload>(passphrase, '/lessons');
-  if (!isRecord(payload) || !Array.isArray(payload.lessons)) throw new Error('Ongeldige lessenlijst in serverantwoord');
+  if (!isRecord(payload) || !Array.isArray(payload.lessons)) throw new Error('Invalid lesson list in server response');
   return payload.lessons.map(parseLesson);
 }
 
@@ -157,7 +157,7 @@ export async function createLesson(passphrase: string, input: {title: string; ob
     method: 'POST',
     body: JSON.stringify(input),
   });
-  if (!isRecord(payload) || payload.lesson === undefined) throw new Error('Ongeldige nieuwe les in serverantwoord');
+  if (!isRecord(payload) || payload.lesson === undefined) throw new Error('Invalid new lesson in server response');
   return parseLesson(payload.lesson);
 }
 
@@ -170,7 +170,7 @@ export async function reconcileDeck(passphrase: string, lessonId: string, deckId
     method: 'POST',
     body: JSON.stringify({deckId}),
   });
-  if (!isRecord(payload) || payload.lesson === undefined) throw new Error('Ongeldige les in serverantwoord');
+  if (!isRecord(payload) || payload.lesson === undefined) throw new Error('Invalid lesson in server response');
   return parseLesson(payload.lesson);
 }
 
@@ -184,7 +184,7 @@ export async function saveSnapshot(passphrase: string, lessonId: string): Promis
 
 async function lessonAction(passphrase: string, lessonId: string, action: 'deck' | 'refresh' | 'snapshot'): Promise<Lesson> {
   const payload = await request<LessonPayload>(passphrase, `/lessons/${encodeURIComponent(lessonId)}/${action}`, {method: 'POST'});
-  if (!isRecord(payload) || payload.lesson === undefined) throw new Error('Ongeldige les in serverantwoord');
+  if (!isRecord(payload) || payload.lesson === undefined) throw new Error('Invalid lesson in server response');
   return parseLesson(payload.lesson);
 }
 
@@ -217,9 +217,9 @@ function nullableString(value: unknown, field: string): string | null {
 }
 
 function parseRevision(value: unknown): Revision {
-  if (!isRecord(value)) throw new Error('Ongeldige revisie in serverantwoord');
+  if (!isRecord(value)) throw new Error('Invalid revision in server response');
   const status = value.status;
-  if (status !== 'draft' && status !== 'published') throw new Error('Ongeldige revisiestatus in serverantwoord');
+  if (status !== 'draft' && status !== 'published') throw new Error('Invalid revision status in server response');
   return {
     version: requiredNumber(value.version, 'versie'),
     status,
@@ -232,7 +232,7 @@ function parseRevision(value: unknown): Revision {
 
 export async function listRevisions(passphrase: string, courseId: string): Promise<RevisionList> {
   const payload = await request<unknown>(passphrase, `/courses/${encodeURIComponent(courseId)}/revisions`);
-  if (!isRecord(payload) || !Array.isArray(payload.revisions)) throw new Error('Ongeldige revisielijst in serverantwoord');
+  if (!isRecord(payload) || !Array.isArray(payload.revisions)) throw new Error('Invalid revision list in server response');
   const current = payload.currentVersion;
   return {
     courseId: requiredString(payload.courseId, 'cursus-id'),
@@ -246,9 +246,9 @@ export async function publishSnapshot(passphrase: string, lessonId: string, targ
     method: 'POST',
     body: JSON.stringify(target),
   });
-  if (!isRecord(payload) || !isRecord(payload.publication)) throw new Error('Ongeldige publicatie in serverantwoord');
+  if (!isRecord(payload) || !isRecord(payload.publication)) throw new Error('Invalid publication in server response');
   const publication = payload.publication;
-  if (typeof publication.unchanged !== 'boolean') throw new Error('Ongeldige publicatie in serverantwoord');
+  if (typeof publication.unchanged !== 'boolean') throw new Error('Invalid publication in server response');
   return {
     version: requiredNumber(publication.version, 'versie'),
     baseVersion: requiredNumber(publication.baseVersion, 'basisversie'),

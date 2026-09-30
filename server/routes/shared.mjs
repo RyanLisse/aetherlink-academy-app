@@ -2,7 +2,7 @@ import { fail } from '../store.mjs';
 
 export const text = (v, max = 4000) => {
   if (typeof v !== 'string' || !v.trim() || v.length > max)
-    fail(400, `Vul tekst in (maximaal ${max} tekens).`);
+    fail(400, `Enter text (at most ${max} characters).`);
   return v.trim();
 };
 export const namedCookie = (req, name) => {
@@ -24,7 +24,7 @@ export const uuid = (v) => {
     typeof v !== 'string' ||
     !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v)
   )
-    fail(400, 'Ongeldige id.');
+    fail(400, 'Invalid id.');
   return v;
 };
 export const bearer = (req) =>

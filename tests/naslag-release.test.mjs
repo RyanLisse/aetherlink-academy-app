@@ -11,7 +11,7 @@ import {dayChecks} from '../server/progress.mjs';
 
 const DAY=24*60*60*1000;
 const START=Date.parse('2026-10-05T00:00:00Z');
-const READ_ONLY='Je cohorttoegang is alleen-lezen. Je kunt je werk nog bekijken en exporteren.';
+const READ_ONLY='Your cohort access is read-only. You can still view and export your work.';
 // Synthetic lab declarations: production day packs declare no labs yet.
 const LABS={2:[{id:'synthetic-day2-lab',src:'/arcade-lab/?lesson=synthetic-day2-lab&embed=1',title:'Synthetisch lab dag 2'}],6:[{id:'synthetic-day6-lab',src:'/arcade-lab/?lesson=synthetic-day6-lab&embed=1',title:'Synthetisch lab dag 6'}]};
 
@@ -65,7 +65,7 @@ test('the facilitator moves the live day; the release follows the furthest day a
   assert.deepEqual([after.day,after.released,after.allReleased],[3,[1,2,3,4,5,6,7],true]);
 
   const control=await g.call('POST','/game/control',{token:g.ann.token,body:{action:'day',value:1}});
-  assert.deepEqual([control.status,control.body.error],[403,'Alleen de facilitator bedient de ronde.']);
+  assert.deepEqual([control.status,control.body.error],[403,'Only the facilitator runs the round.']);
   assert.equal((await released(g.ann.token)).day,3,'a participant cannot move the room');
  }finally{await g.close();}
 });
@@ -82,11 +82,11 @@ test('a participant opens day 2 while the room is on day 5; unreleased and unkno
   assert.equal((await g.call('GET','/game/state',{token:g.ann.token})).body.day,5,'reading day 2 does not move the room');
 
   const locked=await g.call('GET','/game/day-pack?day=6',{token:g.ann.token});
-  assert.deepEqual([locked.status,locked.body.error],[403,'Dag 6 is nog niet vrijgegeven.']);
+  assert.deepEqual([locked.status,locked.body.error],[403,'Day 6 has not been released yet.']);
   const unknown=await g.call('GET','/game/day-pack?day=99',{token:g.ann.token});
-  assert.deepEqual([unknown.status,unknown.body.error],[404,'Geen contentpakket voor dag 99.']);
+  assert.deepEqual([unknown.status,unknown.body.error],[404,'No content pack for day 99.']);
   const harnessLocked=await g.call('GET','/game/day-pack?day=9',{token:g.ann.token});
-  assert.deepEqual([harnessLocked.status,harnessLocked.body.error],[404,'Dag 9 zit niet in de cursus.']);
+  assert.deepEqual([harnessLocked.status,harnessLocked.body.error],[404,'Day 9 is not part of the course.']);
   assert.equal((await g.call('GET','/game/day-pack?day=abc',{token:g.ann.token})).status,404);
   assert.equal((await g.call('GET','/game/knowledge?day=6',{token:g.ann.token})).status,403);
   assert.equal((await g.call('GET','/game/knowledge?day=2',{token:g.ann.token})).body.mission.id,getDayPack(2).mission.id);
@@ -123,7 +123,7 @@ test('quiz practice on an earlier day records on that day and leaves the live ro
   assert.deepEqual(dayChecks(r,p,2).find(check=>check.kind==='quiz'),{kind:'quiz',id:'d2-quiz',source:'server-graded',passed:true},'the certificate’s day check still counts the day-2 pass');
 
   const locked=await g.call('POST','/game/quiz/start',{token:g.ann.token,body:{day:6}});
-  assert.deepEqual([locked.status,locked.body.error],[403,'Dag 6 is nog niet vrijgegeven.']);
+  assert.deepEqual([locked.status,locked.body.error],[403,'Day 6 has not been released yet.']);
 
   const live=await g.call('POST','/game/quiz/start',{token:g.ann.token,body:{}});
   const liveKey=getDayPack(5).quiz.key;
@@ -147,9 +147,9 @@ test('with a composed course the release follows course order and an off-course 
   assert.deepEqual(state.released,[3,2,5]);
   assert.equal((await g.call('GET','/game/day-pack?day=2',{token:g.ann.token})).body.course.position,2);
   const locked=await g.call('GET','/game/day-pack?day=7',{token:g.ann.token});
-  assert.deepEqual([locked.status,locked.body.error],[403,'Dag 7 is nog niet vrijgegeven.']);
+  assert.deepEqual([locked.status,locked.body.error],[403,'Day 7 has not been released yet.']);
   const offCourse=await g.call('GET','/game/day-pack?day=1',{token:g.ann.token});
-  assert.deepEqual([offCourse.status,offCourse.body.error],[404,'Dag 1 zit niet in de cursus.']);
+  assert.deepEqual([offCourse.status,offCourse.body.error],[404,'Day 1 is not part of the course.']);
   assert.equal((await g.call('GET','/game/day-pack?day=1',{token:g.room.token})).status,404,'the facilitator cannot open an off-course day either');
   const route=(await g.call('GET','/game/day-route',{token:g.ann.token})).body;
   assert.deepEqual(route.days.map(day=>[day.day,day.released]),[[3,true],[2,true],[5,true],[7,false]]);
@@ -169,7 +169,7 @@ test('a lab from an earlier released day records on its own day; a locked day’
   assert.equal(me.progressByDay['2'].labs['synthetic-day2-lab'].source,'lab-reported');
   assert.equal(me.progressByDay['5'],undefined,'the live day has no lab record');
   const locked=await g.call('POST','/game/lab-complete',{token:g.ann.token,body:{labId:'synthetic-day6-lab',result:{outcome:'completed'}}});
-  assert.deepEqual([locked.status,locked.body.error],[404,'Lab synthetic-day6-lab hoort niet bij een vrijgegeven dag.']);
+  assert.deepEqual([locked.status,locked.body.error],[404,'Lab synthetic-day6-lab does not belong to a released day.']);
  }finally{await g.close();}
 });
 

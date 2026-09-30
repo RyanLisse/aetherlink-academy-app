@@ -35,7 +35,7 @@ const toolNavIds=[
   ['decks','nav.decks',Presentation],
 ];
 
-const EMAIL_ERRORS=[[/code is ongeldig of verlopen/i,'email.err.code'],[/wacht een minuut/i,'email.err.cooldown'],[/te veel codes/i,'email.err.rate'],[/geldig e-mailadres/i,'email.err.invalid'],[/e-mail kon niet worden verstuurd/i,'email.err.send']];
+const EMAIL_ERRORS=[[/code is invalid or has expired|code is ongeldig of verlopen/i,'email.err.code'],[/wait a minute|wacht een minuut/i,'email.err.cooldown'],[/too many codes|te veel codes/i,'email.err.rate'],[/valid email address|geldig e-mailadres/i,'email.err.invalid'],[/email could not be sent|e-mail kon niet worden verstuurd/i,'email.err.send']];
 const emailError=(t,message)=>{const match=EMAIL_ERRORS.find(([pattern])=>pattern.test(message||''));return match?t(match[1]):message;};
 
 function loginErrorMessage(t,code){

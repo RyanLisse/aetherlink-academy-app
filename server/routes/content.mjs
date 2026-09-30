@@ -64,12 +64,12 @@ export function registerContentRoutes(app, deps) {
   // A lab belongs to one day; practising an earlier released day records on that day, not on today.
   const participantLab = (context, labId) => {
     const { r, p } = context;
-    if (!p) fail(403, 'Alleen deelnemers maken een lab.');
+    if (!p) fail(403, 'Only participants create a lab.');
     const labDay = [r.day, ...readableDays(context)].find((day) =>
       dayLabs(day, r).some((lab) => lab.id === labId),
     );
     if (labDay === undefined)
-      fail(404, `Lab ${labId} hoort niet bij een vrijgegeven dag.`);
+      fail(404, `Lab ${labId} does not belong to a released day.`);
     const key = String(labDay);
     p.progressByDay ??= {};
     return { key, labDay, day: p.progressByDay[key] || {} };
@@ -113,7 +113,7 @@ export function registerContentRoutes(app, deps) {
         day = chosenDay(context, req.query.day),
         pack = getDayPack(day),
         locale = normalizeContentLocale(req.query?.locale);
-      if (!pack) fail(400, `Geen contentpakket voor supportdag ${day}.`);
+      if (!pack) fail(400, `No content pack for support day ${day}.`);
       const entry = courseEntry(r.course, day),
         body = publicDayPack(pack, r, locale);
       res.json(
@@ -151,7 +151,7 @@ export function registerContentRoutes(app, deps) {
   const chatSession = async (req) => {
     const context = await browser(req);
     if (context.s.personId !== 'facilitator' && context.r.chat === false)
-      fail(403, 'De facilitator heeft de chat voor deze kamer uitgezet.');
+      fail(403, 'The facilitator has turned off chat for this room.');
     return context;
   };
   // Cohort members keep one counter across rooms; the facilitator seat counts per room.
@@ -206,7 +206,7 @@ export function registerContentRoutes(app, deps) {
     wrap(async (req, res) => {
       const { r, s } = await browser(req);
       if (s.personId !== 'facilitator')
-        fail(403, 'Alleen de facilitator stelt de cursus samen.');
+        fail(403, 'Only the facilitator composes the course.');
       res.json({
         course: r.course ?? null,
         template: courseTemplate(),
@@ -249,7 +249,7 @@ export function registerContentRoutes(app, deps) {
     '/game/lab-answer',
     wrap(async (req, res) => {
       const submission = parseLabAnswer(req.body);
-      if (!submission) fail(400, 'Ongeldig labantwoord.');
+      if (!submission) fail(400, 'Invalid lab answer.');
       res.json(
         await store.withSession(token(req), 'browser', (context) => {
           const { p } = context;
@@ -261,7 +261,7 @@ export function registerContentRoutes(app, deps) {
               .get(submission.labId)
               ?.get(submission.stopId);
           if (!answerKey)
-            fail(404, `Stop ${submission.stopId} wordt niet beoordeeld.`);
+            fail(404, `Stop ${submission.stopId} is not graded.`);
           const stops = day.labStops?.[submission.labId] || {},
             { recorded, stop } = recordAttempt(
               stops[submission.stopId],
@@ -286,7 +286,7 @@ export function registerContentRoutes(app, deps) {
     '/game/lab-complete',
     wrap(async (req, res) => {
       const completion = parseLabCompletion(req.body);
-      if (!completion) fail(400, 'Ongeldige labvoltooiing.');
+      if (!completion) fail(400, 'Invalid lab completion.');
       res.json(
         await store.withSession(token(req), 'browser', (context) => {
           const { p } = context;
@@ -309,7 +309,7 @@ export function registerContentRoutes(app, deps) {
           if (graded.passed < graded.total)
             fail(
               409,
-              `Nog niet alle beoordeelde stops gehaald (${graded.passed}/${graded.total}).`,
+              `Not all graded stops passed yet (${graded.passed}/${graded.total}).`,
             );
           const lab = graded.total
             ? {
@@ -346,7 +346,7 @@ export function registerStarterRoute(app, deps) {
     wrap(async (req, res) => {
       await browser(req);
       if (!starterFileNames.includes(req.params.file))
-        fail(404, 'Bestand niet gevonden.');
+        fail(404, 'File not found.');
       res
         .type('text/plain')
         .send(

@@ -52,7 +52,7 @@ export function registerPortalRoutes(app, deps) {
     } catch {
       fail(
         401,
-        'Log in als facilitator of open een kamer om de portal te gebruiken.',
+        'Sign in as a facilitator or open a room to use the portal.',
       );
     }
   };
@@ -73,13 +73,13 @@ export function registerPortalRoutes(app, deps) {
       const appMeta = portal
         .listLauncherApps()
         .find((a) => a.id === req.params.appId);
-      if (!appMeta) fail(404, 'Onbekende app.');
+      if (!appMeta) fail(404, 'Unknown app.');
       if (!appMeta.launchable)
         fail(
           409,
           appMeta.blockedBy
             ? `App geblokkeerd door ${appMeta.blockedBy}.`
-            : 'App nog niet launchbaar.',
+            : 'App cannot be launched yet.',
         );
       const grant = portal.ownership.grant({
         appId: req.params.appId,
@@ -124,7 +124,7 @@ export function registerPortalRoutes(app, deps) {
       if (actor.role !== 'facilitator')
         fail(
           403,
-          'Alleen de facilitator publiceert immutable Academy-versies.',
+          'Only the facilitator publishes immutable Academy versions.',
         );
       const contentRef = req.body?.contentRef || {
         kind: 'day-pack',
@@ -164,7 +164,7 @@ export function registerPortalRoutes(app, deps) {
     wrap(async (req, res) => {
       const artifact = portal.adapters.getPublished(req.params.publishedId);
       if (!artifact || artifact.appId !== req.params.appId)
-        fail(404, 'Publicatie niet gevonden.');
+        fail(404, 'Publication not found.');
       res.json({
         id: artifact.id,
         appId: artifact.appId,

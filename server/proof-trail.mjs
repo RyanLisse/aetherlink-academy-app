@@ -12,15 +12,15 @@ const TASK_TRANSITIONS={
 };
 const REVIEW_EVENTS={accepted:'approve','needs-work':'request_changes'};
 const ILLEGAL={
- submit:'Deze opdracht wacht op beoordeling of is al goedgekeurd.',
- approve:'Alleen ingediende opdrachten kunnen worden beoordeeld.',
- request_changes:'Alleen ingediende opdrachten kunnen worden beoordeeld.',
- autograde_pass:'Deze opdracht is al goedgekeurd.'
+ submit:'This assignment is awaiting review or has already been approved.',
+ approve:'Only submitted assignments can be reviewed.',
+ request_changes:'Only submitted assignments can be reviewed.',
+ autograde_pass:'This assignment has already been approved.'
 };
 
 export function transition(status,event){
  const next=TASK_TRANSITIONS[status]?.[event];
- if(!next)fail(409,ILLEGAL[event]||'Ongeldige opdrachtstap.');
+ if(!next)fail(409,ILLEGAL[event]||'Invalid assignment step.');
  return next;
 }
 export const reviewEvent=evidenceStatus=>REVIEW_EVENTS[evidenceStatus];
@@ -33,7 +33,7 @@ export function dayTasks(day){
 }
 export function findTask(day,taskId){
  const task=dayTasks(day).find(t=>t.id===taskId);
- if(!task)fail(400,`Onbekende opdracht voor supportdag ${day}.`);
+ if(!task)fail(400,`Unknown assignment for support day ${day}.`);
  return task;
 }
 
@@ -48,7 +48,7 @@ export const taskPassed=(room,personId,taskId,day)=>taskStatus(room,personId,tas
 
 // A failing attempt is recorded without a status change; a passing one approves through the table above.
 export function submitAutograde(room,person,task,body,at){
- if(!task.grader)fail(409,'Deze opdracht wordt door een mens beoordeeld, niet automatisch.');
+ if(!task.grader)fail(409,'This assignment is reviewed by a person, not automatically.');
  const day=String(room.day),progress=person.progressByDay?.[day]||{},previous=progress.autograde?.[task.id];
  if(!previous?.passed)transition(taskStatus(room,person.id,task.id,room.day),'autograde_pass');
  const {recorded,record}=recordAutograde(previous,task.grader,body,at);
@@ -72,7 +72,7 @@ export const reviewerRole=session=>session.personId==='facilitator'?'facilitator
 // The facilitator is only present in the live classroom, so any other participant in the room may review task evidence.
 // Self-review is rejected by the caller for all evidence.
 export function authorizeTaskReview({s,p}){
- if(s.personId!=='facilitator'&&!p)fail(403,'Alleen deelnemers of de facilitator beoordelen opdrachten.');
+ if(s.personId!=='facilitator'&&!p)fail(403,'Only participants or the facilitator review assignments.');
 }
 
 const queueItem=(room,e)=>({evidenceId:e.id,taskId:e.taskId,taskTitle:dayTasks(e.day).find(t=>t.id===e.taskId)?.title||e.taskId,day:e.day,personId:e.personId,name:e.name,at:e.at,attempt:submissionsFor(room,e.personId,e.taskId,e.day).indexOf(e)+1,finding:e.finding,command:e.command,observed:e.observed,limitation:e.limitation});

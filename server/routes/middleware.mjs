@@ -37,7 +37,7 @@ export function registerRequestMiddleware(app, deps) {
     if (e?.status === 413 && e.type === 'entity.too.large')
       return res
         .status(413)
-        .json({ error: 'Bestand is te groot; maximaal 25 MiB.' });
+        .json({ error: 'File is too large; at most 25 MiB.' });
     next(e);
   });
   app.use(express.json({ limit: '64kb' }));
@@ -56,7 +56,7 @@ export function registerRequestMiddleware(app, deps) {
       if (b.n > 1500)
         return res
           .status(429)
-          .json({ error: 'Te veel verzoeken. Wacht even.' });
+          .json({ error: 'Too many requests. Wait a moment.' });
       next();
     },
   );
@@ -92,7 +92,7 @@ export function registerErrorHandler(app) {
     return res.status(e.status || 500).json({
       error: e.status
         ? e.message
-        : 'Onverwachte serverfout. Probeer opnieuw; je invoer blijft staan.',
+        : 'Unexpected server error. Try again; your input is kept.',
     });
   });
 }

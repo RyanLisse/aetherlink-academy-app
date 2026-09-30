@@ -78,7 +78,7 @@ test('task → submit → changes requested → resubmit → approved, visible t
 
  const again=await submit(learner.token,'t-2','c1-setup');
  assert.equal(again.statusCode,409);
- assert.equal(again.body.error,'Deze opdracht wacht op beoordeling of is al goedgekeurd.');
+ assert.equal(again.body.error,'This assignment is awaiting review or has already been approved.');
 
  const waiting=await queue(facilitator);
  assert.equal(waiting.statusCode,200);
@@ -87,7 +87,7 @@ test('task → submit → changes requested → resubmit → approved, visible t
 
  const self=await review(as(learner.token),first.body.id,'accepted','Mijn eigen werk','r-self');
  assert.equal(self.statusCode,403);
- assert.equal(self.body.error,'Laat een andere deelnemer jouw bewijs beoordelen.');
+ assert.equal(self.body.error,'Ask another participant to review your evidence.');
  assert.equal((await tasks(learner.token)).body.tasks[0].status,'submitted');
 
  const changes=await review(facilitator,first.body.id,'needs-work','Voeg de letterlijke foutmelding toe.','r-1');
@@ -153,7 +153,7 @@ test('a participant from another room cannot see or review the submission',async
  assert.deepEqual((await peerList(as(outsider.token))).body.queue,[]);
  const attempt=await review(as(outsider.token),sent.body.id,'accepted','Lijkt goed','x-r-1');
  assert.equal(attempt.statusCode,404);
- assert.equal(attempt.body.error,'Bewijs niet gevonden.');
+ assert.equal(attempt.body.error,'Evidence not found.');
  assert.equal((await tasks(learner.token)).body.tasks[0].status,'submitted');
 });
 
@@ -174,10 +174,10 @@ test('review queue and task list are role-scoped',async()=>{
  const {host,learner,facilitator,as,tasks,queue,peerList}=fixture();
  const facilitatorPeer=await peerList(facilitator);
  assert.equal(facilitatorPeer.statusCode,403);
- assert.equal(facilitatorPeer.body.error,'Alleen deelnemers beoordelen elkaars opdrachten.');
+ assert.equal(facilitatorPeer.body.error,'Only participants review each other’s assignments.');
  const participantQueue=await queue(as(learner.token));
  assert.equal(participantQueue.statusCode,403);
- assert.equal(participantQueue.body.error,'Alleen de facilitator ziet de beoordelingswachtrij.');
+ assert.equal(participantQueue.body.error,'Only the facilitator sees the review queue.');
  assert.equal((await tasks(host.token)).statusCode,403);
  assert.equal((await queue(facilitator)).statusCode,200);
 });
@@ -192,7 +192,7 @@ test('untasked evidence keeps the peer review path; unknown task ids are rejecte
  assert.deepEqual(peer.body.review.reviewer,{role:'peer',name:'Ada',email:null});
  const unknown=await submit(learner.token,'bad-1','NOPE');
  assert.equal(unknown.statusCode,400);
- assert.equal(unknown.body.error,'Onbekende opdracht voor supportdag 1.');
+ assert.equal(unknown.body.error,'Unknown assignment for support day 1.');
  const overview=await invoke(instance.app,'/game/facilitator/overview',{body:{hostKey:'test-host'}});
  assert.equal(overview.body[0].awaitingReview,0);
 });

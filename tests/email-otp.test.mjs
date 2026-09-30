@@ -75,7 +75,7 @@ for (const [label,backend,options] of backends) {
    await rejectsWith(()=>env.store.verifyEmailAttach(joined.token,'someone.else@example.test',code),401);
    assert.deepEqual(await env.store.verifyEmailAttach(joined.token,ALICE_MAIL,code),{email:ALICE_MAIL});
    assert.deepEqual(await env.store.emailStatus(joined.token),{email:ALICE_MAIL});
-   await rejectsWith(()=>env.store.verifyEmailAttach(joined.token,ALICE_MAIL,code),401,/ongeldig of verlopen/);
+   await rejectsWith(()=>env.store.verifyEmailAttach(joined.token,ALICE_MAIL,code),401,/invalid or has expired/);
 
    const unknown=await env.store.startEmailLogin('nobody@example.test',{ip:ip()});
    assert.equal(unknown.code,null);
@@ -96,7 +96,7 @@ for (const [label,backend,options] of backends) {
    const {joined}=await roomParticipant(env.store);
    const first=await env.store.startEmailAttach(joined.token,ALICE_MAIL,{ip:ip()});
    env.clock.now+=10*MINUTE;
-   await rejectsWith(()=>env.store.verifyEmailAttach(joined.token,ALICE_MAIL,first.code),401,/ongeldig of verlopen/);
+   await rejectsWith(()=>env.store.verifyEmailAttach(joined.token,ALICE_MAIL,first.code),401,/invalid or has expired/);
 
    const second=await env.store.startEmailAttach(joined.token,ALICE_MAIL,{ip:ip()});
    const wrong=second.code==='000000'?'111111':'000000';
@@ -117,16 +117,16 @@ for (const [label,backend,options] of backends) {
    const {joined}=await roomParticipant(env.store);
    const first=await env.store.startEmailAttach(joined.token,ALICE_MAIL,{ip:ip()});
    env.clock.now+=59*1000;
-   await rejectsWith(()=>env.store.startEmailAttach(joined.token,ALICE_MAIL,{ip:ip()}),429,/Wacht een minuut/);
+   await rejectsWith(()=>env.store.startEmailAttach(joined.token,ALICE_MAIL,{ip:ip()}),429,/Wait a minute/);
    env.clock.now+=1000;
    const second=await env.store.startEmailAttach(joined.token,ALICE_MAIL,{ip:ip()});
    if(first.code!==second.code)await rejectsWith(()=>env.store.verifyEmailAttach(joined.token,ALICE_MAIL,first.code),401);
    assert.deepEqual(await env.store.verifyEmailAttach(joined.token,ALICE_MAIL,second.code),{email:ALICE_MAIL});
 
    await env.store.startEmailLogin('nobody@example.test',{ip:ip()});
-   await rejectsWith(()=>env.store.startEmailLogin('nobody@example.test',{ip:ip()}),429,/Wacht een minuut/);
+   await rejectsWith(()=>env.store.startEmailLogin('nobody@example.test',{ip:ip()}),429,/Wait a minute/);
    await env.store.startEmailLogin(ALICE_MAIL,{ip:ip()});
-   await rejectsWith(()=>env.store.startEmailLogin(ALICE_MAIL,{ip:ip()}),429,/Wacht een minuut/);
+   await rejectsWith(()=>env.store.startEmailLogin(ALICE_MAIL,{ip:ip()}),429,/Wait a minute/);
   } finally {await env.close();}
  });
 
@@ -134,12 +134,12 @@ for (const [label,backend,options] of backends) {
   const env=await backend();
   try {
    for(let send=0;send<5;send++){await env.store.startEmailLogin('limit@example.test',{ip:ip()});env.clock.now+=MINUTE;}
-   await rejectsWith(()=>env.store.startEmailLogin('limit@example.test',{ip:ip()}),429,/Te veel codes/);
+   await rejectsWith(()=>env.store.startEmailLogin('limit@example.test',{ip:ip()}),429,/Too many codes/);
    env.clock.now+=60*MINUTE;
    assert.equal((await env.store.startEmailLogin('limit@example.test',{ip:ip()})).code,null);
 
    for(let send=0;send<20;send++)await env.store.startEmailLogin(`person${send}@example.test`,{ip:'203.0.113.7'});
-   await rejectsWith(()=>env.store.startEmailLogin('person20@example.test',{ip:'203.0.113.7'}),429,/Te veel codes/);
+   await rejectsWith(()=>env.store.startEmailLogin('person20@example.test',{ip:'203.0.113.7'}),429,/Too many codes/);
    assert.equal((await env.store.startEmailLogin('person20@example.test',{ip:'203.0.113.8'})).code,null);
   } finally {await env.close();}
  });
@@ -164,7 +164,7 @@ for (const [label,backend,options] of backends) {
    env.clock.now+=MINUTE;
    assert.equal((await env.store.startEmailLogin('alice.nieuw@example.test',{ip:ip()})).code,null);
    const facilitator=await env.store.create('Facilitator room');
-   await rejectsWith(()=>env.store.startEmailAttach(facilitator.token,ALICE_MAIL,{ip:ip()}),403,/Alleen deelnemers/);
+   await rejectsWith(()=>env.store.startEmailAttach(facilitator.token,ALICE_MAIL,{ip:ip()}),403,/Only participants/);
   } finally {await env.close();}
  });
 
@@ -180,7 +180,7 @@ for (const [label,backend,options] of backends) {
    assert.equal((await env.store.auth(recovered.token,'browser')).p.cohortMemberId,alice.memberId);
 
    await env.store.revokeCohortMember(cohort.id,alice.memberId);
-   await rejectsWith(signIn,401,/ingetrokken/);
+   await rejectsWith(signIn,401,/revoked/);
    await env.store.reissueCohortCode(cohort.id,alice.memberId);
    assert.equal((await signIn()).roomId,room.roomId);
 
@@ -190,7 +190,7 @@ for (const [label,backend,options] of backends) {
    assert.equal((await env.store.auth(readOnly.token,'browser')).s.readOnly,true);
 
    env.clock.now=START+105*DAY;
-   await rejectsWith(signIn,403,/verlopen/);
+   await rejectsWith(signIn,403,/expired/);
   } finally {await env.close();}
  });
 
@@ -300,8 +300,8 @@ test('routes: delivery, enumeration-resistant login and a private email',async()
   assert.deepEqual([started.status,started.body],[200,{ok:true}]);
   assert.equal(mails.length,1);
   assert.equal(mails[0].to,ALICE_MAIL);
-  assert.match(mails[0].subject,/^Bevestig je e-mailadres voor AetherLink Academy: \d{6}$/);
-  assert.match(mails[0].text,/10 minuten geldig[\s\S]*valid for 10 minutes/);
+  assert.match(mails[0].subject,/^Confirm your email address for AetherLink Academy: \d{6}$/);
+  assert.match(mails[0].text,/valid for 10 minutes[\s\S]*10 minuten geldig/);
   const verified=await call('POST','/game/email/attach/verify',{cookie:alice.body.token,body:{email:ALICE_MAIL,code:codeIn(mails[0])}});
   assert.deepEqual([verified.status,verified.body],[200,{email:ALICE_MAIL}]);
   assert.deepEqual((await call('GET','/game/email',{cookie:alice.body.token})).body,{email:ALICE_MAIL});
@@ -312,17 +312,17 @@ test('routes: delivery, enumeration-resistant login and a private email',async()
   const known=await call('POST','/game/email/login/start',{body:{email:ALICE_MAIL}});
   const unknown=await call('POST','/game/email/login/start',{body:{email:'nobody@example.test'}});
   await settle();
-  assert.deepEqual([known.status,known.body],[200,{ok:true,message:'Als dit e-mailadres bij een deelnemer hoort, ontvang je een code van 6 cijfers.'}]);
+  assert.deepEqual([known.status,known.body],[200,{ok:true,message:'If this email address belongs to a participant, you will receive a 6-digit code.'}]);
   assert.deepEqual([unknown.status,unknown.body],[known.status,known.body]);
   assert.deepEqual(mails.map(mail=>mail.to),[ALICE_MAIL,ALICE_MAIL]);
-  assert.match(mails[1].subject,/^Je inlogcode voor AetherLink Academy: \d{6}$/);
+  assert.match(mails[1].subject,/^Your AetherLink Academy sign-in code: \d{6}$/);
   const knownAgain=await call('POST','/game/email/login/start',{body:{email:ALICE_MAIL}});
   const unknownAgain=await call('POST','/game/email/login/start',{body:{email:'nobody@example.test'}});
-  assert.deepEqual([knownAgain.status,knownAgain.body],[429,{error:'Wacht een minuut voordat je een nieuwe code aanvraagt.'}]);
+  assert.deepEqual([knownAgain.status,knownAgain.body],[429,{error:'Wait a minute before you request a new code.'}]);
   assert.deepEqual([unknownAgain.status,unknownAgain.body],[knownAgain.status,knownAgain.body]);
   const wrongKnown=await call('POST','/game/email/login/verify',{body:{email:ALICE_MAIL,code:codeIn(mails[1])==='000000'?'111111':'000000'}});
   const wrongUnknown=await call('POST','/game/email/login/verify',{body:{email:'nobody@example.test',code:'000000'}});
-  assert.deepEqual([wrongKnown.status,wrongKnown.body],[401,{error:'Deze code is ongeldig of verlopen. Vraag een nieuwe code aan.'}]);
+  assert.deepEqual([wrongKnown.status,wrongKnown.body],[401,{error:'This code is invalid or has expired. Request a new code.'}]);
   assert.deepEqual([wrongUnknown.status,wrongUnknown.body],[wrongKnown.status,wrongKnown.body]);
 
   const login=await call('POST','/game/email/login/verify',{body:{email:ALICE_MAIL,code:codeIn(mails[1])}});
@@ -343,7 +343,7 @@ test('routes: a failing mail server surfaces on attach as a 502',async()=>{
   const room=await call('POST','/game/create',{body:{hostKey:'test-host',name:'Squad Orion'}});
   const alice=await call('POST','/game/join',{body:{code:room.body.code,name:'Alice'}});
   const attach=await call('POST','/game/email/attach/start',{cookie:alice.body.token,body:{email:ALICE_MAIL}});
-  assert.deepEqual([attach.status,attach.body],[502,{error:'De e-mail kon niet worden verstuurd. Probeer het later opnieuw.'}]);
+  assert.deepEqual([attach.status,attach.body],[502,{error:'The email could not be sent. Try again later.'}]);
   assert.deepEqual(errors,['academy mail send failed smtp down']);
  } finally {console.error=original;await close();}
 });

@@ -62,7 +62,7 @@ test('release filter is cumulative and a naslag heartbeat for an unreleased day 
   assert.deepEqual(await g.screen(c),expected(room.roomId,{lessonId:'day-4',route:'naslag',proof:{open:false,section:null},quiz:{id:'day-4-quiz',status:'idle',itemIndex:null},room:{id:room.roomId,phase:'lesson',releasedLessonIds:['day-1','day-2','day-3','day-4','day-5']}}));
   const refused=await g.post('/game/screen-state',ann.browser,{tabId:TAB_A,view:'naslag',day:6});
   assert.equal(refused.status,403);
-  assert.deepEqual(await refused.json(),{error:'Deze dag is nog niet vrijgegeven.'});
+  assert.deepEqual(await refused.json(),{error:'This day has not been released yet.'});
   assert.equal((await g.screen(c)).lessonId,'day-4','the refused heartbeat did not replace the last served view');
  }finally{await g.close();}
 });
@@ -91,7 +91,7 @@ test('missing, invalid and wrong-kind tokens are rejected on both the MCP read a
   const call={jsonrpc:'2.0',id:1,method:'tools/call',params:{name:'get_screen_state',arguments:{}}};
   for(const token of [undefined,'invalid',ann.browser])assert.equal((await g.post('/mcp',token,call)).status,401);
   for(const token of [undefined,'invalid',ann.mcp])assert.equal((await g.post('/game/screen-state',token,{tabId:TAB_A,view:'squad'})).status,401);
-  assert.deepEqual(await (await g.post('/game/screen-state',room.token,{tabId:TAB_A,view:'squad'})).json(),{error:'Alleen deelnemers melden hun scherm.'});
+  assert.deepEqual(await (await g.post('/game/screen-state',room.token,{tabId:TAB_A,view:'squad'})).json(),{error:'Only participants report their screen.'});
   assert.equal((await g.post('/game/screen-state',ann.browser,{tabId:'not-a-tab',view:'squad'})).status,400);
   assert.equal((await g.post('/game/screen-state',ann.browser,{tabId:TAB_A,view:'facilitator'})).status,400);
   assert.equal((await g.post('/game/screen-state',ann.browser,{tabId:TAB_A,view:'decks',deckId:'../x',slideIndex:0})).status,400);

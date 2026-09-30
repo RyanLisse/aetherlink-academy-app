@@ -36,7 +36,7 @@ test('day 1 lesson pack and route days stay available',async()=>{
  const route=await invoke(instance.app,'/game/day-route',{cookies:{academy:participant.token}});
  assert.equal(route.statusCode,200);
  assert.equal(route.body.day,1);
- assert.deepEqual(route.body.days.map(d=>d.title),['Classroom 1 · AI and Claude Code','Classroom 2 · Reusable workflows','Workshop 3 · Agents in n8n','Workshop 4 · Claude Agent SDK','Workshop 5 · AI-native SDLC','Workshop 6 · Eigen opdracht: thin slice','Workshop 7 · Eigen opdracht: afronden']);
+ assert.deepEqual(route.body.days.map(d=>d.title),['Classroom 1 · AI and Claude Code','Classroom 2 · Reusable workflows','Workshop 3 · Agents in n8n','Workshop 4 · Claude Agent SDK','Workshop 5 · AI-native SDLC','Workshop 6 · Own assignment: thin slice','Workshop 7 · Own assignment: ship it']);
  assert.equal(route.body.days.length,listRouteDays().length);
  for(const [i,expected] of listRouteDays().entries()){
   assert.equal(route.body.days[i].day,expected.day);

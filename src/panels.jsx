@@ -24,10 +24,11 @@ function routeName(t,key){
 
 export function Knowledge(){
   const t=useT();
+  const {locale}=useI18n();
   const [query,setQuery]=useState('');
   const [lessons,setLessons]=useState([]);
   const [error,setError]=useState('');
-  useEffect(()=>{let active=true;api('knowledge?q='+encodeURIComponent(query)).then(d=>{if(active)setLessons(d.lessons);}).catch(e=>setError(e.message));return()=>{active=false;};},[query]);
+  useEffect(()=>{let active=true;api(`knowledge?${new URLSearchParams({q:query,locale})}`).then(d=>{if(active)setLessons(d.lessons);}).catch(e=>setError(e.message));return()=>{active=false;};},[query,locale]);
   return <div className="knowledge"><label className="search"><Search size={18}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder={t('knowledge.search')} aria-label={t('knowledge.searchLabel')}/></label>{error&&<p role="alert">{error}</p>}<div className="lesson-list">{lessons.map(l=><details key={l.id}><summary><BookOpen size={18}/><span>{l.title}<small>{l.id}</small></span><span className="detail-plus">+</span></summary><p>{l.body}</p><div className="exercise"><strong>{t('knowledge.try')}</strong><p>{l.exercise}</p></div><small className="muted">{l.source}</small></details>)}{!lessons.length&&<p>{t('knowledge.empty')}</p>}</div></div>;
 }
 

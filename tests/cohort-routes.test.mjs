@@ -55,7 +55,7 @@ test('facilitator creates a Wave cohort, participant activates a personal code i
   assert.equal(state.body.wave?.name,'Wave oktober (synthetisch)');
   const roomJoin=await call('POST','/game/join',{body:{code:room.body.code,name:'Mallory'}});
   assert.equal(roomJoin.status,403);
-  assert.match(roomJoin.body.error,/persoonlijke cohortcode/);
+  assert.match(roomJoin.body.error,/personal cohort code/);
   assert.deepEqual((await call('POST','/game/help',{cookie:session,body:{}})).body,{help:true});
   assert.equal((await call('POST','/game/participant/access',{cookie:session,body:{}})).status,409);
   assert.equal((await call('PUT','/api/documents/cohort-proof',{cookie:session,body:{markdown:'# x'}})).status,404);
@@ -82,12 +82,12 @@ test('facilitator creates a Wave cohort, participant activates a personal code i
   assert.equal(readState.body.readOnly,true);
   const blocked=await call('POST','/game/help',{cookie:readSession,body:{}});
   assert.equal(blocked.status,403);
-  assert.match(blocked.body.error,/alleen-lezen/);
+  assert.match(blocked.body.error,/read-only/);
   assert.equal((await call('POST','/GAME/Help/',{cookie:readSession,body:{}})).status,403);
   assert.equal((await call('POST','/GAME/mcp-token',{cookie:readSession,body:{}})).status,403);
   for (const [route,body] of [['/game/lab-complete',{labId:'lab-1'}],['/game/quiz/start',{}],['/game/quiz',{answers:[0,0,0]}],['/game/route',{route:'guided'}],['/game/evidence',{requestId:'r1',finding:'a',command:'b',observed:'c',limitation:'d'}],['/game/review',{id:'evidence-1',status:'accepted',note:'ok',requestId:'r2'}],['/game/board',{action:'open'}],['/game/lab-answer',{labId:'lab-1',stopId:'stop-1',answer:'a'}]]) {
    const result=await call('POST',route,{cookie:readSession,body});
-   assert.deepEqual([route,result.status,result.body.error],[route,403,'Je cohorttoegang is alleen-lezen. Je kunt je werk nog bekijken en exporteren.']);
+   assert.deepEqual([route,result.status,result.body.error],[route,403,'Your cohort access is read-only. You can still view and export your work.']);
   }
   const heartbeat=await call('POST','/game/screen-state',{cookie:readSession,body:{tabId:'8b0e7a52-8a4c-4c1e-9d59-0f3b2a1c4d5e',view:'squad'}});
   assert.equal(heartbeat.status,204);

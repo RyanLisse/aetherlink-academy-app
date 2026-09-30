@@ -58,7 +58,7 @@ test('quiz rejects wrong answer arity and scores every day pack 1–7',async()=>
  const {instance,host,participant}=fixture();
  const wrongLength=await answerQuiz(instance.app,participant.token,{'d1-q1':'b','d1-q2':'a'});
  assert.equal(wrongLength.statusCode,400);
- assert.match(wrongLength.body.error,/vraag d1-q3 is niet beantwoord/);
+ assert.match(wrongLength.body.error,/question d1-q3 is not answered/);
  for(const day of [1,2,3,4,5,6,7]){
   const changeDay=await invoke(instance.app,'/game/control',{body:{action:'day',value:day},cookies:{academy:host.token}});
   assert.equal(changeDay.statusCode,200);
