@@ -4,21 +4,21 @@ Academy draait op de Hetzner CX33 `aetherlink-academy`; `main` pushes rebuilden 
 
 ## Runtime
 
-Node 24 start de Academy-gateway en een echte Proof-server op een interne loopbackpoort. De runtime gebruikt Postgres voor squads, sessies, Proof-documenten, marks, Yjs-geschiedenis, leases, verzoekreserveringen en private HTML-snapshots. Redis verzorgt aanwezigheid en live communicatie tussen instanties. PostgreSQL-transacties blijven de duurzame autoriteit.
+Node 24 start de Academy-gateway. De runtime gebruikt Postgres voor squads, sessies, intent-links, bewijs, reviews, het debriefbord, leases, verzoekreserveringen en private HTML-snapshots. Redis verzorgt aanwezigheid en schermstatus tussen instanties. PostgreSQL-transacties blijven de duurzame autoriteit.
 
 `DATABASE_URL` en een TLS-`REDIS_URL` (of `KV_URL`) moeten beschikbaar zijn. Beide bestaande diensten zijn live getest. De 1Password-mount kan om herauthenticatie vragen. De door de gebruiker aangeleverde, afgeschermde `.env` is een geautoriseerde lokale fallback. Geen secretwaarden horen in Git, buildcontext of bewijsbestanden.
 
-Voor meerdere instanties zijn dezelfde `ACADEMY_HOST_KEY` en `PROOF_COLLAB_SIGNING_SECRET` nodig, ieder met minstens 32 tekens. Gebruik per omgeving aparte `ACADEMY_DATABASE_SCHEMA`, `PROOF_DATABASE_SCHEMA`, `ACADEMY_REDIS_PREFIX` en `PROOF_REDIS_PREFIX`. Stel `ACADEMY_PUBLIC_URL` in op de exacte HTTPS-origin voor cookies, MCP en WebSocket-URLs.
+Voor meerdere instanties zijn dezelfde `ACADEMY_HOST_KEY` en `ACADEMY_SIGNING_SECRET` nodig, ieder met minstens 32 tekens (`PROOF_COLLAB_SIGNING_SECRET` wordt nog als oude naam voor het signing secret gelezen). Gebruik per omgeving aparte `ACADEMY_DATABASE_SCHEMA` en `ACADEMY_REDIS_PREFIX`. Stel `ACADEMY_PUBLIC_URL` in op de exacte HTTPS-origin voor cookies en MCP.
 
 ## Schemawijzigingen
 
-Nieuwe Academy- en Proof-schemas krijgen binnen dezelfde opstarttransactie een versienummer en SHA-256-checksum van hun SQL-definitie. Een herstart met dezelfde definitie leest alleen deze marker; hij herhaalt geen DDL terwijl andere instanties schrijven. Dit is getest met een gelijktijdige writer-lock en echte procesherstart.
+Nieuwe Academy-schemas krijgen binnen dezelfde opstarttransactie een versienummer en SHA-256-checksum van hun SQL-definitie. Een herstart met dezelfde definitie leest alleen deze marker; hij herhaalt geen DDL terwijl andere instanties schrijven. Dit is getest met een gelijktijdige writer-lock en echte procesherstart.
 
 Een bestaand schema zonder marker of met een afwijkende checksum stopt met een expliciete migratiefout. Behandel dit als een geplande offline migratie: controleer de huidige structuur en data, maak een herstelbaar backupplan en pas een gereviewde migratie toe. Zet geen marker handmatig om de controle te passeren en verwijder geen bestaand schema als opstartworkaround. De huidige tests gebruiken uitsluitend hun eigen tijdelijke schemas.
 
 ## Containers
 
-`Dockerfile` bouwt app plus Proof. Voor lokaal Compose-gebruik:
+`Dockerfile` bouwt de app. Voor lokaal Compose-gebruik:
 
 ```sh
 docker compose up --build -d
@@ -28,7 +28,7 @@ docker compose down
 
 Compose leest de private `.env`, bindt alleen de gateway op `127.0.0.1:4317` en bewaart lokale ontwikkelsleutels in `academy-data`. Document- en squadgegevens staan extern in Postgres. `down -v` verwijdert de lokale sleutels en hoort niet bij normale cleanup.
 
-`Dockerfile` bouwt de productie-image die Compose op Hetzner draait: een niet-rootgebruiker, `tini`, een vastgepinde base-digest, de `SOURCE_REVISION` build-arg en OCI-labels. Compose zet `ACADEMY_STORAGE=postgres`. Alleen de gateway ontvangt publiek verkeer; Proof blijft op loopback. De CI-job `container` bouwt en draait precies deze image.
+`Dockerfile` bouwt de productie-image die Compose op Hetzner draait: een niet-rootgebruiker, `tini`, een vastgepinde base-digest, de `SOURCE_REVISION` build-arg en OCI-labels. Compose zet `ACADEMY_STORAGE=postgres`. Alleen de gateway ontvangt publiek verkeer. De CI-job `container` bouwt en draait precies deze image.
 
 De startcode valideert de productieconfiguratie vóór opslag of subprocessen worden geopend. De strengste set (Postgres, TLS-Redis, gedeelde host- en signing-geheimen van minimaal 32 tekens, canonieke HTTPS-origin) zit achter de `VERCEL`-guard en is op Hetzner inactief; de guard blijft staan zodat een noodterugval naar een gedeelde runtime goedkoop blijft. Native acceptatie, afwijzing, herladen en procesherstart zijn lokaal bewezen; echte containerbuild en publieke acceptatie blijven aparte releasegates.
 
@@ -44,7 +44,7 @@ WebSocket-verbindingen kunnen na een containerherstart opnieuw verbinden. De app
 
 ## Vereiste releasebewijzen
 
-- Twee echte Academy/Proof-processen, gelijktijdige edits en gedeelde Redis-communicatie.
+- Twee echte Academy-processen die dezelfde intent-link, debriefkaarten en tokenrevocatie zien, ook na herstart.
 - Procesuitval, reconnect, duurzame inhoud en ingetrokken toegang over instanties.
 - Menselijk accepteren en afwijzen in de echte browser na de opslagmigratie.
 - Echte containerbuild met bekende bron-SHA en correcte runtimegeheimen.
@@ -102,4 +102,4 @@ De chat blijft een deterministische FAQ. Met een OpenRouter-sleutel beantwoordt 
 - `ACADEMY_COACH_DAILY_CAP` (standaard 40 per deelnemer) en `ACADEMY_COACH_PLATFORM_DAILY_CAP` (standaard 50, het gratis OpenRouter-limiet zonder credits). Tellers staan per Europe/Amsterdam-datum in `access_attempts` (`coach:*`), dus gedeeld over instances.
 - `ACADEMY_COACH_TIMEOUT_MS` (standaard 15000). Bij time-out, 429, 5xx of een antwoord zonder geldige bronverwijzing krijgt de deelnemer het gewone FAQ-antwoord met de reden.
 
-Naar het model gaan alleen de opgehaalde lespassages met hun id en de vraag, met namen uit de kamer, e-mailadressen en kamer- en cohortcodes vervangen. Elke request vraagt `provider.data_collection=deny`. Controleer na het instellen met `node --import ./vendor/proof-sdk/node_modules/tsx/dist/loader.mjs scripts/coach-smoke.mjs` (kost één request van het dagbudget). Een 404 "No endpoints found matching your data policy" betekent dat dit model geen provider heeft die dat respecteert: kies dan een ander `:free`-model.
+Naar het model gaan alleen de opgehaalde lespassages met hun id en de vraag, met namen uit de kamer, e-mailadressen en kamer- en cohortcodes vervangen. Elke request vraagt `provider.data_collection=deny`. Controleer na het instellen met `node --import tsx scripts/coach-smoke.mjs` (kost één request van het dagbudget). Een 404 "No endpoints found matching your data policy" betekent dat dit model geen provider heeft die dat respecteert: kies dan een ander `:free`-model.

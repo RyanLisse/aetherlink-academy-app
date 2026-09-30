@@ -96,7 +96,7 @@ S3_BUCKET=academy-dev \
 S3_ENDPOINT=http://127.0.0.1:59000 \
 S3_ACCESS_KEY_ID=academy \
 S3_SECRET_ACCESS_KEY=academy-dev-secret \
-node --import ./vendor/proof-sdk/node_modules/tsx/dist/loader.mjs --test tests/storage-s3.test.ts
+node --import tsx --test tests/storage-s3.test.ts
 ```
 
 The CI storage gate runs this same round trip against a pinned MinIO image. The

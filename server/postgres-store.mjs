@@ -90,11 +90,11 @@ export class PostgresStore {
  async facilitatorLogout(token) {if(token)await this.transaction(client=>client.query('DELETE FROM facilitator_sessions WHERE token_hash=$1',[hash(token)]));}
  async loginStateSave({stateHash,nonce,codeVerifier,expiresAt}) {await this.transaction(async client=>{await client.query('DELETE FROM login_states WHERE expires_at < now()');await client.query('INSERT INTO login_states(state_hash,nonce,code_verifier,expires_at) VALUES ($1,$2,$3,to_timestamp($4/1000.0)) ON CONFLICT (state_hash) DO UPDATE SET nonce=EXCLUDED.nonce,code_verifier=EXCLUDED.code_verifier,expires_at=EXCLUDED.expires_at',[stateHash,nonce,codeVerifier,expiresAt]);});}
  async loginStateTake(stateHash) {return this.transaction(async client=>{const result=await client.query('DELETE FROM login_states WHERE state_hash=$1 RETURNING nonce,code_verifier,expires_at',[stateHash]);const row=result.rows[0];if(!row)return null;const expiresAt=new Date(row.expires_at).getTime();return expiresAt<Date.now()?null:{nonce:row.nonce,codeVerifier:row.code_verifier,expiresAt};});}
- async create(name,proof,createdBy) {
+ async create(name,createdBy) {
   return this.transaction(async client=>{
    const id=randomUUID();
    const code=randomBytes(5).toString('hex').toUpperCase();
-   const r={id,code,name,proof,createdBy:createdBy||null,createdAt:Date.now(),roundSeconds:1500,members:[],driver:0,round:1,phase:'Plan',day:1,mode:'lesson',running:false,remaining:1500,deadline:null,evidence:[],handoffs:[],version:1};
+   const r={id,code,name,createdBy:createdBy||null,createdAt:Date.now(),roundSeconds:1500,members:[],driver:0,round:1,phase:'Plan',day:1,mode:'lesson',running:false,remaining:1500,deadline:null,evidence:[],handoffs:[],version:1};
    await client.query('INSERT INTO rooms VALUES ($1,$2,$3)',[id,code,JSON.stringify(r)]);
    return {token:await this.session(client,id,'facilitator','browser',createdBy?.name),roomId:id,code};
   });

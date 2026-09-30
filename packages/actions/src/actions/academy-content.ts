@@ -60,15 +60,7 @@ export interface AcademyContentShape {
   ) => Effect.Effect<void>;
   /** Legacy compat */
   readonly getMission: (roomId: string, participantId: string) => Effect.Effect<Record<string, unknown>>;
-  readonly getDocument: (roomId: string) => Effect.Effect<Record<string, unknown>>;
   readonly searchKnowledge: (query: string) => Effect.Effect<{readonly lessons: ReadonlyArray<{readonly id: string; readonly title: string}>}>;
-  readonly suggestDocument: (input: {
-    readonly roomId: string;
-    readonly participantId: string;
-    readonly requestId: string;
-    readonly quote: string;
-    readonly content: string;
-  }) => Effect.Effect<Record<string, unknown>>;
 }
 
 export class AcademyContent extends Context.Service<AcademyContent, AcademyContentShape>()(
@@ -85,8 +77,6 @@ export const AcademyContentMemory = (seed?: {
     const evidence = yield* Ref.make<EvidenceRecord[]>([]);
     const progress = yield* Ref.make(new Map<string, ProgressRecord[]>());
     const connections = yield* Ref.make(new Map<string, 'configured' | 'connected' | 'verified'>());
-    const documents = yield* Ref.make(new Map<string, {markdown: string}>());
-    const suggestions = yield* Ref.make<Record<string, unknown>[]>([]);
 
     const ck = (roomId: string, participantId: string) => `${roomId}::${participantId}`;
 
@@ -147,29 +137,11 @@ export const AcademyContentMemory = (seed?: {
           mission: {id: 'ATLAS-REVIEW-01', title: 'Atlas review'},
           coach: 'Cite lesson IDs. Hints first. No browser model calls.',
         }),
-      getDocument: (roomId) =>
-        Ref.get(documents).pipe(
-          Effect.map((m) => {
-            const doc = m.get(roomId) ?? {markdown: `Document ${roomId}`};
-            return {...doc, marks: {}};
-          }),
-        ),
       searchKnowledge: (query) =>
         Effect.sync(() => {
           const q = query.trim().toLowerCase();
           const all = [...lessons.values()].map((l) => ({id: l.id, title: l.title}));
           return {lessons: q ? all.filter((l) => l.title.toLowerCase().includes(q) || l.id.toLowerCase().includes(q)) : all};
-        }),
-      suggestDocument: (input) =>
-        Effect.gen(function* () {
-          const suggestion = {
-            id: crypto.randomUUID(),
-            status: 'pending',
-            ...input,
-            at: new Date().toISOString(),
-          };
-          yield* Ref.update(suggestions, (xs) => [...xs, suggestion]);
-          return suggestion;
         }),
     } satisfies AcademyContentShape;
   });

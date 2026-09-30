@@ -12,7 +12,7 @@ export const evidenceRoot = path.join(verificationRoot, 'evidence');
 export const currentPointer = path.join(verificationRoot, 'current-run');
 export const composeFile = path.join(helpersDir, 'services.compose.yaml');
 
-export const PORTS = Object.freeze({academy: 4731, proof: 4831, wave: 4732, postgres: 4733, redis: 4734});
+export const PORTS = Object.freeze({academy: 4731, wave: 4732, postgres: 4733, redis: 4734});
 export const RUN_ID = /^[a-z0-9]+-[a-f0-9]{6}$/;
 export const DEPLOYED_ORIGIN = 'http://91.99.78.17:4317';
 

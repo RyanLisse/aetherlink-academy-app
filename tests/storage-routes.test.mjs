@@ -11,10 +11,10 @@ async function fixture(t){
  const dir=await mkdtemp(path.join(os.tmpdir(),'academy-files-'));
  const files=createFileStorage({objectStore:MemoryObjectStore});
  const instance=createApp({dir,fileStorageService:files});
- const host=instance.store.create('Files',{slug:'files'});
+ const host=instance.store.create('Files');
  const participant=instance.store.join(host.code,'Uploader');
  const peer=instance.store.join(host.code,'Peer');
- const foreign=instance.store.create('Other',{slug:'other'});
+ const foreign=instance.store.create('Other');
  await new Promise(resolve=>instance.server.listen(0,'127.0.0.1',resolve));
  t.after(async()=>{
   await new Promise(resolve=>instance.server.close(resolve));

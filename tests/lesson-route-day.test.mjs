@@ -19,7 +19,7 @@ async function invoke(app,route,{body={},query={},cookies={}}={}){
 
 function fixture(){
  const instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-lesson-route-')),hostKey:'test-host',publicBaseUrl:'http://127.0.0.1:4318'});
- const host=instance.store.create('Lesson route',{slug:'lesson-route'});
+ const host=instance.store.create('Lesson route');
  const participant=instance.store.join(host.code,'Deelnemer');
  return {instance,host,participant};
 }

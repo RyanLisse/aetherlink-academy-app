@@ -223,7 +223,7 @@ describe.skipIf(!enabled)('AET-25 authoring publish against a real isolated Post
     const authoringLessonId = await authoredLesson(request, API_KEY);
     const participant = await Effect.runPromise(Effect.gen(function* () {
       const squad = yield* SquadStore;
-      const room = yield* squad.create('Synthetic squad', {slug: 'synthetic'});
+      const room = yield* squad.create('Synthetic squad');
       return (yield* squad.join(room.code, 'Synthetic participant')).token;
     }).pipe(Effect.provide(SquadStoreMemory())));
 

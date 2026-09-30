@@ -199,8 +199,8 @@ deploy() {
   # Post-cutover bare deploy must health-check :4317 (not lib.sh's :4327 default).
   local health_url
   health_url="$(staging_health_url)"
-  curl -fsS --max-time 10 "$health_url/game/health" | jq -e --arg sha "$SOURCE_SHA" '.ok == true and .proof == true and .revision == $sha' >/dev/null || die "$health_url/game/health is not ok at revision $SOURCE_SHA"
-  echo "  $health_url/game/health ok, proof ready"
+  curl -fsS --max-time 10 "$health_url/game/health" | jq -e --arg sha "$SOURCE_SHA" '.ok == true and .revision == $sha' >/dev/null || die "$health_url/game/health is not ok at revision $SOURCE_SHA"
+  echo "  $health_url/game/health ok"
   write_marker "$STATE" "project_id=$id" "deployed_sha=$SOURCE_SHA" "deployment=$deployment" "phase=$( [[ -f "$STATE" ]] && marker_value "$STATE" phase || echo deployed)"
 }
 

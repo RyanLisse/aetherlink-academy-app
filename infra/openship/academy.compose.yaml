@@ -31,7 +31,6 @@ services:
       ACADEMY_STORAGE: postgres
       HOST: 0.0.0.0
       PORT: "4317"
-      PROOF_PORT: "4400"
       ACADEMY_DATA: /data
       NODE_EXTRA_CA_CERTS: /tls/ca.crt
     # Hardcoded cutover publish. OpenShip's compose interpolator + Docker

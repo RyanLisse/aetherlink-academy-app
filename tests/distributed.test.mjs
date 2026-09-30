@@ -6,13 +6,8 @@ import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createRequire } from 'node:module';
-import { createProofDatabase } from '../vendor/proof-sdk/server/postgres.ts';
+import { Pool } from 'pg';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const require = createRequire(new URL('../vendor/proof-sdk/package.json', import.meta.url));
-const { HocuspocusProvider, HocuspocusProviderWebsocket } = require('@hocuspocus/provider');
-const Y = require('yjs');
-const WS = require('ws');
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 async function until(check, label, timeout = 20000) {
   const end = Date.now() + timeout;
@@ -33,57 +28,29 @@ async function request(base, route, body, token, expected = 200) {
   assert.equal(response.status, expected, `${route}: ${result.error || 'unexpected status'}`);
   return result;
 }
-async function connect(base, token, slug) {
-  const response = await fetch(`${base}/api/documents/${slug}/collab-session`, {
-    signal: AbortSignal.timeout(15000),
-    headers: { cookie: `academy=${token}`, 'x-proof-client-version': '0.30.0', 'x-proof-client-build': 'distributed-test', 'x-proof-client-protocol': '3' },
-  });
-  assert.equal(response.status, 200);
-  const { session } = await response.json();
-  assert(session);
-  const url = new URL(session.collabWsUrl);
-  url.search = '';
-  class AuthedWS extends WS { constructor(target) { super(target, { headers: { cookie: `academy=${token}` } }); } }
-  const socket = new HocuspocusProviderWebsocket({ url: url.toString(), parameters: { token: session.token, role: session.role, slug }, WebSocketPolyfill: AuthedWS });
-  let closeEvents = 0;
-  socket.on('close', () => { closeEvents += 1; });
-  const doc = new Y.Doc();
-  const provider = new HocuspocusProvider({ websocketProvider: socket, name: slug, document: doc, token: session.token });
-  let closed = false;
-  const client = { doc, provider, get closeEvents() { return closeEvents; }, close() {
-    if (closed) return;
-    closed = true;
-    const connectingWebSocket = socket.webSocket?.readyState === WS.CONNECTING ? socket.webSocket : null;
-    provider.destroy();
-    if (connectingWebSocket) connectingWebSocket.once('close', () => socket.destroy());
-    else socket.destroy();
-    doc.destroy();
-  } };
-  try { await until(() => provider.isSynced, 'real Proof client sync'); return client; }
-  catch (error) { client.close(); throw error; }
-}
 
-test('two real Academy/Proof processes converge through Redis and survive process loss', {
+test('two real Academy processes share Postgres/Redis state and survive process loss', {
   skip: process.env.ACADEMY_DISTRIBUTED_TEST !== '1', timeout: 150000,
 }, async () => {
   assert(process.env.DATABASE_URL && (process.env.REDIS_URL || process.env.KV_URL));
   const id = randomUUID().replaceAll('-', '');
   const academySchema = `academy_test_${id}`;
-  const proofSchema = `proof_test_${id}`;
   const temp = await mkdtemp(path.join(tmpdir(), 'academy-distributed-'));
   const hostKey = randomBytes(32).toString('hex');
-  const sharedEnv = { ...process.env, ACADEMY_HOST_KEY: hostKey, PROOF_COLLAB_SIGNING_SECRET: randomBytes(32).toString('hex'), ACADEMY_STORAGE: 'postgres', ACADEMY_DATABASE_SCHEMA: academySchema, PROOF_DATABASE_SCHEMA: proofSchema, ACADEMY_REDIS_PREFIX: academySchema, PROOF_REDIS_PREFIX: proofSchema, COLLAB_COMPACTION_EVERY: '2', NODE_ENV: 'test' };
+  const sharedEnv = { ...process.env, ACADEMY_HOST_KEY: hostKey, ACADEMY_SIGNING_SECRET: randomBytes(32).toString('hex'), ACADEMY_STORAGE: 'postgres', ACADEMY_DATABASE_SCHEMA: academySchema, ACADEMY_REDIS_PREFIX: academySchema, NODE_ENV: 'test' };
   delete sharedEnv.VERCEL;
   const processes = [];
-  const clients = [];
   const logs = [];
   const ports = [4351, 4352];
   const bases = ports.map(port => `http://127.0.0.1:${port}`);
-  const database = createProofDatabase({ connectionString: process.env.DATABASE_URL, schema: proofSchema });
+  const url = new URL(process.env.DATABASE_URL);
+  url.searchParams.delete('sslmode');
+  url.searchParams.delete('channel_binding');
+  const database = new Pool({ connectionString: url.href, ssl: process.env.PGSSLMODE === 'disable' ? false : { rejectUnauthorized: true }, max: 2, connectionTimeoutMillis: 10000 });
   function start(index) {
     const child = spawn(process.execPath, ['scripts/start.mjs'], {
       cwd: root, detached: true, stdio: ['ignore', 'pipe', 'pipe'],
-      env: { ...sharedEnv, PORT: String(ports[index]), PROOF_PORT: String(4451 + index), ACADEMY_PUBLIC_URL: bases[index], ACADEMY_DATA: path.join(temp, String(index)) },
+      env: { ...sharedEnv, PORT: String(ports[index]), ACADEMY_PUBLIC_URL: bases[index], ACADEMY_DATA: path.join(temp, String(index)) },
     });
     child.stdout.on('data', chunk => logs.push(chunk.toString()));
     child.stderr.on('data', chunk => logs.push(chunk.toString()));
@@ -102,7 +69,7 @@ test('two real Academy/Proof processes converge through Redis and survive proces
   async function ready(index, child) {
     await until(async () => {
       if (child.exitCode !== null || child.signalCode !== null) throw new Error(`App ${index} exited during startup`);
-      try { const response = await fetch(bases[index] + '/game/health', { signal: AbortSignal.timeout(1000) }); return response.ok && (await response.json()).proof; } catch { return false; }
+      try { const response = await fetch(bases[index] + '/game/health', { signal: AbortSignal.timeout(1000) }); return response.ok && (await response.json()).ok === true; } catch { return false; }
     }, `app ${index} ready`, 40000);
   }
   try {
@@ -111,122 +78,38 @@ test('two real Academy/Proof processes converge through Redis and survive proces
     const host = await request(bases[0], '/game/create', { name: 'Distributed verification', hostKey });
     const a = await request(bases[0], '/game/join', { code: host.code, name: 'Process A test' });
     const b = await request(bases[1], '/game/join', { code: host.code, name: 'Process B test' });
-    const state = await request(bases[1], '/game/state', null, a.token);
-    const slug = state.documentSlug;
-    let one = await connect(bases[0], a.token, slug); clients.push(one);
-    const fragment = client => client.doc.getXmlFragment('prosemirror');
-    let markMap = one.doc.getMap('marks');
-    const mcp = await request(bases[1], '/game/mcp-token', {}, a.token);
-    const quote = 'Een verse lezer kan de juiste controle uitvoeren en de uitkomst uitleggen.';
-    async function waitForProcessAConvergence(closeEventsBefore, label, check, timeout = 10000) {
-      const deadline = Date.now() + timeout;
-      let watchedClient = one;
-      let watchedCloseEvents = closeEventsBefore;
-      let closeObservedAt = null;
-      while (Date.now() < deadline) {
-        if (await check()) return;
-        if (watchedClient.closeEvents > watchedCloseEvents) {
-          closeObservedAt ??= Date.now();
-          if (Date.now() - closeObservedAt >= 3000) {
-            watchedClient.close();
-            one = await connect(bases[0], a.token, slug); clients.push(one);
-            markMap = one.doc.getMap('marks');
-            watchedClient = one;
-            watchedCloseEvents = one.closeEvents;
-            closeObservedAt = null;
-          }
-        }
-        await delay(100);
-      }
-      throw new Error(`Timed out: ${label}`);
-    }
-    async function suggestFromProcessB(content) {
-      const closeEventsBefore = one.closeEvents;
-      const suggestion = await request(bases[1], '/game/mcp/suggest_document', {
-        requestId: randomUUID(),
-        quote,
-        content,
-      }, mcp.token);
-      const markId = Object.keys(suggestion.marks || {}).find(id => suggestion.marks[id]?.content === content);
-      assert(markId, 'MCP suggestion response contains its pending mark');
-      await waitForProcessAConvergence(
-        closeEventsBefore,
-        `process A receives suggestion ${markId} in place or after fallback reconnect`,
-        () => markMap.has(markId),
-      );
-      return markId;
-    }
+    assert.equal((await request(bases[1], '/game/state', null, a.token)).members.length, 2, 'process B sees both members');
 
-    const rejectedContent = 'Een verse lezer controleert de instructie via het gedistribueerde proces.';
-    const rejectedId = await suggestFromProcessB(rejectedContent);
-    const rejectionCloseEventsBefore = one.closeEvents;
-    await request(bases[1], '/game/suggestion-review', {
-      id: rejectedId,
-      decision: 'reject',
-      requestId: randomUUID(),
-    }, host.token);
-    await waitForProcessAConvergence(
-      rejectionCloseEventsBefore,
-      'process A removes rejected suggestion mark in place or after fallback reconnect',
-      () => !markMap.has(rejectedId),
-    );
+    const intentUrl = 'https://proof.example.test/d/distributed-intent';
+    await request(bases[1], '/game/intent', { url: intentUrl }, host.token);
+    await until(async () => (await request(bases[0], '/game/state', null, b.token)).intentUrl === intentUrl, 'process A reads the intent link set on process B');
 
-    const acceptedContent = 'Een verse lezer voert de gedistribueerde controle exact eenmaal uit.';
-    const acceptedId = await suggestFromProcessB(acceptedContent);
-    const acceptanceCloseEventsBefore = one.closeEvents;
-    await request(bases[1], '/game/suggestion-review', {
-      id: acceptedId,
-      decision: 'accept',
-      requestId: randomUUID(),
-    }, host.token);
-    const occurrences = (value, needle) => value.split(needle).length - 1;
-    await waitForProcessAConvergence(
-      acceptanceCloseEventsBefore,
-      'process A receives accepted content once in place or after fallback reconnect',
-      () => occurrences(fragment(one).toString(), acceptedContent) === 1,
-    );
-    let processADocument;
+    await request(bases[0], '/game/board', { action: 'open' }, host.token);
+    await request(bases[1], '/game/board/card', { column: 0, text: 'ALPHA from process B' }, b.token);
+    await request(bases[0], '/game/board/card', { column: 2, text: 'BETA from process A' }, a.token);
+    const cards = state => (state.board?.columns || []).flatMap(column => column.cards);
     await until(async () => {
-      processADocument = await request(bases[0], '/game/mcp/get_document', {}, mcp.token);
-      return occurrences(processADocument.markdown, acceptedContent) === 1;
-    }, 'process A MCP read receives accepted content once', 3000);
-    assert.equal(occurrences(processADocument.markdown, acceptedContent), 1, 'Process A MCP read contains accepted content once');
-    const two = await connect(bases[1], b.token, slug); clients.push(two);
-    const initialNodeCount = fragment(one).length;
-    const assertShape = client => {
-      assert.equal(fragment(client).length, initialNodeCount, 'No duplicated top-level document nodes');
-      const xml = fragment(client).toString();
-      assert.equal(xml.split('ALPHA').length - 1, 1);
-      assert.equal(xml.split('BETA').length - 1, 1);
-    };
-    const textA = fragment(one).get(0).get(0), textB = fragment(two).get(0).get(0);
-    assert(textA instanceof Y.XmlText && textB instanceof Y.XmlText);
-    one.doc.transact(() => textA.insert(textA.length, ' ALPHA'), 'human:distributed-a');
-    two.doc.transact(() => textB.insert(textB.length, ' BETA'), 'human:distributed-b');
-    await until(() => fragment(one).toString() === fragment(two).toString() && fragment(one).toString().includes('ALPHA') && fragment(one).toString().includes('BETA'), 'cross-process convergence');
-    assertShape(one); assertShape(two);
-    await until(async () => { const doc = await request(bases[1], '/game/document', null, b.token); return doc.markdown.includes('ALPHA') && doc.markdown.includes('BETA'); }, 'durable projection');
-    one.close(); clients.splice(clients.indexOf(one), 1);
+      const both = await Promise.all(bases.map(base => request(base, '/game/state', null, host.token)));
+      return both.every(state => cards(state).includes('ALPHA from process B') && cards(state).includes('BETA from process A'));
+    }, 'both processes see both board cards');
+
     await stop(first, 'SIGKILL');
     const restarted = start(0); await ready(0, restarted);
-    const three = await connect(bases[0], a.token, slug); clients.push(three);
-    await until(() => fragment(three).toString() === fragment(two).toString(), 'reconnect after process loss');
-    assertShape(three); assertShape(two);
+    const afterLoss = await request(bases[0], '/game/state', null, a.token);
+    assert.equal(afterLoss.intentUrl, intentUrl, 'intent link survives process loss');
+    assert.deepEqual(cards(afterLoss).sort(), ['ALPHA from process B', 'BETA from process A'], 'board cards survive process loss exactly once');
+
     const original = await request(bases[0], '/game/mcp-token', {}, a.token);
     await request(bases[1], '/game/mcp-token', {}, a.token);
     await request(bases[0], '/game/mcp/get_mission', {}, original.token, 401);
-    console.log('Verified two real processes, concurrent Proof edits, shared Redis, process loss, reconnect and cross-instance token revocation');
+    console.log('Verified two real processes, shared Postgres/Redis room state, process loss and cross-instance token revocation');
   } finally {
-    for (const client of clients) client.close();
     await Promise.all(processes.map(child => stop(child)));
     const logDir = process.env.ACADEMY_TEST_LOG_DIR || path.resolve(root, '../../work');
     await mkdir(logDir, { recursive: true });
-    const evidence = path.join(logDir, 'distributed-server.log');
-    await writeFile(evidence, logs.join(''), { mode: 0o600 });
+    await writeFile(path.join(logDir, 'distributed-server.log'), logs.join(''), { mode: 0o600 });
     try {
       await database.query(`DROP SCHEMA IF EXISTS "${academySchema}" CASCADE`);
-      await database.query(`DROP SCHEMA IF EXISTS "${proofSchema}" CASCADE`);
-    } finally { await database.close(); await rm(temp, { recursive: true, force: true }); }
-    assert(!/Failed to persist document|Await initializeDatabase before|Transaction scope is not available|fast-quarantined pathological slug|graceful shutdown failed/.test(logs.join('')), 'Healthy collaboration fixture produced persistence, quarantine or shutdown errors; inspect private work/distributed-server.log');
+    } finally { await database.end(); await rm(temp, { recursive: true, force: true }); }
   }
 });

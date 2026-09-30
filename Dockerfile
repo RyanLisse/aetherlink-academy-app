@@ -29,10 +29,9 @@ USER node
 ENV NODE_ENV=production \
   HOST=0.0.0.0 \
   PORT=4317 \
-  PROOF_PORT=4400 \
   ACADEMY_DATA=/data
 VOLUME ["/data"]
 EXPOSE 4317
-HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 CMD node -e "fetch('http://127.0.0.1:'+process.env.PORT+'/game/health').then(async r=>{const b=await r.json();process.exit(r.ok&&b.proof?0:1)}).catch(()=>process.exit(1))"
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 CMD node -e "fetch('http://127.0.0.1:'+process.env.PORT+'/game/health').then(async r=>{const b=await r.json();process.exit(r.ok&&b.ok?0:1)}).catch(()=>process.exit(1))"
 ENTRYPOINT ["/usr/bin/tini", "--"]
 CMD ["node", "scripts/start.mjs"]

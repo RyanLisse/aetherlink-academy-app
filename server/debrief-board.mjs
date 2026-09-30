@@ -1,27 +1,23 @@
+import {randomUUID} from 'node:crypto';
 import {fail} from './store.mjs';
-// Placeholder column names: no debrief/retro column copy exists in the SoT yet.
 export const BOARD_COLUMNS=['Werkte goed','Lastig','Volgende keer'];
 export const BOARD_ACTIONS={open:'open',close:'closed'};
-export const boardMarkdown=()=>BOARD_COLUMNS.map(column=>`## ${column}\n`).join('\n');
-export const boardView=board=>board?{status:board.status,slug:board.proof.slug}:null;
-export function roomDocument(r,slug){
- if(!slug||slug===r.proof.slug)return {proof:r.proof,token:r.proof.editor,writable:true};
- if(r.board&&slug===r.board.proof.slug){const writable=r.board.status==='open';return {proof:r.board.proof,token:writable?r.board.proof.editor:r.board.proof.viewer,writable};}
- return null;
-}
-export function applyBoardAction(r,action,{created,at,by}){
- const status=BOARD_ACTIONS[action];if(!status)fail(400,'Onbekende bordactie.');
- if(!r.board){if(status==='closed')fail(409,'Er is nog geen debriefbord om te sluiten.');if(!created)fail(409,'Debriefbord kon niet worden aangemaakt. Probeer opnieuw.');r.board={proof:created,createdAt:at};}
+export const MAX_BOARD_CARDS=300;
+export const boardColumns=board=>BOARD_COLUMNS.map((title,index)=>({title,cards:(board?.cards||[]).filter(card=>card.column===index).map(card=>card.text)}));
+export const boardView=board=>board?{status:board.status,columns:boardColumns(board)}:null;
+export function applyBoardAction(r,action,{at,by}){
+ const status=BOARD_ACTIONS[action];if(!status)fail(400,'Unknown board action.');
+ if(!r.board){if(status==='closed')fail(409,'There is no debrief board to close yet.');r.board={cards:[],createdAt:at};}
+ r.board.cards??=[];
  r.board.status=status;r.board.changedAt=at;r.board.changedBy=by;r.version++;
  return r.board;
 }
-const cardText=line=>line.replace(/^\s*(?:[-*+]|\d+[.)])\s+(?:\[[ xX]\]\s+)?/,'').replace(/<[^>]+>/g,'').trim();
-export function parseBoard(markdown){
- const columns=[];
- for(const line of String(markdown||'').split('\n')){
-  const heading=line.match(/^(#{1,6})\s+(.+?)\s*#*\s*$/);
-  if(heading){if(heading[1].length===2)columns.push({title:heading[2].replace(/<[^>]+>/g,'').trim(),cards:[]});continue;}
-  const text=cardText(line);if(columns.length&&text)columns.at(-1).cards.push(text);
- }
- return columns;
+export function addBoardCard(r,{column,text,by,at}){
+ if(r.board?.status!=='open')fail(409,'The debrief board is not open.');
+ if(!Number.isInteger(column)||column<0||column>=BOARD_COLUMNS.length)fail(400,'Unknown board column.');
+ if(!text)fail(400,'A card needs text.');
+ r.board.cards??=[];
+ if(r.board.cards.length>=MAX_BOARD_CARDS)fail(409,'The debrief board is full.');
+ r.board.cards.push({id:randomUUID(),column,text,by,at});r.version++;
+ return r.board;
 }

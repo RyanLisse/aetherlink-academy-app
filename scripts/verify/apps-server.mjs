@@ -9,16 +9,16 @@ async function healthChecks(base, revision) {
   try {
     const health = await fetchJson(`${base}/health`);
     const body = health.json ?? {};
-    const checks = [check('/health ok and proof', health.status === 200 && body.ok === true && body.proof === true, `HTTP ${health.status}, ok=${body.ok}, proof=${body.proof}`)];
+    const checks = [check('/health ok', health.status === 200 && body.ok === true, `HTTP ${health.status}, ok=${body.ok}`)];
     if (revision) checks.push(check('/health revision', body.revision === revision, `serving ${body.revision}, expected ${revision}`));
     const connection = await fetchJson(`${base}/connection`);
-    for (const service of ['postgres', 'redis', 'proof']) {
+    for (const service of ['postgres', 'redis']) {
       const probe = connection.json?.[service];
       checks.push(check(`/connection ${service}`, probe?.reachable === true, probe ? `${probe.reachable ? 'reachable' : 'unreachable'} in ${probe.latencyMs} ms${probe.error ? `, ${probe.error}` : ''}` : `HTTP ${connection.status}`));
     }
     return checks;
   } catch (error) {
-    return [check('/health ok and proof', false, describeError(error))];
+    return [check('/health ok', false, describeError(error))];
   }
 }
 

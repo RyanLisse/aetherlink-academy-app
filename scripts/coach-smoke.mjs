@@ -1,5 +1,5 @@
 // Live check of the Leercoach against OpenRouter with the real key and model from the environment.
-// Usage: OPENROUTER_API_KEY=... [ACADEMY_COACH_MODEL=...:free] node --import ./vendor/proof-sdk/node_modules/tsx/dist/loader.mjs scripts/coach-smoke.mjs ["vraag"] [dag]
+// Usage: OPENROUTER_API_KEY=... [ACADEMY_COACH_MODEL=...:free] node --import tsx scripts/coach-smoke.mjs ["vraag"] [dag]
 // Spends one request of the free-tier daily budget. Exit 0 only for a cited answer.
 import {readCoachConfig,coachRequestBody,parseCoachReply} from '../server/coach.mjs';
 import {answerQuestion} from '../server/faq.mjs';

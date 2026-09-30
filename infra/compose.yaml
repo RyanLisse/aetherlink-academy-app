@@ -17,7 +17,6 @@ services:
     environment:
       HOST: 0.0.0.0
       PORT: "4318"
-      PROOF_URL: http://proof:4418
       DATABASE_URL: postgresql://academy:${POSTGRES_PASSWORD}@postgres:5432/academy?sslmode=require
       REDIS_URL: rediss://:${REDIS_PASSWORD}@redis:6379
       NODE_EXTRA_CA_CERTS: /tls/ca.crt
@@ -38,41 +37,6 @@ services:
     restart: unless-stopped
     stop_grace_period: 30s
 
-  proof:
-    image: aetherlink-academy-wave:${SOURCE_REVISION:-local}
-    command: ["node", "--import", "tsx", "server/index.ts"]
-    working_dir: /app/vendor/proof-sdk
-    env_file:
-      - path: .env
-        required: true
-    environment:
-      HOST: 0.0.0.0
-      PORT: "4418"
-      DATABASE_URL: postgresql://academy:${POSTGRES_PASSWORD}@postgres:5432/academy?sslmode=require
-      REDIS_URL: rediss://:${REDIS_PASSWORD}@redis:6379
-      NODE_EXTRA_CA_CERTS: /tls/ca.crt
-      PROOF_DATABASE_SCHEMA: ${PROOF_DATABASE_SCHEMA:-proof_wave}
-      PROOF_REDIS_PREFIX: ${PROOF_REDIS_PREFIX:-proof-wave}
-      COLLAB_ATTACH_TO_MAIN_HTTP: "true"
-      PROOF_PUBLIC_BASE_URL: ${ACADEMY_PUBLIC_URL:-http://127.0.0.1:4318}
-      VITE_ENABLE_TELEMETRY: "false"
-    healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:4418/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
-      start_period: 40s
-    depends_on:
-      tls-init:
-        condition: service_completed_successfully
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks: [academy-wave-net]
-    volumes:
-      - academy-wave-tls:/tls:ro
-    restart: unless-stopped
 
   postgres:
     image: postgres:16

@@ -12,7 +12,7 @@ async function withServer(run) {
   mkdirSync(path.join(root, 'apps/web/dist'), {recursive: true});
   writeFileSync(path.join(root, 'dist/index.html'), '<!doctype html><body>legacy-root</body>');
   writeFileSync(path.join(root, 'apps/web/dist/index.html'), '<!doctype html><div id="root" data-surface="classroom-deck"></div>');
-  const {server} = createApp({dir: data, root, hostKey: 'test-host', publicBaseUrl: 'http://127.0.0.1:4317', proofBase: 'http://127.0.0.1:9'});
+  const {server} = createApp({dir: data, root, hostKey: 'test-host', publicBaseUrl: 'http://127.0.0.1:4317'});
   await new Promise((resolve, reject) => server.listen(0, '127.0.0.1', (err) => (err ? reject(err) : resolve())));
   try {
     await run(server.address().port);

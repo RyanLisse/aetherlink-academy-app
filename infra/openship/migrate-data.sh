@@ -3,7 +3,7 @@
 #   freeze legacy writes -> pg_dump (custom format, kept, 0600) -> restore into
 #   the OpenShip Postgres -> per-table row-count comparison -> copy /data.
 # Redis is not migrated: it only holds presence and screen-state keys with a TTL
-# and Proof/Hocuspocus pub/sub (see infra/openship/RESEARCH.md).
+# (see infra/openship/RESEARCH.md).
 # Exits non-zero on any row-count mismatch and leaves the target app stopped.
 set -Eeuo pipefail
 umask 077

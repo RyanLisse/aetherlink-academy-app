@@ -4,4 +4,4 @@ const bundled=path.join(process.env.HOME||'','.cache','codex-runtimes/codex-prim
 const cli=process.env.PNPM_CLI||(existsSync(bundled)?bundled:null);
 const env={...process.env,PATH:path.dirname(process.execPath)+path.delimiter+process.env.PATH};
 function run(cwd,args){const r=spawnSync(cli?process.execPath:'pnpm',cli?[cli,...args]:args,{cwd,env,stdio:'inherit'});if(r.status!==0)process.exit(r.status||1);}
-run(root,['install','--frozen-lockfile']);run(path.join(root,'vendor/proof-sdk'),['install','--frozen-lockfile']);run(path.join(root,'vendor/proof-sdk'),['rebuild','better-sqlite3','esbuild']);run(path.join(root,'vendor/proof-sdk'),['run','build']);run(root,['run','build']);
+run(root,['install','--frozen-lockfile']);run(root,['run','build']);

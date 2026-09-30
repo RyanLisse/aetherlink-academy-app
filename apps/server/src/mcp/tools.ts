@@ -25,10 +25,8 @@ export const PARTICIPANT_MCP_TOOLS = [
 
 export const LEGACY_MCP_TOOLS = [
   'get_mission',
-  'get_document',
   'search_knowledge',
   'submit_evidence',
-  'suggest_document',
 ] as const;
 
 const Empty = z.object({}).passthrough();
@@ -53,13 +51,7 @@ const inputSchemas: Record<string, z.ZodType> = {
   get_my_progress: Empty,
   get_connection_state: Empty,
   get_mission: Empty,
-  get_document: Empty,
   search_knowledge: z.object({query: z.string().max(200).default('')}),
-  suggest_document: z.object({
-    requestId: z.string().min(1).max(100),
-    quote: z.string().min(1).max(4000),
-    content: z.string().min(1).max(4000),
-  }),
 };
 
 const bearerFromCtx = (ctx: {http?: {req?: {headers?: {get?: (name: string) => string | null}}}}): string => {

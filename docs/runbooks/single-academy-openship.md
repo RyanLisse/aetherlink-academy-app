@@ -15,7 +15,7 @@ dropped for now.
 
 What changes for participants: one maintenance window, from `migrate-data` to `cutover`, in
 which `http://91.99.78.17:4317` is down. Plan it outside a live session. Open browser tabs
-reconnect afterwards. Sessions, rooms, Proof documents and progress carry over because they live
+reconnect afterwards. Sessions, rooms, intent links, evidence and progress carry over because they live
 in Postgres. Presence dots reset because Redis starts empty.
 
 What changes for the next operator: the Academy is the OpenShip project `aetherlink-academy`
@@ -166,7 +166,7 @@ host. The old database was only read, so legacy is back exactly as it was.
 
 ### 5. verify
 
-Against `127.0.0.1:4327`: row counts equal to the dump, `/game/health` ok with Proof ready at
+Against `127.0.0.1:4327`: row counts equal to the dump, `/game/health` ok at
 the deployed revision, `/game/config` answers, a join with an unknown room code reaches the
 database and returns `404 Kamercode niet gevonden.`, and `academy-app` is not running. With
 `VERIFY_ROOM_CODE` set on the host it also joins a real room as `OpenShip verify`; that writes a
@@ -182,7 +182,7 @@ Refuses unless verify passed and `academy-app` is stopped. Redeploys and checks 
 `127.0.0.1:4317`. Compose publish is hardcoded to `0.0.0.0:4317:4317` (do not put bash
 `${…:-…}` defaults in `ports:`). Current public URL is the edge hostname
 (`https://academy.91-99-78-17.sslip.io`); set `ACADEMY_PUBLIC_URL` to that so links and
-the Proof WebSocket origin match. After the `domain` step, prefer the edge — raw host
+cookies match. After the `domain` step, prefer the edge — raw host
 `:4317` may be loopback-only. Afterwards run `verify` once more: after cutover it accepts
 row counts that grew, never shrank.
 
@@ -192,8 +192,7 @@ Undo: from here on the new database takes writes. To go back, stop the OpenShip 
 
 The domain `academy.aetherlink.ai` remains a separate follow-up (AET-42). Once its A record
 points at the host, add the domain to the project in OpenShip, which issues a Let's Encrypt
-certificate through `openship-edge` on 80/443, raise `proxy_read_timeout` for the Proof
-WebSocket, and change `ACADEMY_PUBLIC_URL` plus the Google OAuth redirect in one deploy.
+certificate through `openship-edge` on 80/443, and change `ACADEMY_PUBLIC_URL` plus the Google OAuth redirect in one deploy.
 Do not treat `academy.aetherlink.ai` as live until that DNS exists.
 
 ### 7. decommission
@@ -215,7 +214,7 @@ Undo: none for the containers. The data is in the kept dump. Restore it with
 ## Open before running
 
 - The items marked unverified in `infra/openship/RESEARCH.md`: readiness on a services
-  project, the Proof WebSocket under the edge's 60 s read timeout. Build context is settled:
+  project. Build context is settled:
   compose/services use repo-root `.` (not `../..`). App URL env is settled: upsert
   `DATABASE_URL`/`REDIS_URL`/`SOURCE_REVISION` into project env only; **omit** them from
   compose app environment (compose values are not interpolated and shadow project env).

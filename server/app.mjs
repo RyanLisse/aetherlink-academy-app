@@ -1,12 +1,10 @@
 import express from 'express';
 import http from 'node:http';
-import httpProxy from 'http-proxy';
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { secret, hash, fail } from './store.mjs';
 import { LocalStore } from './local-store.mjs';
-import { Proof } from './proof.mjs';
 import { getDayPack } from './content.mjs';
 import { participantDayPack } from './quiz.mjs';
 import { createGoogleSso } from './google-sso.mjs';
@@ -19,7 +17,6 @@ import { courseDays, releasedDays } from './release.mjs';
 import { labGradingKeys } from './lab-keys.mjs';
 import { readCoachConfig } from './coach.mjs';
 import { bearer, cookie, namedCookie } from './routes/shared.mjs';
-import { registerProofGateway, attachProofUpgrade } from './routes/proof.mjs';
 import {
   registerRequestMiddleware,
   registerErrorHandler,
@@ -42,7 +39,6 @@ export function createApp({
   dir,
   repository,
   presence,
-  proofBase = 'http://127.0.0.1:4400',
   root = process.cwd(),
   hostKey,
   publicBaseUrl = process.env.ACADEMY_PUBLIC_URL ||
@@ -50,7 +46,8 @@ export function createApp({
   googleClientId = process.env.GOOGLE_CLIENT_ID,
   googleClientSecret = process.env.GOOGLE_CLIENT_SECRET,
   facilitatorDomains = process.env.ACADEMY_FACILITATOR_DOMAINS,
-  signingSecret = process.env.PROOF_COLLAB_SIGNING_SECRET,
+  signingSecret = process.env.ACADEMY_SIGNING_SECRET ||
+    process.env.PROOF_COLLAB_SIGNING_SECRET,
   fetchImpl = fetch,
   slidesService,
   fileStorageService,
@@ -75,7 +72,6 @@ export function createApp({
       'ACADEMY_PUBLIC_URL moet een HTTP(S)-origin zonder pad of credentials zijn.',
     );
   const store = repository || new LocalStore(dir);
-  const proof = new Proof(proofBase);
   const slides =
     slidesService ||
     createSlidesService(
@@ -89,7 +85,6 @@ export function createApp({
       repository ? { pool: repository.pool, schema: repository.schema } : {},
     );
   const app = express();
-  const proxy = httpProxy.createProxyServer({ target: proofBase, ws: true });
   const token = (req) => bearer(req) || cookie(req);
   const browser = (req) => store.auth(bearer(req) || cookie(req), 'browser');
   const readableDays = ({ r, s }) =>
@@ -107,10 +102,6 @@ export function createApp({
     if (!readableDays(context).includes(day))
       fail(403, `Dag ${day} is nog niet vrijgegeven.`);
     return day;
-  };
-  const suggestionReviewer = ({ r, s }) => {
-    if (s.personId !== 'facilitator' && s.personId !== r.members[r.driver]?.id)
-      fail(403, 'Driver of facilitator beslist over documentvoorstellen.');
   };
   const hostFile = path.join(dir, 'host-key');
   if (hostKey === undefined || hostKey === null) {
@@ -181,13 +172,6 @@ export function createApp({
       return res.status(403).json({ error: 'Andere origin niet toegestaan.' });
     next();
   });
-  proxy.on('error', (_e, _req, res) => {
-    if (res.writeHead)
-      res
-        .writeHead(502, { 'content-type': 'application/json' })
-        .end(JSON.stringify({ error: 'Proof is niet bereikbaar.' }));
-    else res.destroy();
-  });
   const wrap = (fn) => async (req, res, next) => {
     try {
       await fn(req, res);
@@ -204,12 +188,9 @@ export function createApp({
     });
     res.json(result);
   };
-  const liveSockets = new Map();
-  registerProofGateway(app, { root, store, proxy, suggestionReviewer });
   registerRequestMiddleware(app, { browser, store, token });
   registerAuthRoutes(app, {
     store,
-    proof,
     token,
     googleSso,
     loginSecret,
@@ -227,18 +208,15 @@ export function createApp({
     requireFacilitator,
     wrap,
     setSession,
-    liveSockets,
   });
   registerRoomRoutes(app, {
     store,
-    proof,
     browser,
     token,
     setSession,
     wrap,
     publicUrl,
     presence,
-    suggestionReviewer,
     chosenDay,
     requireFacilitator,
   });
@@ -258,7 +236,6 @@ export function createApp({
   });
   const { screens, evidence } = registerLiveRoutes(app, {
     store,
-    proof,
     browser,
     token,
     wrap,
@@ -278,7 +255,6 @@ export function createApp({
   registerFileRoutes(app, { files, deckActor, browser, wrap });
   registerMcpRoutes(app, {
     store,
-    proof,
     slides,
     token,
     browser,
@@ -298,10 +274,9 @@ export function createApp({
     browser,
     wrap,
   });
-  registerHealthRoute(app, { proofBase, wrap });
+  registerHealthRoute(app, { wrap });
   registerSpaRoutes(app, { root });
   registerErrorHandler(app);
   const server = http.createServer(app);
-  attachProofUpgrade(server, { browser, liveSockets, proxy });
-  return { app, server, store, proof, slides, files, portal };
+  return { app, server, store, slides, files, portal };
 }

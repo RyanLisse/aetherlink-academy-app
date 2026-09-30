@@ -22,7 +22,7 @@ async function invoke(app,route,{method='get',body={},cookies={},query={}}={}){
 
 function fixture(){
  const instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-course-order-')),hostKey:'test-host',publicBaseUrl:'http://127.0.0.1:4318'});
- const host=instance.store.create('Wave squad',{slug:'course-order'});
+ const host=instance.store.create('Wave squad');
  const participant=instance.store.join(host.code,'Deelnemer');
  const as=token=>({cookies:{academy:token}});
  return {app:instance.app,host:as(host.token),participant:as(participant.token)};
@@ -129,7 +129,7 @@ test('a course survives a committed cross-instance Postgres round trip',{skip:!p
  const control=(store,token,action,value)=>store.withSession(token,'browser',({r})=>Store.prototype.control.call({save(){},remaining:store.remaining},r,action,value));
  try{
   await one.init();await two.init();
-  const host=await one.create('Wave squad',{slug:'course-pg'}),person=await one.join(host.code,'Learner');
+  const host=await one.create('Wave squad'),person=await one.join(host.code,'Learner');
   await control(one,host.token,'course',SYNTHETIC_COURSE);
   const {r}=await two.auth(person.token,'browser');
   assert.equal(r.day,1,'day 1 stays current because the course includes it');

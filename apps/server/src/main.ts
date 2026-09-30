@@ -8,7 +8,7 @@ import {readConfig} from './layers/config.ts';
 const program = Effect.gen(function* () {
   const config = yield* readConfig(process.env);
   yield* Effect.log(
-    `Academy wave foundation listening on http://${config.host}:${config.port} (proof ${config.proof.mode} at ${config.proof.baseUrl}, revision ${config.revision ?? 'unknown'})`,
+    `Academy wave foundation listening on http://${config.host}:${config.port} (revision ${config.revision ?? 'unknown'})`,
   );
   const server = HttpRouter.serve(AppLive(process.env), {disableListenLog: true}).pipe(
     Layer.provide(NodeHttpServer.layer(() => createServer(), {port: config.port, host: config.host})),

@@ -13,7 +13,6 @@ import { bearer, text, uuid } from './shared.mjs';
 export function registerMcpRoutes(app, deps) {
   const {
     store,
-    proof,
     slides,
     browser,
     wrap,
@@ -43,6 +42,7 @@ export function registerMcpRoutes(app, deps) {
               mission: pack?.mission || mission,
               day: r.day,
               phase: r.phase,
+              intent: { url: r.intentUrl || null, file: 'intent.md' },
               coach:
                 'You are the facilitator for this room. Manage lesson decks and pin one as the active classroom overlay only when explicitly asked. Academy does not start a model or submit evidence on behalf of participants.',
             }
@@ -59,15 +59,12 @@ export function registerMcpRoutes(app, deps) {
               route: p.route,
               role: r.members[r.driver]?.id === p.id ? 'Driver' : 'Navigator',
               tasks: taskTrail(r, p.id, r.day),
+              intent: { url: r.intentUrl || null, file: 'intent.md' },
               coach:
-                'Leg begrippen uit, citeer les-IDs, pas hints aan de hulpkeuze aan. Lees eerst de gedeelde intent. Geen browserchat of model-API vanuit de game.',
+                'Leg begrippen uit, citeer les-IDs, pas hints aan de hulpkeuze aan. Lees eerst de gedeelde intent: intent.url als die is ingesteld, anders intent.md in de repo van de squad. Geen browserchat of model-API vanuit de game.',
             };
         break;
       }
-      case 'get_document':
-        requireParticipant();
-        result = await proof.state(r);
-        break;
       case 'get_screen_state':
         requireParticipant();
         result = await readScreenState(a, screens);
@@ -98,16 +95,6 @@ export function registerMcpRoutes(app, deps) {
         result = await slides.run(action, deckActor(a), input || {});
         break;
       }
-      case 'suggest_document':
-        requireParticipant();
-        result = await proof.suggest(
-          r,
-          `ai:${p.name}:${p.id}`,
-          text(input.quote),
-          text(input.content),
-          `${p.id}:${text(input.requestId, 100)}`,
-        );
-        break;
       case 'pin_classroom_deck': {
         if (!facilitator)
           fail(403, 'Only the facilitator can pin the Classroom overlay.');

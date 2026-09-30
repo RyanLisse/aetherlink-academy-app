@@ -22,10 +22,8 @@ async function answerQuiz(app,token,answers){
 
 function fixture(){
  const instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-solo-progress-')),hostKey:'test-host',publicBaseUrl:'http://127.0.0.1:4320'});
- const host=instance.store.create('Solo progress',{slug:'solo-progress'});
+ const host=instance.store.create('Solo progress');
  const participant=instance.store.join(host.code,'Deelnemer');
- instance.proof.comment=async()=>({ok:true});
- instance.proof.state=async()=>({markdown:'# Intent\nDoel',marks:{}});
  return {instance,host,participant};
 }
 

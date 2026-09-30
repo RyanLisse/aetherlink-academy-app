@@ -11,7 +11,7 @@ test('day-specific help and reflection survive committed cross-instance changes'
  const schema=`academy_learning_${randomUUID().replaceAll('-','')}`;
  const one=new PostgresStore(pool,{schema}),two=new PostgresStore(pool,{schema});
  try{
-  await one.init();await two.init();const host=await one.create('Test',{slug:'test'}),person=await one.join(host.code,'Learner');
+  await one.init();await two.init();const host=await one.create('Test'),person=await one.join(host.code,'Learner');
   for(let day=1;day<=5;day++){
    await one.withSession(host.token,'browser',({r})=>Store.prototype.control.call({save(){},remaining:one.remaining},r,'day',day));
    await two.withSession(person.token,'browser',({p})=>{p.progressByDay??={};p.progressByDay[day]={route:'guided',reflection:{learned:`day ${day}`,next:'Repeat'}};});

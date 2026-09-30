@@ -4,13 +4,12 @@ import {SquadError} from '../../src/squad/errors.ts';
 import {KTD12, MAX_SQUAD_SIZE, MIN_PRACTICE_SIZE} from '../../src/squad/types.ts';
 import {runSquad, SquadStore} from '../../src/squad/store.ts';
 
-const proof = {slug: 'test'};
 
 describe('SquadStore (AET-27 room scenarios)', () => {
   test('soft max 12, one driver, rotation preserves document + SDLC', async () => {
     await runSquad(Effect.gen(function* () {
       const store = yield* SquadStore;
-      const host = yield* store.create('Test squad', proof);
+      const host = yield* store.create('Test squad');
       const memberToken = (yield* store.join(host.code, 'A')).token;
       for (const name of ['B', 'C', 'D', 'E']) yield* store.join(host.code, name);
       let ctx = yield* store.auth(host.token);
@@ -32,14 +31,13 @@ describe('SquadStore (AET-27 room scenarios)', () => {
       expect(driven.size).toBe(5);
       ctx = yield* store.auth(host.token);
       expect(ctx.r.phase).toBe('Test');
-      expect(ctx.r.proof.slug).toBe('test');
     }));
   });
 
   test('duplicate display name is rejected without minting a session for the existing seat', async () => {
     await runSquad(Effect.gen(function* () {
       const store = yield* SquadStore;
-      const host = yield* store.create('Rejoin', proof);
+      const host = yield* store.create('Rejoin');
       const first = yield* store.join(host.code, 'Zoe');
       const error = yield* Effect.flip(store.join(host.code, 'zoe'));
       expect(error).toBeInstanceOf(SquadError);
@@ -56,7 +54,7 @@ describe('SquadStore (AET-27 room scenarios)', () => {
   test('shuffle randomizes driver', async () => {
     await runSquad(Effect.gen(function* () {
       const store = yield* SquadStore;
-      const host = yield* store.create('Shuffle', proof);
+      const host = yield* store.create('Shuffle');
       for (const name of ['A', 'B', 'C', 'D']) yield* store.join(host.code, name);
       let ctx = yield* store.auth(host.token);
       yield* store.control(ctx.r, 'mode', 'squad');
@@ -73,7 +71,7 @@ describe('SquadStore (AET-27 room scenarios)', () => {
   test('timer pause/resume/expiry never rotates', async () => {
     await runSquad(Effect.gen(function* () {
       const store = yield* SquadStore;
-      const host = yield* store.create('Timer', proof);
+      const host = yield* store.create('Timer');
       for (const name of ['A', 'B', 'C', 'D', 'E']) yield* store.join(host.code, name);
       const ctx = yield* store.auth(host.token);
       yield* store.control(ctx.r, 'start', undefined, 1000);
@@ -91,7 +89,7 @@ describe('SquadStore (AET-27 room scenarios)', () => {
     await runSquad(Effect.gen(function* () {
       const store = yield* SquadStore;
       const members = [] as Array<{token: string}>;
-      const host = yield* store.create('Mcp', proof);
+      const host = yield* store.create('Mcp');
       for (const name of ['A', 'B', 'C', 'D', 'E']) members.push(yield* store.join(host.code, name));
       const a = yield* store.auth(members[0]!.token);
       a.r.members[1]!.quiz = {score: 1, at: 1, day: 1};
@@ -109,7 +107,7 @@ describe('SquadStore (AET-27 room scenarios)', () => {
   test('cannot start practice before four members', async () => {
     await runSquad(Effect.gen(function* () {
       const store = yield* SquadStore;
-      const host = yield* store.create('Small', {slug: 's'});
+      const host = yield* store.create('Small');
       yield* store.join(host.code, 'A');
       const ctx = yield* store.auth(host.token);
       const exit = yield* Effect.exit(store.control(ctx.r, 'start'));
@@ -124,7 +122,7 @@ describe('SquadStore (AET-27 room scenarios)', () => {
   test('facilitator sets remaining time and round duration', async () => {
     await runSquad(Effect.gen(function* () {
       const store = yield* SquadStore;
-      const host = yield* store.create('Time', proof);
+      const host = yield* store.create('Time');
       for (const name of ['A', 'B', 'C', 'D', 'E']) yield* store.join(host.code, name);
       const ctx = yield* store.auth(host.token);
       yield* store.control(ctx.r, 'start', undefined, 1000);
@@ -140,7 +138,7 @@ describe('SquadStore (AET-27 room scenarios)', () => {
   test('invalid time/duration fail with status 400', async () => {
     await runSquad(Effect.gen(function* () {
       const store = yield* SquadStore;
-      const host = yield* store.create('Invalid', proof);
+      const host = yield* store.create('Invalid');
       for (const name of ['A', 'B', 'C', 'D', 'E']) yield* store.join(host.code, name);
       const ctx = yield* store.auth(host.token);
       for (const value of [-1, 7201, 1.5, '600']) {
@@ -157,7 +155,7 @@ describe('SquadStore (AET-27 room scenarios)', () => {
   test('facilitator can attach a second session', async () => {
     await runSquad(Effect.gen(function* () {
       const store = yield* SquadStore;
-      const host = yield* store.create('Attach', proof);
+      const host = yield* store.create('Attach');
       for (const name of ['A', 'B', 'C', 'D', 'E']) yield* store.join(host.code, name);
       const attached = yield* store.attachFacilitator(host.roomId);
       expect(attached.token).not.toBe(host.token);
@@ -173,8 +171,8 @@ describe('SquadStore (AET-27 room scenarios)', () => {
   test('overview newest first with roles and evidence counts', async () => {
     await runSquad(Effect.gen(function* () {
       const store = yield* SquadStore;
-      const first = yield* store.create('First squad', {slug: 'first'});
-      const second = yield* store.create('Second squad', {slug: 'second'});
+      const first = yield* store.create('First squad');
+      const second = yield* store.create('Second squad');
       for (const name of ['A', 'B', 'C', 'D']) yield* store.join(first.code, name);
       for (const name of ['E', 'F', 'G', 'H']) yield* store.join(second.code, name);
       const firstRoom = (yield* store.auth(first.token)).r;
@@ -201,8 +199,8 @@ describe('SquadStore (AET-27 room scenarios)', () => {
   test('KTD12: same display name in two rooms never shares progress', async () => {
     await runSquad(Effect.gen(function* () {
       const store = yield* SquadStore;
-      const roomA = yield* store.create('Room A', {slug: 'a'});
-      const roomB = yield* store.create('Room B', {slug: 'b'});
+      const roomA = yield* store.create('Room A');
+      const roomB = yield* store.create('Room B');
       const joinA = yield* store.join(roomA.code, 'Alex');
       const joinB = yield* store.join(roomB.code, 'Alex');
       const authA = yield* store.auth(joinA.token);
@@ -220,7 +218,7 @@ describe('SquadStore (AET-27 room scenarios)', () => {
   test('roles hidden unless mode is squad', async () => {
     await runSquad(Effect.gen(function* () {
       const store = yield* SquadStore;
-      const host = yield* store.create('Modes', proof);
+      const host = yield* store.create('Modes');
       for (const name of ['A', 'B', 'C', 'D']) yield* store.join(host.code, name);
       const ctx = yield* store.auth(host.token);
       const lessonView = yield* store.view(ctx.r, ctx.s);

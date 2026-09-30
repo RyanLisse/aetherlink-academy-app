@@ -15,12 +15,6 @@ export class RedisUnreachable extends Data.TaggedError('RedisUnreachable')<{
   readonly cause?: unknown;
 }> {}
 
-export class ProofUnreachable extends Data.TaggedError('ProofUnreachable')<{
-  readonly message: string;
-  readonly status?: number;
-  readonly cause?: unknown;
-}> {}
-
 export class ChildProcessError extends Data.TaggedError('ChildProcessError')<{
   readonly label: string;
   readonly message: string;

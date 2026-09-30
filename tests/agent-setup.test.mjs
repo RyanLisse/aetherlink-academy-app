@@ -31,7 +31,7 @@ test('one-click setup binds participant and facilitator agents to their room rol
  const dir=mkdtempSync(path.join(os.tmpdir(),'academy-agent-'));
  try{
  const {app,store}=createApp({dir,hostKey:'test',publicBaseUrl:'https://academy.example.test'});
- const host=store.create('Squad',{slug:'intent'}),alice=store.join(host.code,'Alice'),bob=store.join(host.code,'Bob');
+ const host=store.create('Squad'),alice=store.join(host.code,'Alice'),bob=store.join(host.code,'Bob');
  const facilitatorSetup=await call(app,'/game/agent-setup',host.token);assert.equal(facilitatorSetup.status,200);
  assert.equal(facilitatorSetup.body.client,'claude');
  assert.equal(facilitatorSetup.body.participantId,'facilitator');assert.equal(facilitatorSetup.body.role,'facilitator');assert.equal(facilitatorSetup.body.roomId,host.roomId);
@@ -65,7 +65,7 @@ test('agent-setup supports Codex client with bearer env var instructions',async(
  const dir=mkdtempSync(path.join(os.tmpdir(),'academy-codex-'));
  try{
   const {app,store}=createApp({dir,hostKey:'test',publicBaseUrl:'https://academy.example.test'});
-  const host=store.create('Squad',{slug:'intent'});
+  const host=store.create('Squad');
   const alice=store.join(host.code,'Alice');
   const bad=await call(app,'/game/agent-setup',alice.token,{client:'windsurf'});
   assert.equal(bad.status,400);
@@ -99,7 +99,7 @@ test('local preview does not mint an unusable remote setup',async()=>{
  const dir=mkdtempSync(path.join(os.tmpdir(),'academy-local-'));
  try{
   const {app,store}=createApp({dir,hostKey:'test',publicBaseUrl:'http://127.0.0.1:4317'});
-  const host=store.create('Squad',{slug:'intent'}),person=store.join(host.code,'Alice');
+  const host=store.create('Squad'),person=store.join(host.code,'Alice');
   assert.equal((await call(app,'/game/agent-setup',person.token)).status,409);
  }finally{rmSync(dir,{recursive:true,force:true});}
 });

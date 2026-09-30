@@ -1,6 +1,6 @@
 import {Cause, Duration, Effect} from 'effect';
 
-export type Dependency = 'postgres' | 'redis' | 'proof';
+export type Dependency = 'postgres' | 'redis';
 
 export interface ProbeReachable {
   readonly reachable: true;
@@ -21,13 +21,11 @@ export type Probe = ProbeReachable | ProbeUnreachable;
 export interface ConnectionReport {
   readonly postgres: Probe;
   readonly redis: Probe;
-  readonly proof: Probe;
   readonly checkedAt: string;
 }
 
 export interface HealthReport {
   readonly ok: boolean;
-  readonly proof: boolean;
   readonly revision: string | null;
 }
 

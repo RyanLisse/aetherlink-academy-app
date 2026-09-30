@@ -28,7 +28,6 @@ async function withServer(run) {
     root,
     hostKey: 'test-host',
     publicBaseUrl: 'http://127.0.0.1:4317',
-    proofBase: 'http://127.0.0.1:9',
   });
   await new Promise((resolve, reject) => server.listen(0, '127.0.0.1', (err) => (err ? reject(err) : resolve())));
   const {port} = server.address();
