@@ -4,7 +4,7 @@ import {releasedDays} from './release.mjs';
 import {runParticipantScreenState} from '../packages/actions/src/adapters/screen-state-host.ts';
 
 const MAX_AGE_MS=30_000,MAX_TABS=8;
-const VIEWS=new Set(['squad','route','lesson','solo','coach','review','decks','apps','naslag']);
+const VIEWS=new Set(['today','squad','route','lesson','solo','coach','review','decks','apps','naslag']);
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export const dayLessonId=day=>`day-${day}`;
 const releasedLessonIds=({r,s})=>releasedDays(r,{readOnly:s?.readOnly}).filter(getDayPack).map(dayLessonId);
@@ -24,7 +24,7 @@ export function screenBinding({r,p,s},report,now=Date.now()){
  const released=releasedLessonIds({r,s});
  const naslagDay=view==='naslag'&&day!==undefined&&day!==null;
  if(naslagDay&&(!Number.isInteger(day)||!released.includes(dayLessonId(day))))fail(403,'This day has not been released yet.');
- const lessonDay=['lesson','solo'].includes(view)?r.day:naslagDay?day:null;
+ const lessonDay=['today','lesson','solo'].includes(view)?r.day:naslagDay?day:null;
  const lesson=lessonDay!==null&&getDayPack(lessonDay)?dayLessonId(lessonDay):null;
  const quizView=['lesson','naslag'].includes(view)&&lesson;
  const quizDone=p.progressByDay?.[String(lessonDay)]?.quizScore!=null;
