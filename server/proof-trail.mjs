@@ -1,4 +1,5 @@
 import {getDayPack} from './content.mjs';
+import {projectPackLocale} from '../content/days/locale.mjs';
 import {fail} from './store.mjs';
 import {autogradeView,recordAutograde} from './autograde.mjs';
 
@@ -25,11 +26,13 @@ export function transition(status,event){
 }
 export const reviewEvent=evidenceStatus=>REVIEW_EVENTS[evidenceStatus];
 
-export function dayTasks(day){
+export function dayTasks(day,locale='en'){
  const pack=getDayPack(day);
  if(!pack)return [];
- if(pack.steps?.length)return pack.steps.map(step=>({id:step.id,title:step.title,...(step.autograde?{grader:step.autograde}:{})}));
- return [{id:pack.mission.id,title:pack.mission.title}];
+ const projected=projectPackLocale(pack,locale);
+ const titles=new Map((projected.steps||[]).map(step=>[step.id,step.title]));
+ if(pack.steps?.length)return pack.steps.map(step=>({id:step.id,title:titles.get(step.id)??step.title,...(step.autograde?{grader:step.autograde}:{})}));
+ return [{id:pack.mission.id,title:projected.mission?.title??pack.mission.title}];
 }
 export function findTask(day,taskId){
  const task=dayTasks(day).find(t=>t.id===taskId);
@@ -57,8 +60,8 @@ export function submitAutograde(room,person,task,body,at){
 }
 
 const submissionView=e=>({evidenceId:e.id,at:e.at,status:e.status,review:e.review?{note:e.review.note,at:e.review.at,reviewer:e.review.reviewer||null}:null});
-export function taskTrail(room,personId,day){
- return dayTasks(day).map(({grader,...task})=>{
+export function taskTrail(room,personId,day,locale='en'){
+ return dayTasks(day,locale).map(({grader,...task})=>{
   const submissions=submissionsFor(room,personId,task.id,day),record=autogradeRecord(room,personId,task.id,day);
   return {...task,day:Number(day),status:fold(submissions,record),submissions:submissions.map(submissionView),...(grader?{autograde:autogradeView(grader,record)}:{})};
  });
@@ -75,14 +78,14 @@ export function authorizeTaskReview({s,p}){
  if(s.personId!=='facilitator'&&!p)fail(403,'Only participants or the facilitator review assignments.');
 }
 
-const queueItem=(room,e)=>({evidenceId:e.id,taskId:e.taskId,taskTitle:dayTasks(e.day).find(t=>t.id===e.taskId)?.title||e.taskId,day:e.day,personId:e.personId,name:e.name,at:e.at,attempt:submissionsFor(room,e.personId,e.taskId,e.day).indexOf(e)+1,finding:e.finding,command:e.command,observed:e.observed,limitation:e.limitation});
+const queueItem=(room,e,locale)=>({evidenceId:e.id,taskId:e.taskId,taskTitle:dayTasks(e.day,locale).find(t=>t.id===e.taskId)?.title||e.taskId,day:e.day,personId:e.personId,name:e.name,at:e.at,attempt:submissionsFor(room,e.personId,e.taskId,e.day).indexOf(e)+1,finding:e.finding,command:e.command,observed:e.observed,limitation:e.limitation});
 
-export function reviewQueue(room){
+export function reviewQueue(room,locale='en'){
  return {
   day:room.day,
-  queue:awaitingReview(room).map(e=>queueItem(room,e)),
-  members:room.members.map(m=>({id:m.id,name:m.name,tasks:taskTrail(room,m.id,room.day).map(({id,title,status})=>({id,title,status}))}))
+  queue:awaitingReview(room).map(e=>queueItem(room,e,locale)),
+  members:room.members.map(m=>({id:m.id,name:m.name,tasks:taskTrail(room,m.id,room.day,locale).map(({id,title,status})=>({id,title,status}))}))
  };
 }
 
-export const peerQueue=(room,personId)=>({day:room.day,queue:awaitingReview(room).filter(e=>e.personId!==personId&&Number(e.day)===Number(room.day)).map(e=>queueItem(room,e))});
+export const peerQueue=(room,personId,locale='en')=>({day:room.day,queue:awaitingReview(room).filter(e=>e.personId!==personId&&Number(e.day)===Number(room.day)).map(e=>queueItem(room,e,locale))});

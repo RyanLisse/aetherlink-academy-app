@@ -38,7 +38,10 @@ import {
 } from '../quiz.mjs';
 import { createChatEmbedStartUrl, chatEmbedErrorHtml } from '../chat-embed.mjs';
 import { createScreenStore, screenBinding } from '../screen-state.mjs';
-import { projectPackLocale } from '../../content/days/locale.mjs';
+import {
+  normalizeContentLocale,
+  projectPackLocale,
+} from '../../content/days/locale.mjs';
 import { bearer, intentUrl, namedCookie, text } from './shared.mjs';
 
 export function registerRoomRoutes(app, deps) {
@@ -498,7 +501,10 @@ export function registerLiveRoutes(app, deps) {
     wrap(async (req, res) => {
       const { r, p } = await browser(req);
       if (!p) fail(403, 'Only participants have their own assignment list.');
-      res.json({ day: r.day, tasks: taskTrail(r, p.id, r.day) });
+      res.json({
+        day: r.day,
+        tasks: taskTrail(r, p.id, r.day, normalizeContentLocale(req.query.locale)),
+      });
     }),
   );
   app.post(
@@ -527,7 +533,7 @@ export function registerLiveRoutes(app, deps) {
     wrap(async (req, res) => {
       const { r, p } = await browser(req);
       if (!p) fail(403, 'Only participants review each other’s assignments.');
-      res.json(peerQueue(r, p.id));
+      res.json(peerQueue(r, p.id, normalizeContentLocale(req.query.locale)));
     }),
   );
   app.get(
@@ -536,7 +542,7 @@ export function registerLiveRoutes(app, deps) {
       const { r, s } = await browser(req);
       if (s.personId !== 'facilitator')
         fail(403, 'Only the facilitator sees the review queue.');
-      res.json(reviewQueue(r));
+      res.json(reviewQueue(r, normalizeContentLocale(req.query.locale)));
     }),
   );
   app.post(

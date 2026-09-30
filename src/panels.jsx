@@ -214,9 +214,9 @@ export function Solo({room,action,busy,onNavigate}){
   const [error,setError]=useState('');
   const [sent,setSent]=useState(false);
   const participant=room.me.role!=='Facilitator';
-  const trail=useRemote(participant?'tasks':null,[room.day,trailKey(room)]),tasks=trail.data?.tasks;
-  const submittable=(tasks||[]).filter(task=>task.status==='open'||task.status==='changes_requested');
   const {locale}=useI18n();
+  const trail=useRemote(participant?`tasks?locale=${locale}`:null,[room.day,trailKey(room)]),tasks=trail.data?.tasks;
+  const submittable=(tasks||[]).filter(task=>task.status==='open'||task.status==='changes_requested');
   useEffect(()=>{let active=true;setPack(null);setError('');setSent(false);api(`day-pack?locale=${locale}`).then(d=>{if(active)setPack(d);}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[room.day,locale]);
   if(error)return <section className="panel content-panel"><p className="cyan">{t('solo.eyebrow')}</p><h2>{t('solo.noneTitle')}</h2><StatusState kind="error" title={t('status.errorTitle')}>{error}<p>{t('solo.noneHint')}</p></StatusState></section>;
   if(!pack)return <section className="panel content-panel"><StatusState kind="loading" title={t('solo.loading')}/></section>;
@@ -338,7 +338,7 @@ function AutogradeForm({task,action,busy,onGraded}){
 function TaskQueue({room,action,busy,path,heading}){
   const t=useT();
   const {locale}=useI18n();
-  const remote=useRemote(path,[room.day,trailKey(room)]);
+  const remote=useRemote(`${path}?locale=${locale}`,[room.day,trailKey(room)]);
   if(!remote.data)return <RemoteStatus remote={remote} loading={t('queue.loading')}/>;
   const data={...remote.data,reload:remote.reload};
   const decide=(item,event)=>{event.preventDefault();const form=event.currentTarget;const values=Object.fromEntries(new FormData(form,event.nativeEvent.submitter));action(async()=>{await api('review',{id:item.evidenceId,...values,requestId:form.dataset.requestId||(form.dataset.requestId=crypto.randomUUID())});delete form.dataset.requestId;data.reload();});};

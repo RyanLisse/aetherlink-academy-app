@@ -57,7 +57,8 @@ for(const [status,event,expected] of TABLE)test(`transition ${status} --${event}
 
 test('tasks come from day-pack ids: the mission, or the progressive steps when a day has them',()=>{
  assert.deepEqual(dayTasks(1).map(t=>t.id),['c1-setup','c1-a1','c1-a2','c1-a3','c1-a4']);
- assert.deepEqual(dayTasks(1)[0],{id:'c1-setup',title:'Oefenrepository opzetten'});
+ assert.deepEqual(dayTasks(1)[0],{id:'c1-setup',title:'Set up the practice repository'});
+ assert.deepEqual(dayTasks(1,'nl')[0],{id:'c1-setup',title:'Oefenrepository opzetten'});
  assert.deepEqual(dayTasks(3).map(t=>t.id),['w3-l1','w3-l2','w3-l3','w3-proof']);
  assert.deepEqual(dayTasks(9).map(t=>t.id),['s02-dispatch','s02-two-steps','s02-sim']);
  assert.deepEqual(dayTasks(99),[]);
@@ -67,7 +68,7 @@ test('task → submit → changes requested → resubmit → approved, visible t
  const {instance,learner,driver,facilitator,as,submit,review,tasks,queue}=fixture();
  const openList=(await tasks(learner.token)).body;
  assert.equal(openList.day,1);
- assert.deepEqual(openList.tasks[0],{id:'c1-setup',title:'Oefenrepository opzetten',day:1,status:'open',submissions:[]});
+ assert.deepEqual(openList.tasks[0],{id:'c1-setup',title:'Set up the practice repository',day:1,status:'open',submissions:[]});
  assert.deepEqual(openList.tasks.map(t=>t.status),['open','open','open','open','open']);
 
  const first=await submit(learner.token,'t-1','c1-setup');
@@ -82,7 +83,7 @@ test('task → submit → changes requested → resubmit → approved, visible t
 
  const waiting=await queue(facilitator);
  assert.equal(waiting.statusCode,200);
- assert.deepEqual(waiting.body.queue.map(({name,taskId,taskTitle,attempt,day})=>({name,taskId,taskTitle,attempt,day})),[{name:'Bo',taskId:'c1-setup',taskTitle:'Oefenrepository opzetten',attempt:1,day:1}]);
+ assert.deepEqual(waiting.body.queue.map(({name,taskId,taskTitle,attempt,day})=>({name,taskId,taskTitle,attempt,day})),[{name:'Bo',taskId:'c1-setup',taskTitle:'Set up the practice repository',attempt:1,day:1}]);
  assert.deepEqual(waiting.body.members.map(m=>[m.name,m.tasks[0].status]),[['Ada','open'],['Bo','submitted'],['Cy','open']]);
 
  const self=await review(as(learner.token),first.body.id,'accepted','Mijn eigen werk','r-self');
@@ -127,7 +128,7 @@ test('a peer in the same room reviews task evidence; the author sees the decisio
 
  const cyList=await peerList(as(peer.token));
  assert.equal(cyList.statusCode,200);
- assert.deepEqual(cyList.body.queue.map(({evidenceId,name,taskId,taskTitle,attempt,day})=>({evidenceId,name,taskId,taskTitle,attempt,day})),[{evidenceId:sent.body.id,name:'Bo',taskId:'c1-setup',taskTitle:'Oefenrepository opzetten',attempt:1,day:1}]);
+ assert.deepEqual(cyList.body.queue.map(({evidenceId,name,taskId,taskTitle,attempt,day})=>({evidenceId,name,taskId,taskTitle,attempt,day})),[{evidenceId:sent.body.id,name:'Bo',taskId:'c1-setup',taskTitle:'Set up the practice repository',attempt:1,day:1}]);
  assert.equal(cyList.body.members,undefined,'peers do not get the room-wide status board');
  assert.deepEqual((await peerList(as(learner.token))).body.queue,[],'the author never sees their own submission to review');
 
@@ -209,7 +210,7 @@ test('MCP: get_mission lists own tasks and submit_evidence maps to a task',async
  assert.equal(sent.statusCode,200);
  assert.equal(sent.body.source,'MCP-client');
  assert.deepEqual((await call('get_mission')).body.tasks.map(t=>t.status),['submitted','open','open','open']);
- assert.deepEqual((await queue(facilitator)).body.queue.map(q=>[q.name,q.taskId,q.taskTitle]),[['Bo','w3-l1','L1 · Switch zonder LLM']]);
+ assert.deepEqual((await queue(facilitator)).body.queue.map(q=>[q.name,q.taskId,q.taskTitle]),[['Bo','w3-l1','L1 · Switch without LLM']]);
  const overview=await invoke(instance.app,'/game/facilitator/overview',{body:{hostKey:'test-host'}});
  assert.equal(overview.body[0].awaitingReview,1);
 });
