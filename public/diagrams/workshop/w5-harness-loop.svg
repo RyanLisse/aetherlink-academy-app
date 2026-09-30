@@ -82,7 +82,7 @@
   <text x="44" y="318" fill="#475569" font-size="12">aetherlink-daily-brief-lab-s1 stays the build vehicle.</text>
   <text x="44" y="338" fill="#475569" font-size="12">The harness is the loop + human gates — not the agent alone.</text>
   <text x="44" y="358" fill="#475569" font-size="12">Plan mode holds until a human accepts; gate refuses unread PASS.</text>
-  <text x="44" y="378" fill="#64748b" font-size="11">Keep Uitleg → Voordoen → Zelf doen on the Apple bar.</text>
+  <text x="44" y="378" fill="#64748b" font-size="11">Every block: Uitleg → Voordoen → Zelf doen.</text>
 
   <rect x="462" y="270" width="416" height="120" rx="8" fill="#fff8f0" stroke="#fcd34d" stroke-width="1.5"/>
   <text x="478" y="296" fill="#92400e" font-size="13" font-weight="700">Where the human pauses</text>

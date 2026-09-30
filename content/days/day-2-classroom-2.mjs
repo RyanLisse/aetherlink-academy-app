@@ -153,7 +153,7 @@ const nl = {
   link('naslag','Agents / parallel','https://code.claude.com/docs/en/agents','NASLAG.md Teach Day 2 · code.claude.com'),
   link('naslag','Claude Code skills-docs','https://code.claude.com/docs/en/skills','Officiële docs'),
   link('naslag','Sub-agents-docs','https://code.claude.com/docs/en/sub-agents','Officiële docs'),
-  link('naslag','Claude Code-concepten (Carl)','https://ccforeveryone.com/guides/claude-code-concepts-explained','Naslag alleen · CC BY-NC-ND · niet herhosten'),
+  link('naslag','Claude Code-concepten (Carl)','https://ccforeveryone.com/guides/claude-code-concepts-explained','Externe gids · CC BY-NC-ND'),
   link('diagram','Customize-stackdiagram','/diagrams/classroom/c2-customize-stack.svg','Classroom 2')
  ],
  diagrams:[DIAGRAM_NL],

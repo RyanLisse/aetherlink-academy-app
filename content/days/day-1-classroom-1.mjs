@@ -141,7 +141,7 @@ const nl = {
   link('vehicle','Oefenrepository aetherlink-classroom-starter','https://github.com/jyse/aetherlink-classroom-starter','Dia 34'),
   link('naslag','Claude Code 101','https://anthropic.skilljar.com/claude-code-101','Anthropic Academy; lesplan-naslag'),
   link('naslag','Claude Code in Action','https://anthropic.skilljar.com/claude-code-in-action','Anthropic Academy; lesplan-naslag'),
-  link('naslag','Claude Code-concepten (Carl)','https://ccforeveryone.com/guides/claude-code-concepts-explained','Naslag alleen · CC BY-NC-ND · niet herhosten'),
+  link('naslag','Claude Code-concepten (Carl)','https://ccforeveryone.com/guides/claude-code-concepts-explained','Externe gids · CC BY-NC-ND'),
   link('diagram','Claude Code-loopdiagram','/diagrams/classroom/c1-explore-plan-change-verify-commit.svg','Classroom 1')
  ],
  diagrams:[DIAGRAM_NL],

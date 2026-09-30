@@ -69,10 +69,10 @@
 
   <!-- Pedagogy -->
   <rect x="24" y="318" width="450" height="138" rx="8" fill="#fff" stroke="#e2e8f0" stroke-width="1.5"/>
-  <text x="40" y="344" fill="#1e3a5f" font-size="13" font-weight="700">Pedagogy kept (Apple bar)</text>
+  <text x="40" y="344" fill="#1e3a5f" font-size="13" font-weight="700">How each block works</text>
   <text x="40" y="366" fill="#475569" font-size="12">Uitleg → Voordoen → Zelf doen on Classroom 1.</text>
-  <text x="40" y="386" fill="#475569" font-size="12">Solos A1–A4 + mission CLASSROOM-01 stay.</text>
-  <text x="40" y="406" fill="#64748b" font-size="11">Jessy/Cons TD1 = pedagogy SoT — diagram adds the cue.</text>
+  <text x="40" y="386" fill="#475569" font-size="12">Practise in A1–A4 and mission CLASSROOM-01.</text>
+  <text x="40" y="406" fill="#64748b" font-size="11">The diagram adds the loop cue.</text>
   <text x="40" y="426" fill="#64748b" font-size="11">ConceptSim steps the loop without API keys.</text>
 
   <rect x="494" y="318" width="442" height="138" rx="8" fill="#fff8f0" stroke="#fcd34d" stroke-width="1.5"/>
