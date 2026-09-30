@@ -151,22 +151,22 @@ test('main.jsx wires ArcadeApp on /arcade paths', () => {
 });
 
 test('server SPA-fallback includes /arcade and serves /arcade-lab', () => {
-  const app = readFileSync(path.join(root, 'server/app.mjs'), 'utf8');
-  assert.match(app, /\/arcade/);
-  assert.match(app, /sendFile/);
-  assert.match(app, /arcade-lab/);
-  assert.match(app, /apps\/arcade-lab\/dist/);
+  const spaRoutes = readFileSync(path.join(root, 'server/routes/spa.mjs'), 'utf8');
+  assert.match(spaRoutes, /\/arcade/);
+  assert.match(spaRoutes, /sendFile/);
+  assert.match(spaRoutes, /arcade-lab/);
+  assert.match(spaRoutes, /apps\/arcade-lab\/dist/);
 });
 
 test('server SPA-fallback serves apps/web for classroom/deck/workshop/lesson/live', () => {
-  const app = readFileSync(path.join(root, 'server/app.mjs'), 'utf8');
-  assert.match(app, /apps\/web\/dist/);
-  assert.match(app, /isWebSpaPath/);
-  assert.match(app, /\/classroom\//);
-  assert.match(app, /\/workshop\//);
-  assert.match(app, /\/lesson/);
-  assert.match(app, /\/live\//);
-  assert.match(app, /p===\'\/deck\'/);
+  const spaRoutes = readFileSync(path.join(root, 'server/routes/spa.mjs'), 'utf8');
+  assert.match(spaRoutes, /apps\/web\/dist/);
+  assert.match(spaRoutes, /isWebSpaPath/);
+  assert.match(spaRoutes, /\/classroom\//);
+  assert.match(spaRoutes, /\/workshop\//);
+  assert.match(spaRoutes, /\/lesson/);
+  assert.match(spaRoutes, /\/live\//);
+  assert.match(spaRoutes, /p\s*===\s*'\/deck'/);
 });
 
 test('arcade-lab vite base is /arcade-lab/', () => {

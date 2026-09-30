@@ -185,7 +185,7 @@ test("AET-82-5: ACADEMY_TRUST_PROXY deploy note documents cookie/session behind 
   assert.match(deploy, /Do \*\*not\*\* invent secrets|geen secret|Do \*\*not\*\* flip live proxy/i);
   // Wiring already present — docs must name the same env the gateway reads.
   const app = readFileSync(path.join(root, "server/app.mjs"), "utf8");
-  assert.match(app, /trustProxy=process\.env\.ACADEMY_TRUST_PROXY/);
+  assert.match(app, /trustProxy\s*=\s*process\.env\.ACADEMY_TRUST_PROXY/);
   assert.match(app, /httpOnly:\s*true/);
 });
 

@@ -8,7 +8,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const main = readFileSync(join(root, 'src/main.jsx'), 'utf8');
 const store = readFileSync(join(root, 'server/store.mjs'), 'utf8');
 const cohort = readFileSync(join(root, 'server/cohort.mjs'), 'utf8');
-const app = readFileSync(join(root, 'server/app.mjs'), 'utf8');
+const cohortRoutes = readFileSync(join(root, 'server/routes/cohort.mjs'), 'utf8');
 const sql = readFileSync(join(root, 'server/schema/academy.sql'), 'utf8');
 const en = JSON.parse(readFileSync(join(root, 'src/i18n/en.json'), 'utf8'));
 const nl = JSON.parse(readFileSync(join(root, 'src/i18n/nl.json'), 'utf8'));
@@ -29,7 +29,7 @@ test('F2 attach rooms — list linked + attach by id or code', () => {
   assert.match(main, /facilitator\/cohort\/attach/);
   assert.match(main, /roomCode/);
   assert.match(main, /cohort\.attachByCode/);
-  assert.match(app, /findRoomIdByCode/);
+  assert.match(cohortRoutes, /findRoomIdByCode/);
   assert.match(cohort, /rooms:rooms\.map\(room=>\(\{id:room\.id/);
 });
 
