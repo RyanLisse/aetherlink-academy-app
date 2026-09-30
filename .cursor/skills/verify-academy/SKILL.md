@@ -37,6 +37,8 @@ node --env-file=.env scripts/start.mjs
 # If you have no .env yet, write one from the sourced CI env (see Helpers / control.mjs launch).
 ```
 
+If Docker Hub pulls are rate limited (HTTP 429), pull `mirror.gcr.io/library/postgres:16` and `mirror.gcr.io/library/redis:7-alpine`, tag them as `postgres:16` and `redis:7-alpine` (the names `scripts/ci-services.sh` expects), then rerun `start`. Never fall back to production.
+
 Ready when `GET http://127.0.0.1:4317/game/health` returns JSON with `ok: true` (and usually `proof: true`). The start log prints `Academy: http://127.0.0.1:4317`. Facilitator break-glass key is auto-written to `.data/host-key` when `ACADEMY_HOST_KEY` is unset.
 
 `control.mjs launch` runs the CI services (if Docker is present), writes a disposable `.env`, runs setup when `dist/` is missing, starts `scripts/start.mjs` as a detached process group, and records PIDs under `.cursor/skills/verify-academy/.run/`.
@@ -82,6 +84,17 @@ Harness:
   - Locale: group `Taal` / `Language` (`locale.label`), buttons `NL` / `EN` (`aria-pressed`)
   - ConceptSim: section/slot `Conceptsimulatie` / `Concept simulation`, group `Simulatorbediening` / `Simulator controls`, buttons `Afspelen`/`Play`, `Stap vooruit`/`Step forward`, `Opnieuw`/`Reset`; attribution in `.sim-attribution`
   - Nav: `Meer`, course / lesson panels as labeled in each feature file
+
+Workspace navigation (participant and facilitator):
+
+- Facilitator Day controls can sit under `Meer`/`More` → Session settings; open that menu before looking for the Day combobox.
+- Participant Solo: `Meer`/`More` → `Solo-missie`/`Solo mission`. Assignments: course tab `Les`/`Lesson` → `Opdrachten`/`Assignments`.
+- Peer review: `Meer`/`More` → Review & handoff. Facilitator Solo: Day pack → Assignments → Open the solo mission.
+- Changing locale or room day can reset the course subtab to Lesson; reopen Assignments and check the selected tab before capturing.
+- Every day pack with `pack.steps` (Day 1 included, not only workshop days) renders Solo as step cards (`data-testid="step-card"`); the legacy task list is only for step-less packs.
+- After navigation or a locale switch, wait for the target instruction list; an immediate DOM read can hit an empty transitional render.
+- Use the accessible TypeScript/Python button names for code toggles instead of guessed test IDs.
+- The generated `.data/host-key` can be read into browser memory to fill the facilitator key field; never print it or show it in screenshots or artifacts.
 
 Do not call internal setters or invent a `control-academy` CLI beyond this skill's thin `control.mjs`. Prefer the real start-screen and Lesson panel paths.
 

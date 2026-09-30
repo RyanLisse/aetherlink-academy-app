@@ -1,6 +1,6 @@
 import React,{useEffect,useState,useRef,useCallback,lazy,Suspense} from 'react';
 import {createRoot} from 'react-dom/client';
-import {Library,Users,BookOpen,Compass,Target,Sparkles,ClipboardCheck,Sun,Moon,ArrowRight,Clock,Play,Pause,RotateCw,Shuffle,HelpCircle,Check,LogOut,Copy,FileText,ExternalLink,Presentation,FlaskConical,X,LayoutGrid,Link,Columns3,Plus,Download,Award,ListOrdered,MessageSquare,Mail,StickyNote,Type,Wrench,MoreHorizontal} from 'lucide-react';
+import {Library,Users,BookOpen,Compass,Target,Sparkles,ClipboardCheck,Sun,Moon,ArrowRight,Clock,Play,Pause,RotateCw,Shuffle,HelpCircle,Check,LogOut,Copy,FileText,ExternalLink,Presentation,FlaskConical,X,LayoutGrid,Link,Columns3,Plus,Download,Award,ListOrdered,MessageSquare,Mail,StickyNote,Type,Wrench,MoreHorizontal,House} from 'lucide-react';
 import {api,authApi,getToken,getParticipantAccess,saveParticipantAccess,forgetParticipantAccess,participantAccessUrl,saveSession} from './api';
 import {AppsLauncher} from './portal/AppsLauncher.jsx';
 import {Coach,Lesson,Solo,Review,Route,Debrief,CourseComposer,coursePosition} from './panels';
@@ -8,6 +8,7 @@ import {Decks} from './slides';
 import {Chat} from './chat';
 import {AgentChatPanel} from './agent-chat';
 import {Naslag} from './naslag';
+import {Today} from './today';
 import {reportScreen,startScreenReporting} from './screen';
 import {I18nProvider,LanguageToggle,useT,useI18n} from './i18n';
 import {classroomEmbedUrl,CLASSROOM_SANDBOX,pinnedDeckIdForRoom,isClassroomNavKey,forwardClassroomNavKey} from './classroom';
@@ -56,7 +57,7 @@ function App(){
   const [theme,setTheme]=useState(()=>localStorage.getItem('academy-theme')||'dark');
   const [session,setSession]=useState(!!getToken());
   const [room,setRoom]=useState(null);
-  const [view,setView]=useState('lesson');
+  const [view,setView]=useState('today');
   const [connected,setConnected]=useState(false);
   const [copied,setCopied]=useState(null);
   const [classroomOpen,setClassroomOpen]=useState(false);
@@ -75,8 +76,8 @@ function App(){
   useEffect(()=>{if(!session)return;let active=true;api('config').then(config=>{if(active)setAgentChatAvailable(Boolean(config.agentChatAvailable));}).catch(()=>{if(active)setAgentChatAvailable(false);});return()=>{active=false;};},[session]);
   const participant=Boolean(room)&&room.me.role!=='Facilitator';
   const naslagLanding=participant&&(room.readOnly||(room.allReleased&&Boolean(room.me.cohortMemberId)));
-  useEffect(()=>{if(naslagLanding)setView(current=>current==='lesson'||current==='squad'?'naslag':current);},[naslagLanding]);
-  useEffect(()=>{if(room?.me.role==='Facilitator')setView(current=>current==='lesson'?'squad':current);},[room?.me.role]);
+  useEffect(()=>{if(naslagLanding)setView(current=>current==='today'||current==='lesson'||current==='squad'?'naslag':current);},[naslagLanding]);
+  useEffect(()=>{if(room?.me.role==='Facilitator')setView(current=>current==='today'?'squad':current);},[room?.me.role]);
   useEffect(()=>{if(!participant)return;reportScreen({view});return startScreenReporting();},[participant,view]);
   const showCopied=kind=>{setCopied(kind);clearTimeout(copiedTimer.current);copiedTimer.current=setTimeout(()=>setCopied(null),1500);};
   async function leaveSession(){setBusy(true);setError('');try{await api('logout',{});sessionStorage.removeItem('academy-token');sessionStorage.removeItem('academy-mcp-'+room.me.id);sessionStorage.removeItem(`academy-agent-setup:${room.id}:${room.me.id}`);forgetParticipantAccess();location.reload();}catch(err){setError(err.message);}finally{setBusy(false);}}
@@ -90,10 +91,10 @@ function App(){
   const roundStatus=room.running?t('room.practice'):room.remaining===0?t('room.timeUp'):t('room.paused');
   const modeLabel=({lesson:t('roster.mode.lesson'),solo:t('roster.mode.solo'),squad:t('roster.mode.squad'),review:t('roster.mode.review')})[room.mode]||room.mode;
   const contribution=facilitator?t('roster.contributionFacilitator'):room.me.role==='Driver'?t('roster.contributionDriver'):t('roster.contributionNavigator');
-  const participantPrimary=[['lesson','nav.lesson',BookOpen],['route','nav.route',Compass],['squad','nav.squad',Users]];
-  const participantMore=[['solo','nav.solo',Target],['coach','nav.coach',Sparkles],['review','nav.review',ClipboardCheck],['debrief','nav.debrief',ClipboardCheck],['naslag','nav.naslag',Library],['decks','nav.decks',Presentation],...(agentChatAvailable&&!room.readOnly?[['agentChat','nav.agentChat',MessageSquare]]:[]),...(room.board?[['board','nav.board',Columns3]]:[]),...(room.me.cohortMemberId?[['certificate','nav.certificate',Award]]:[])];
+  const participantPrimary=[['today','nav.today',House],['lesson','nav.lesson',BookOpen],['squad','nav.squad',Users]];
+  const participantMore=[['route','nav.route',Compass],['solo','nav.solo',Target],['coach','nav.coach',Sparkles],['review','nav.review',ClipboardCheck],['debrief','nav.debrief',ClipboardCheck],['naslag','nav.naslag',Library],['decks','nav.decks',Presentation],...(agentChatAvailable&&!room.readOnly?[['agentChat','nav.agentChat',MessageSquare]]:[]),...(room.board?[['board','nav.board',Columns3]]:[]),...(room.me.cohortMemberId?[['certificate','nav.certificate',Award]]:[])];
   const participantSquadMode=view==='squad';
-  if(facilitator)return <FacilitatorWorkspace room={room} view={view} onNavigate={setView} connected={connected} error={error}
+  if(facilitator)return <FacilitatorWorkspace room={room} view={view} onNavigate={setView} connected={connected} error={error} control={control} busy={busy}
     account={<>{localeToggle}{themeButton}<button type="button" onClick={leaveSession}><LogOut size={16}/>{t('account.leave')}</button></>}
     onPresent={()=>setClassroomOpen(true)}
     controls={<FacilitatorControls room={room} control={control} busy={busy} connected={connected} onOpenClassroom={()=>setClassroomOpen(true)} onOpenBoard={()=>action(async()=>{setView('board');if(!room.board||room.board.status==='closed'){const board=await api('board',{action:'open'});if(board)setRoom(current=>({...current,board}));}})}/>}
@@ -111,7 +112,7 @@ function App(){
       {facilitator&&<FacilitatorControls room={room} control={control} busy={busy} connected={connected} onOpenClassroom={()=>setClassroomOpen(true)} onOpenBoard={()=>action(async()=>{setView('board');if(!room.board||room.board.status==='closed'){const board=await api('board',{action:'open'});if(board)setRoom(current=>({...current,board}));}})}/>}
       {facilitator&&classroomOpen&&<ClassroomOverlay room={room} onClose={closeClassroom}/>}
       <div className={'workspace'+(!facilitator&&squadHelpOpen?' participant-workspace-open':'')}>
-        <section className="primary">{view==='squad'&&<Document room={room} action={action} busy={busy} onIntent={intentUrl=>setRoom(current=>({...current,intentUrl}))}/>}{view==='route'&&<Route room={room} onNavigate={setView}/>}{view==='lesson'&&<Lesson room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='solo'&&<Solo room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='coach'&&<Coach room={room} action={action}/>}{view==='naslag'&&<Naslag room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='review'&&<Review room={room} action={action} busy={busy}/>}{view==='decks'&&<Decks room={room} action={action} busy={busy} onRoom={setRoom}/>}{view==='apps'&&<AppsLauncher action={action} busy={busy} facilitator={facilitator} hostKey={''}/>}{view==='agentChat'&&agentChatAvailable&&!facilitator&&!room.readOnly&&<AgentChatPanel/>}{view==='debrief'&&facilitator&&<Debrief room={room} onOpenBoard={()=>action(async()=>{setView('board');if(!room.board||room.board.status==='closed'){const board=await api('board',{action:'open'});if(board)setRoom(current=>({...current,board}));}})}/>}{view==='debrief'&&!facilitator&&<section className="panel content-panel" data-testid="debrief-learner"><StatusState kind="empty" title={t('debrief.learnerTitle')}>{t('debrief.learnerHelp')}</StatusState></section>}{view==='course'&&facilitator&&<CourseComposer room={room} control={control} busy={busy}/>}{view==='board'&&<Board room={room} action={action} busy={busy} onBoard={board=>setRoom(current=>({...current,board}))}/>}{view==='certificate'&&!facilitator&&<MyCertificate room={room}/>}</section>
+        <section className="primary">{view==='today'&&<Today room={room} onNavigate={setView}/>}{view==='squad'&&<Document room={room} action={action} busy={busy} onIntent={intentUrl=>setRoom(current=>({...current,intentUrl}))}/>}{view==='route'&&<Route room={room} onNavigate={setView}/>}{view==='lesson'&&<Lesson room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='solo'&&<Solo room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='coach'&&<Coach room={room} action={action}/>}{view==='naslag'&&<Naslag room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='review'&&<Review room={room} action={action} busy={busy}/>}{view==='decks'&&<Decks room={room} action={action} busy={busy} onRoom={setRoom}/>}{view==='apps'&&<AppsLauncher action={action} busy={busy} facilitator={facilitator} hostKey={''}/>}{view==='agentChat'&&agentChatAvailable&&!facilitator&&!room.readOnly&&<AgentChatPanel/>}{view==='debrief'&&facilitator&&<Debrief room={room} onOpenBoard={()=>action(async()=>{setView('board');if(!room.board||room.board.status==='closed'){const board=await api('board',{action:'open'});if(board)setRoom(current=>({...current,board}));}})}/>}{view==='debrief'&&!facilitator&&<section className="panel content-panel" data-testid="debrief-learner"><StatusState kind="empty" title={t('debrief.learnerTitle')}>{t('debrief.learnerHelp')}</StatusState></section>}{view==='course'&&facilitator&&<CourseComposer room={room} control={control} busy={busy}/>}{view==='board'&&<Board room={room} action={action} busy={busy} onBoard={board=>setRoom(current=>({...current,board}))}/>}{view==='certificate'&&!facilitator&&<MyCertificate room={room}/>}</section>
         {(facilitator||squadHelpOpen)&&<aside className="right-rail" id={!facilitator?'participant-squad-help':undefined} aria-label={!facilitator?t('participant.squadHelp'):undefined}>
           <section className="panel roster">
             <div className="panel-heading"><h2>{t('roster.title')} <span>({room.members.length}/{t('roster.softMax')})</span></h2><Users size={17}/></div>
