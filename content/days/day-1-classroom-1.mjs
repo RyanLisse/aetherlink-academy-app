@@ -69,7 +69,7 @@ const en = {
  materials:[
   link('solo','Solo-in-Claude · C1–C2 concepts','/solos/c1-c2-concepts/index.html','clone/open → claude → /start-solo → Proof'),
   link('assignment','Proof · artifact card','/solos/c1-c2-concepts/proof/artifact-card.html','paste into Academy Review'),
-  link('vehicle','Practice repo aetherlink-classroom-starter','https://github.com/jyse/aetherlink-classroom-starter','Slide 34'),
+  link('vehicle','Practice repo aetherlink-classroom-starter','https://github.com/jyse/aetherlink-classroom-starter','Slide 47'),
   link('naslag','Claude Code 101','https://anthropic.skilljar.com/claude-code-101','Anthropic Academy; lesson-plan reference'),
   link('naslag','Claude Code in Action','https://anthropic.skilljar.com/claude-code-in-action','Anthropic Academy; lesson-plan reference'),
   link('naslag','Claude Code concepts (Carl)','https://ccforeveryone.com/guides/claude-code-concepts-explained','External guide · CC BY-NC-ND'),
@@ -138,7 +138,7 @@ const nl = {
  materials:[
   link('solo','Solo-in-Claude · C1–C2-concepten','/solos/c1-c2-concepts/index.html','clone/open → claude → /start-solo → Proof'),
   link('assignment','Proof · artefactkaart','/solos/c1-c2-concepts/proof/artifact-card.html','plak in Academy Review'),
-  link('vehicle','Oefenrepository aetherlink-classroom-starter','https://github.com/jyse/aetherlink-classroom-starter','Dia 34'),
+  link('vehicle','Oefenrepository aetherlink-classroom-starter','https://github.com/jyse/aetherlink-classroom-starter','Dia 47'),
   link('naslag','Claude Code 101','https://anthropic.skilljar.com/claude-code-101','Anthropic Academy; lesplan-naslag'),
   link('naslag','Claude Code in Action','https://anthropic.skilljar.com/claude-code-in-action','Anthropic Academy; lesplan-naslag'),
   link('naslag','Claude Code-concepten (Carl)','https://ccforeveryone.com/guides/claude-code-concepts-explained','Externe gids · CC BY-NC-ND'),

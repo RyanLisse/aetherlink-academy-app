@@ -130,7 +130,7 @@ const nl = {
   {label:'Skill',prompt:'Welke werkwijze herhaal je en hoe maak je die herbruikbaar? (cite: dia 86 skills · A9–A10 dia 90/93)'},
   {label:'Bounded run',prompt:'Welke reeks werk mag Claude doen en waar stopt het voor akkoord? Subagents houden rollen begrensd (cite: stackdiagram /diagrams/classroom/c2-customize-stack.svg · ConceptSim c2-customize-stack — geen deck-dia)'},
   {label:'MCP',prompt:'Welke informatie lees je read-only en welke acties keur je niet goed? Hooks bewaken de rest (cite: dia 103/104 · A12)'},
-  {label:'Workflow',prompt:'Wat is de kleinste nuttige teamworkflow met een menselijk checkpoint? Benoem die op je Agent Capability Map (cite: ConceptSim c2-customize-stack · A13 dia 84)'},
+  {label:'Workflow',prompt:'Wat is de kleinste nuttige teamworkflow met een menselijk checkpoint? Benoem die op je Agent Capability Map (cite: ConceptSim c2-customize-stack · A13 dia 106)'},
   {label:'Handoff',prompt:'Welke use-case-one-liner neem je mee naar Workshop 6? Proof-AC = Agent Capability Map + één artefact (voedt W6)'}
  ],
  demo:{
@@ -159,12 +159,12 @@ const nl = {
  diagrams:[DIAGRAM_NL],
  simTitles:{'c2-customize-stack':'Concept-sim · customize-stack'},
  proof:[
-  'CLAUDE.md met minstens drie eigen regels die een verse sessie volgt zonder uitleg (opdracht 6 en 7, dia 55 en 57).',
-  'Een create-concept-card-skill, getest tegen goedgekeurde kaarten; ontbrekende informatie blijft OPEN (opdracht 9, dia 66).',
-  'Statusrapport met READY, REVISE of OPEN per term; niets gecommit (opdracht 10, dia 69).',
-  'Eén verbonden item read-only opgehaald, zonder externe wijziging (opdracht 12, dia 81).',
-  'Een day-start-workflow met skills in vaste volgorde en een menselijk checkpoint, getest in een verse sessie (opdracht 13, dia 84) — kandidaat voor het ene artefact.',
-  'Proof-AC — use-case-one-liner: de kleinste nuttige teamworkflow in één zin vastgelegd als use-case waar Workshop 6 mee start (W6 dia 2 · A13 dia 84).',
+  'CLAUDE.md met minstens drie eigen regels die een verse sessie volgt zonder uitleg (opdracht 6 en 7, dia 78 en 80).',
+  'Een create-concept-card-skill, getest tegen goedgekeurde kaarten; ontbrekende informatie blijft OPEN (opdracht 9, dia 90).',
+  'Statusrapport met READY, REVISE of OPEN per term; niets gecommit (opdracht 10, dia 93).',
+  'Eén verbonden item read-only opgehaald, zonder externe wijziging (opdracht 12, dia 104).',
+  'Een day-start-workflow met skills in vaste volgorde en een menselijk checkpoint, getest in een verse sessie (opdracht 13, dia 106) — kandidaat voor het ene artefact.',
+  'Proof-AC — use-case-one-liner: de kleinste nuttige teamworkflow in één zin vastgelegd als use-case waar Workshop 6 mee start (W6 dia 2 · A13 dia 106).',
   'Proof-AC — verwacht dag-2 Proof-artefact: Agent Capability Map (CLAUDE.md → skills → subagents → MCP/hooks) + één artefact (CLAUDE.md, skill of day-start-workflow).',
   'Customize-stackdiagram bekeken (/diagrams/classroom/c2-customize-stack.svg); ConceptSim c2-customize-stack gestapt CLAUDE.md → skills → subagents → MCP/hooks zonder API-sleutels.'
  ],
@@ -181,12 +181,12 @@ const nl = {
   allowed:['Werk alleen in je eigen lokale kopie van aetherlink-classroom-starter.','Gebruik verbonden systemen alleen read-only via de goedgekeurde verbinding.','Dien bewijs in; een mens beslist over acceptatie.'],
   starterFiles:[],
   hints:['Herhaal de regels uit CLAUDE.md niet in je prompt; test of Claude ze zelf volgt.','Een skill stopt voor menselijk akkoord vóór hij schrijft.','Noteer welke instructies je steeds opnieuw moest geven: dat is je skill.'],
-  stretch:'Laat een partner je skills kopiëren en de workflow op eigen tickets draaien (opdracht 13, dia 84).'
+  stretch:'Laat een partner je skills kopiëren en de workflow op eigen tickets draaien (opdracht 13, dia 106).'
  },
  openItems:[
   'Het lesplan noemt subagents en hooks voor Classroom 2; de deck heeft er geen dia voor — het stackdiagram en de ConceptSim leren ze.',
   'De deck heeft geen aparte live-demo-dia; de facilitator kiest het demo-onderdeel.',
-  'Opdracht 12 en 13 vragen per deelnemer een goedgekeurde Jira-verbinding via MCP (notities dia 80).',
+  'Opdracht 12 en 13 vragen per deelnemer een goedgekeurde Jira-verbinding via MCP (notities dia 103).',
   'De room-deck voor deze dag is Academy /classroom/2.'
  ]
 };
