@@ -8,8 +8,8 @@ title:
   en: Squad review — Proof and handoff
   nl: Squad-review — Proof en overdracht
 lede:
-  en: Driver/navigator returns here only — review in Proof, fill the handoff, decide PASS / REVISE / OPEN.
-  nl: Driver/navigator keert alleen hier terug — review in Proof, vul de handoff, besluit PASS / REVISE / OPEN.
+  en: The squad returns here only — review in Proof, fill the handoff, decide PASS / REVISE / OPEN.
+  nl: De squad keert alleen hier terug — review in Proof, vul de handoff, besluit PASS / REVISE / OPEN.
 ---
 
 ## Slide: Review criteria (facilitator + squad)
@@ -48,8 +48,8 @@ title: Proof document + handoff template
 steps:
   - "Open the shared Proof document for the squad room"
   - "Paste or link starter/handoff-template.md sections"
-  - "Driver presents; navigator records decision and open questions"
-  - "Decision = PASS / REVISE / OPEN — facilitator advances roles separately"
+  - "One participant presents; another participant records decision and open questions"
+  - "Decision = PASS / REVISE / OPEN — facilitator starts the next round separately"
 expected: "Handoff visible in Proof (or file drop marked OPEN)"
 ```
 

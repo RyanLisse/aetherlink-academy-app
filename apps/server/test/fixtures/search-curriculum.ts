@@ -53,7 +53,7 @@ export const searchCurriculumDraft = (ids: {
         'Treat README claims as claims until checked against files and runnable scripts',
         'Return three paths, one uncertainty, and what you will not do yet',
       ],
-      expected: 'A scout note that a navigator can re-run without changing files',
+      expected: 'A scout note that a participant can re-run without changing files',
       notes: 'L1-SCOUT. Emphasise stop rules — no secrets, no client systems, no push.',
     },
     {

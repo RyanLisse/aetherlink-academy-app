@@ -94,7 +94,7 @@ export class PostgresStore {
   return this.transaction(async client=>{
    const id=randomUUID();
    const code=randomBytes(5).toString('hex').toUpperCase();
-   const r={id,code,name,createdBy:createdBy||null,createdAt:Date.now(),roundSeconds:1500,members:[],driver:0,round:1,phase:'Plan',day:1,mode:'lesson',running:false,remaining:1500,deadline:null,evidence:[],handoffs:[],version:1};
+   const r={id,code,name,createdBy:createdBy||null,createdAt:Date.now(),roundSeconds:1500,members:[],round:1,phase:'Plan',day:1,mode:'lesson',running:false,remaining:1500,deadline:null,evidence:[],handoffs:[],version:1};
    await client.query('INSERT INTO rooms VALUES ($1,$2,$3)',[id,code,JSON.stringify(r)]);
    return {token:await this.session(client,id,'facilitator','browser',createdBy?.name),roomId:id,code};
   });
@@ -211,7 +211,7 @@ export class PostgresStore {
  remaining(r,now=Date.now()) {return Store.prototype.remaining.call(this,r,now);}
  async overview() {
   const result=await this.transaction(client=>client.query('SELECT data FROM rooms'));
-  return result.rows.map(({data:r})=>({id:r.id,name:r.name,code:r.code,createdBy:r.createdBy||null,createdAt:r.createdAt||null,round:r.round,phase:r.phase,day:r.day,mode:r.mode,running:r.running,remaining:this.remaining(r),roundSeconds:r.roundSeconds||1500,driver:r.members[r.driver]?.name||null,members:r.members.map((m,i)=>({id:m.id,name:m.name,role:i===r.driver?'Driver':'Navigator',online:(this.live.get(m.id)||0)>Date.now()-12000,help:m.help,lastMcp:m.lastMcp||null})),evidence:r.evidence.length,awaitingReview:awaitingReview(r).length,handoffs:r.handoffs.length,board:r.board?.status||null})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  return result.rows.map(({data:r})=>({id:r.id,name:r.name,code:r.code,createdBy:r.createdBy||null,createdAt:r.createdAt||null,round:r.round,phase:r.phase,day:r.day,mode:r.mode,running:r.running,remaining:this.remaining(r),roundSeconds:r.roundSeconds||1500,members:r.members.map((m)=>({id:m.id,name:m.name,online:(this.live.get(m.id)||0)>Date.now()-12000,help:m.help,lastMcp:m.lastMcp||null})),evidence:r.evidence.length,awaitingReview:awaitingReview(r).length,handoffs:r.handoffs.length,board:r.board?.status||null})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
  }
  view(r,s) {return Store.prototype.view.call(this,r,s);}
  async cohortRooms(client,cohortId,lock=false) {

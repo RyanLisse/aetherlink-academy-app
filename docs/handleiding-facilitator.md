@@ -34,8 +34,8 @@ Als "Inloggen met Google" op het aanmeldscherm staat, meld je aan met je Google 
 7. Bewaak de groepsgrootte.
    Een squad heeft vier of vijf mensen.
    Bij twaalf leden verschijnt "Squad is vol (maximaal 12).". Soft default blijft ~4–5; de praktijk start vanaf 4.
-8. Controleer de rolverdeling.
-   De applicatie heeft op elk moment precies één "Driver".
+8. Controleer de roster.
+   Alle squadleden zijn gelijkwaardige deelnemers.
 
 ## Meerdere squads en facilitatoren
 
@@ -48,7 +48,7 @@ Als "Inloggen met Google" op het aanmeldscherm staat, meld je aan met je Google 
 4. Gebruik voor extra begeleiding een eigen toegestane Google-login of dezelfde facilitator-startsleutel als fallback.
    Meerdere facilitatoren kunnen aan dezelfde squad attachen.
 
-## Ronde starten, pauzeren, volgende fase en driver roteren
+## Ronde starten, pauzeren en volgende fase
 
 1. Open het paneel "Facilitator".
    Je ziet de knoppen "Start timer" en "Volgende ronde".
@@ -64,10 +64,10 @@ Als "Inloggen met Google" op het aanmeldscherm staat, meld je aan met je Google 
    De opties zijn "Les", "Solo", "Squad" en "Review".
 7. Wacht met starten of doorgaan tot minimaal vier deelnemers zijn aangesloten.
    Anders toont de applicatie "Wacht op minimaal 4 deelnemers.".
-8. Roteer de Driver met "Volgende ronde", of schud Driver/Navigator met "Rollen schudden" / "Shuffle roles".
-   Alleen deze actie roteert de driver.
+8. Start de volgende ronde met "Volgende ronde".
+   Alleen deze actie gaat naar de volgende ronde.
 9. Controleer de timer bij afloop.
-   De timer roteert de driver nooit automatisch.
+   De timer start nooit automatisch een nieuwe ronde.
 10. Pas de resterende tijd aan bij "Tijd (min)".
     De waarde wordt opgeslagen wanneer je het veld verlaat of Enter gebruikt.
 11. Gebruik "+5 min" of "-5 min" voor een snelle aanpassing.
@@ -89,7 +89,7 @@ Als "Inloggen met Google" op het aanmeldscherm staat, meld je aan met je Google 
 6. Vul de drie overdrachtvelden in.
    Gebruik "Wat is besloten?", "Wat is getest of gereproduceerd?" en "Wat staat nog open?".
 7. Klik op "Overdracht vastleggen".
-   De applicatie toont "Overdracht vastgelegd. De facilitator roteert de driver apart.".
+   De applicatie toont "Overdracht vastgelegd.".
 
 ## De zeven sessies
 

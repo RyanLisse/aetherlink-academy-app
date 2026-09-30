@@ -232,18 +232,6 @@ async function fetchRoomState() {
   return data;
 }
 
-async function findCurrentDriver() {
-  const state = await fetchRoomState();
-  const driver = state?.members?.find(member => member.role === 'Driver');
-  if (!driver) return null;
-  const participant = participantTuples().find(
-    ([name, page, context]) => name === driver.name && page && !page.isClosed() && context
-  );
-  if (!participant) return null;
-  const [name, page, context] = participant;
-  return { name, page, context };
-}
-
 async function intentPanel(page) {
   await expect(page.getByTestId('intent-document')).toBeVisible({ timeout });
 }
@@ -295,7 +283,7 @@ async function main() {
 
     if (!createCheck.passed || !squadCode) {
       for (const name of [
-        'participants-join', 'round-start', 'phase-change', 'driver-rotate', 'intent-document',
+        'participants-join', 'round-start', 'phase-change', 'intent-document',
         'knowledge-search', 'quiz-answer', 'quiz-privacy', 'evidence-submit', 'evidence-review',
         'handoff-record', 'persistence-reload', 'duplicate-name-rejected', 'persistence-fresh-context'
       ]) recordSkipped(name, 'facilitator squad was not created');
@@ -355,9 +343,8 @@ async function main() {
               await expect(page.locator('.member').filter({ hasText: memberName })).toHaveCount(1, { timeout });
             }
           }
-          await expect(p1Page.locator('.member').filter({ hasText: 'Driver' })).toHaveCount(1, { timeout });
           await expect(facilitatorPage.getByRole('heading', { name: 'Jouw squad (4/5)', exact: true })).toBeVisible({ timeout });
-          return { detail: 'Round A, Round B, Round C, and Round D joined; one Driver visible' };
+          return { detail: 'Round A, Round B, Round C, and Round D joined' };
         },
         () => Boolean(p1Page && p2Page && p3Page && p4Page)
       );
@@ -414,46 +401,26 @@ async function main() {
         () => Boolean(facilitatorPage)
       );
 
-      const rotateCheck = await runStep(
-        'driver-rotate',
-        facilitatorPage,
-        null,
-        async () => {
-          const before = await findCurrentDriver();
-          if (!before) throw new Error('No current Driver could be identified before rotation.');
-          if (!p1Page || p1Page.isClosed()) throw new Error('P1 was not available for the rotation assertion.');
-          const rotate = facilitatorPage.getByRole('button', { name: 'Volgende ronde', exact: true });
-          const result = await clickAndReadResponse(facilitatorPage, rotate, '/game/control');
-          if (!result.response.ok()) throw new Error(responseError(result.response, result.data));
-          await expect.poll(async () => (await findCurrentDriver())?.name || '', { timeout }).not.toBe(before.name);
-          const after = await findCurrentDriver();
-          if (!after) throw new Error('No current Driver could be identified after rotation.');
-          const driverRow = p1Page.locator('.member').filter({ hasText: after.name });
-          await expect(driverRow).toHaveCount(1, { timeout });
-          await expect(driverRow).toContainText('Driver', { timeout });
-          return { detail: 'driver rotated and round advanced' };
-        }
-      );
       void startCheck;
       void phaseCheck;
-      void rotateCheck;
 
-      const intentDriver = await findCurrentDriver();
-      if (!intentDriver) recordSkipped('intent-document', 'no current Driver could be identified');
+      const intentOwner = participantTuples().find(([, page, context]) => page && !page.isClosed() && context);
+      if (!intentOwner) recordSkipped('intent-document', 'no participant page could be identified');
       else await runStep(
         'intent-document',
-        intentDriver.page,
+        intentOwner[1],
         'intent-doc.png',
         async () => {
-          const navigator = participantTuples().find(([name, page]) => page && name !== intentDriver.name);
-          if (!navigator) return { passed: false, detail: 'skipped: no navigator participant page available' };
+          const [name, page, context] = intentOwner;
+          const second = participantTuples().find(([otherName, otherPage]) => otherPage && otherName !== name);
+          if (!second) return { passed: false, detail: 'skipped: no second participant page available' };
           const link = `https://example.test/acceptance/${randomUUID()}/intent.md`;
-          const saved = await postJson(intentDriver.context.request, '/game/intent', { url: link });
-          if (saved.intentUrl !== link) throw new Error('Driver could not save the intent link.');
-          for (const page of [intentDriver.page, navigator[1]]) {
-            await expect(page.locator(`[data-testid="intent-document"] a[href="${link}"]`)).toBeVisible({ timeout });
+          const saved = await postJson(context.request, '/game/intent', { url: link });
+          if (saved.intentUrl !== link) throw new Error('A participant could not save the intent link.');
+          for (const target of [page, second[1]]) {
+            await expect(target.locator(`[data-testid="intent-document"] a[href="${link}"]`)).toBeVisible({ timeout });
           }
-          return { detail: `intent link set by ${intentDriver.name} is visible for ${navigator[0]}` };
+          return { detail: `intent link set by ${name} is visible for ${second[0]}` };
         }
       );
 
@@ -605,11 +572,10 @@ async function main() {
                 );
                 if (!result.response.ok()) throw new Error(responseError(result.response, result.data));
                 await expect(facilitatorPage.getByRole('status')).toContainText(
-                  'Overdracht vastgelegd. De facilitator roteert de driver apart.',
+                  'Overdracht vastgelegd.',
                   { timeout }
                 );
-                await expect(facilitatorPage.getByText('Volgende eigenaar:', { exact: false })).toBeVisible({ timeout });
-                return { detail: 'handoff success and next owner are visible' };
+                return { detail: 'handoff success message is visible' };
               }
             );
           }
@@ -634,9 +600,8 @@ async function main() {
             await waitForRoom(p1Page, 'Squad Orion');
             await openParticipantSquad(p1Page);
             await expect(p1Page.locator('.sdlc div.active span')).toHaveText(phaseForPersistence, { timeout });
-            await expect(p1Page.locator('.member').filter({ hasText: 'Driver' })).toHaveCount(1, { timeout });
             await intentPanel(p1Page);
-            return { detail: 'phase, Driver role, and intent panel persisted after reload' };
+            return { detail: 'phase and intent panel persisted after reload' };
           }
         );
 
@@ -705,7 +670,7 @@ async function main() {
   } catch (error) {
     const detail = safeMessage(error?.message || error);
     for (const name of [
-      'facilitator-create-squad', 'participants-join', 'round-start', 'phase-change', 'driver-rotate',
+      'facilitator-create-squad', 'participants-join', 'round-start', 'phase-change',
       'intent-document', 'knowledge-search', 'quiz-answer', 'quiz-privacy', 'evidence-submit',
       'evidence-review', 'handoff-record', 'persistence-reload', 'duplicate-name-rejected',
       'persistence-fresh-context'

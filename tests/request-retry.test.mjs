@@ -9,7 +9,7 @@ import {PostgresStore} from '../server/postgres-store.mjs';
 
 const listen=server=>new Promise(resolve=>server.listen(0,'127.0.0.1',()=>resolve(`http://127.0.0.1:${server.address().port}`)));
 const close=server=>new Promise(resolve=>{server.closeAllConnections();server.close(resolve);});
-test('request retries replay across processes and driver rotation',{skip:process.env.ACADEMY_POSTGRES_TEST!=='1'},async()=>{
+test('request retries replay across processes and round advances',{skip:process.env.ACADEMY_POSTGRES_TEST!=='1'},async()=>{
  const {Pool}=await import('pg');
  const url=new URL(process.env.DATABASE_URL);url.searchParams.delete('sslmode');url.searchParams.delete('channel_binding');
  const pool=new Pool({connectionString:url.href,ssl:{rejectUnauthorized:true},max:5,connectionTimeoutMillis:10000});

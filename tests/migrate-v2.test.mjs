@@ -51,7 +51,7 @@ test('a migrated room keeps its ids and Proof slug, drops credentials and retain
  assert.deepEqual(room.migration.retainedMembers.map(m=>m.id),['member-a1','member-a2']);
  assert.equal(room.migration.retainedMembers[0].access,undefined);
  assert.deepEqual(room.migration.droppedAccessMemberIds,['member-a1']);
- assert.equal(room.driver,0);
+ assert.equal(room.driver,undefined);
  assert.equal('requests' in room,false);
  assert.deepEqual(room.evidence.map(e=>[e.id,e.day]),[['evidence-a1',2],['evidence-a2',9]]);
  assert.deepEqual(room.migration.historicalLessons,{1:'legacy-v1:day-1',2:'legacy-v1:day-2'});
@@ -71,7 +71,7 @@ test('a verified ownership mapping keeps exactly that member joinable', async()=
  const room=plan.insert.find(row=>row.id===ROOM(201)).data;
  assert.deepEqual(room.members.map(m=>m.id),['member-e1','member-e3']);
  assert.deepEqual(room.migration.retainedMembers.map(m=>m.id),['member-e2']);
- assert.equal(room.driver,0);
+ assert.equal(room.driver,undefined);
  assert.deepEqual(plan.exceptions[0].record,{memberIds:['member-e1','member-e2'],verifiedMemberId:'member-e1'});
  assert.throws(()=>readOwnershipMap({verified:[{roomId:ROOM(201),memberId:'member-e2'}]}),/needs non-empty roomId, memberId, verifiedBy and evidence/);
 });

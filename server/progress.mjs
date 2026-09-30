@@ -29,7 +29,7 @@ export function exportDebrief(room,board=null) {
  for(let day=1;day<=DAY_COUNT;day++){
   lines.push('',`## Day ${day}`);
   for(const person of room.members){const progress=dayProgress(room,person,day);lines.push('',`### ${person.name}`,`Evidence: ${progress.evidenceCount}; reviewed: ${progress.reviewedCount}; accepted: ${progress.acceptedCount}.`);if(progress.reflection)lines.push('Reflection:',progress.reflection.learned,'Next practice:',progress.reflection.next);}
-  for(const handoff of (room.handoffs||[]).filter(item=>Number(item.day)===day))lines.push('','Decision:',handoff.decision,'Checked:',handoff.checked,'Open:',handoff.open,'Next owner:',handoff.next);
+  for(const handoff of (room.handoffs||[]).filter(item=>Number(item.day)===day))lines.push('','Decision:',handoff.decision,'Checked:',handoff.checked,'Open:',handoff.open);
  }
  if(board){lines.push('','## Debrief board');for(const column of board){lines.push('',`### ${column.title}`);lines.push(...(column.cards.length?column.cards.map(card=>`- ${card}`):['No cards.']));}}
  return lines.join('\n');

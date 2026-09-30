@@ -1,5 +1,5 @@
 import {Context, Effect, Layer, Ref} from 'effect';
-import {applyControl, remainingSeconds, roleForIndex} from './control.ts';
+import {applyControl, remainingSeconds} from './control.ts';
 import {hashToken, mintSecret, newId, newRoomCode} from './crypto.ts';
 import {SquadError, squadFail} from './errors.ts';
 import {
@@ -18,7 +18,7 @@ import {
   type SessionRecord,
 } from './types.ts';
 
-export {DUPLICATE_PARTICIPANT_MESSAGE, KTD12, remainingSeconds, roleForIndex, SquadError};
+export {DUPLICATE_PARTICIPANT_MESSAGE, KTD12, remainingSeconds, SquadError};
 
 export interface SquadStoreShape {
   readonly create: (name: string, createdBy?: CreatedBy | null) => Effect.Effect<CreateResult, SquadError>;
@@ -52,7 +52,7 @@ const makeMember = (name: string): Member => ({
 
 const makeRoom = (name: string, createdBy: CreatedBy | null): Room => ({
   id: newId(), code: newRoomCode(), name, createdBy, createdAt: Date.now(),
-  roundSeconds: 1500, members: [], driver: 0, round: 1, phase: 'Plan', day: 1, mode: 'lesson',
+  roundSeconds: 1500, members: [], round: 1, phase: 'Plan', day: 1, mode: 'lesson',
   running: false, remaining: 1500, deadline: null, evidence: [], handoffs: [], version: 1,
 });
 
@@ -151,16 +151,15 @@ export const SquadStoreMemory = (): Layer.Layer<SquadStore> =>
       view: (room, session) => Effect.gen(function* () {
         const s = yield* Ref.get(state);
         const online = (id: string) => (s.live.get(id) || 0) > Date.now() - ONLINE_MS;
-        const members = room.members.map((m, i) => ({
-          id: m.id, name: m.name, role: roleForIndex(room, i), online: online(m.id), help: m.help,
+        const members = room.members.map((m) => ({
+          id: m.id, name: m.name, online: online(m.id), help: m.help,
           ...(session.personId === 'facilitator' ? {quiz: m.quiz, route: m.route} : {}),
         }));
         const me = session.personId === 'facilitator'
           ? {id: 'facilitator', name: session.displayName || 'Facilitator', role: 'Facilitator' as const}
           : (() => {
-              const idx = room.members.findIndex((m) => m.id === session.personId);
-              const member = room.members[idx];
-              return member ? {...member, role: roleForIndex(room, idx)} : {id: session.personId, name: '?', role: null};
+              const member = room.members.find((m) => m.id === session.personId);
+              return member ? {...member, role: 'Participant' as const} : {id: session.personId, name: '?', role: null};
             })();
         return {
           id: room.id, name: room.name, code: room.code, round: room.round, phase: room.phase,
@@ -179,10 +178,8 @@ export const SquadStoreMemory = (): Layer.Layer<SquadStore> =>
             id: r.id, name: r.name, code: r.code, createdBy: r.createdBy || null, createdAt: r.createdAt || null,
             round: r.round, phase: r.phase, day: r.day, mode: r.mode, running: r.running,
             remaining: remainingSeconds(r), roundSeconds: r.roundSeconds || 1500,
-            driver: r.members[r.driver]?.name || null,
-            members: r.members.map((m, i) => ({
+            members: r.members.map((m) => ({
               id: m.id, name: m.name,
-              role: roleForIndex(r, i) ?? (r.mode === 'squad' ? 'Navigator' : null),
               online: online(m.id), help: m.help, lastMcp: m.lastMcp || null,
             })),
             evidence: r.evidence.length, handoffs: r.handoffs.length,

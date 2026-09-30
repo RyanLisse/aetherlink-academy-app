@@ -38,7 +38,7 @@ Node 24 runs workspace TypeScript directly, so the gateway imports pure logic fr
 
 ## Intent document
 
-The Academy hosts no document editor. A squad's intent lives outside the platform: a Proof cloud document or `intent.md` in the squad's own repository. The room stores only an optional `https://` link (`intentUrl`, set by the driver or facilitator). `get_mission` returns it to agents as `intent: {url, file: 'intent.md'}`. Evidence, review, task approval, badges, certificates and the debrief board are Academy room state (`server/proof-trail.mjs`, `server/debrief-board.mjs`).
+The Academy hosts no document editor. A squad's intent lives outside the platform: a Proof cloud document or `intent.md` in the squad's own repository. The room stores only an optional `https://` link (`intentUrl`, set by any squad member or the facilitator). `get_mission` returns it to agents as `intent: {url, file: 'intent.md'}`. Evidence, review, task approval, badges, certificates and the debrief board are Academy room state (`server/proof-trail.mjs`, `server/debrief-board.mjs`).
 
 ## Apps
 

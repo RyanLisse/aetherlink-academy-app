@@ -6,7 +6,7 @@ import {runSquad, SquadStore} from '../../src/squad/store.ts';
 
 
 describe('SquadStore (AET-27 room scenarios)', () => {
-  test('soft max 12, one driver, rotation preserves document + SDLC', async () => {
+  test('soft max 12, next round advances without a driver and preserves document + SDLC', async () => {
     await runSquad(Effect.gen(function* () {
       const store = yield* SquadStore;
       const host = yield* store.create('Test squad');
@@ -19,17 +19,14 @@ describe('SquadStore (AET-27 room scenarios)', () => {
       expect(ctx.r.members.length).toBe(MAX_SQUAD_SIZE);
       expect(Exit.isFailure(yield* Effect.exit(store.join(host.code, 'M')))).toBe(true);
       yield* store.control(ctx.r, 'phase', 'Test');
-      const driven = new Set<string>();
       for (let i = 0; i < 5; i++) {
         const auth = yield* store.auth(memberToken);
         const view = yield* store.view(auth.r, auth.s);
-        const drivers = (view.members as Array<{role: string | null; id: string}>).filter((m) => m.role === 'Driver');
-        expect(drivers).toHaveLength(1);
-        driven.add(drivers[0]!.id);
+        expect((view.members as Array<Record<string, unknown>>).every((m) => !('role' in m))).toBe(true);
         yield* store.control(auth.r, 'next');
       }
-      expect(driven.size).toBe(5);
       ctx = yield* store.auth(host.token);
+      expect(ctx.r.round).toBe(6);
       expect(ctx.r.phase).toBe('Test');
     }));
   });
@@ -51,20 +48,15 @@ describe('SquadStore (AET-27 room scenarios)', () => {
     }));
   });
 
-  test('shuffle randomizes driver', async () => {
+  test('shuffle is an unknown action', async () => {
     await runSquad(Effect.gen(function* () {
       const store = yield* SquadStore;
       const host = yield* store.create('Shuffle');
       for (const name of ['A', 'B', 'C', 'D']) yield* store.join(host.code, name);
-      let ctx = yield* store.auth(host.token);
-      yield* store.control(ctx.r, 'mode', 'squad');
-      const seen = new Set<number>([ctx.r.driver]);
-      for (let i = 0; i < 40; i++) {
-        ctx = yield* store.auth(host.token);
-        yield* store.control(ctx.r, 'shuffle');
-        seen.add(ctx.r.driver);
-      }
-      expect(seen.size).toBeGreaterThan(1);
+      const ctx = yield* store.auth(host.token);
+      const exit = yield* Effect.exit(store.control(ctx.r, 'shuffle'));
+      expect(Exit.isFailure(exit)).toBe(true);
+      if (Exit.isFailure(exit)) expect(String(exit.cause)).toMatch(/Onbekende actie|400/);
     }));
   });
 
@@ -81,7 +73,7 @@ describe('SquadStore (AET-27 room scenarios)', () => {
       yield* store.control(ctx.r, 'start', undefined, 100_000);
       expect(yield* store.remaining(ctx.r, 1_600_000)).toBe(0);
       expect(ctx.r.round).toBe(1);
-      expect(ctx.r.driver).toBe(0);
+      expect('driver' in ctx.r).toBe(false);
     }));
   });
 
@@ -181,16 +173,14 @@ describe('SquadStore (AET-27 room scenarios)', () => {
       yield* store.control(secondRoom, 'mode', 'squad');
       firstRoom.createdAt = 1000;
       secondRoom.createdAt = 2000;
-      secondRoom.driver = 1;
       firstRoom.evidence.push({id: 'e1'});
       secondRoom.evidence.push({id: 'e2'}, {id: 'e3'});
       yield* store.saveRoom(firstRoom);
       yield* store.saveRoom(secondRoom);
       const rooms = yield* store.overview();
       expect(rooms.map((r) => r.name)).toEqual(['Second squad', 'First squad']);
-      expect((rooms[0]!.members as Array<{role: string}>).map((m) => m.role)).toEqual([
-        'Navigator', 'Driver', 'Navigator', 'Navigator',
-      ]);
+      expect('driver' in rooms[0]!).toBe(false);
+      expect((rooms[0]!.members as Array<Record<string, unknown>>).every((m) => !('role' in m))).toBe(true);
       expect(rooms[0]!.evidence).toBe(2);
       expect(rooms[1]!.evidence).toBe(1);
     }));
@@ -215,17 +205,17 @@ describe('SquadStore (AET-27 room scenarios)', () => {
     }));
   });
 
-  test('roles hidden unless mode is squad', async () => {
+  test('members never carry a role in any mode', async () => {
     await runSquad(Effect.gen(function* () {
       const store = yield* SquadStore;
       const host = yield* store.create('Modes');
       for (const name of ['A', 'B', 'C', 'D']) yield* store.join(host.code, name);
       const ctx = yield* store.auth(host.token);
       const lessonView = yield* store.view(ctx.r, ctx.s);
-      expect((lessonView.members as Array<{role: string | null}>).every((m) => m.role == null)).toBe(true);
+      expect((lessonView.members as Array<Record<string, unknown>>).every((m) => !('role' in m))).toBe(true);
       yield* store.control(ctx.r, 'mode', 'squad');
       const squadView = yield* store.view(ctx.r, ctx.s);
-      expect((squadView.members as Array<{role: string | null}>).filter((m) => m.role === 'Driver')).toHaveLength(1);
+      expect((squadView.members as Array<Record<string, unknown>>).every((m) => !('role' in m))).toBe(true);
     }));
   });
 });

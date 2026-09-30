@@ -18,7 +18,7 @@ async function invoke(app,route,{body={},cookies={},params={},headers={},method}
 function fixture(){
  const instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-proof-trail-')),hostKey:'test-host',publicBaseUrl:'http://127.0.0.1:4321'});
  const host=instance.store.create('Trail squad',{email:'fac@example.test',name:'Fac Ilitator'});
- const driver=instance.store.join(host.code,'Ada');
+ const ada=instance.store.join(host.code,'Ada');
  const learner=instance.store.join(host.code,'Bo');
  const peer=instance.store.join(host.code,'Cy');
  const sso=instance.store.facilitatorLogin({sub:'g-1',email:'fac@example.test',name:'Fac Ilitator',domain:'example.test'});
@@ -29,7 +29,7 @@ function fixture(){
  const tasks=token=>invoke(instance.app,'/game/tasks',{cookies:as(token),method:'get'});
  const queue=cookies=>invoke(instance.app,'/game/tasks/queue',{cookies,method:'get'});
  const peerList=cookies=>invoke(instance.app,'/game/tasks/peer',{cookies,method:'get'});
- return {instance,host,driver,learner,peer,facilitator,as,submit,review,tasks,queue,peerList};
+ return {instance,host,ada,learner,peer,facilitator,as,submit,review,tasks,queue,peerList};
 }
 
 const TABLE=[
@@ -65,7 +65,7 @@ test('tasks come from day-pack ids: the mission, or the progressive steps when a
 });
 
 test('task → submit → changes requested → resubmit → approved, visible to participant and facilitator',async()=>{
- const {instance,learner,driver,facilitator,as,submit,review,tasks,queue}=fixture();
+ const {instance,learner,ada,facilitator,as,submit,review,tasks,queue}=fixture();
  const openList=(await tasks(learner.token)).body;
  assert.equal(openList.day,1);
  assert.deepEqual(openList.tasks[0],{id:'c1-setup',title:'Set up the practice repository',day:1,status:'open',submissions:[]});
@@ -75,7 +75,7 @@ test('task → submit → changes requested → resubmit → approved, visible t
  assert.equal(first.statusCode,200);
  assert.equal(first.body.taskId,'c1-setup');
  assert.equal((await tasks(learner.token)).body.tasks[0].status,'submitted');
- assert.equal((await tasks(driver.token)).body.tasks[0].status,'open','another participant sees only their own trail');
+ assert.equal((await tasks(ada.token)).body.tasks[0].status,'open','another participant sees only their own trail');
 
  const again=await submit(learner.token,'t-2','c1-setup');
  assert.equal(again.statusCode,409);
@@ -122,7 +122,7 @@ test('reviewer roles are a closed list that includes the autograder',()=>{
 });
 
 test('a peer in the same room reviews task evidence; the author sees the decision and who made it',async()=>{
- const {learner,peer,driver,as,submit,review,tasks,peerList}=fixture();
+ const {learner,peer,ada,as,submit,review,tasks,peerList}=fixture();
  const sent=await submit(learner.token,'p-1','c1-setup');
  assert.equal(sent.statusCode,200);
 
@@ -133,15 +133,15 @@ test('a peer in the same room reviews task evidence; the author sees the decisio
  assert.deepEqual((await peerList(as(learner.token))).body.queue,[],'the author never sees their own submission to review');
 
  const decided=await review(as(peer.token),sent.body.id,'needs-work','Noem de exacte foutmelding.','p-r-1');
- assert.equal(decided.statusCode,200,'Cy is a navigator, not the driver, and may still review');
+ assert.equal(decided.statusCode,200,'Cy is another participant and may still review, and may still review');
  assert.deepEqual(decided.body.review.reviewer,{role:'peer',name:'Cy',email:null});
  const trail=(await tasks(learner.token)).body.tasks[0];
  assert.equal(trail.status,'changes_requested');
  assert.deepEqual(trail.submissions[0].review,{note:'Noem de exacte foutmelding.',at:decided.body.review.at,reviewer:{role:'peer',name:'Cy',email:null}});
- assert.deepEqual((await peerList(as(driver.token))).body.queue,[]);
+ assert.deepEqual((await peerList(as(ada.token))).body.queue,[]);
 
  const again=await submit(learner.token,'p-2','c1-setup');
- const approved=await review(as(driver.token),again.body.id,'accepted','Nu reproduceerbaar.','p-r-2');
+ const approved=await review(as(ada.token),again.body.id,'accepted','Nu reproduceerbaar.','p-r-2');
  assert.equal(approved.statusCode,200);
  assert.equal((await tasks(learner.token)).body.tasks[0].status,'approved');
 });
@@ -159,9 +159,9 @@ test('a participant from another room cannot see or review the submission',async
 });
 
 test('two peers deciding the same submission at once: exactly one decision lands',async()=>{
- const {instance,host,learner,peer,driver,as,submit,review,tasks}=fixture();
+ const {instance,host,learner,peer,ada,as,submit,review,tasks}=fixture();
  const sent=await submit(learner.token,'race-1','c1-setup');
- const results=await Promise.all([review(as(driver.token),sent.body.id,'accepted','Goed','race-a'),review(as(peer.token),sent.body.id,'needs-work','Nog niet','race-b')]);
+ const results=await Promise.all([review(as(ada.token),sent.body.id,'accepted','Goed','race-a'),review(as(peer.token),sent.body.id,'needs-work','Nog niet','race-b')]);
  assert.deepEqual(results.map(r=>r.statusCode).sort(),[200,409]);
  const winner=results.find(r=>r.statusCode===200).body.review;
  const trail=(await tasks(learner.token)).body.tasks[0];
@@ -184,11 +184,11 @@ test('review queue and task list are role-scoped',async()=>{
 });
 
 test('untasked evidence keeps the peer review path; unknown task ids are rejected',async()=>{
- const {instance,driver,learner,as,submit,review}=fixture();
+ const {instance,ada,learner,as,submit,review}=fixture();
  const loose=await submit(learner.token,'loose-1','');
  assert.equal(loose.statusCode,200);
  assert.equal(loose.body.taskId,undefined);
- const peer=await review(as(driver.token),loose.body.id,'accepted','Gereproduceerd','peer-1');
+ const peer=await review(as(ada.token),loose.body.id,'accepted','Gereproduceerd','peer-1');
  assert.equal(peer.statusCode,200);
  assert.deepEqual(peer.body.review.reviewer,{role:'peer',name:'Ada',email:null});
  const unknown=await submit(learner.token,'bad-1','NOPE');

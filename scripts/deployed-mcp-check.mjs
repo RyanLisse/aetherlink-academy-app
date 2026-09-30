@@ -155,8 +155,8 @@ try {
   });
   await check('get_mission_shape', async () => {
     const result = await callTool(client, 'get_mission');
-    if (result.mission?.id !== 'ATLAS-REVIEW-01' || !['Driver', 'Navigator'].includes(result.role)) throw new Error('mission or role shape mismatch');
-    return `mission ${result.mission.id}, role ${result.role}`;
+    if (result.mission?.id !== 'ATLAS-REVIEW-01') throw new Error('mission shape mismatch');
+    return `mission ${result.mission.id}`;
   });
   await check('search_knowledge_all', async () => {
     const result = await callTool(client, 'search_knowledge', {query: ''});

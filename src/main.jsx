@@ -1,6 +1,6 @@
 import React,{useEffect,useState,useRef,useCallback,lazy,Suspense} from 'react';
 import {createRoot} from 'react-dom/client';
-import {Library,Users,BookOpen,Compass,Target,Sparkles,ClipboardCheck,Sun,Moon,ArrowRight,Clock,Play,Pause,RotateCw,Shuffle,HelpCircle,Check,LogOut,Copy,FileText,ExternalLink,Presentation,FlaskConical,X,LayoutGrid,Link,Columns3,Plus,Download,Award,ListOrdered,MessageSquare,Mail,StickyNote,Type,Wrench,MoreHorizontal} from 'lucide-react';
+import {Library,Users,BookOpen,Compass,Target,Sparkles,ClipboardCheck,Sun,Moon,ArrowRight,Clock,Play,Pause,RotateCw,HelpCircle,Check,LogOut,Copy,FileText,ExternalLink,Presentation,FlaskConical,X,LayoutGrid,Link,Columns3,Plus,Download,Award,ListOrdered,MessageSquare,Mail,StickyNote,Type,Wrench,MoreHorizontal} from 'lucide-react';
 import {api,authApi,getToken,getParticipantAccess,saveParticipantAccess,forgetParticipantAccess,participantAccessUrl,saveSession} from './api';
 import {AppsLauncher} from './portal/AppsLauncher.jsx';
 import {Coach,Lesson,Solo,Review,Route,Debrief,CourseComposer,coursePosition} from './panels';
@@ -89,7 +89,7 @@ function App(){
   const dayLabel=room.day<=2?t('room.guided'):room.day===3?t('room.coached'):room.day===4?t('room.hints'):t('room.independent');
   const roundStatus=room.running?t('room.practice'):room.remaining===0?t('room.timeUp'):t('room.paused');
   const modeLabel=({lesson:t('roster.mode.lesson'),solo:t('roster.mode.solo'),squad:t('roster.mode.squad'),review:t('roster.mode.review')})[room.mode]||room.mode;
-  const contribution=facilitator?t('roster.contributionFacilitator'):room.me.role==='Driver'?t('roster.contributionDriver'):t('roster.contributionNavigator');
+  const contribution=facilitator?t('roster.contributionFacilitator'):t('roster.contributionParticipant');
   const participantPrimary=[['lesson','nav.lesson',BookOpen],['route','nav.route',Compass],['squad','nav.squad',Users]];
   const participantMore=[['solo','nav.solo',Target],['coach','nav.coach',Sparkles],['review','nav.review',ClipboardCheck],['debrief','nav.debrief',ClipboardCheck],['naslag','nav.naslag',Library],['decks','nav.decks',Presentation],...(agentChatAvailable&&!room.readOnly?[['agentChat','nav.agentChat',MessageSquare]]:[]),...(room.board?[['board','nav.board',Columns3]]:[]),...(room.me.cohortMemberId?[['certificate','nav.certificate',Award]]:[])];
   const participantSquadMode=view==='squad';
@@ -116,7 +116,7 @@ function App(){
           <section className="panel roster">
             <div className="panel-heading"><h2>{t('roster.title')} <span>({room.members.length}/{t('roster.softMax')})</span></h2><Users size={17}/></div>
             {room.members.length===0&&<StatusState kind="empty" title={t('roster.empty')} action={room.code?<button type="button" onClick={()=>action(async()=>{await navigator.clipboard.writeText(room.code);showCopied('code');})}>{copied==='code'?t('roster.codeCopied'):t('roster.copyCodeShort')}</button>:null}>{t('roster.emptyHelp')}</StatusState>}
-            {room.members.map(m=><div className="member" key={m.id}><span className="avatar">{m.name.slice(0,2).toUpperCase()}</span><div><strong>{m.name}{m.id===room.me.id?` ${t('common.you')}`:''}</strong><small className={m.role==='Driver'?'cyan':''}>{m.role}</small></div><span className={'presence '+(m.online?'present':'')} title={m.online?t('roster.online'):t('roster.offline')}/>{m.help&&<HelpCircle size={17} className="cyan" aria-label={t('roster.helpAsked')}/>}</div>)}
+            {room.members.map(m=><div className="member" key={m.id}><span className="avatar">{m.name.slice(0,2).toUpperCase()}</span><div><strong>{m.name}{m.id===room.me.id?` ${t('common.you')}`:''}</strong></div><span className={'presence '+(m.online?'present':'')} title={m.online?t('roster.online'):t('roster.offline')}/>{m.help&&<HelpCircle size={17} className="cyan" aria-label={t('roster.helpAsked')}/>}</div>)}
             {room.code&&<div className="room-code"><small>{t('roster.roomCode')}</small><div className="room-code-actions"><button className="room-code-display" type="button" onClick={()=>action(async()=>{await navigator.clipboard.writeText(room.code);showCopied('code');})} aria-label={t('roster.copyCode',{code:room.code})} title={t('roster.copyCodeTitle')}>{room.code}{copied==='code'?<Check size={14}/>:<Copy size={14}/>}</button><button className="room-code-link" type="button" onClick={()=>action(async()=>{await navigator.clipboard.writeText(`${location.origin}/?code=${room.code}`);showCopied('link');})} title={t('roster.copyLink')}>{copied==='link'?t('roster.linkCopied'):t('roster.copyLink')}</button>{room.me.role==='Facilitator'&&<button className="room-code-link" type="button" onClick={()=>window.open(`${location.origin}/?code=${room.code}`,'_blank','noopener')} title={t('roster.testAsParticipantTitle')}><ExternalLink size={14}/>{t('roster.testAsParticipant')}</button>}</div><span className="sr-only" role="status">{copied==='code'?t('roster.codeCopied'):copied==='link'?t('roster.inviteCopied'):''}</span></div>}
             {!facilitator&&room.me.cohortMemberId&&<div className="participant-access"><small>{t('access.title')}</small><p>{t('access.cohort')}</p></div>}
             {!facilitator&&!room.me.cohortMemberId&&<div className="participant-access"><small>{t('access.title')}</small><p>{t('access.help')}</p><button type="button" onClick={()=>action(async()=>{let resumeToken=participantAccess;if(!resumeToken){const result=await api('participant/access',{});resumeToken=result.resumeToken;saveParticipantAccess(resumeToken);setParticipantAccess(resumeToken);}await navigator.clipboard.writeText(participantAccessUrl(resumeToken));showCopied('access');})}><Link size={14}/>{copied==='access'?t('access.copied'):t('access.copy')}</button><span className="sr-only" role="status">{copied==='access'?t('access.copiedStatus'):''}</span></div>}
@@ -413,7 +413,6 @@ function FacilitatorControls({room,control:send,busy,connected,onOpenClassroom,o
       <div className="fac-group" role="group" aria-label={t('fac.round')}>
         <button type="button" disabled={disabled} onClick={()=>control(room.running?'pause':'start')} aria-pressed={room.running}>{room.running?<Pause size={16} aria-hidden="true"/>:<Play size={16} aria-hidden="true"/>}{room.running?t('fac.pause'):t('fac.startTimer')}</button>
         <button type="button" disabled={disabled} onClick={()=>control('next')}><RotateCw size={16} aria-hidden="true"/>{t('fac.nextRound')}</button>
-        <button type="button" disabled={disabled||!room.members.length} onClick={()=>control('shuffle')}><Shuffle size={16} aria-hidden="true"/>{t('fac.shuffleRoles')}</button>
       </div>
       <div className="fac-group" role="group" aria-label={t('fac.timeMin')}>
         <label>{t('fac.timeMin')}<input type="number" min={0} max={120} value={time} onChange={e=>setTime(e.target.value)} onBlur={()=>commit(time,'time',Math.ceil(room.remaining/60)*60)} onKeyDown={enter}/></label>
@@ -596,7 +595,7 @@ function Timer({room}){
 
 function Document({room,action,busy,onIntent}){
   const t=useT();
-  const canEdit=room.me.role==='Facilitator'||room.me.role==='Driver';
+  const canEdit=!room.readOnly;
   const [draft,setDraft]=useState(room.intentUrl||'');
   const [editing,setEditing]=useState(false);
   useEffect(()=>{if(!editing)setDraft(room.intentUrl||'');},[room.intentUrl,editing]);
@@ -609,7 +608,7 @@ function Document({room,action,busy,onIntent}){
       {showForm&&<form className="intent-form" onSubmit={save}><label htmlFor="intent-url">{t('doc.urlLabel')}</label><input id="intent-url" type="url" inputMode="url" placeholder="https://" maxLength={500} value={draft} onChange={event=>setDraft(event.target.value)}/><small className="muted">{t('doc.urlHelp')}</small><div className="intent-form-actions"><button type="submit" className="gradient" disabled={busy}>{t('doc.save')}</button>{room.intentUrl&&<button type="button" disabled={busy} onClick={()=>{setDraft('');action(async()=>{const next=await api('intent',{url:''});onIntent(next.intentUrl);setEditing(false);});}}>{t('doc.remove')}</button>}{editing&&<button type="button" className="text-button" onClick={()=>setEditing(false)}>{t('doc.cancel')}</button>}</div></form>}
       <div className="intent-repo"><h3>{t('doc.repoTitle')}</h3><p>{t('doc.repoHelp')}</p><a className="text-button" href="/game/intent.md" download="intent.md"><Download size={16} aria-hidden="true"/>{t('doc.template')}</a></div>
     </div>
-    <div className="document-foot"><span>{t('doc.footDriver')}</span><small>{t('doc.footAll')}</small></div></section>;
+    <div className="document-foot"><span>{t('doc.footLink')}</span><small>{t('doc.footAll')}</small></div></section>;
 }
 
 function Board({room,action,busy,onBoard}){

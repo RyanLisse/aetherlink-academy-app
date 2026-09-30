@@ -256,16 +256,6 @@ footer {
   color: var(--accent-2);
 }
 
-.squad-role-driver {
-  background: rgb(53 208 255 / 18%);
-  color: var(--accent);
-}
-
-.squad-role-navigator {
-  background: rgb(74 222 128 / 16%);
-  color: var(--good);
-}
-
 .squad-role-facilitator {
   background: rgb(255 107 129 / 16%);
   color: var(--bad);

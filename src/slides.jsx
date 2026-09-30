@@ -106,7 +106,7 @@ function DeckView({room,deckId,action,busy,onRoom,onContext,onBack}){
    :await apiMethod('PUT','classroom-overlay',{deckId,day:room.day});
   onRoom?.(next);
  });
- const showNotes=room.me.role!=='Navigator';
+ const showNotes=room.me.role==='Facilitator';
  const current=deck?.slides[index];
  const positionLabel=count?t('decks.position',{n:index+1,count}):t('decks.noSlidesShort');
  return <section className="panel content-panel deck-view academy-simple">

@@ -59,15 +59,15 @@ assignment:
   steps:
     - en: "Restate goal, decision, evidence (command+output), OPEN risks, next owner"
       nl: "Herhaal doel, besluit, bewijs (commando+uitvoer), OPEN-risico’s, volgende eigenaar"
-    - en: "Have a navigator reproduce the check once"
-      nl: "Laat een navigator de controle één keer reproduceren"
+    - en: "Have another participant reproduce the check once"
+      nl: "Laat een andere deelnemer de controle één keer reproduceren"
     - en: "Record PASS / REVISE / OPEN with reason"
       nl: "Noteer PASS / REVISE / OPEN met reden"
   expected: "Another participant can re-run the check with at most one hint"
-  check: "Five fields present; navigator result recorded; no secrets"
+  check: "Five fields present; review result recorded; no secrets"
   hints:
-    - en: "Agent agreement is not an independent test — use a human navigator"
-      nl: "Agentovereenstemming is geen onafhankelijke test — gebruik een menselijke navigator"
+    - en: "Agent agreement is not an independent test — use a human participant"
+      nl: "Agentovereenstemming is geen onafhankelijke test — gebruik een menselijke deelnemer"
 ```
 
 > notes:

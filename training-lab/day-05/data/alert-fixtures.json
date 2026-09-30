@@ -14,7 +14,7 @@
       "transactionId": "TX-FIC-504",
       "risk": "high",
       "reason": "new device travel category spike",
-      "recommendedAction": "navigator confirms context with driver",
+      "recommendedAction": "a second participant confirms context",
       "channel": "draft-only"
     }
   ]
