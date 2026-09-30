@@ -3,7 +3,7 @@ import {LessonId, LocalizedText, SlideId} from './shared.ts';
 
 export {LessonId, LocalizedText, SlideId};
 
-export const SlideType = Schema.Literals(['context', 'concept', 'practice', 'review', 'recap', 'pause']);
+export const SlideType = Schema.Literals(['context', 'concept', 'practice', 'review', 'quiz', 'recap', 'pause']);
 /** 8 named layouts plus an omitted default card-grid, per the training-template + classroom-slides source audit. */
 export const SlideLayout = Schema.Literals(['pillars', 'steps', 'compare', 'exercise', 'recap', 'cards', 'image', 'bars']);
 
@@ -47,6 +47,7 @@ const PublicSlideFields = {
   prompt: Schema.optional(Text),
   tagline: Schema.optional(Text),
   dark: Schema.optional(Schema.Boolean),
+  hidden: Schema.optional(Schema.Boolean),
   visual: Schema.optional(Visual),
   image: Schema.optional(Text),
   imageAlt: Schema.optional(Text),
@@ -58,7 +59,7 @@ const PublicSlideFields = {
   planB: Schema.optional(Text),
 } as const;
 
-export const Slide = Schema.Struct({...PublicSlideFields, notes: Schema.optional(Text)});
+export const Slide = Schema.Struct({...PublicSlideFields, notes: Schema.optional(Text), keyPoints: Schema.optional(Schema.Array(Text))});
 export type Slide = Schema.Schema.Type<typeof Slide>;
 
 const ParticipantSlide = Schema.Struct(PublicSlideFields);

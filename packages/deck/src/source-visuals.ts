@@ -1,4 +1,5 @@
 import type {JsonValue, Slide} from '@academy/schema';
+import {mountSourceTimer, sourceTimerKey} from './source-timer.js';
 
 type ArtKind = 'sliders' | 'thermo' | 'route' | 'timeline' | 'thought';
 type BotName = 'multiarm' | 'wave' | 'think' | 'point' | 'head' | 'stretchLeft' | 'sleepy' | 'happy' | 'peek' | 'stretchUp' | 'stretchRight';
@@ -126,6 +127,9 @@ interface VisualData {
   readonly imageLink: string | undefined;
   readonly cardImages: ReadonlyArray<string> | undefined;
   readonly compact: boolean | undefined;
+  readonly stepThrough: boolean | string | undefined;
+  readonly oneCol: boolean | undefined;
+  readonly code: number | undefined;
 }
 
 interface BotData {
@@ -277,6 +281,9 @@ const parseVisual = (value: JsonValue | undefined): VisualData | undefined => {
     imageLink: stringValue(value.imageLink),
     cardImages: stringArray(value.cardImages),
     compact: booleanValue(value.compact),
+    stepThrough: booleanValue(value.stepThrough) ?? stringValue(value.stepThrough),
+    oneCol: booleanValue(value.oneCol),
+    code: numberValue(value.code),
   };
 };
 
@@ -480,7 +487,8 @@ const PILLAR_ICONS: readonly string[] = [
   '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.3"/>',
   '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/>',
   '<circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8"/><path d="M7.5 10.5l2 2 3.5-4"/>',
-  '<path d="M4 12a8 8 0 0 1 14-5l2 2"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-14 5l-2-2"/><path d="M4 20v-5h5"/>'];
+  '<path d="M4 12a8 8 0 0 1 14-5l2 2"/><path d="M20 4v5h-5"/><path d="M20 12a8 8 0 0 1-14 5l-2-2"/><path d="M4 20v-5h5"/>',
+  '<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19a6 6 0 0 1 12 0"/><path d="M15 19a4 4 0 0 1 6-3.5"/>'];
 const ART: Record<ArtKind, () => SVGSVGElement> = {
   sliders: () => svg('0 0 300 96', [0, 1, 2].map(i => '<g class="sl" style="--i:' + i + '"><path class="sl-track" d="M20 ' + (18 + i * 30) + 'H280"/><circle class="sl-knob" cx="' + [210, 120, 70][i] + '" cy="' + (18 + i * 30) + '" r="10"/></g>').join(''), 'art art-sliders'),
   thermo: () => svg('0 0 300 96', '<rect class="th-tube" x="22" y="10" width="20" height="62" rx="10"/><circle class="th-bulb" cx="32" cy="78" r="14"/><rect class="th-fill" x="27" y="22" width="10" height="56" rx="5"/>' +
@@ -583,13 +591,9 @@ function renderExtras(stage: HTMLElement, main: HTMLElement, s: Slide, v: Visual
     g.addEventListener('click', () => { if (next()) advanceReveal?.(); }); registerReveal(next);
     slideController.signal.addEventListener('abort', () => { revealFns.splice(revealFns.indexOf(next), 1); });
   }
-  if (v.countdown) {                                             // pauses: live countdown + real clock time
-    const box = node('div', 'pause-box'); const face = node('div', 'pause-clock'); const back = node('p', 'pause-back');
-    const end = Date.now() + v.countdown * 60000; const hhmm = new Date(end).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    back.append(document.createTextNode('Back at '), node('strong', null, hhmm));
-    const tick = () => { const left = Math.max(0, Math.round((end - Date.now()) / 1000)); face.textContent = String(Math.floor(left / 60)).padStart(2, '0') + ':' + String(left % 60).padStart(2, '0'); box.classList.toggle('late', left <= 60); box.classList.toggle('done', left === 0); };
-    tick(); const iv = view?.setInterval(tick, 1000); slideController.signal.addEventListener('abort', () => view?.clearInterval(iv));
-    box.append(face, back); const nextBody = sourceBody(0); if (nextBody) box.append(node('p', 'pause-next', nextBody));
+  if (v.countdown) {                                             // pauses: countdown waits for ▶, keeps time across slides, shows the real return time
+    const box = mountSourceTimer({doc, key: sourceTimerKey(`pause:${s.id}`), defaultSec: v.countdown * 60, back: true, boxCls: 'pause-box', faceCls: 'pause-clock', lateCls: 'late', signal: slideController.signal});
+    const nextBody = sourceBody(0); if (nextBody) box.append(node('p', 'pause-next', nextBody));
     grid.replaceWith(box);
   }
   if (v.term) {                                                  // 20: a terminal that types a few commands, then asks
@@ -676,6 +680,10 @@ function renderExtras(stage: HTMLElement, main: HTMLElement, s: Slide, v: Visual
         row.style.setProperty('--d', (0.5 + ci * 0.9 + i * 0.35) + 's'); if (isCmd) row.append(node('span', 'prompt-sign', '$ '), node('span', null, ln)); else row.textContent = ln; box.append(row); });
       p?.replaceWith(box); });
   }
+  if (v.code != null && cards[v.code]) {    // card body as a code block (e.g. a settings.json), indentation kept
+    const codeCard = cards[v.code]; const pre = node('pre', 'code-block', sourceBody(v.code));
+    codeCard?.querySelector('p')?.replaceWith(pre); codeCard?.classList.add('code-card');
+  }
   if (v.browser != null) {                  // 30: a tiny browser with the starting state
     const browserCard = cards[v.browser]; if (!browserCard) return x;
     const b = node('div', 'mini-browser'); const bar = node('div', 'mb-bar'); bar.append(node('i'), node('i'), node('i'), node('span', 'mb-url', 'localhost:3000'));
@@ -712,11 +720,10 @@ function renderExtras(stage: HTMLElement, main: HTMLElement, s: Slide, v: Visual
     const c = cards[v.notebook]; if (!c) return x; c.classList.add('notebook'); const ul = node('ul', 'nb-lines');
     sourceBody(v.notebook).split('\n').forEach((t, i) => { const li = node('li', null, t); li.style.setProperty('--i', String(i)); ul.append(li); }); c.querySelector('p')?.replaceWith(ul);
   }
-  if (v.quietTimer) {                                            // 39: a quiet countdown without "Back at"
-    main.classList.add('has-quiet'); const box = node('div', 'pause-box quiet'); const face = node('div', 'pause-clock'); const end = Date.now() + v.quietTimer * 60000;
-    const tick = () => { const left = Math.max(0, Math.round((end - Date.now()) / 1000)); face.textContent = String(Math.floor(left / 60)).padStart(2, '0') + ':' + String(left % 60).padStart(2, '0'); box.classList.toggle('late', left <= 30 && left > 0); box.classList.toggle('done', left === 0); };
-    tick(); const iv = view?.setInterval(tick, 1000); slideController.signal.addEventListener('abort', () => view?.clearInterval(iv));
-    box.append(node('span', 'quiet-ico', '✍'), face); grid.after(box);
+  if (v.quietTimer) {                                            // 39: a quiet countdown without "Back at", waits for ▶
+    main.classList.add('has-quiet');
+    const box = mountSourceTimer({doc, key: sourceTimerKey(`quiet:${s.id}`), defaultSec: v.quietTimer * 60, boxCls: 'pause-box quiet', faceCls: 'pause-clock', lateCls: 'late', lateAt: 30, prefix: node('span', 'quiet-ico', '✍'), signal: slideController.signal});
+    grid.after(box);
   }
   if (v.badges) {                                               // 40: achievements unlocking one by one
     const badges = v.badges;
@@ -950,13 +957,17 @@ function buildOpener(stage: HTMLElement, main: HTMLElement, s: Slide, v: VisualD
   }
 }
 
+/** stepThrough: every main item starts hidden; click / → shows the next one. */
+const STEP_ITEMS = '.cards > .card, .pillars > .pillar, .compare > .compare-col, .pop-chips > .pop-chip, .slide-main > .tagline';
+
 function renderVisual(stage: HTMLElement, body: HTMLElement, main: HTMLElement, s: Slide, v: VisualData | undefined, advanceReveal?: (step?: number) => void): void {
   if (!v) return;
   if (v.keynote) { stage.closest('.academy-deck')?.classList.add('keynote'); main.classList.add('keynote-main'); body.classList.add('keynote-body'); }
   if (v.art === 'timeline') main.prepend(ART.timeline());
   if (v.cardArt) { const cards = main.querySelectorAll<HTMLElement>('.card'); Object.entries(v.cardArt).forEach(([index, kind]) => { const card = cards[Number(index)]; if (card) card.append(ART[kind]()); }); }
-  if (v.pillarIcons) main.querySelectorAll<HTMLElement>('.pillar').forEach((p, i) => p.prepend(svg('0 0 24 24', PILLAR_ICONS[i % 4] || '', 'pillar-icon')));
+  if (v.pillarIcons) main.querySelectorAll<HTMLElement>('.pillar').forEach((p, i) => p.prepend(svg('0 0 24 24', PILLAR_ICONS[i % PILLAR_ICONS.length] || '', 'pillar-icon')));
   if (v.stagger) main.classList.add('stagger-' + v.stagger);
+  if (v.oneCol) main.querySelector('.cards')?.classList.add('one-col', 'full-col');
   if (v.hero != null) { main.classList.add('has-hero'); main.querySelectorAll<HTMLElement>('.card')[v.hero]?.classList.add('card-hero'); }
   let popRow: HTMLElement | null = null, nest: NestVisual | null = null; const ex = renderExtras(stage, main, s, v, advanceReveal);
   if (v.art === 'nested') nest = buildNest(main, s);
@@ -995,13 +1006,15 @@ function renderVisual(stage: HTMLElement, body: HTMLElement, main: HTMLElement, 
   else if (v.place === 'aside' && ex.aside) { fig.classList.add('place-aside'); const tg = ex.aside.querySelector(':scope > .tagline'); if (tg) tg.before(fig); else ex.aside.append(fig); }
   else if (v.place === 'stack' && ex.slot) { fig.classList.add('place-stack'); ex.slot.append(fig); }
   else if (v.place === 'pointer') {
-    const target = v.pointAt == null ? undefined : main.querySelectorAll<HTMLElement>('.card')[v.pointAt]; fig.classList.add('pointer-bot'); stage.append(fig);
-    const H = v.pointH || 230; fig.style.height = H + 'px';
-    const put = () => { if (!target || !bot.tip || bot.ratio === undefined) return; const t = rel(target, stage); const W = H * bot.ratio;
+    const target = v.pointAt == null ? undefined : main.querySelectorAll<HTMLElement>('.card')[v.pointAt]; fig.classList.add('pointer-bot'); fig.style.setProperty('--pointer-slide-in', '0px'); stage.append(fig);
+    const put = () => { if (!target || !bot.tip || bot.ratio === undefined) return; const t = rel(target, stage);
+      const H = Math.min(v.pointH || 230, stage.clientWidth * 0.4 / bot.ratio); const W = H * bot.ratio; fig.style.height = H + 'px';
       const tipX = W * bot.tip[0] / 100, tipY = H * bot.tip[1] / 100;
-      fig.style.left = (bot.tip[0] < 50 ? t.x + t.w - 18 - tipX : t.x + 18 - tipX) + 'px';
+      const left = bot.tip[0] < 50 ? t.x + t.w - 18 - tipX : t.x + 18 - tipX;
+      const room = stage.clientWidth - W, x = Math.max(0, Math.min(left, room));
+      fig.style.left = x + 'px'; fig.style.setProperty('--pointer-slide-in', Math.max(0, Math.min(60, room - x)) + 'px');
       fig.style.top = (t.y + t.h / 2 - tipY) + 'px'; };
-    requestAnimationFrame(() => requestAnimationFrame(put)); view?.addEventListener('resize', put, { signal: slideController.signal });
+    put(); requestAnimationFrame(() => requestAnimationFrame(put)); view?.addEventListener('resize', put, { signal: slideController.signal });
     ex.pointer = fig;
     if (v.spotlight != null) { const tm = view?.setTimeout(() => fig.classList.add('show'), 1600); slideController.signal.addEventListener('abort', () => view?.clearTimeout(tm)); }
   }
@@ -1031,7 +1044,7 @@ function renderVisual(stage: HTMLElement, body: HTMLElement, main: HTMLElement, 
         const t = rel(ic, stage); const f = node('span', 'fly'); f.style.setProperty('--i', String(i));
         f.style.left = from.x + 'px'; f.style.top = from.y + 'px';
         f.style.setProperty('--dx', (t.x + t.w / 2 - from.x) + 'px'); f.style.setProperty('--dy', (t.y + t.h / 2 - from.y) + 'px');
-        f.append(svg('0 0 24 24', PILLAR_ICONS[i % 4] || '')); stage.append(f);
+        f.append(svg('0 0 24 24', PILLAR_ICONS[i % PILLAR_ICONS.length] || '')); stage.append(f);
       });
     }
   };
@@ -1079,6 +1092,17 @@ function renderVisual(stage: HTMLElement, body: HTMLElement, main: HTMLElement, 
     options.onRevealStepChange?.(revealCursor);
   };
   renderVisual(stage, body, main, s, visual, advanceReveal);
+  if (visual?.stepThrough && revealFns.length === 0) {
+    const selector = typeof visual.stepThrough === 'string' ? visual.stepThrough : STEP_ITEMS;
+    const items = Array.from(main.querySelectorAll<HTMLElement>(selector));
+    if (items.length) {
+      items.forEach((item) => item.classList.add('st-pending'));
+      main.classList.add('step-through');
+      const next = (): boolean => { const item = items.find((e) => e.classList.contains('st-pending')); if (!item) return false; item.classList.remove('st-pending'); item.classList.add('st-shown'); return true; };
+      main.addEventListener('click', (event) => { const target = event.target; if (target instanceof Element && target.closest('button, a, input, textarea')) return; if (next()) advanceReveal(); }, {signal: slideController.signal});
+      registerReveal(next);
+    }
+  }
   if (visual?.cardImages || (visual?.compact && body.classList.contains('with-side'))) {
     const instructions = body.querySelector<HTMLElement>('.exercise-instructions');
     if (visual.compact && instructions) {

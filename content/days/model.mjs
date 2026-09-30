@@ -2,7 +2,7 @@ import {assertLocaleComplete} from './locale.mjs';
 
 export const DECKS={
  'classroom-1':{route:'/classroom/1',module:'apps/web/src/deck/slides.ts',firstSlide:1},
- 'classroom-2':{route:'/classroom/2',module:'apps/web/src/deck/slides.ts',firstSlide:45},
+ 'classroom-2':{route:'/classroom/2',module:'apps/web/src/deck/slides.ts',firstSlide:68},
  'workshop-3':{route:'/workshop/3',module:'apps/web/src/deck/workshop3-slides.ts',firstSlide:1},
  'workshop-4':{route:'/workshop/4',module:'apps/web/src/deck/workshop4-slides.ts',firstSlide:1},
  'workshop-5':{route:'/workshop/5',module:'apps/web/src/deck/workshop5-slides.ts',firstSlide:1},

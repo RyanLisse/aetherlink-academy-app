@@ -21,7 +21,7 @@ test('every assignment has a complete, bilingual display-only lesson structure',
 });
 
 test('pins the slide deck and both distinct participant/reference repositories',()=>{
-  assert.equal(classroomExerciseSources.slides.revision,'abde6d1b94f4065cb4ed2927b057d6f7866b3ec0');
+  assert.equal(classroomExerciseSources.slides.revision,'bb497e286dc645c91d1ba6e9bd5c30a4c1cc5295');
   assert.equal(classroomExerciseSources.starter.revision,'373de89e0bcdd0ba3a0dd5c937f896b00db74ba7');
   assert.equal(classroomExerciseSources.practice.revision,'5d346dff5790712b5e04189f29e4be2da0ef724b');
   assert.notEqual(classroomExerciseSources.starter.url,classroomExerciseSources.practice.url);
@@ -33,5 +33,5 @@ test('day filtering is safe for unsupported days',()=>{
 });
 
 test("assignment slide mapping matches the pinned classroom deck",()=>{
- assert.deepEqual(classroomExercises.map(item=>item.sourceSlide),[35,37,40,41,52,55,57,61,66,69,76,81,84]);
+ assert.deepEqual(classroomExercises.map(item=>item.sourceSlide),[48,49,51,52,74,78,80,84,90,93,99,104,106]);
 });

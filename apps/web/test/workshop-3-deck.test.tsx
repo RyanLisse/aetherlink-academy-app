@@ -123,9 +123,9 @@ describe('AET-79 workshop 3 ultra-minimal n8n L1→L3 deck', () => {
   });
 
   it('does not break Classroom 1 SoT or Workshop 5 pack', () => {
-    expect(sourceSlides).toHaveLength(91);
+    expect(sourceSlides).toHaveLength(113);
     const classroom = normalizeSlides(sourceSlides);
-    expect(classroom.filter((s) => s.lessonId === 'teaching-day-1')).toHaveLength(44);
+    expect(classroom.filter((s) => s.lessonId === 'teaching-day-1')).toHaveLength(67);
     expect(classroom.filter((s) => s.lessonId === 'workshop-3')).toHaveLength(0);
     expect(workshop5SourceSlides.length).toBe(48);
     expect(workshop5SourceSlides.every((s) => s.lessonId === 'workshop-5')).toBe(true);

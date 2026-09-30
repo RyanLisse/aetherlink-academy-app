@@ -25,10 +25,10 @@ const mount = async (element: React.ReactElement) => {
 };
 
 describe('AET-121 Classroom 1–2 deck interactions', () => {
-  test('pins SoT tip abde6d1b and keeps C1/C2 product decks off Shell', () => {
-    expect(sourceSlides).toHaveLength(91);
-    expect(day1).toHaveLength(44);
-    expect(day2).toHaveLength(47);
+  test('pins SoT tip bb497e28 and keeps C1/C2 product decks off Shell', () => {
+    expect(sourceSlides).toHaveLength(113);
+    expect(day1).toHaveLength(67);
+    expect(day2).toHaveLength(46);
     expect(matchProductDeck('/classroom/1')).toBe('classroom-1');
     expect(matchProductDeck('/classroom/2')).toBe('classroom-2');
   });

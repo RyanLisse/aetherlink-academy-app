@@ -30,7 +30,7 @@ slide in `apps/web/src/deck/normalize.ts`.
 
 Reference: `jyse/aetherlink-classroom-slides`, branch
 `cons/cursus-aanpassingen`, commit
-`abde6d1b94f4065cb4ed2927b057d6f7866b3ec0` (91 slides; Day 1 = slides 1–44, Day 2 = slides 45–91).
+`bb497e286dc645c91d1ba6e9bd5c30a4c1cc5295` (113 slides; Day 1 = slides 1–67, Day 2 = slides 68–113).
 
 The parity script compares all 91 slides at 1440×900, 1024×768 and 390×844,
 checking target identity, asset loading, screenshot dimensions and pixel output.

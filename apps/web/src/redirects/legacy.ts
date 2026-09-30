@@ -7,8 +7,8 @@ export type LegacySite = 'training-site' | 'classroom-slides';
 
 export const LEGACY_SITES: ReadonlyArray<LegacySite> = ['training-site', 'classroom-slides'];
 
-/** Classroom 1 owns deck slides 1..44 of the synced 91-slide classroom deck; Classroom 2 the rest. */
-export const CLASSROOM_1_SLIDE_COUNT = 44;
+/** Classroom 1 owns deck slides 1..67 of the synced 113-slide classroom deck; Classroom 2 the rest. */
+export const CLASSROOM_1_SLIDE_COUNT = 67;
 
 type LegacyTarget =
   | {readonly kind: 'page'; readonly path: string}

@@ -1,8 +1,8 @@
 export const classroomExerciseSources = {
   slides: {
     title: 'AetherLink classroom slides',
-    url: 'https://github.com/jyse/aetherlink-classroom-slides/tree/abde6d1b94f4065cb4ed2927b057d6f7866b3ec0',
-    revision: 'abde6d1b94f4065cb4ed2927b057d6f7866b3ec0',
+    url: 'https://github.com/jyse/aetherlink-classroom-slides/tree/bb497e286dc645c91d1ba6e9bd5c30a4c1cc5295',
+    revision: 'bb497e286dc645c91d1ba6e9bd5c30a4c1cc5295',
   },
   starter: {
     title: 'Aether Library starter',
@@ -21,7 +21,7 @@ const exercise = (id, day, assignment, title, slide, problem, explanation, diagr
 });
 
 export const classroomExercises = [
-  exercise('a1-repository-explorer', 1, 1, 'Repository explorer', 35,
+  exercise('a1-repository-explorer', 1, 1, 'Repository explorer', 48,
     'You have inherited a small application. Before changing it, you need to know what it does, where its data lives, and how to check a change without breaking the learning game.',
     'Treat the repository as evidence. Ask Claude Code to inspect named files and commands, then compare its map with the files yourself. Exploration is a read-only task: a useful answer names what it found and leaves unknowns OPEN.',
     ['Question and scope', 'Read README and package scripts', 'Trace pages to data and routes', 'Report claims with file evidence'],
@@ -38,7 +38,7 @@ import json
 from pathlib import Path
 pkg = json.loads(Path('package.json').read_text())
 print(pkg['scripts'])` }),
-  exercise('a2-participant-profile', 1, 2, 'Participant profile', 37,
+  exercise('a2-participant-profile', 1, 2, 'Participant profile', 49,
     'The Profiles destination exists in the intended app, but the starter has no profile data or working profile page. Add one useful participant entry and make it visible without exposing private details.',
     'Separate data from presentation. Inspect the current page shell and server conventions first, agree on a small plan, then add only the fields the profile needs. A file entry alone is not done; the browser must load and render it.',
     ['Participant-approved details', 'data/profiles.json', 'GET /api/profiles', 'Profiles page', 'Validate + browser review'],
@@ -59,7 +59,7 @@ print(pkg['scripts'])` }),
     "learningGoal": "What you want to learn",
     "workflowToImprove": "A workflow to improve",
 }` }),
-  exercise('a3-glossary-contribution', 1, 3, 'Glossary contribution', 40,
+  exercise('a3-glossary-contribution', 1, 3, 'Glossary contribution', 51,
     'The starter has a working data endpoint but no Glossary page and starts with an empty glossary. Add one plain-language AI term that helps a newcomer understand agentic work.',
     'Choose a term that is absent, then draft a concise definition before editing. Check the claim against a reliable source and match the existing `term`/`definition` shape. A useful contribution is visible in the app, not just valid JSON.',
     ['Choose a missing term', 'Draft + source-check', 'Add glossary JSON entry', 'Build the page if needed', 'Validate and inspect'],
@@ -79,7 +79,7 @@ const entry: GlossaryEntry = {
     "term": "Choose a term",
     "definition": "Explain it in plain language."
 }` }),
-  exercise('a4-enriched-concept-card', 1, 4, 'Enriched concept card', 41,
+  exercise('a4-enriched-concept-card', 1, 4, 'Enriched concept card', 52,
     'A glossary definition is not enough for someone who needs to use a concept. Expand one glossary term into a sourced card that gives explanation, example, caveat, key points, related concepts, and reliable resources.',
     'A concept card is a structured learning artifact. Inspect the sample card and validator, gather and read primary sources, then draft every field. Keep unsupported details OPEN. Approve the content and plan before writing, validate the record, and check it in the Library.',
     ['Glossary term', 'Read reliable sources', 'Draft exact card fields', 'Human approval', 'Write → validate → browser'],
@@ -103,7 +103,7 @@ type ConceptCard = {
     "relatedConcepts": ["Related term"],
     "resources": [{"label": "Official source", "url": "https://example.com"}],
 }` }),
-  exercise('a5-design-library', 2, 5, 'Design your Library', 52,
+  exercise('a5-design-library', 2, 5, 'Design your Library', 74,
     'The starter has a shared visual system and a light/dark switch. Make the Library and AetherBOT feel intentional and personal while preserving readability and working navigation.',
     'Start with design choices, not CSS edits. Name the mood, colors, typography, and bot voice; inspect how the current theme is stored and applied. Then plan a third palette that survives reload, restyle the Library and bot, and verify contrast and every route in the browser.',
     ['Describe look and voice', 'Inspect theme + styles', 'Plan three palettes', 'Implement and persist', 'Review every page'],
@@ -119,7 +119,7 @@ function saveTheme(theme: Theme) {
 }`, python: `# UI concept only; the app's theme is changed in browser JavaScript.
 THEMES = ('light', 'dark', 'brand')
 # Check that each palette keeps text and controls readable.` }),
-  exercise('a6-project-instructions', 2, 6, 'Project instructions', 55,
+  exercise('a6-project-instructions', 2, 6, 'Project instructions', 78,
     'Every new Claude Code session should understand what AetherBOT does, where its answers come from, and the boundaries it must follow—without you repeating those rules.',
     'Put stable project guidance in `CLAUDE.md`, not a one-day task list. Explore the existing bot and file first, then propose the smallest durable instructions: purpose, trusted sources, at least three behavior rules, test command, and approval point.',
     ['Inspect bot and current CLAUDE.md', 'Choose durable rules', 'Draft minimal instructions', 'Review before edit', 'Prove in fresh session'],
@@ -141,7 +141,7 @@ sections = [
     "How to verify changes",
     "When to stop for approval",
 ]` }),
-  exercise('a7-build-bot-from-rules', 2, 7, 'Build AetherBOT from your rules', 57,
+  exercise('a7-build-bot-from-rules', 2, 7, 'Build AetherBOT from your rules', 80,
     'AetherBOT is ordinary application code with no model inside. Implement one or two useful commands and make their behavior match the rules in CLAUDE.md without pasting those rules into your task prompt.',
     'This assignment checks whether persistent guidance is sufficient to produce observable runtime behavior. Ask for a plan, implement a small change, and test both expected and boundary questions. If a rule fails, determine whether the implementation or the written rule needs repair.',
     ['CLAUDE.md rules', 'Plan a small bot change', 'Implement 1–2 commands', 'Test allowed + boundary cases', 'Review code or rule'],
@@ -159,7 +159,7 @@ sections = [
     if card:
         return {"status": "FOUND", "source": term, "answer": card}
     return {"status": "OPEN", "source": None, "answer": None}` }),
-  exercise('a8-create-second-card', 2, 8, 'Create a second card', 61,
+  exercise('a8-create-second-card', 2, 8, 'Create a second card', 84,
     'You already have one approved concept card. Create a second card with a normal one-off task brief and notice which requirements you have to repeat before a reusable skill exists.',
     'Repeat the same quality bar deliberately: source-backed claims, exact card structure, review before writing, validation, and a Library check. Capture the instructions you repeated; that list becomes the raw material for Assignment 9.',
     ['Approved first card', 'Choose another glossary term', 'Repeat brief + checks', 'Review before write', 'Compare both runs'],
@@ -173,7 +173,7 @@ const required = ['explanation', 'example', 'commonMisunderstanding'];
 const missing = card => required.filter(key => !card[key]);`, python: `# Compare required fields across two cards.
 required = ["explanation", "example", "commonMisunderstanding"]
 missing = [key for key in required if not card.get(key)]` }),
-  exercise('a9-create-card-skill', 2, 9, 'Teach Claude the method', 66,
+  exercise('a9-create-card-skill', 2, 9, 'Teach Claude the method', 90,
     'You have repeated the concept-card method. Package the reusable parts as `.claude/skills/create-concept-card/SKILL.md`, while keeping source judgment and final approval visible to a person.',
     'A good skill names when it applies, input, exact output shape, steps, validation, boundaries, and stop conditions. Use approved cards as examples. Require read sources, keep uncertainty OPEN, and restrict writes to the concept-card file after explicit approval.',
     ['Approved card examples', 'Reusable procedure', 'Skill file + boundaries', 'Test against known card', 'Human approval gate'],
@@ -193,7 +193,7 @@ missing = [key for key in required if not card.get(key)]` }),
     "may_write": ["data/concept-cards.json"],
     "stop_when": ["sources insufficient", "approval missing"],
 }` }),
-  exercise('a10-build-card-library', 2, 10, 'Build the card library', 69,
+  exercise('a10-build-card-library', 2, 10, 'Build the card library', 93,
     'Process suitable glossary terms with one approved method. The batch can contain good candidates, incomplete sources, and terms that should not receive a card; continue safely without hiding per-term status.',
     'This is bounded multi-step work: define the set, handle one term at a time, validate each draft, record READY/REVISE/OPEN, and stop when input is insufficient or approval is needed. Do not commit. The report must let a person decide each card separately.',
     ['Approved skill + term list', 'Read one term and source', 'Draft + validate', 'READY / REVISE / OPEN', 'Repeat or stop for review'],
@@ -214,7 +214,7 @@ result = {
     "validation_passed": False,
     "status": "OPEN",
 }` }),
-  exercise('a11-learning-game', 2, 11, 'Learning game and local feedback', 76,
+  exercise('a11-learning-game', 2, 11, 'Learning game and local feedback', 99,
     'The starter game already accepts an explanation, stores one latest submission, and has a feedback area. Build the criteria and local checking skill around it; do not rebuild the game or add a server-side model/API call.',
     'Separate policy from mechanism. First agree a checklist based on approved cards; then build a generic term-checker that reads the checklist and latest submission, compares with the matching card (or glossary entry), and writes structured feedback. The participant’s authenticated local Claude Code session performs the check using files.',
     ['Learner submits answer', 'Local latest-submission.json', 'Claude Code reads checklist + source card', 'Local latest-feedback.json', 'Learner checks feedback'],
@@ -235,7 +235,7 @@ feedback = {
     "missingElements": [], "incorrectClaims": [],
     "recommendedResources": [],
 }` }),
-  exercise('a12-connected-context', 2, 12, 'Connected context', 81,
+  exercise('a12-connected-context', 2, 12, 'Connected context', 104,
     'Use one approved workplace connection to understand one authorised Jira ticket, GitLab issue/merge request, or Confluence page. Access is read-only for this task; the repository itself does not require MCP.',
     'Ask for one item and evidence from its fields. Explain what you retrieved in plain language, record what remains unclear, and name actions the connection could perform that you did not approve. Never modify the external system. Use the approved connection instructions and stop if access or scope is unclear.',
     ['Approved MCP connection', 'Select one authorised item', 'Read only the needed fields', 'Explain with evidence + OPEN', 'No write action'],
@@ -257,7 +257,7 @@ feedback = {
     "open_questions": ["What is still unclear?"],
     "writes_performed": 0,
 }` }),
-  exercise('a13-day-start-workflow', 2, 13, 'Day-start workflow', 84,
+  exercise('a13-day-start-workflow', 2, 13, 'Day-start workflow', 106,
     'Turn separate reusable methods into a predictable start-of-day workflow that fetches Jira context, sorts it, and prepares a brief while keeping all ticket actions read-only and a human in control.',
     'A skill packages one method; a workflow orders several methods and tools. Define the trigger, fixed sequence, output, error/OPEN behavior, and human checkpoint. Test in a fresh Claude Code session on the participant’s own authorised tickets, then let a partner inspect or copy the files and run them on their own access.',
     ['Trigger: “Start my day”', 'Fetch tickets (read-only)', 'Sort by useful categories', 'Draft brief + OPEN items', 'Human checkpoint; no ticket edits'],
