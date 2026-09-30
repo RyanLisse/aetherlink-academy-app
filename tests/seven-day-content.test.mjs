@@ -29,8 +29,8 @@ test('every pack passes the day-pack lint and every slide citation matches its d
  assert.deepEqual(validateDayPacks(DAY_PACKS,{root,decks}),[]);
  assert.deepEqual(getDayPack(3).quiz.questions.map(q=>q.id),['d3-q1','d3-q2','d3-q3']);
  assert.deepEqual(getDayPack(3).quiz.key,{'d3-q1':'b','d3-q2':'a','d3-q3':'c'});
- assert.equal(decks['classroom-2'][10].title,'Assignment 6: Project instructions');
- assert.deepEqual(getDayPack(2).steps[0].slide,{deck:'classroom-2',slide:55,title:'Assignment 6: Project instructions',href:'/classroom/2?index=10'});
+ assert.equal(decks['classroom-2'][10].title,'Assignment 6: Design AetherBOT');
+ assert.deepEqual(getDayPack(2).steps[0].slide,{deck:'classroom-2',slide:78,title:'Assignment 6: Design AetherBOT',href:'/classroom/2?index=10'});
  assert.deepEqual(getDayPack(3).demo.slides.map(s=>s.href),['/workshop/3?index=5','/workshop/3?index=8','/workshop/3?index=11']);
 });
 
@@ -89,8 +89,8 @@ test('Classroom 2 Proof acceptance hands its use-case to Workshop 6 (AET-76)',()
  }
  // Loop beats cite slides and/or P3 surfaces
  const loopBlob=[...pack.copy.en.loop,...pack.copy.nl.loop].map(s=>s.prompt).join('\n');
- assert.match(loopBlob,/slide 54|dia 54/);
- assert.match(loopBlob,/slide 63|dia 63/);
+ assert.match(loopBlob,/slide 76|dia 76/);
+ assert.match(loopBlob,/slide 86|dia 86/);
  assert.match(loopBlob,/c2-customize-stack/);
  assert.match(loopBlob,/Agent Capability Map/);
  assert.match(loopBlob,/Workshop 6/);

@@ -14,24 +14,24 @@ const DIAGRAM_NL=diagram(
 );
 
 const DEMO_SLIDES=[
- slide(d,26,'Repository exploration'),
- slide(d,27,'What Claude Code did'),
+ slide(d,37,'Explore it with Claude Code'),
+ slide(d,38,'What Claude Code did'),
 ];
 
 const SOLO=[
- {id:'c1-setup',badge:'0',title:'Set up the practice repository',goal:'Clone aetherlink-classroom-starter, run npm install and npm start, open http://localhost:3000 and start claude in a second terminal.',doneWhen:'The app is running; Profiles, Glossary and Library are empty; only the Game works.',slide:slide(d,34,'Practice repository setup')},
- {id:'c1-a1',badge:'A1',title:'Assignment 1 · Repository explorer',goal:'Have Claude Code explore the repository without changing anything: what the app does, where profile and glossary data live, start and validation commands, and risky files.',doneWhen:'A repository card with evidence. No code changed; unknowns marked OPEN.',slide:slide(d,35,'Assignment 1: Repository explorer')},
- {id:'c1-a2',badge:'A2',title:'Assignment 2 · Participant profile',goal:'Have it inspect the structure first, answer Claude’s questions, and approve the plan before any file changes. No confidential or unnecessary personal data.',doneWhen:'Your profile is on a working Profiles page and passes validation; the plan was approved before the first change.',slide:slide(d,37,'Assignment 2: Participant profile')},
- {id:'c1-a3',badge:'A3',title:'Assignment 3 · Glossary contribution',goal:'Pick one AI term that is still missing, follow the existing structure, and review the draft before the repository changes.',doneWhen:'A new glossary entry on a working Glossary page, reviewed as a draft before adding.',slide:slide(d,40,'Assignment 3: Glossary contribution')},
- {id:'c1-a4',badge:'A4',title:'Assignment 4 · Enriched concept card',goal:'Turn one glossary term into a full concept card. Open and read every source; a search result is not a check. Wait for approval, then run the checks.',doneWhen:'One verified concept card on a working Library page, with review PASS, REVISE or OPEN.',slide:slide(d,41,'Assignment 4: Enriched concept card')}
+ {id:'c1-setup',badge:'0',title:'Set up the practice repository',goal:'Clone aetherlink-classroom-starter, run npm install and npm start, open http://localhost:3000 and start claude in a second terminal.',doneWhen:'The app is running; Profiles, Glossary and Library are empty; only the Game works.',slide:slide(d,47,'Run the app')},
+ {id:'c1-a1',badge:'A1',title:'Assignment 1 · Ask Claude about the project',goal:'In plan mode, ask Claude Code where the profiles and the glossary are stored, how to start and check the app, and which files could break it. You only ask questions; nothing changes.',doneWhen:'You can explain where things live and how to run the app, with the files as evidence. No files changed; unknowns marked OPEN.',slide:slide(d,48,'Assignment 1: Ask Claude about the project')},
+ {id:'c1-a2',badge:'A2',title:'Assignment 2 · Participant profile',goal:'Have it inspect the structure first, answer Claude’s questions, and approve the plan before any file changes. No confidential or unnecessary personal data.',doneWhen:'Your profile is on a working Profiles page and passes validation; the plan was approved before the first change.',slide:slide(d,49,'Assignment 2: Participant profile')},
+ {id:'c1-a3',badge:'A3',title:'Assignment 3 · The 20 AI terms that matter',goal:'In plan mode, ask Claude in your own words for the 20 most important AI terms, agree on the list, and let Claude add them. Then ask the same in auto mode in a new session and compare.',doneWhen:'20 agreed terms on the Glossary page, and a clear view of what changes with and without a plan.',slide:slide(d,51,'Assignment 3: The 20 AI terms that matter')},
+ {id:'c1-a4',badge:'A4',title:'Assignment 4 · Enriched concept card',goal:'Turn one glossary term into a full concept card. Open and read every source; a search result is not a check. Wait for approval, then run the checks.',doneWhen:'One verified concept card on a working Library page, with review PASS, REVISE or OPEN.',slide:slide(d,52,'Assignment 4: Enriched concept card')}
 ];
 
 const SOLO_NL=[
- {id:'c1-setup',badge:'0',title:'Oefenrepository opzetten',goal:'Clone aetherlink-classroom-starter, draai npm install en npm start, open http://localhost:3000 en start claude in een tweede terminal.',doneWhen:'De app draait; Profiles, Glossary en Library zijn leeg, alleen de Game werkt.',slide:slide(d,34,'Practice repository setup')},
- {id:'c1-a1',badge:'A1',title:'Opdracht 1 · Repository-verkenner',goal:'Laat Claude Code de repository verkennen zonder iets te wijzigen: wat de app doet, waar profiel- en glossarydata staan, start- en validatiecommando’s en risicovolle bestanden.',doneWhen:'Een repository-kaart met bewijs. Geen code gewijzigd; onbekenden staan als OPEN.',slide:slide(d,35,'Assignment 1: Repository explorer')},
- {id:'c1-a2',badge:'A2',title:'Opdracht 2 · Deelnemersprofiel',goal:'Laat eerst de structuur inspecteren, beantwoord de vragen van Claude en keur het plan goed vóór een bestand verandert. Geen vertrouwelijke of onnodige persoonsgegevens.',doneWhen:'Je profiel staat op een werkende Profiles-pagina en slaagt voor de validatie; het plan was goedgekeurd vóór de eerste wijziging.',slide:slide(d,37,'Assignment 2: Participant profile')},
- {id:'c1-a3',badge:'A3',title:'Opdracht 3 · Glossary-bijdrage',goal:'Kies één AI-term die nog ontbreekt, volg de bestaande structuur en bekijk het concept vóór de repository verandert.',doneWhen:'Een nieuwe glossary-entry op een werkende Glossary-pagina, als concept gereviewd vóór toevoegen.',slide:slide(d,40,'Assignment 3: Glossary contribution')},
- {id:'c1-a4',badge:'A4',title:'Opdracht 4 · Verrijkte conceptkaart',goal:'Maak van één glossary-term een volledige conceptkaart. Open en lees elke bron; een zoekresultaat is geen controle. Wacht op akkoord en draai daarna de checks.',doneWhen:'Eén geverifieerde conceptkaart op een werkende Library-pagina, met review PASS, REVISE of OPEN.',slide:slide(d,41,'Assignment 4: Enriched concept card')}
+ {id:'c1-setup',badge:'0',title:'Oefenrepository opzetten',goal:'Clone aetherlink-classroom-starter, draai npm install en npm start, open http://localhost:3000 en start claude in een tweede terminal.',doneWhen:'De app draait; Profiles, Glossary en Library zijn leeg, alleen de Game werkt.',slide:slide(d,47,'Run the app')},
+ {id:'c1-a1',badge:'A1',title:'Opdracht 1 · Vraag Claude naar het project',goal:'Vraag Claude Code in plan mode waar de profielen en de glossary staan, hoe je de app start en controleert, en welke bestanden hem kunnen breken. Je stelt alleen vragen; er verandert niets.',doneWhen:'Je kunt uitleggen waar alles staat en hoe je de app draait, met de bestanden als bewijs. Geen bestanden gewijzigd; onbekenden staan als OPEN.',slide:slide(d,48,'Assignment 1: Ask Claude about the project')},
+ {id:'c1-a2',badge:'A2',title:'Opdracht 2 · Deelnemersprofiel',goal:'Laat eerst de structuur inspecteren, beantwoord de vragen van Claude en keur het plan goed vóór een bestand verandert. Geen vertrouwelijke of onnodige persoonsgegevens.',doneWhen:'Je profiel staat op een werkende Profiles-pagina en slaagt voor de validatie; het plan was goedgekeurd vóór de eerste wijziging.',slide:slide(d,49,'Assignment 2: Participant profile')},
+ {id:'c1-a3',badge:'A3',title:'Opdracht 3 · De 20 AI-termen die ertoe doen',goal:'Vraag Claude in plan mode in je eigen woorden naar de 20 belangrijkste AI-termen, spreek de lijst samen af en laat Claude ze toevoegen. Vraag daarna hetzelfde in auto mode in een nieuwe sessie en vergelijk.',doneWhen:'20 afgesproken termen op de Glossary-pagina, en een helder beeld van wat er verandert met en zonder plan.',slide:slide(d,51,'Assignment 3: The 20 AI terms that matter')},
+ {id:'c1-a4',badge:'A4',title:'Opdracht 4 · Verrijkte conceptkaart',goal:'Maak van één glossary-term een volledige conceptkaart. Open en lees elke bron; een zoekresultaat is geen controle. Wacht op akkoord en draai daarna de checks.',doneWhen:'Eén geverifieerde conceptkaart op een werkende Library-pagina, met review PASS, REVISE of OPEN.',slide:slide(d,52,'Assignment 4: Enriched concept card')}
 ];
 
 const en = {
@@ -59,8 +59,8 @@ const en = {
  demo:{
   slides:DEMO_SLIDES,
   script:[
-   'Show slide 26 and run the prompt once on the demo machine: “Explore this repository without changing anything. Explain what the application does, how it is structured and how I can verify your explanation. Support your claims with evidence from the files. Mark anything you cannot confirm as OPEN.”',
-   'With slide 27 discuss what Claude Code did: which files it read, which evidence it gave, and what stayed OPEN.',
+   'Show slide 37 and run the prompt once on the demo machine: “Explore this repository without changing anything. Explain what the application does, how it is structured and how I can verify your explanation. Support your claims with evidence from the files. Mark anything you cannot confirm as OPEN.”',
+   'With slide 38 discuss what Claude Code did: which files it read, which evidence it gave, and what stayed OPEN.',
    'Show the explore→plan→change→verify→commit diagram; map Create→change, Test→verify, Handoff→commit.',
    'Step the ConceptSim (glossary hallucination task through the loop) — no API key required.',
   ]
@@ -78,10 +78,10 @@ const en = {
  diagrams:[DIAGRAM_EN],
  simTitles:{'c1-agent-loop':'Concept sim · explore → commit'},
  proof:[
-  'Repository card with evidence from the files; no code changed and unknowns marked OPEN (assignment 1, slide 35).',
-  'Plan approved before the first file change (assignment 2, slide 37).',
-  'Check run with the real command and observed outcome (assignment 4, slide 41).',
-  'Review decision PASS, REVISE or OPEN with reason (slides 36 and 42).',
+  'Repository card with evidence from the files; no code changed and unknowns marked OPEN (assignment 1, slide 48).',
+  'Plan approved before the first file change (assignment 2, slide 49).',
+  'Check run with the real command and observed outcome (assignment 4, slide 52).',
+  'Review decision PASS, REVISE or OPEN with reason (assignments 1 and 4, slides 48 and 52).',
   'Handoff to a fresh reader: file, command, outcome, limitation and next owner.',
   'Loop diagram viewed; ConceptSim stepped explore→plan→change→verify→commit without API keys.'
  ],
@@ -98,7 +98,7 @@ const en = {
   allowed:['Work only in your own local copy of aetherlink-classroom-starter.','Have Claude read and show a plan first; change only after approval.','Submit evidence; a human decides acceptance.'],
   starterFiles:[],
   hints:['Start with assignment 1: change nothing, only a card with evidence.','Ask Claude to show the plan before any file changes.','What you cannot confirm stays OPEN.'],
-  stretch:'Have another participant review your concept card with PASS, REVISE or OPEN (slide 42).'
+  stretch:'Have another participant review your concept card with PASS, REVISE or OPEN (assignment 4, slide 52).'
  },
  openItems:[]
 };
@@ -128,8 +128,8 @@ const nl = {
  demo:{
   slides:DEMO_SLIDES,
   script:[
-   'Toon dia 26 en voer de prompt één keer uit op de demomachine: “Explore this repository without changing anything. Explain what the application does, how it is structured and how I can verify your explanation. Support your claims with evidence from the files. Mark anything you cannot confirm as OPEN.”',
-   'Bespreek met dia 27 wat Claude Code deed: welke bestanden het las, welk bewijs het gaf en wat OPEN bleef.',
+   'Toon dia 37 en voer de prompt één keer uit op de demomachine: “Explore this repository without changing anything. Explain what the application does, how it is structured and how I can verify your explanation. Support your claims with evidence from the files. Mark anything you cannot confirm as OPEN.”',
+   'Bespreek met dia 38 wat Claude Code deed: welke bestanden het las, welk bewijs het gaf en wat OPEN bleef.',
    'Toon het explore→plan→change→verify→commit-diagram; map Create→change, Test→verify, Handoff→commit.',
    'Stap de ConceptSim (glossary-hallucination-taak door de loop) — geen API-sleutel nodig.',
   ]
@@ -147,10 +147,10 @@ const nl = {
  diagrams:[DIAGRAM_NL],
  simTitles:{'c1-agent-loop':'Concept-sim · explore → commit'},
  proof:[
-  'Repository-kaart met bewijs uit de bestanden; geen code gewijzigd en onbekenden als OPEN (opdracht 1, dia 35).',
-  'Plan goedgekeurd vóór de eerste bestandswijziging (opdracht 2, dia 37).',
-  'Uitgevoerde controle met het echte commando en de waargenomen uitkomst (opdracht 4, dia 41).',
-  'Reviewbesluit PASS, REVISE of OPEN met reden (dia 36 en 42).',
+  'Repository-kaart met bewijs uit de bestanden; geen code gewijzigd en onbekenden als OPEN (opdracht 1, dia 48).',
+  'Plan goedgekeurd vóór de eerste bestandswijziging (opdracht 2, dia 49).',
+  'Uitgevoerde controle met het echte commando en de waargenomen uitkomst (opdracht 4, dia 52).',
+  'Reviewbesluit PASS, REVISE of OPEN met reden (opdrachten 1 en 4, dia 48 en 52).',
   'Overdracht aan een verse lezer: bestand, commando, uitkomst, beperking en volgende eigenaar.',
   'Loopdiagram bekeken; ConceptSim explore→plan→change→verify→commit gestapt zonder API-sleutels.'
  ],
@@ -167,7 +167,7 @@ const nl = {
   allowed:['Werk alleen in je eigen lokale kopie van aetherlink-classroom-starter.','Laat Claude eerst lezen en een plan tonen; wijzig pas na akkoord.','Dien bewijs in; een mens beslist over acceptatie.'],
   starterFiles:[],
   hints:['Begin met opdracht 1: niets wijzigen, alleen een kaart met bewijs.','Vraag Claude om het plan te tonen vóór een bestand verandert.','Wat je niet kunt bevestigen blijft OPEN.'],
-  stretch:'Laat een andere deelnemer je conceptkaart reviewen met PASS, REVISE of OPEN (dia 42).'
+  stretch:'Laat een andere deelnemer je conceptkaart reviewen met PASS, REVISE of OPEN (opdracht 4, dia 52).'
  },
  openItems:[]
 };

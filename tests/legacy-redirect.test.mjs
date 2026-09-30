@@ -49,9 +49,9 @@ test('old training-site and classroom-slides URLs answer 301 with the matching A
     ['training-site', `${TRAINING}/?squad=3&day=1`, '/archive'],
     ['classroom-slides', 'http://localhost:8080/#1', '/classroom/1'],
     ['classroom-slides', 'http://localhost:8080/#35', '/classroom/1?index=34'],
-    ['classroom-slides', 'http://localhost:8080/index.html#45', '/classroom/2'],
-    ['classroom-slides', 'http://localhost:8080/#91', '/classroom/2?index=46'],
-    ['classroom-slides', 'http://localhost:8080/presenter.html#50', '/classroom/2?index=5&mode=presenter'],
+    ['classroom-slides', 'http://localhost:8080/index.html#68', '/classroom/2'],
+    ['classroom-slides', 'http://localhost:8080/#113', '/classroom/2?index=45'],
+    ['classroom-slides', 'http://localhost:8080/presenter.html#73', '/classroom/2?index=5&mode=presenter'],
     ['classroom-slides', 'http://localhost:8080/styles.css', '/classroom/1'],
   ];
   await withServer(async (port) => {

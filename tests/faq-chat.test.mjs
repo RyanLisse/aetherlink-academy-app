@@ -34,7 +34,7 @@ test('literal questions return the expected day-pack entry with its source link'
 
  const setup=answerQuestion({day:1,query:'oefenrepository opzetten'});
  assert.equal(setup.hits[0].id,'d1:step:c1-setup');
- assert.equal(setup.hits[0].source.href,'/classroom/1?index=33');
+ assert.equal(setup.hits[0].source.href,'/classroom/1?index=46');
 });
 
 test('navigation intents answer with an in-app view link',()=>{
