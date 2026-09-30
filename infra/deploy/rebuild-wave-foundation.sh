@@ -43,7 +43,7 @@ compose=(docker compose --project-name academy-wave --file "$src/infra/compose.y
 
 for _ in $(seq 1 60); do
   body="$(curl --silent --fail http://127.0.0.1:4318/health || true)"
-  if [[ "$body" == *'"ok":true'* && "$body" == *'"proof":true'* && "$body" == *"\"revision\":\"$sha\""* ]]; then
+  if [[ "$body" == *'"ok":true'* && "$body" == *"\"revision\":\"$sha\""* ]]; then
     printf 'wave foundation healthy at :4318 for %s\n' "$sha"
     if ! curl --silent --fail http://127.0.0.1:4317/game/health >/dev/null; then
       printf 'legacy app did not answer at :4317\n' >&2
@@ -55,5 +55,5 @@ for _ in $(seq 1 60); do
   sleep 2
 done
 printf 'wave foundation did not become healthy; last body: %s\n' "$body" >&2
-"${compose[@]}" logs --tail 100 app proof >&2
+"${compose[@]}" logs --tail 100 app >&2
 exit 1

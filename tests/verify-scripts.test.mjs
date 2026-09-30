@@ -17,14 +17,14 @@ const close = (server) => new Promise((resolve) => server.close(() => resolve())
 const token = (char) => char.repeat(43);
 
 function fakeGateway() {
-  const state = {googleSso: true, emailLogin: true, redirectBase: null, health: {ok: true, proof: true, revision: 'abc123'}};
+  const state = {googleSso: true, emailLogin: true, redirectBase: null, health: {ok: true, revision: 'abc123'}};
   const server = http.createServer((req, res) => {
     const json = (status, body) => res.writeHead(status, {'content-type': 'application/json'}).end(JSON.stringify(body));
     if (req.url === '/game/config') return json(200, {googleSso: state.googleSso, emailLogin: state.emailLogin});
     if (req.url === '/health') return json(state.health.ok ? 200 : 503, state.health);
     if (req.url === '/connection') {
       const probe = {reachable: true, latencyMs: 3, checkedAt: '2026-09-26T00:00:00Z', error: null};
-      return json(200, {postgres: probe, redis: {...probe, reachable: false, error: 'ECONNREFUSED'}, proof: probe});
+      return json(200, {postgres: probe, redis: {...probe, reachable: false, error: 'ECONNREFUSED'}});
     }
     if (req.url === '/auth/google/start') {
       if (!state.googleSso) return res.writeHead(302, {location: '/?login_error=disabled'}).end();
@@ -106,18 +106,17 @@ describe('google-oauth and apps-server verifiers', () => {
     state.googleSso = true;
     const checks = await verifyAppsServer(base, {revision: 'def456', skipGoogle: true});
     assert.deepEqual(checks, [
-      {name: '/health ok and proof', ok: true, detail: 'HTTP 200, ok=true, proof=true'},
+      {name: '/health ok', ok: true, detail: 'HTTP 200, ok=true'},
       {name: '/health revision', ok: false, detail: 'serving abc123, expected def456'},
       {name: '/connection postgres', ok: true, detail: 'reachable in 3 ms'},
       {name: '/connection redis', ok: false, detail: 'unreachable in 3 ms, ECONNREFUSED'},
-      {name: '/connection proof', ok: true, detail: 'reachable in 3 ms'},
     ]);
   });
 
   test('an unreachable server fails instead of throwing', async () => {
     const checks = await verifyAppsServer('http://127.0.0.1:9', {skipGoogle: true});
     assert.equal(checks.length, 1);
-    assert.equal(checks[0].name, '/health ok and proof');
+    assert.equal(checks[0].name, '/health ok');
     assert.equal(checks[0].ok, false);
   });
 });

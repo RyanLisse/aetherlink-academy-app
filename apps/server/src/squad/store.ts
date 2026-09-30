@@ -14,7 +14,6 @@ import {
   type JoinResult,
   type Member,
   type Room,
-  type RoomProof,
   type SessionKind,
   type SessionRecord,
 } from './types.ts';
@@ -22,7 +21,7 @@ import {
 export {DUPLICATE_PARTICIPANT_MESSAGE, KTD12, remainingSeconds, roleForIndex, SquadError};
 
 export interface SquadStoreShape {
-  readonly create: (name: string, proof: RoomProof, createdBy?: CreatedBy | null) => Effect.Effect<CreateResult, SquadError>;
+  readonly create: (name: string, createdBy?: CreatedBy | null) => Effect.Effect<CreateResult, SquadError>;
   readonly join: (code: string, name: string) => Effect.Effect<JoinResult, SquadError>;
   readonly auth: (token: string, kind?: SessionKind) => Effect.Effect<AuthContext, SquadError>;
   readonly control: (room: Room, action: string, value?: unknown, now?: number) => Effect.Effect<void, SquadError>;
@@ -51,8 +50,8 @@ const makeMember = (name: string): Member => ({
   id: newId(), name, help: false, quiz: null, route: 'standard', progressByDay: {}, lastMcp: null,
 });
 
-const makeRoom = (name: string, proof: RoomProof, createdBy: CreatedBy | null): Room => ({
-  id: newId(), code: newRoomCode(), name, proof, createdBy, createdAt: Date.now(),
+const makeRoom = (name: string, createdBy: CreatedBy | null): Room => ({
+  id: newId(), code: newRoomCode(), name, createdBy, createdAt: Date.now(),
   roundSeconds: 1500, members: [], driver: 0, round: 1, phase: 'Plan', day: 1, mode: 'lesson',
   running: false, remaining: 1500, deadline: null, evidence: [], handoffs: [], version: 1,
 });
@@ -107,8 +106,8 @@ export const SquadStoreMemory = (): Layer.Layer<SquadStore> =>
         });
         return removed;
       }),
-      create: (name, proof, createdBy = null) => Effect.gen(function* () {
-        const room = makeRoom(name, proof, createdBy);
+      create: (name, createdBy = null) => Effect.gen(function* () {
+        const room = makeRoom(name, createdBy);
         yield* saveRoom(room);
         const token = yield* mintSession(room.id, 'facilitator', 'browser', createdBy?.name);
         return {token, roomId: room.id, code: room.code};
@@ -167,7 +166,7 @@ export const SquadStoreMemory = (): Layer.Layer<SquadStore> =>
           id: room.id, name: room.name, code: room.code, round: room.round, phase: room.phase,
           day: room.day, mode: room.mode, running: room.running, remaining: remainingSeconds(room),
           roundSeconds: room.roundSeconds || 1500, serverTime: Date.now(), deadline: room.deadline,
-          version: room.version, documentSlug: room.proof.slug, members, me,
+          version: room.version, members, me,
           evidence: room.evidence, handoffs: room.handoffs,
         };
       }),

@@ -74,28 +74,22 @@ Als "Inloggen met Google" op het aanmeldscherm staat, meld je aan met je Google 
 12. Stel de standaardduur van nieuwe rondes in bij "Rondetijd (min)".
     Een volgende ronde gebruikt deze rondetijd.
 
-## Suggesties en bewijs reviewen, handoff afronden
+## Bewijs reviewen, handoff afronden
 
 1. Open "Review & overdracht".
    Je ziet "Menselijke review · reproduceerbare overdracht" en "Alles klaar voor overdracht?".
-2. Controleer "Documentvoorstellen".
-   Zonder voorstellen staat er "Nog geen voorstellen. Je Claude Code kan via MCP een onderbouwde wijziging voorstellen.".
-3. Beoordeel een open voorstel.
-   Controleer de huidige tekst en de voorgestelde vervanging.
-4. Accepteer of wijs het voorstel af.
-   Klik op "Accepteer in document" of "Wijs af".
-5. Open "Bewijsmateriaal ({n})".
+2. Open "Bewijsmateriaal ({n})".
    Een nieuw item heeft de status "Nog te beoordelen".
-6. Controleer de bevinding, het commando, de waargenomen uitvoer en de beperking.
+3. Controleer de bevinding, het commando, de waargenomen uitvoer en de beperking.
    Een beoordeeld item toont "Menselijk beoordeeld" of "Aanvullen".
-7. Vul de review in.
+4. Vul de review in.
    Gebruik "Jouw controle en besluit" en de selectie "Beoordeling".
-8. Kies "Voldoende onderbouwd" of "Meer bewijs nodig".
+5. Kies "Voldoende onderbouwd" of "Meer bewijs nodig".
    Klik daarna op "Bewaar review".
-9. Vul de drie overdrachtvelden in.
+6. Vul de drie overdrachtvelden in.
    Gebruik "Wat is besloten?", "Wat is getest of gereproduceerd?" en "Wat staat nog open?".
-10. Klik op "Overdracht vastleggen".
-    De applicatie toont "Overdracht in Proof vastgelegd. De facilitator roteert de driver apart.".
+7. Klik op "Overdracht vastleggen".
+   De applicatie toont "Overdracht vastgelegd. De facilitator roteert de driver apart.".
 
 ## De zeven sessies
 
@@ -159,13 +153,12 @@ Facilitator Google-SSO-login hierboven blijft ongewijzigd; die is geen teaching-
    Bij twaalf leden staat er "Squad is vol (maximaal 12).".
 3. Controleer de code.
    Bij een ongeldige code staat er "Kamercode niet gevonden.".
-4. Controleer de Proof-status.
-   Bij een laadprobleem staat er "Proof kon niet laden".
-   Bij een verbroken documentverbinding staat er "Proof offline · controleer je verbinding".
+4. Controleer de intent-link.
+   Onder "Onze intent" zie je de ingestelde link of "Nog geen intent-link". Zet of wijzig hem met "Link wijzigen".
 5. Laat de deelnemer de verbinding herstellen.
    De applicatie pollt de roomstatus elke twee seconden en hervat de sessie bij het laden.
 6. Gebruik één deelnemer per browserprofiel.
-   Het Proof-iframe deelt de sessiecookie binnen één profiel.
+   Alle tabbladen in een profiel delen dezelfde sessiecookie.
 7. Laat de deelnemer opnieuw aanmelden na het wissen van `sessionStorage`.
    Op een ander apparaat of in een andere browser is de persoonlijke toegangslink nodig.
 

@@ -25,7 +25,7 @@ test('a real Arcade lesson embedded in the day-1 lesson reports completion into 
  // Synthetic lab declaration: production day packs declare no labs yet.
  const {server,store}=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-lab-browser-')),root,hostKey:'test-host',publicBaseUrl:base,labsForDay:day=>day===1?[{id:'sample-counter',src:'/arcade-lab/?lesson=sample-counter&embed=1',title:'Arcade · klikteller'}]:[]});
  await new Promise(resolve=>server.listen(port,'127.0.0.1',resolve));
- const host=store.create('Lab squad',{slug:'lab-squad'});
+ const host=store.create('Lab squad');
  const {resumeToken}=store.join(host.code,'Ada');
  const browser=await chromium.launch();
  try{
@@ -89,7 +89,7 @@ test('graded Arcade stops are checked by the server before the lab can complete'
   labsForDay:day=>day===1?[{id:'ws-2-eve-state',src:'/arcade-lab/?lesson=ws-2-eve-state&embed=1',title:'Arcade · state'}]:[],
   labKeys:{'ws-2-eve-state':{'stop-1':{kind:'match',regex:'\\b(ja|yes)\\b',flags:'i'},'stop-2':{kind:'choice',correct:1}}}});
  await new Promise(resolve=>server.listen(port,'127.0.0.1',resolve));
- const host=store.create('Graded squad',{slug:'graded-squad'});
+ const host=store.create('Graded squad');
  const {resumeToken}=store.join(host.code,'Ada');
  const browser=await chromium.launch();
  try{

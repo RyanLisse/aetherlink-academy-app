@@ -18,14 +18,14 @@ if (existing) {
   process.exit(1);
 }
 
-const builds = ['dist/index.html', 'apps/web/dist/index.html', 'vendor/proof-sdk/node_modules', ...(withWave ? ['apps/server/dist/main.js'] : [])];
+const builds = ['dist/index.html', 'apps/web/dist/index.html', ...(withWave ? ['apps/server/dist/main.js'] : [])];
 const missing = builds.filter((rel) => !existsSync(path.join(repoRoot, rel)));
 if (missing.length) {
   console.error(`Build output missing (${missing.join(', ')}). Run: node scripts/setup.mjs`);
   process.exit(1);
 }
 
-const wanted = ['academy', 'proof', 'postgres', 'redis', ...(withWave ? ['wave'] : [])];
+const wanted = ['academy', 'postgres', 'redis', ...(withWave ? ['wave'] : [])];
 const busy = [];
 for (const name of wanted) if (!(await portIsFree(PORTS[name]))) busy.push(`${name}:${PORTS[name]}`);
 if (busy.length) {
@@ -51,7 +51,7 @@ const manifest = {
   dataDir,
   tlsDir,
   evidenceDir,
-  ports: {academy: PORTS.academy, proof: PORTS.proof, postgres: PORTS.postgres, redis: PORTS.redis, ...(withWave ? {wave: PORTS.wave} : {})},
+  ports: {academy: PORTS.academy, postgres: PORTS.postgres, redis: PORTS.redis, ...(withWave ? {wave: PORTS.wave} : {})},
   pids: {},
   logs: {academy: path.join(runDir, 'academy.log'), ...(withWave ? {wave: path.join(runDir, 'wave.log')} : {})},
   startedAt: new Date().toISOString(),
@@ -102,13 +102,12 @@ launch('academy', ['scripts/start.mjs'], {
   REDIS_URL: redisUrl,
   ACADEMY_DATA: dataDir,
   PORT: String(PORTS.academy),
-  PROOF_PORT: String(PORTS.proof),
   HOST: '127.0.0.1',
   ACADEMY_PUBLIC_URL: `http://127.0.0.1:${PORTS.academy}`,
   SOURCE_REVISION: manifest.revision,
 });
-if (!(await waitFor(`http://127.0.0.1:${PORTS.academy}/game/health`, (r) => r.json?.ok === true && r.json?.proof === true, 120))) {
-  fail(`Academy did not report ok+proof within 120 s. Log: ${manifest.logs.academy}`);
+if (!(await waitFor(`http://127.0.0.1:${PORTS.academy}/game/health`, (r) => r.json?.ok === true, 120))) {
+  fail(`Academy did not report ok within 120 s. Log: ${manifest.logs.academy}`);
 }
 
 if (withWave) {
@@ -117,7 +116,6 @@ if (withWave) {
     REDIS_URL: redisUrl,
     PORT: String(PORTS.wave),
     HOST: '127.0.0.1',
-    PROOF_URL: `http://127.0.0.1:${PORTS.proof}`,
     ACADEMY_WEB_DIST: path.join(repoRoot, 'apps/web/dist'),
     ACADEMY_PUBLIC_URL: `http://127.0.0.1:${PORTS.wave}`,
     SOURCE_REVISION: manifest.revision,

@@ -7,7 +7,6 @@ import {getAssignment} from './get-assignment.ts';
 import {getConnectionState} from './get-connection-state.ts';
 import {getCurrentSlide} from './get-current-slide.ts';
 import {getParticipantScreenState} from './get-participant-screen-state.ts';
-import {getDocument} from './get-document.ts';
 import {getLesson} from './get-lesson.ts';
 import {getMission} from './get-mission.ts';
 import {getMyProgress} from './get-my-progress.ts';
@@ -31,7 +30,6 @@ import {exportDebrief} from './export-debrief.ts';
 import {handoff} from './handoff.ts';
 import {markPractised, unmarkPractised} from './mark-practised.ts';
 import {reviewEvidence} from './review-evidence.ts';
-import {suggestDocument} from './suggest-document.ts';
 import {togglePlanB} from './toggle-plan-b.ts';
 
 export {ClassroomState, ClassroomStateLive} from './state.ts';
@@ -103,13 +101,7 @@ const withParticipant = registerAction(
   getConnectionState,
 );
 
-const withLegacy = registerAction(
-  registerAction(
-    registerAction(registerAction(withParticipant, getMission), getDocument),
-    searchKnowledge,
-  ),
-  suggestDocument,
-);
+const withLegacy = registerAction(registerAction(withParticipant, getMission), searchKnowledge);
 
 const withEvidence = registerAction(
   registerAction(

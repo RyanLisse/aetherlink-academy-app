@@ -1,101 +1,96 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtempSync} from 'node:fs';
+import {mkdtempSync,rmSync} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import http from 'node:http';
 import {createApp} from '../server/app.mjs';
-import {parseBoard} from '../server/debrief-board.mjs';
+import {BOARD_COLUMNS,MAX_BOARD_CARDS,addBoardCard,applyBoardAction,boardView} from '../server/debrief-board.mjs';
 import {exportDebrief} from '../server/progress.mjs';
 
-const boardState='# Squad Noord\n\nIntro zonder kolom\n\n## Werkte goed\n\n- Pairing met de n8n-agent\n- <span data-proof="authored">Snelle review</span>\n\n## Lastig\n\n1. Tokens roteren\n\n## Volgende keer\n\n- [ ] Eerder testen';
+const at='2026-09-30T08:00:00.000Z';
 
-test('parseBoard reads level-2 headings as columns and list, numbered and checkbox lines as cards',()=>{
- assert.deepEqual(parseBoard(boardState),[
-  {title:'Werkte goed',cards:['Pairing met de n8n-agent','Snelle review']},
-  {title:'Lastig',cards:['Tokens roteren']},
-  {title:'Volgende keer',cards:['Eerder testen']},
- ]);
- assert.deepEqual(parseBoard('## Werkte goed\n\n## Lastig\n\n## Volgende keer\n').map(column=>column.cards),[[],[],[]]);
+test('board cards are stored per column and exported after the squad handoff',()=>{
+ const r={name:'Squad Noord',members:[],handoffs:[],version:1};
+ applyBoardAction(r,'open',{at,by:'Fac'});
+ addBoardCard(r,{column:0,text:'Pairing met de n8n-agent',by:'Ada',at});
+ addBoardCard(r,{column:0,text:'Snelle review',by:'Bo',at});
+ addBoardCard(r,{column:1,text:'Tokens roteren',by:'Ada',at});
+ assert.deepEqual(boardView(r.board),{status:'open',columns:[
+  {title:BOARD_COLUMNS[0],cards:['Pairing met de n8n-agent','Snelle review']},
+  {title:BOARD_COLUMNS[1],cards:['Tokens roteren']},
+  {title:BOARD_COLUMNS[2],cards:[]},
+ ]});
+ const markdown=exportDebrief(r,boardView(r.board).columns);
+ assert.ok(markdown.endsWith('## Debriefbord\n\n### Werkte goed\n- Pairing met de n8n-agent\n- Snelle review\n\n### Lastig\n- Tokens roteren\n\n### Volgende keer\nGeen kaarten.'),markdown);
+ assert.doesNotMatch(exportDebrief(r),/Debriefbord/);
 });
 
-test('exportDebrief appends the board columns after the squad handoff',()=>{
- const room={name:'Squad Noord',members:[],handoffs:[]};
- const markdown=exportDebrief(room,parseBoard(boardState));
- assert.ok(markdown.endsWith('## Debriefbord\n\n### Werkte goed\n- Pairing met de n8n-agent\n- Snelle review\n\n### Lastig\n- Tokens roteren\n\n### Volgende keer\n- Eerder testen'),markdown);
- assert.doesNotMatch(exportDebrief(room),/Debriefbord/);
+test('board cards are rejected for unknown columns, empty text, a closed board or a full board',()=>{
+ const r={version:1};
+ assert.throws(()=>addBoardCard(r,{column:0,text:'x',by:'Ada',at}),e=>e.status===409);
+ assert.throws(()=>applyBoardAction(r,'close',{at,by:'Fac'}),e=>e.status===409);
+ assert.throws(()=>applyBoardAction(r,'wipe',{at,by:'Fac'}),e=>e.status===400);
+ applyBoardAction(r,'open',{at,by:'Fac'});
+ for(const column of [-1,3,1.5,NaN])assert.throws(()=>addBoardCard(r,{column,text:'x',by:'Ada',at}),e=>e.status===400,String(column));
+ assert.throws(()=>addBoardCard(r,{column:0,text:'',by:'Ada',at}),e=>e.status===400);
+ r.board.cards=Array.from({length:MAX_BOARD_CARDS},(_,i)=>({id:String(i),column:0,text:'x',by:'Ada',at}));
+ assert.throws(()=>addBoardCard(r,{column:0,text:'one more',by:'Ada',at}),e=>e.status===409);
+ applyBoardAction(r,'close',{at,by:'Fac'});
+ r.board.cards=[];
+ assert.throws(()=>addBoardCard(r,{column:0,text:'late',by:'Ada',at}),e=>e.status===409);
 });
 
-test('debrief board is created once per room, scoped to the room and read-only once closed',async()=>{
+test('a board from before cards were stored natively opens empty instead of failing',()=>{
+ const r={version:1,board:{proof:{slug:'old-board'},status:'closed',createdAt:at}};
+ assert.deepEqual(boardView(r.board).columns.map(c=>c.cards),[[],[],[]]);
+ applyBoardAction(r,'open',{at,by:'Fac'});
+ addBoardCard(r,{column:2,text:'Eerder testen',by:'Ada',at});
+ assert.deepEqual(boardView(r.board).columns[2].cards,['Eerder testen']);
+});
+
+test('debrief board routes are room-scoped, facilitator-controlled and read-only once closed',async()=>{
  const dir=mkdtempSync(path.join(os.tmpdir(),'academy-board-'));
- const forwarded=[];let created=0,storedLags=true;
- const upstream=http.createServer((req,res)=>{let body='';req.on('data',chunk=>body+=chunk);req.on('end',()=>{
-  forwarded.push({method:req.method,url:req.url,auth:req.headers.authorization});res.setHeader('content-type','application/json');
-  if(req.method==='POST'&&req.url==='/documents'){created++;return res.end(JSON.stringify({slug:`board-${created}`,ownerSecret:'board-owner',accessToken:'board-editor'}));}
-  if(req.url.endsWith('/access-links'))return res.end(JSON.stringify({accessToken:JSON.parse(body).role==='viewer'?'board-viewer':'board-commenter'}));
-  if(req.url==='/documents/board-1/state')return res.end(JSON.stringify({markdown:boardState}));
-  if(req.method==='GET'&&req.url==='/api/documents/board-1'&&req.headers.authorization==='Bearer board-editor')return res.end(JSON.stringify({markdown:storedLags?'## Werkte goed\n\n## Lastig\n\n## Volgende keer\n':boardState}));
-  res.end('{"ok":true}');
- });});
- await new Promise(r=>upstream.listen(0,'127.0.0.1',r));
- const instance=createApp({dir,hostKey:'test-host',proofBase:`http://127.0.0.1:${upstream.address().port}`,root:process.cwd()});
+ const instance=createApp({dir,hostKey:'test-host',root:process.cwd()});
  await new Promise(r=>instance.server.listen(0,'127.0.0.1',r));
  const base=`http://127.0.0.1:${instance.server.address().port}`;
- const board=(token,action)=>fetch(base+'/game/board',{method:'POST',headers:{'content-type':'application/json',authorization:`Bearer ${token}`},body:JSON.stringify({action})});
- const proof=(route,token,method='GET')=>fetch(base+route,{method,headers:{cookie:`academy=${token}`}});
- const lastForward=()=>forwarded.at(-1);
+ const post=(route,token,body)=>fetch(base+route,{method:'POST',headers:{'content-type':'application/json',authorization:`Bearer ${token}`},body:JSON.stringify(body)});
+ const state=async token=>(await fetch(base+'/game/state',{headers:{authorization:`Bearer ${token}`}})).json();
  try{
-  const host=instance.store.create('Squad Noord',{slug:'intent-noord',editor:'intent-editor'});
+  const host=instance.store.create('Squad Noord');
   const ada=instance.store.join(host.code,'Ada');
-  const foreign=instance.store.create('Squad Zuid',{slug:'intent-zuid',editor:'intent-zuid-editor'});
+  const foreign=instance.store.create('Squad Zuid');
   const eve=instance.store.join(foreign.code,'Eve');
 
-  assert.equal((await board(host.token,'close')).status,409);
-  assert.equal((await board(ada.token,'open')).status,403);
-  assert.equal((await board(eve.token,'open')).status,403);
-  const opened=await board(host.token,'open');assert.equal(opened.status,200);assert.deepEqual(await opened.json(),{status:'open',slug:'board-1'});
-  assert.deepEqual(await (await board(host.token,'open')).json(),{status:'open',slug:'board-1'});
-  assert.equal(created,1);
-  assert.deepEqual(forwarded.filter(f=>f.url.endsWith('/access-links')).map(f=>f.auth),['Bearer board-owner','Bearer board-owner']);
+  assert.equal((await post('/game/board',host.token,{action:'close'})).status,409);
+  assert.equal((await post('/game/board',ada.token,{action:'open'})).status,403);
+  assert.equal((await post('/game/board/card',ada.token,{column:0,text:'Too early'})).status,409);
+  const opened=await post('/game/board',host.token,{action:'open'});
+  assert.equal(opened.status,200);
+  assert.deepEqual((await opened.json()).status,'open');
 
-  const state=await (await fetch(base+'/game/state',{headers:{authorization:`Bearer ${ada.token}`}})).json();
-  assert.deepEqual(state.board,{status:'open',slug:'board-1'});
-  assert.equal(JSON.stringify(state).includes('board-editor'),false);
-  const foreignState=await (await fetch(base+'/game/state',{headers:{authorization:`Bearer ${eve.token}`}})).json();
-  assert.equal(foreignState.board,null);
+  const card=await post('/game/board/card',ada.token,{column:0,text:'Pairing met de n8n-agent'});
+  assert.equal(card.status,200);
+  assert.deepEqual((await card.json()).columns[0].cards,['Pairing met de n8n-agent']);
+  assert.equal((await post('/game/board/card',host.token,{column:1,text:'Tokens roteren'})).status,200);
+  assert.equal((await post('/game/board/card',ada.token,{column:9,text:'x'})).status,400);
+  assert.equal((await post('/game/board/card',ada.token,{column:0,text:''})).status,400);
+  assert.equal((await post('/game/board/card',ada.token,{column:0,text:'x'.repeat(281)})).status,400);
 
-  for(const route of ['/d/board-1','/api/documents/board-1/collab-session','/api/documents/board-1'])assert.equal((await proof(route,eve.token)).status,403,route);
-  assert.equal((await proof('/api/documents/board-1/collab-session',ada.token)).status,200);
-  assert.deepEqual(lastForward(),{method:'GET',url:'/api/documents/board-1/collab-session',auth:'Bearer board-editor'});
-  assert.equal((await proof('/api/documents/board-1',ada.token,'PUT')).status,200);
-  assert.deepEqual(lastForward(),{method:'PUT',url:'/api/documents/board-1',auth:'Bearer board-editor'});
+  const seen=await state(ada.token);
+  assert.deepEqual(seen.board.columns.map(c=>c.cards),[['Pairing met de n8n-agent'],['Tokens roteren'],[]]);
+  assert.equal(JSON.stringify(seen.board).includes('Ada'),false,'card authors stay out of the shared view');
+  assert.equal((await state(eve.token)).board,null);
+  assert.equal((await post('/game/board/card',eve.token,{column:0,text:'Wrong room'})).status,409);
 
-  const lagging=await board(host.token,'close');assert.equal(lagging.status,503);assert.deepEqual(await lagging.json(),{error:'Proof slaat het bord nog op. Sluit het bord opnieuw.'});
-  assert.equal(forwarded.some(f=>f.url.endsWith('/pause')),false);
-  storedLags=false;
-  const closed=await board(host.token,'close');assert.equal(closed.status,200);assert.deepEqual(await closed.json(),{status:'closed',slug:'board-1'});
-  assert.deepEqual(forwarded.slice(-2),[{method:'POST',url:'/documents/board-1/pause',auth:'Bearer board-owner'},{method:'POST',url:'/documents/board-1/resume',auth:'Bearer board-owner'}]);
-  const beforeWrites=forwarded.length;
-  for(const [route,method] of [['/api/documents/board-1','PUT'],['/api/documents/board-1/content','POST'],['/api/agent/board-1/marks/comment','POST']])assert.equal((await proof(route,ada.token,method)).status,403,`${method} ${route}`);
-  assert.equal(forwarded.length,beforeWrites);
-  assert.equal((await proof('/api/documents/board-1/collab-session',ada.token)).status,200);
-  assert.deepEqual(lastForward(),{method:'GET',url:'/api/documents/board-1/collab-session',auth:'Bearer board-viewer'});
-  assert.equal((await proof('/api/documents/board-1/collab-refresh',ada.token,'POST')).status,200);
-  assert.deepEqual(lastForward(),{method:'POST',url:'/api/documents/board-1/collab-refresh',auth:'Bearer board-viewer'});
-  assert.equal((await proof('/d/board-1',ada.token)).status,200);
-  assert.deepEqual(lastForward(),{method:'GET',url:'/d/board-1?token=board-viewer',auth:'Bearer board-viewer'});
-  assert.equal((await proof('/api/documents/intent-noord',ada.token,'PUT')).status,200);
-  assert.deepEqual(lastForward(),{method:'PUT',url:'/api/documents/intent-noord',auth:'Bearer intent-editor'});
+  const closed=await post('/game/board',host.token,{action:'close'});
+  assert.equal((await closed.json()).status,'closed');
+  assert.equal((await post('/game/board/card',ada.token,{column:2,text:'Late'})).status,409);
 
-  const exportResponse=await fetch(base+'/game/debrief/export',{headers:{authorization:`Bearer ${host.token}`}});
-  assert.equal(exportResponse.status,200);
-  assert.match(await exportResponse.text(),/## Debriefbord\n\n### Werkte goed\n- Pairing met de n8n-agent\n- Snelle review\n\n### Lastig\n- Tokens roteren/);
+  const exported=await fetch(base+'/game/debrief/export',{headers:{authorization:`Bearer ${host.token}`}});
+  assert.equal(exported.status,200);
+  assert.match(await exported.text(),/## Debriefbord\n\n### Werkte goed\n- Pairing met de n8n-agent\n\n### Lastig\n- Tokens roteren/);
 
-  const reopened=await board(host.token,'open');assert.deepEqual(await reopened.json(),{status:'open',slug:'board-1'});assert.equal(created,1);
-  assert.equal((await proof('/api/documents/board-1',ada.token,'PUT')).status,200);
-  assert.deepEqual(lastForward(),{method:'PUT',url:'/api/documents/board-1',auth:'Bearer board-editor'});
-
-  const rejectedUpgrade=await new Promise(resolve=>{const req=http.request(`${base}/ws?slug=board-1`,{headers:{cookie:`academy=${eve.token}`,connection:'Upgrade',upgrade:'websocket','sec-websocket-version':'13','sec-websocket-key':'dGhlIHNhbXBsZSBub25jZQ=='}});req.on('response',r=>resolve(r.statusCode));req.on('error',()=>resolve('error'));req.end();});
-  assert.equal(rejectedUpgrade,403);
- }finally{instance.server.close();upstream.close();}
+  const reopened=await post('/game/board',host.token,{action:'open'});
+  assert.deepEqual((await reopened.json()).columns.map(c=>c.cards),[['Pairing met de n8n-agent'],['Tokens roteren'],[]]);
+ }finally{await new Promise(r=>instance.server.close(r));rmSync(dir,{recursive:true,force:true});}
 });

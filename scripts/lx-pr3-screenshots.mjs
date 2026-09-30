@@ -12,7 +12,7 @@ mkdirSync(out,{recursive:true});
 const port=4368;
 const publicBaseUrl=`http://127.0.0.1:${port}`;
 const dir=mkdtempSync(path.join(os.tmpdir(),'academy-lx-pr3-ui-'));
-const {server,store}=createApp({dir,root,hostKey:'lx-pr3-host',publicBaseUrl,proofBase:'http://127.0.0.1:4499'});
+const {server,store}=createApp({dir,root,hostKey:'lx-pr3-host',publicBaseUrl});
 await new Promise((resolve,reject)=>server.listen(port,'127.0.0.1',err=>err?reject(err):resolve()));
 
 const host=store.create('LX PR3 screenshots',{slug:'lx-pr3',editor:'editor-token'});

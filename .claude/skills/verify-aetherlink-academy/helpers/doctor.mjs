@@ -14,7 +14,7 @@ async function probe(url) {
 
 if (process.argv[2] === '--deployed') {
   const health = await probe(`${DEPLOYED_ORIGIN}/game/health`);
-  check('deployed /game/health ok+proof', health.json?.ok === true && health.json?.proof === true, health.body.slice(0, 120));
+  check('deployed /game/health ok', health.json?.ok === true, health.body.slice(0, 120));
   for (const route of ['/', '/classroom/1', '/workshop/5']) {
     const page = await probe(`${DEPLOYED_ORIGIN}${route}`);
     check(`deployed GET ${route} serves HTML`, page.status === 200 && /<div id="root"/.test(page.body), `HTTP ${page.status}`);
@@ -33,7 +33,7 @@ if (process.argv[2] === '--deployed') {
   const containers = projectContainers(run.project);
   check(`containers of ${run.project} running`, containers.length === 2 && containers.every((line) => line.endsWith(' running')), containers.join('; '));
   const health = await probe(`http://127.0.0.1:${run.ports.academy}/game/health`);
-  check('academy /game/health ok+proof', health.json?.ok === true && health.json?.proof === true, health.body.slice(0, 120));
+  check('academy /game/health ok', health.json?.ok === true, health.body.slice(0, 120));
   check('academy reports run revision', health.json?.revision === run.revision, `revision=${health.json?.revision}`);
   const classroom = await probe(`http://127.0.0.1:${run.ports.academy}/classroom/1`);
   check('apps/web SPA served at /classroom/1', classroom.status === 200 && /<div id="root"/.test(classroom.body), `HTTP ${classroom.status}`);

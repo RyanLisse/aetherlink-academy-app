@@ -12,7 +12,7 @@ test('decks persist in the academy Postgres schema and serialise cross-instance 
  const store=await new PostgresStore(pool,{schema}).init();
  const one=createSlidesService({pool,schema}),two=createSlidesService({pool,schema});
  try{
-  const host=await store.create('Slides',{slug:'slides'});
+  const host=await store.create('Slides');
   const {r}=await store.auth(host.token,'browser');
   const actor={roomId:r.id,id:'p1',name:'P',role:'participant',source:'human'} as const;
   const deck=await one.run('createDeck',actor,{title:'PG'}) as any;

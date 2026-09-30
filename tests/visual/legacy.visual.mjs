@@ -1,7 +1,6 @@
 import {test, expect} from '@playwright/test';
 import {startLegacyFixture, FIXED_NOW, HOST_KEY} from '../support/legacy-fixture.mjs';
 
-const PROOF_STUB = '<!doctype html><html lang="nl"><head><title>Proof</title></head><body style="margin:0;font:16px sans-serif;background:#0c1928;color:#e3ecfa"><p style="padding:24px">Synthetisch Proof-document</p></body></html>';
 
 // A fresh fixture per test: presence ("online") depends on which browser polled last.
 let fixture;
@@ -16,7 +15,6 @@ async function open(page, {width, height, token = null}) {
     localStorage.setItem('academy-theme', 'dark');
     if (value) sessionStorage.setItem('academy-token', value);
   }, token);
-  await page.route('**/d/**', (route) => route.fulfill({contentType: 'text/html', body: PROOF_STUB}));
 }
 
 const settle = (page) => page.evaluate(() => document.fonts.ready.then(() => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))));

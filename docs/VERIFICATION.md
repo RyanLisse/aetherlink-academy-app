@@ -38,7 +38,7 @@ Verwachte uitvoer tegen productie op 25 september 2026:
 
 ```text
 WARN plain HTTP target http://91.99.78.17:4317; this smoke sends no credentials, but TLS is not verified
-PASS: Academy and Proof ready: ok=true proof=true
+PASS: Academy ready: ok=true
 FAIL: Deployed revision matches EXPECTED_REVISION: /game/health reports no revision (null); set SOURCE_REVISION on the deployed process
 PASS: Application HTML available: / HTTP 200 text/html; charset=utf-8
 PASS: Public runtime config: googleSso=false portal=true portalLaunch=true
@@ -52,7 +52,7 @@ De smoke faalt daar dus met exit `1` op de revisie. Dat is een bekend gat: het p
 | Melding | Betekenis |
 |---|---|
 | `FAIL: deployment metadata` | `SMOKE_BASE_URL` ontbreekt of is ongeldig, bevat credentials, of `EXPECTED_REVISION` is geen volledige SHA. Er is geen request gedaan. |
-| `Academy and Proof ready` faalt | `/game/health` is niet 200, `ok` is niet `true`, of de Proof-sidecar is onbereikbaar (`proof` is niet `true`). |
+| `Academy ready` faalt | `/game/health` is niet 200 of `ok` is niet `true`. |
 | `reports no revision (null)` | Het proces kent zijn revisie niet. Zet `SOURCE_REVISION` in de runtime-omgeving. |
 | `revision mismatch` | Er draait een andere commit dan verwacht. De deploy is niet doorgekomen of er is teruggerold. |
 | `Application HTML available` faalt | De root-build (`dist/index.html`) ontbreekt of de gateway serveert iets anders. |

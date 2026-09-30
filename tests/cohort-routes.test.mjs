@@ -12,8 +12,7 @@ const START=Date.parse('2026-10-05T00:00:00Z');
 async function gateway(){
  const dir=mkdtempSync(path.join(os.tmpdir(),'academy-cohort-routes-'));
  const clock={now:START};
- const instance=createApp({dir,repository:new LocalStore(dir,{now:()=>clock.now}),hostKey:'test-host',proofBase:'http://127.0.0.1:9',publicBaseUrl:'http://127.0.0.1:4317',slidesService:{run:async()=>null}});
- instance.proof.create=async()=>({slug:'cohort-proof',editor:'editor-token'});
+ const instance=createApp({dir,repository:new LocalStore(dir,{now:()=>clock.now}),hostKey:'test-host',publicBaseUrl:'http://127.0.0.1:4317',slidesService:{run:async()=>null}});
  await new Promise(resolve=>instance.server.listen(0,'127.0.0.1',resolve));
  const base=`http://127.0.0.1:${instance.server.address().port}`;
  const call=async(method,route,{body,cookie}={})=>{
@@ -59,7 +58,7 @@ test('facilitator creates a Wave cohort, participant activates a personal code i
   assert.match(roomJoin.body.error,/persoonlijke cohortcode/);
   assert.deepEqual((await call('POST','/game/help',{cookie:session,body:{}})).body,{help:true});
   assert.equal((await call('POST','/game/participant/access',{cookie:session,body:{}})).status,409);
-  assert.equal((await call('PUT','/api/documents/cohort-proof',{cookie:session,body:{markdown:'# x'}})).status,502);
+  assert.equal((await call('PUT','/api/documents/cohort-proof',{cookie:session,body:{markdown:'# x'}})).status,404);
 
   const roster=await call('POST','/game/facilitator/cohorts',{body:{hostKey:'test-host'}});
   assert.deepEqual(roster.body[0].members.map(member=>[member.name,member.status,member.seated]),[['Alice','activated',true],['Bob','issued',false]]);
@@ -95,7 +94,7 @@ test('facilitator creates a Wave cohort, participant activates a personal code i
   const chat=await call('POST','/game/chat',{cookie:readSession,body:{q:'Waar vind ik de lessen?'}});
   assert.equal(chat.status,200);
   assert.equal((await call('POST','/game/reflection',{cookie:readSession,body:{learned:'a',next:'b'}})).status,403);
-  assert.equal((await call('PUT','/api/documents/cohort-proof',{cookie:readSession,body:{markdown:'# x'}})).status,403);
+  assert.equal((await call('POST','/game/intent',{cookie:readSession,body:{url:'https://example.test/intent.md'}})).status,403);
   assert.equal((await call('POST','/game/logout',{cookie:readSession,body:{}})).status,200);
   clock.now=START+104*DAY;
   assert.equal((await call('POST','/game/cohort/activate',{body:{code:reissued.body.code}})).status,403);

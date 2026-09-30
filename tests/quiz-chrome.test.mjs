@@ -124,7 +124,7 @@ async function invoke(app, route, {body = {}, params = {}, cookies = {}} = {}) {
 
 test('F4 debrief endpoint returns quiz status summary', async () => {
   const instance = createApp({dir: mkdtempSync(join(os.tmpdir(), 'academy-quiz-chrome-')), hostKey: 'quiz-host', publicBaseUrl: 'http://127.0.0.1:4317'});
-  const host = instance.store.create('Quiz', {slug: 'quiz'});
+  const host = instance.store.create('Quiz');
   const participant = instance.store.join(host.code, 'Deelnemer');
   const as = token => ({cookies: {academy: token}});
   const start = await invoke(instance.app, '/game/quiz/start', as(participant.token));

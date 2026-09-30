@@ -61,11 +61,8 @@ jobs:
           cache: pnpm
           cache-dependency-path: |
             pnpm-lock.yaml
-            vendor/proof-sdk/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --dir vendor/proof-sdk install --frozen-lockfile
-      - run: pnpm --dir vendor/proof-sdk rebuild better-sqlite3 esbuild
-      - name: Real Postgres/Redis outage and recovery with a live Proof child
+      - name: Real Postgres/Redis outage and recovery
         run: pnpm run test:services
       - name: Versioned curriculum on isolated PostgreSQL
         run: pnpm --filter @academy/server run test:curriculum-db
@@ -108,10 +105,10 @@ jobs:
         run: |
           for i in $(seq 1 90); do
             body=$(curl --silent http://127.0.0.1:4318/health || true)
-            if jq --exit-status --arg revision "$REVISION" '.ok == true and .proof == true and .revision == $revision' <<< "$body" >/dev/null 2>&1; then exit 0; fi
+            if jq --exit-status --arg revision "$REVISION" '.ok == true and .revision == $revision' <<< "$body" >/dev/null 2>&1; then exit 0; fi
             sleep 2
           done
-          echo "last body: $body"; docker compose --project-name academy-wave --file infra/compose.yaml --env-file infra/.env logs --tail 100 app proof; exit 1
+          echo "last body: $body"; docker compose --project-name academy-wave --file infra/compose.yaml --env-file infra/.env logs --tail 100 app; exit 1
       - name: Postgres outage is reported and recovers without restarting the container
         run: |
           docker compose --project-name academy-wave --file infra/compose.yaml --env-file infra/.env stop postgres
@@ -122,7 +119,7 @@ jobs:
           test "$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:4318/health)" = 503
           docker compose --project-name academy-wave --file infra/compose.yaml --env-file infra/.env start postgres
           for i in $(seq 1 60); do
-            if jq --exit-status '.ok == true and .proof == true' <<< "$(curl --silent http://127.0.0.1:4318/health)" >/dev/null 2>&1; then exit 0; fi; sleep 2
+            if jq --exit-status '.ok == true' <<< "$(curl --silent http://127.0.0.1:4318/health)" >/dev/null 2>&1; then exit 0; fi; sleep 2
           done
           curl --silent http://127.0.0.1:4318/connection; exit 1
       - name: Stop container and services

@@ -57,7 +57,6 @@ describe('registry', () => {
       'get_assignment',
       'get_connection_state',
       'get_current_slide',
-      'get_document',
       'get_lesson',
       'get_mission',
       'get_my_progress',
@@ -78,7 +77,6 @@ describe('registry', () => {
       'setReveal',
       'startTimer',
       'submit_evidence',
-      'suggest_document',
       'togglePlanB',
       'unmark_practised',
     ]);

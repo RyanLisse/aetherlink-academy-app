@@ -15,7 +15,7 @@ async function invoke(app,method,route,{body={},query={},params={},cookies={},be
 }
 function fixture(publicBaseUrl='http://127.0.0.1:4317'){
  const instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-slides-')),hostKey:'test-host',publicBaseUrl});
- const host=instance.store.create('Slides',{slug:'slides'});
+ const host=instance.store.create('Slides');
  const participant=instance.store.join(host.code,'Deelnemer');
  return {instance,host,participant};
 }
@@ -116,13 +116,13 @@ test('facilitator agent setup issues a room-bound MCP token and exposes facilita
  assert.equal(instance.store.auth(nextToken,'mcp').s.personId,'facilitator');
  const participantSetup=await invoke(app,'post','/game/agent-setup',{bearer:participant.token});
  assert.equal(participantSetup.statusCode,200);assert.equal(participantSetup.body.role,'participant');assert.equal(participantSetup.body.participantId,instance.store.auth(participant.token,'browser').p.id);
- for(const tool of ['submit_evidence','suggest_document','get_document','get_screen_state']){
+ for(const tool of ['submit_evidence','get_screen_state']){
   const denied=await invoke(app,'post','/game/mcp/:tool',{params:{tool},body:{},bearer:nextToken});
   assert.equal(denied.statusCode,403,`${tool} denied to facilitator`);
  }
  const invalidDay=await invoke(app,'post','/game/mcp/:tool',{params:{tool:'pin_classroom_deck'},body:{deckId:created.body.id,day:99},bearer:nextToken});
  assert.equal(invalidDay.statusCode,400);
- const other=instance.store.create('Other room',{slug:'other'});
+ const other=instance.store.create('Other room');
  const otherMcp=await instance.store.rotateMcpToken(other.token);
  const otherDeck=await invoke(app,'post','/game/mcp/:tool',{params:{tool:'create_deck'},body:{title:'Other room deck'},bearer:otherMcp.token});
  assert.equal(otherDeck.statusCode,200);

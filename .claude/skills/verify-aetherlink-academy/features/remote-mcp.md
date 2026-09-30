@@ -1,13 +1,13 @@
 # Remote MCP
 
-Each participant connects their own Claude Code to the squad through a personal MCP configuration (URL plus bearer token); their agent reads the mission and Proof document, searches the curriculum, submits evidence and suggests document changes, all attributed and human-reviewed.
+Each participant connects their own Claude Code to the squad through a personal MCP configuration (URL plus bearer token); their agent reads the mission (including the intent link), searches the curriculum and submits evidence, all attributed and human-reviewed.
 
 ## Sub-features
 
 - `mcp-config` the squad room shows `Personal MCP configuration` with the `/mcp` URL and a token; `POST /game/mcp-token` rotates it.
-- `mcp-tools` the gateway `/mcp` (server `aetherlink-academy` 0.2.0) exposes `get_mission`, `get_screen_state`, `get_document`, `search_knowledge`, `submit_evidence`, `suggest_document`, `list_decks`, `get_deck`, `create_deck`, `add_slide`, `update_slide`, `patch_deck`, `export_deck_html`.
+- `mcp-tools` the gateway `/mcp` (server `aetherlink-academy` 0.2.0) exposes `get_mission`, `get_screen_state`, `search_knowledge`, `submit_evidence`, `list_decks`, `get_deck`, `create_deck`, `add_slide`, `update_slide`, `patch_deck`, `export_deck_html`, `pin_classroom_deck`.
 - `mcp-auth` a missing, rotated or foreign token is rejected with 401.
-- `mcp-attribution` `submit_evidence` lands as a pending review item under the participant's name (see proof-evidence-review.md).
+- `mcp-attribution` `submit_evidence` lands as a pending review item under the participant's name (see intent-evidence-review.md).
 - `mcp-coach` `My learning coach` shows `Last successful MCP call: <time>` after a call.
 
 ## How to get to it (user POV)
@@ -22,8 +22,8 @@ Preconditions:
 - A squad with at least one participant (squad-room.md). The participant's token copied from `Personal MCP configuration` in their browser context; keep it in a variable, never in evidence.
 
 - **Unauthenticated.** `curl -s -o /dev/null -w '%{http_code}' -X POST http://127.0.0.1:4731/mcp`. Prints `401`.
-- **List tools.** Use `@modelcontextprotocol/client` (root dependency) with a Streamable HTTP transport and the bearer header; call `listTools`. The 13 names above are returned.
-- **Read mission.** `callTool('get_mission')`. The result names the squad, the participant and a `Driver` or `Navigator` role.
+- **List tools.** Use `@modelcontextprotocol/client` (root dependency) with a Streamable HTTP transport and the bearer header; call `listTools`. The 12 names above are returned.
+- **Read mission.** `callTool('get_mission')`. The result names the squad, the participant, a `Driver` or `Navigator` role and `intent: {url, file: 'intent.md'}`.
 - **Submit evidence.** `callTool('submit_evidence', {requestId, finding, command, observed, limitation})`. Then in the facilitator's browser context, `Review & handoff` lists it as `Awaiting review` under the participant.
 - **Rotation.** Rotate the token from the participant UI, then repeat `get_mission` with the old token. 401.
 - **Coach read-back.** Participant `My learning coach` shows `Last successful MCP call:`.

@@ -1,13 +1,13 @@
 ---
 name: verify-aetherlink-academy
-description: "Launch, drive and prove AetherLink Academy the way facilitators and participants use it: the legacy gateway on :4317 (squad room, Proof editor, /mcp) plus the apps/web SPA it serves (/classroom/1, /deck, /workshop/3..7), on a disposable local run with its own TLS Postgres/Redis, or read-only against Hetzner production. Use after a UI, deck, runtime or deploy change, before claiming a feature works."
+description: "Launch, drive and prove AetherLink Academy the way facilitators and participants use it: the legacy gateway on :4317 (squad room, intent link, /mcp) plus the apps/web SPA it serves (/classroom/1, /deck, /workshop/3..7), on a disposable local run with its own TLS Postgres/Redis, or read-only against Hetzner production. Use after a UI, deck, runtime or deploy change, before claiming a feature works."
 ---
 
 # Verify AetherLink Academy
 
-The product users touch is one Express gateway (`scripts/start.mjs` → `server/app.mjs`) that also spawns the vendored Proof editor on loopback. It serves three surfaces from one origin:
+The product users touch is one Express gateway (`scripts/start.mjs` → `server/app.mjs`). It serves three surfaces from one origin:
 
-- `/` is the legacy squad game (`src/`, built to `dist/`): join, squad room, Proof intent document, lesson, solo evidence, review.
+- `/` is the legacy squad game (`src/`, built to `dist/`): join, squad room, intent link, lesson, solo evidence, review.
 - `/classroom/1`, `/deck`, `/workshop/3..7`, `/lesson/*`, `/live/*` are the `apps/web` SPA (built to `apps/web/dist/`).
 - `/mcp` is the participant remote MCP endpoint (Streamable HTTP, bearer token per participant).
 
@@ -15,7 +15,7 @@ Production is the same image on Hetzner at `http://91.99.78.17:4317`. The `apps/
 
 ## Launch
 
-Needs Node 24, pnpm 11.19, Docker, `openssl`. Build once per checkout (installs both lockfiles, builds Proof, `dist/`, `apps/web/dist`, `apps/server/dist`):
+Needs Node 24, pnpm 11.19, Docker, `openssl`. Build once per checkout (installs dependencies, builds `dist/`, `apps/web/dist`, `apps/server/dist`):
 
 ```sh
 node scripts/setup.mjs
@@ -24,17 +24,17 @@ node scripts/setup.mjs
 Start a disposable run from the repo root:
 
 ```sh
-node .claude/skills/verify-aetherlink-academy/helpers/start.mjs          # gateway + Proof
+node .claude/skills/verify-aetherlink-academy/helpers/start.mjs          # gateway
 node .claude/skills/verify-aetherlink-academy/helpers/start.mjs --wave   # also apps/server on :4732
 ```
 
-It refuses to start when a run is already recorded or any verification port is bound. Ports are fixed and chosen to avoid the other stacks on this machine: Academy `4731`, Proof `4831`, wave `4732`, Postgres `4733`, Redis `4734`. It then:
+It refuses to start when a run is already recorded or any verification port is bound. Ports are fixed and chosen to avoid the other stacks on this machine: Academy `4731`, wave `4732`, Postgres `4733`, Redis `4734`. It then:
 
 1. Mints a throwaway self-signed cert under `.verification/runs/<run-id>/tls/` (the storage layer rejects non-TLS Postgres and Redis).
 2. Starts TLS Postgres and TLS Redis via `helpers/services.compose.yaml` as compose project `academy-verify-<run-id>`, data in tmpfs.
 3. Launches `scripts/start.mjs` as its own detached process group with a clean env (no inherited `.env`, Google SSO or Vercel variables). `ACADEMY_HOST_KEY` is left unset so the gateway generates a per-run key in `<run>/academy-data/host-key`. Read it from that file when a recipe needs facilitator access; never print it.
 
-Ready means the command prints `READY run=<run-id> academy=http://127.0.0.1:4731 ...`, which it only does after `/game/health` returns `{"ok":true,"proof":true}`. On failure it names the log (`.verification/runs/<run-id>/academy.log`) and leaves the run recorded for cleanup.
+Ready means the command prints `READY run=<run-id> academy=http://127.0.0.1:4731 ...`, which it only does after `/game/health` returns `{"ok":true}`. On failure it names the log (`.verification/runs/<run-id>/academy.log`) and leaves the run recorded for cleanup.
 
 ## Doctor
 
@@ -45,7 +45,7 @@ node .claude/skills/verify-aetherlink-academy/helpers/doctor.mjs
 node .claude/skills/verify-aetherlink-academy/helpers/doctor.mjs --deployed
 ```
 
-Local mode checks: manifest revision equals `git rev-parse --short HEAD`, each recorded process group is alive, ports 4731/4732 are held by this run's process groups (not some other process), both compose containers are running, `/game/health` is ok+proof and reports the run revision, and `/classroom/1` serves the SPA. `--deployed` probes Hetzner health and three public pages with GET only. Every line is `PASS`/`FAIL`; the last line is `DOCTOR OK` or `DOCTOR FAILED`. Do not drive an instance whose doctor fails; clean it up and start again.
+Local mode checks: manifest revision equals `git rev-parse --short HEAD`, each recorded process group is alive, ports 4731/4732 are held by this run's process groups (not some other process), both compose containers are running, `/game/health` is ok and reports the run revision, and `/classroom/1` serves the SPA. `--deployed` probes Hetzner health and three public pages with GET only. Every line is `PASS`/`FAIL`; the last line is `DOCTOR OK` or `DOCTOR FAILED`. Do not drive an instance whose doctor fails; clean it up and start again.
 
 ## Drive
 
@@ -68,7 +68,7 @@ Proof standards:
 
 - Drive the path a facilitator or participant uses: routes, buttons, keys. Not `/game/*` calls from a script when a UI path exists, and never test fixtures such as `apps/server/src/mcp/lab-server.ts`.
 - Capture the action and the resulting state (before and after screenshots plus `state.json`), not only the final screen.
-- For writes (join, evidence, review, Proof edits), read the result back from a second view: reload, a second browser context, or the facilitator overview.
+- For writes (join, intent link, evidence, review, debrief cards), read the result back from a second view: reload, a second browser context, or the facilitator overview.
 - Open and look at the screenshots. A faded or blank slide means the capture raced an animation.
 - Deployed mode is GET-only. No joins, no squad creation, no MCP token rotation, no evidence against production.
 
@@ -81,7 +81,7 @@ node .claude/skills/verify-aetherlink-academy/helpers/cleanup.mjs
 node .claude/skills/verify-aetherlink-academy/helpers/cleanup.mjs --run <run-id>   # a stranded run whose pointer is gone
 ```
 
-It TERMs (then KILLs after 30 s) only the process groups recorded in the manifest, runs `docker compose -p academy-verify-<run-id> down --volumes`, copies logs and `run.json` into the evidence dir, deletes `.verification/runs/<run-id>/` (data dir, generated host key, TLS key), and clears the pointer. It ends with `CLEANUP OK` only after confirming all five ports are free, no containers of the project remain, and the evidence dir still exists. It never kills by name or port and never touches other compose projects.
+It TERMs (then KILLs after 30 s) only the process groups recorded in the manifest, runs `docker compose -p academy-verify-<run-id> down --volumes`, copies logs and `run.json` into the evidence dir, deletes `.verification/runs/<run-id>/` (data dir, generated host key, TLS key), and clears the pointer. It ends with `CLEANUP OK` only after confirming all recorded ports are free, no containers of the project remain, and the evidence dir still exists. It never kills by name or port and never touches other compose projects.
 
 ## Helpers
 

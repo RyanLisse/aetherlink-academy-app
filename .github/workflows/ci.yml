@@ -34,11 +34,7 @@ jobs:
           cache: pnpm
           cache-dependency-path: |
             pnpm-lock.yaml
-            vendor/proof-sdk/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --dir vendor/proof-sdk install --frozen-lockfile
-      - run: pnpm --dir vendor/proof-sdk rebuild better-sqlite3 esbuild
-      - run: pnpm --dir vendor/proof-sdk run build
       - run: pnpm run build
 
   test-coverage:
@@ -70,19 +66,15 @@ jobs:
           cache: pnpm
           cache-dependency-path: |
             pnpm-lock.yaml
-            vendor/proof-sdk/pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --dir vendor/proof-sdk install --frozen-lockfile
-      - run: pnpm --dir vendor/proof-sdk rebuild better-sqlite3 esbuild
-      - run: pnpm --dir vendor/proof-sdk run build
       - run: pnpm run build
       - name: Start TLS Postgres and Redis
         run: bash scripts/ci-services.sh start
       - name: Run serverless contract tests
         id: unit
         run: >-
-          node --import ./vendor/proof-sdk/node_modules/tsx/dist/loader.mjs --test
-          tests/room.test.mjs tests/debrief-board.test.mjs tests/board-doc.test.mjs tests/remote-mcp.test.mjs tests/screen-state-mcp.test.mjs tests/proof-stale-retry.test.mjs tests/suggestion-accept-persisted-retry.test.ts tests/runtime-config.test.mjs tests/browser-auth-boundary.test.mjs tests/headless-empty-document.test.ts tests/collab-marks-observer.test.ts tests/anchor-stability.test.ts
+          node --import tsx --test
+          tests/room.test.mjs tests/debrief-board.test.mjs tests/remote-mcp.test.mjs tests/screen-state-mcp.test.mjs tests/runtime-config.test.mjs tests/browser-auth-boundary.test.mjs
           tests/storage-actions.test.ts tests/storage-routes.test.mjs
           tests/google-sso.test.mjs tests/facilitator-sso-routes.test.mjs tests/native-apps-providers.test.mjs tests/openship-kit.test.mjs
           tests/participant-access.test.mjs tests/participant-access-routes.test.mjs tests/participant-access-ui.test.mjs tests/chat-embed.test.mjs
@@ -128,41 +120,31 @@ jobs:
           const response = await client.fetch(`${process.env.S3_ENDPOINT}/${process.env.S3_BUCKET}`,{method:'PUT'});
           if (!response.ok) throw new Error(`Bucket creation failed: ${response.status}`);
           JS
-          node --import ./vendor/proof-sdk/node_modules/tsx/dist/loader.mjs --test tests/storage-s3.test.ts
+          node --import tsx --test tests/storage-s3.test.ts
       - name: Install Chromium for browser contract tests
         run: pnpm exec playwright install --with-deps chromium
       - name: Run Arcade Lab embed browser test
         id: lab-embed
-        run: node --import ./vendor/proof-sdk/node_modules/tsx/dist/loader.mjs --test tests/lab-embed-browser.test.mjs
+        run: node --import tsx --test tests/lab-embed-browser.test.mjs
       - name: Run legacy UI states and axe browser test
         id: legacy-ui
-        run: node --import ./vendor/proof-sdk/node_modules/tsx/dist/loader.mjs --test tests/legacy-ui-browser.test.mjs
-      - name: Run Proof marks regressions
-        id: marks
-        working-directory: vendor/proof-sdk
-        run: node --import tsx src/tests/marks.test.ts
+        run: node --import tsx --test tests/legacy-ui-browser.test.mjs
       - name: Run Postgres and Redis contract tests
         id: database
         run: >-
           source "$RUNNER_TEMP/aetherlink-academy-ci/env.sh" &&
           ACADEMY_POSTGRES_TEST=1
-          node --import ./vendor/proof-sdk/node_modules/tsx/dist/loader.mjs --test
+          node --import tsx --test
           tests/postgres-store.test.mjs tests/participant-access.test.mjs tests/cohort-access.test.mjs tests/email-otp.test.mjs tests/certificate-postgres.test.mjs tests/facilitator-postgres.test.mjs tests/learning-postgres.test.mjs tests/presence.test.mjs tests/course-order.test.mjs
-          tests/proof-postgres.test.mjs tests/proof-postgres-domain.test.mjs
-          tests/canonical-postgres.test.ts tests/proof-snapshot.test.ts tests/proof-rest-rewrite.test.ts tests/proof-invalidation-race.test.ts tests/proof-reservation.test.mjs
+         
+         
           tests/request-retry.test.mjs tests/storage-postgres.test.ts tests/proof-trail-postgres.test.mjs tests/leercoach-postgres.test.mjs
           tests/slides-postgres.test.ts
       - name: Run migrate-v2 apply against a throwaway database
         id: migrate
         run: |
           source "$RUNNER_TEMP/aetherlink-academy-ci/env.sh"
-          ACADEMY_MIGRATE_PG_TEST=1 node --import ./vendor/proof-sdk/node_modules/tsx/dist/loader.mjs --test tests/migrate-v2.test.mjs
-      - name: Run PostgreSQL suggestion anchor regression
-        id: anchors
-        timeout-minutes: 5
-        run: |
-          source "$RUNNER_TEMP/aetherlink-academy-ci/env.sh"
-          node --import ./vendor/proof-sdk/node_modules/tsx/dist/loader.mjs vendor/proof-sdk/src/tests/suggestion-anchor-validation.test.ts
+          ACADEMY_MIGRATE_PG_TEST=1 node --import tsx --test tests/migrate-v2.test.mjs
       - name: Start Academy for live single-process checks
         run: |
           source "$RUNNER_TEMP/aetherlink-academy-ci/env.sh"
@@ -171,24 +153,24 @@ jobs:
           printf '%s\n' "$!" > "$RUNNER_TEMP/academy-server.pid"
           for i in $(seq 1 60); do
             body=$(curl --silent --fail http://127.0.0.1:4317/game/health || true)
-            if [[ "$body" == *'"proof":true'* ]]; then exit 0; fi
+            if [[ "$body" == *'"ok":true'* ]]; then exit 0; fi
             sleep 2
           done
           exit 1
-      - name: Run live Academy and Proof checks
+      - name: Run live Academy checks
         id: live
         env:
           ACADEMY_URL: http://127.0.0.1:4317
         run: >-
-          node --import ./vendor/proof-sdk/node_modules/tsx/dist/loader.mjs --test
-          tests/integration.test.mjs tests/collaboration.test.mjs tests/debrief-board-live.test.mjs
+          node --import tsx --test
+          tests/integration.test.mjs
       - name: Run two-process distributed check
         id: distributed
         run: >-
           source "$RUNNER_TEMP/aetherlink-academy-ci/env.sh" &&
           ACADEMY_DISTRIBUTED_TEST=1 ACADEMY_TEST_LOG_DIR="$RUNNER_TEMP"
-          node --import ./vendor/proof-sdk/node_modules/tsx/dist/loader.mjs --test --test-concurrency=1
-          tests/distributed.test.mjs tests/distributed-browser.test.mjs
+          node --import tsx --test --test-concurrency=1
+          tests/distributed.test.mjs
       - name: Show distributed process logs on failure
         if: failure()
         run: |
@@ -294,12 +276,12 @@ jobs:
             --env ACADEMY_STORAGE=postgres \
             --env ACADEMY_PUBLIC_URL=https://academy-ci.example.test \
             --env ACADEMY_HOST_KEY="$(openssl rand -hex 32)" \
-            --env PROOF_COLLAB_SIGNING_SECRET="$(openssl rand -hex 32)" \
+            --env ACADEMY_SIGNING_SECRET="$(openssl rand -hex 32)" \
             --env VERCEL=1 \
             aetherlink-academy:${{ github.sha }}
           for i in $(seq 1 60); do
             body=$(curl --silent --fail http://127.0.0.1:4317/game/health || true)
-            if jq --exit-status --arg revision "$GITHUB_SHA" ' .ok == true and .proof == true and .revision == $revision' <<< "$body" >/dev/null; then exit 0; fi
+            if jq --exit-status --arg revision "$GITHUB_SHA" ' .ok == true and .revision == $revision' <<< "$body" >/dev/null; then exit 0; fi
             sleep 2
           done
           exit 1
@@ -313,7 +295,7 @@ jobs:
           docker restart academy-ci >/dev/null
           for i in $(seq 1 60); do
             body=$(curl --silent --fail http://127.0.0.1:4317/game/health || true)
-            if jq --exit-status --arg revision "$GITHUB_SHA" ' .ok == true and .proof == true and .revision == $revision' <<< "$body" >/dev/null; then exit 0; fi
+            if jq --exit-status --arg revision "$GITHUB_SHA" ' .ok == true and .revision == $revision' <<< "$body" >/dev/null; then exit 0; fi
             sleep 2
           done
           exit 1

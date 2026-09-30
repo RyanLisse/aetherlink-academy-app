@@ -8,25 +8,23 @@ browser ──HTTPS──> gateway (server/app.mjs, :4317)
                      ├── apps/web SPA               apps/web/dist/   (deck, classroom, workshop, reference, archive, live)
                      ├── apps/arcade-lab            apps/arcade-lab/dist/ at /arcade-lab
                      ├── /mcp (Streamable HTTP)     participant's own Claude Code
-                     ├── reverse proxy ──────────> Proof (vendor/proof-sdk, loopback :4400)
                      ├── Postgres                   server/postgres-store.mjs
                      └── Redis (TLS)                server/presence.mjs, server/screen-state.mjs
 ```
 
 ## Process model
 
-`scripts/start.mjs` validates the runtime configuration (`server/runtime-config.mjs`), starts Proof from `vendor/proof-sdk/server/index.ts` on loopback `PROOF_PORT` (default 4400), waits for its `/health`, then starts the gateway from `createApp` in `server/app.mjs` on `PORT` (default 4317). Only the gateway takes public traffic. The container image is `Dockerfile` (digest-pinned base, `SOURCE_REVISION` build arg and OCI labels); the CI `container` job builds and runs that same image.
+`scripts/start.mjs` validates the runtime configuration (`server/runtime-config.mjs`), initializes storage, then starts the gateway from `createApp` in `server/app.mjs` on `PORT` (default 4317). Only the gateway takes public traffic. The container image is `Dockerfile` (digest-pinned base, `SOURCE_REVISION` build arg and OCI labels); the CI `container` job builds and runs that same image.
 
 ## Gateway (`server/`)
 
 The gateway owns identity, authorization and every write. Its route groups in `server/app.mjs`:
 
 - **Facilitators** sign in with Google SSO (`server/google-sso.mjs`).
-- **Participants** use a personal cohort code that becomes an HttpOnly session (`server/cohort.mjs`). The locked access rule is 90 days from cohort start, then writing closes and Proof stays read-only for an optional 14 days. Room codes are for live sessions only.
-- **Rooms and live state** (`/game/*`) with a WebSocket upgrade that the gateway authorizes before proxying.
+- **Participants** use a personal cohort code that becomes an HttpOnly session (`server/cohort.mjs`). The locked access rule is 90 days from cohort start, then writing closes and the room stays read-only for an optional 14 days. Room codes are for live sessions only.
+- **Rooms and live state** (`/game/*`), polled by the clients. This includes the room's intent link (`/game/intent`), the `intent.md` template (`/game/intent.md`) and the native debrief board (`/game/board`, `/game/board/card`, `/game/debrief/export`).
 - **MCP** at `/mcp`, stateless Streamable HTTP, authenticated per request and per tool call. The participant's own Claude Code connects here. The platform makes no model calls and holds no model credentials. `tests/integration.test.mjs` pins the exact tool list.
 - **Day packs and search** from `server/content.mjs`, which reads `content/days/*.mjs`.
-- **Proof proxy.** Browser, document, asset and WebSocket traffic reaches Proof only through the gateway (`server/proof.mjs` for the HTTP agent bridge).
 - **SPA serving.** `isWebSpaPath` in `server/app.mjs` sends `/deck`, `/classroom/*`, `/workshop/*`, `/lesson/*`, `/live/*`, `/reference/*` and `/archive/*` to `apps/web/dist/index.html`. Everything else falls through to the legacy client in `dist/`.
 - **Legacy redirects.** `/legacy-redirect?site=<site>&from=<old url>` answers a 301 from the table in `apps/web/src/redirects/legacy.ts` (see [Legacy sites](#legacy-sites)).
 
@@ -34,13 +32,13 @@ Node 24 runs workspace TypeScript directly, so the gateway imports pure logic fr
 
 ## Storage
 
-- **Postgres** is the durable authority: squads, cohorts, sessions, Proof documents, marks, Yjs history, leases and snapshots. The Academy schema lives in `server/schema/academy.sql`. `init()` in `server/postgres-store.mjs` records a version and SHA-256 checksum in `system_metadata` and refuses to start on a mismatch. Migrations are numbered in that file.
+- **Postgres** is the durable authority: squads, cohorts, sessions, intent links, evidence, reviews, task state, debrief boards, leases and snapshots. The Academy schema lives in `server/schema/academy.sql`. `init()` in `server/postgres-store.mjs` records a version and SHA-256 checksum in `system_metadata` and refuses to start on a mismatch. Migrations are numbered in that file.
 - **Redis** (TLS `rediss:` only) carries participant presence (`server/presence.mjs`) and multi-tab screen-state fan-out (`server/screen-state.mjs`). It is never the source of truth.
 - `server/local-store.mjs` is the file-backed store for tests and local runs.
 
-## Proof
+## Intent document
 
-Proof is [EveryInc/proof-sdk](https://github.com/EveryInc/proof-sdk) pinned at `fb2578758f1c62776301209131181643c5f4a19a` (MIT) under `vendor/proof-sdk`. It is the rich editor, marks and provenance engine, canonical document store and live collaboration server. The gateway keeps Proof owner secrets, binds Proof to loopback, and sets `COLLAB_PUBLIC_BASE_URL` to the gateway `/ws`. Suggested text stays a suggestion until a human accepts it.
+The Academy hosts no document editor. A squad's intent lives outside the platform: a Proof cloud document or `intent.md` in the squad's own repository. The room stores only an optional `https://` link (`intentUrl`, set by the driver or facilitator). `get_mission` returns it to agents as `intent: {url, file: 'intent.md'}`. Evidence, review, task approval, badges, certificates and the debrief board are Academy room state (`server/proof-trail.mjs`, `server/debrief-board.mjs`).
 
 ## Apps
 

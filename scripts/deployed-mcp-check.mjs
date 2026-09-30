@@ -168,13 +168,12 @@ try {
     if (!result.lessons?.some(lesson => lesson.id === 'L2-MCP')) throw new Error('L2-MCP was not returned');
     return 'L2-MCP present';
   });
-  await check('get_document_intent', async () => {
-    const result = await callTool(client, 'get_document');
-    if (typeof result.markdown !== 'string' || !/Onze intent/.test(result.markdown)) throw new Error('document does not contain Onze intent');
-    state.documentA = result;
-    const roomState = await expectJson('/game/state', {headers: authHeaders(state.a1Token)});
-    state.documentSlugA = result.slug || roomState.documentSlug;
-    return `document length ${result.markdown.length}`;
+  await check('get_mission_intent', async () => {
+    const link = 'https://example.test/deployed-mcp-check/intent.md';
+    await postJson('/game/intent', {url: link}, authHeaders(state.hostTokenA));
+    const result = await callTool(client, 'get_mission');
+    if (result.intent?.url !== link || result.intent?.file !== 'intent.md') throw new Error('mission does not expose the room intent link');
+    return 'intent link and intent.md fallback present';
   });
   await check('submit_evidence_idempotent', async () => {
     const payload = {
@@ -191,21 +190,9 @@ try {
     if (!Array.isArray(roomState.evidence) || roomState.evidence.length !== 1) throw new Error(`expected exactly 1 evidence item, got ${roomState.evidence?.length ?? 'invalid'}`);
     return `idempotent evidence id length ${first.id.length}`;
   });
-  await check('suggest_document_pending', async () => {
-    const before = await callTool(client, 'get_document');
-    const line = before.markdown?.split('\n').find(value => value.trim() && !value.trim().startsWith('#'));
-    const quote = line?.replace(/^#+\s*/, '').trim();
-    if (!quote) throw new Error('could not derive a document quote');
-    await callTool(client, 'suggest_document', {requestId: randomUUID(), quote, content: 'Automated deployed-MCP check synthetic suggestion; pending human review.'});
-    const after = await callTool(client, 'get_document');
-    if (after.markdown !== before.markdown) throw new Error('pending suggestion changed accepted markdown');
-    const suggestions = await expectJson('/game/suggestions', {headers: authHeaders(state.hostTokenA)});
-    if (!Array.isArray(suggestions) || !suggestions.some(suggestion => suggestion.status === 'pending')) throw new Error('no pending suggestion found');
-    return `quote length ${quote.length}`;
-  });
 } catch (error) {
   clientError = error;
-  const positiveNames = ['list_tools_exact', 'get_mission_shape', 'search_knowledge_all', 'search_knowledge_mcp', 'get_document_intent', 'submit_evidence_idempotent', 'suggest_document_pending'];
+  const positiveNames = ['list_tools_exact', 'get_mission_shape', 'search_knowledge_all', 'search_knowledge_mcp', 'get_mission_intent', 'submit_evidence_idempotent'];
   for (const name of positiveNames) {
     if (!checks.some(result => result.name === name)) await check(name, async () => { throw clientError; });
   }
@@ -256,14 +243,15 @@ await check('cross_squad_isolation', async () => {
   const bClient = new Client({name: 'deployed-mcp-check-b', version: '1'});
   try {
     await bClient.connect(new StreamableHTTPClientTransport(mcpUrl, {requestInit: {headers: authHeaders(state.mcpB1)}}));
-    const documentB = await callTool(bClient, 'get_document');
+    const missionB = await callTool(bClient, 'get_mission');
+    if (missionB.intent?.url) throw new Error('squad B token reached squad A intent link');
     const roomA = await expectJson('/game/state', {headers: authHeaders(state.a1Token)});
     const roomB = await expectJson('/game/state', {headers: authHeaders(state.b1Token)});
-    if (!roomA.documentSlug || !roomB.documentSlug || roomA.documentSlug === roomB.documentSlug) throw new Error('squad document slugs are not isolated');
-    if (documentB.slug && documentB.slug === roomA.documentSlug) throw new Error('squad B token reached squad A document');
-    const cross = await fetchJson(`/d/${encodeURIComponent(roomA.documentSlug)}`, {headers: {cookie: `academy=${state.b1Token}`} });
-    if (cross.response.status !== 403) throw new Error(`cross-squad document read returned HTTP ${cross.response.status}`);
-    return `distinct document slugs, HTTP ${cross.response.status}`;
+    if (!roomA.id || !roomB.id || roomA.id === roomB.id) throw new Error('squad rooms are not isolated');
+    const cross = await fetchJson('/game/intent', {method: 'POST', headers: {'content-type': 'application/json', ...authHeaders(state.b1Token)}, body: JSON.stringify({url: 'https://example.test/cross.md'})});
+    const roomAAfter = await expectJson('/game/state', {headers: authHeaders(state.a1Token)});
+    if (roomAAfter.intentUrl === 'https://example.test/cross.md') throw new Error('squad B changed squad A intent link');
+    return `distinct rooms, squad B intent write HTTP ${cross.response.status}`;
   } finally {
     await bClient.close().catch(() => {});
   }

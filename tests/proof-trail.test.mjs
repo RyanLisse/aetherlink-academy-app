@@ -17,13 +17,10 @@ async function invoke(app,route,{body={},cookies={},params={},headers={},method}
 
 function fixture(){
  const instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-proof-trail-')),hostKey:'test-host',publicBaseUrl:'http://127.0.0.1:4321'});
- const host=instance.store.create('Trail squad',{slug:'trail'},{email:'fac@example.test',name:'Fac Ilitator'});
+ const host=instance.store.create('Trail squad',{email:'fac@example.test',name:'Fac Ilitator'});
  const driver=instance.store.join(host.code,'Ada');
  const learner=instance.store.join(host.code,'Bo');
  const peer=instance.store.join(host.code,'Cy');
- const comments=[];
- instance.proof.comment=async(_r,actor,text)=>{comments.push({actor,text});return {ok:true};};
- instance.proof.state=async()=>({markdown:'# Intent\nDoel',marks:{}});
  const sso=instance.store.facilitatorLogin({sub:'g-1',email:'fac@example.test',name:'Fac Ilitator',domain:'example.test'});
  const as=token=>({academy:token});
  const facilitator={...as(host.token),'academy-facilitator':sso};
@@ -32,7 +29,7 @@ function fixture(){
  const tasks=token=>invoke(instance.app,'/game/tasks',{cookies:as(token),method:'get'});
  const queue=cookies=>invoke(instance.app,'/game/tasks/queue',{cookies,method:'get'});
  const peerList=cookies=>invoke(instance.app,'/game/tasks/peer',{cookies,method:'get'});
- return {instance,host,driver,learner,peer,facilitator,comments,as,submit,review,tasks,queue,peerList};
+ return {instance,host,driver,learner,peer,facilitator,as,submit,review,tasks,queue,peerList};
 }
 
 const TABLE=[
@@ -67,7 +64,7 @@ test('tasks come from day-pack ids: the mission, or the progressive steps when a
 });
 
 test('task → submit → changes requested → resubmit → approved, visible to participant and facilitator',async()=>{
- const {instance,learner,driver,facilitator,comments,as,submit,review,tasks,queue}=fixture();
+ const {instance,learner,driver,facilitator,as,submit,review,tasks,queue}=fixture();
  const openList=(await tasks(learner.token)).body;
  assert.equal(openList.day,1);
  assert.deepEqual(openList.tasks[0],{id:'c1-setup',title:'Oefenrepository opzetten',day:1,status:'open',submissions:[]});
@@ -76,7 +73,6 @@ test('task → submit → changes requested → resubmit → approved, visible t
  const first=await submit(learner.token,'t-1','c1-setup');
  assert.equal(first.statusCode,200);
  assert.equal(first.body.taskId,'c1-setup');
- assert.match(comments.at(-1).text,/Opdracht: c1-setup\nStatus: ingediend/);
  assert.equal((await tasks(learner.token)).body.tasks[0].status,'submitted');
  assert.equal((await tasks(driver.token)).body.tasks[0].status,'open','another participant sees only their own trail');
 
@@ -152,7 +148,7 @@ test('a peer in the same room reviews task evidence; the author sees the decisio
 test('a participant from another room cannot see or review the submission',async()=>{
  const {instance,learner,as,submit,review,tasks,peerList}=fixture();
  const sent=await submit(learner.token,'x-1','c1-setup');
- const other=instance.store.create('Andere squad',{slug:'other'},{email:'fac@example.test',name:'Fac Ilitator'});
+ const other=instance.store.create('Andere squad',{email:'fac@example.test',name:'Fac Ilitator'});
  const outsider=instance.store.join(other.code,'Dex');
  assert.deepEqual((await peerList(as(outsider.token))).body.queue,[]);
  const attempt=await review(as(outsider.token),sent.body.id,'accepted','Lijkt goed','x-r-1');

@@ -4,8 +4,8 @@ The new TypeScript 7 / Effect 4 stack runs beside the legacy app. Nothing here r
 
 ## Files
 
-- `../compose.yaml`: project `academy-wave` with `app` (:4318, loopback only), `proof` (:4418 inside the Compose-owned `academy-wave-net`), `postgres`, `redis`, and a one-shot local TLS certificate initializer. Postgres host connections are restricted to TLS and Redis plaintext is disabled; their data and generated certificates live in Compose-owned volumes. The legacy `academy-postgres` / `academy-redis` containers are never referenced.
-- `../Dockerfile`: builds apps/server, apps/web and vendor/proof-sdk in one image. Health check reads `/health` and requires `ok` and `proof` to be true.
+- `../compose.yaml`: project `academy-wave` with `app` (:4318, loopback only), `postgres`, `redis`, and a one-shot local TLS certificate initializer. Postgres host connections are restricted to TLS and Redis plaintext is disabled; their data and generated certificates live in Compose-owned volumes. The legacy `academy-postgres` / `academy-redis` containers are never referenced.
+- `../Dockerfile`: builds apps/server and apps/web in one image. Health check reads `/health` and requires `ok` to be true.
 - `../.env.example`: local placeholders only. Copy to `/root/aetherlink-academy-wave/.env` on the host and replace them with deployment values there. The file is never committed.
 - `rebuild-wave-foundation.sh <sha>`: clone/fetch, checkout the exact SHA, build, `compose up`, then wait until `/health` reports that SHA and confirm `:4317/game/health` still answers.
 
@@ -61,4 +61,4 @@ The generated CA and service certificates are local-only and can be removed with
 
 ## Acceptance still open
 
-The external acceptance (`curl https://<host>:4318/health` returning `ok:true, proof:true` while `:4317/game/health` still answers, plus the firewall/proxy opening of :4318) has not been executed. Compose configuration validation and the CI workflow are defined, but a local or CI runtime pass is required before claiming the vertical slice is proven.
+The external acceptance (`curl https://<host>:4318/health` returning `ok:true` while `:4317/game/health` still answers, plus the firewall/proxy opening of :4318) has not been executed. Compose configuration validation and the CI workflow are defined, but a local or CI runtime pass is required before claiming the vertical slice is proven.

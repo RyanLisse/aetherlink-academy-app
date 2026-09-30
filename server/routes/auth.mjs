@@ -1,6 +1,5 @@
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { hash, fail } from '../store.mjs';
-import { initialDocument } from '../content.mjs';
 import { readLoginState, signLoginState } from '../google-sso.mjs';
 import {
   EMAIL_LOGIN_SENT_MESSAGE,
@@ -12,7 +11,6 @@ import { namedCookie, text } from './shared.mjs';
 export function registerAuthRoutes(app, deps) {
   const {
     store,
-    proof,
     token,
     googleSso,
     loginSecret,
@@ -205,13 +203,11 @@ export function registerAuthRoutes(app, deps) {
     '/game/create',
     wrap(async (req, res) => {
       const identity = await requireFacilitator(req),
-        name = text(req.body.name, 60),
-        p = await proof.create(initialDocument, name + ' — Onze intent');
+        name = text(req.body.name, 60);
       setSession(
         res,
         await store.create(
           name,
-          p,
           identity && { email: identity.email, name: identity.name },
         ),
       );

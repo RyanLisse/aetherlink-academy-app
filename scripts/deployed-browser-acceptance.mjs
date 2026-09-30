@@ -54,11 +54,6 @@ let p4Page;
 let p4Token;
 let freshContext;
 let freshPage;
-let proofDriver;
-let mcpToken;
-let firstSuggestion;
-let secondSuggestion;
-let documentBeforeSuggestions;
 let findingFixture;
 
 function safeMessage(value) {
@@ -249,44 +244,8 @@ async function findCurrentDriver() {
   return { name, page, context };
 }
 
-async function proofFrameHeading(page) {
-  const frame = page.frameLocator('iframe[title="Gedeelde Proof-intent"]');
-  await expect(frame.getByRole('heading', { name: 'Onze intent', exact: true })).toBeVisible({ timeout });
-}
-
-async function proofText(page) {
-  return page.frameLocator('iframe[title="Gedeelde Proof-intent"]').locator('body').innerText();
-}
-
-async function polledProofText(page) {
-  try {
-    return await proofText(page);
-  } catch {
-    return '';
-  }
-}
-
-function markdownLines(markdown) {
-  return String(markdown)
-    .split(/\r?\n/)
-    .map(line => line.trim())
-    .filter(line => line && !line.startsWith('#'));
-}
-
-function suggestionArticle(page, quote, content) {
-  return page
-    .getByRole('article')
-    .filter({ hasText: quote })
-    .filter({ hasText: content });
-}
-
-async function clickSuggestionDecision(page, article, buttonName) {
-  const result = await clickAndReadResponse(
-    page,
-    article.getByRole('button', { name: buttonName, exact: true }),
-    '/game/suggestion-review'
-  );
-  if (!result.response.ok()) throw new Error(responseError(result.response, result.data));
+async function intentPanel(page) {
+  await expect(page.getByTestId('intent-document')).toBeVisible({ timeout });
 }
 
 async function healthRevision() {
@@ -336,8 +295,7 @@ async function main() {
 
     if (!createCheck.passed || !squadCode) {
       for (const name of [
-        'participants-join', 'round-start', 'phase-change', 'driver-rotate', 'proof-shared-document',
-        'suggestion-create-1', 'suggestion-reject', 'suggestion-create-2', 'suggestion-accept',
+        'participants-join', 'round-start', 'phase-change', 'driver-rotate', 'intent-document',
         'knowledge-search', 'quiz-answer', 'quiz-privacy', 'evidence-submit', 'evidence-review',
         'handoff-record', 'persistence-reload', 'duplicate-name-rejected', 'persistence-fresh-context'
       ]) recordSkipped(name, 'facilitator squad was not created');
@@ -480,197 +438,24 @@ async function main() {
       void phaseCheck;
       void rotateCheck;
 
-      proofDriver = await findCurrentDriver();
-      const proofCheck = proofDriver
-        ? await runStep(
-            'proof-shared-document',
-            proofDriver.page,
-            'proof-doc.png',
-            async () => {
-              const navigator = participantTuples().find(([name, page]) => page && name !== proofDriver.name);
-              if (!navigator) return { passed: false, detail: 'skipped: no navigator participant page available' };
-              await proofFrameHeading(proofDriver.page);
-              await proofFrameHeading(navigator[1]);
-              return { detail: `shared Proof heading visible for ${proofDriver.name} and ${navigator[0]}` };
-            }
-          )
-        : recordSkipped('proof-shared-document', 'no current Driver could be identified');
-
-      if (!proofDriver || !proofCheck.passed) {
-        for (const name of ['suggestion-create-1', 'suggestion-reject', 'suggestion-create-2', 'suggestion-accept']) {
-          recordSkipped(name, 'no verified Driver participant page');
-        }
-      } else {
-        const suggestionCreate1 = await runStep(
-          'suggestion-create-1',
-          facilitatorPage,
-          'suggestion-pending.png',
-          async () => {
-            const markdown = await postJson(proofDriver.context.request, '/game/mcp-token', {});
-            mcpToken = markdown.token;
-            if (!mcpToken) throw new Error('MCP token was not returned.');
-            const document = await postJson(
-              proofDriver.context.request,
-              '/game/mcp/get_document',
-              {},
-              { authorization: `Bearer ${mcpToken}` }
-            );
-            const lines = markdownLines(document.markdown);
-            if (lines.length < 2) throw new Error('Document did not contain two non-heading lines.');
-            firstSuggestion = {
-              quote: lines[0],
-              content: 'Fixture replacement one: de squad controleert de README tegen de beschikbare scripts.'
-            };
-            documentBeforeSuggestions = document.markdown;
-            await postJson(
-              proofDriver.context.request,
-              '/game/mcp/suggest_document',
-              { requestId: randomUUID(), ...firstSuggestion },
-              { authorization: `Bearer ${mcpToken}` }
-            );
-            const canonicalAfterSuggestion = await postJson(
-              proofDriver.context.request,
-              '/game/mcp/get_document',
-              {},
-              { authorization: `Bearer ${mcpToken}` }
-            );
-            if (canonicalAfterSuggestion.markdown !== documentBeforeSuggestions) {
-              throw new Error('Canonical document changed while the first suggestion was pending.');
-            }
-            await facilitatorPage.getByRole('button', { name: 'Review & overdracht', exact: true }).click();
-            const article = suggestionArticle(facilitatorPage, firstSuggestion.quote, firstSuggestion.content);
-            await expect(article).toHaveCount(1, { timeout });
-            await expect(article).toContainText('Voorstel, nog niet geaccepteerd', { timeout });
-            await expect.poll(() => polledProofText(proofDriver.page), { timeout }).toContain(firstSuggestion.quote);
-            return { detail: 'pending suggestion visible; canonical document unchanged and original Proof sentence visible' };
-          },
-          () => Boolean(facilitatorPage && proofDriver)
-        );
-
-        if (!suggestionCreate1.passed) {
-          for (const name of ['suggestion-reject', 'suggestion-create-2', 'suggestion-accept']) {
-            recordSkipped(name, 'first MCP suggestion was not created and verified');
+      const intentDriver = await findCurrentDriver();
+      if (!intentDriver) recordSkipped('intent-document', 'no current Driver could be identified');
+      else await runStep(
+        'intent-document',
+        intentDriver.page,
+        'intent-doc.png',
+        async () => {
+          const navigator = participantTuples().find(([name, page]) => page && name !== intentDriver.name);
+          if (!navigator) return { passed: false, detail: 'skipped: no navigator participant page available' };
+          const link = `https://example.test/acceptance/${randomUUID()}/intent.md`;
+          const saved = await postJson(intentDriver.context.request, '/game/intent', { url: link });
+          if (saved.intentUrl !== link) throw new Error('Driver could not save the intent link.');
+          for (const page of [intentDriver.page, navigator[1]]) {
+            await expect(page.locator(`[data-testid="intent-document"] a[href="${link}"]`)).toBeVisible({ timeout });
           }
-        } else {
-          const suggestionReject = await runStep(
-            'suggestion-reject',
-            facilitatorPage,
-            'suggestion-rejected.png',
-            async () => {
-              const article = suggestionArticle(facilitatorPage, firstSuggestion.quote, firstSuggestion.content);
-              await expect(article).toHaveCount(1, { timeout });
-              await clickSuggestionDecision(facilitatorPage, article, 'Wijs af');
-              await expect.poll(() => article.count(), { timeout }).toBe(0);
-              const rejectedDocument = await postJson(
-                proofDriver.context.request,
-                '/game/mcp/get_document',
-                {},
-                { authorization: `Bearer ${mcpToken}` }
-              );
-              if (rejectedDocument.markdown !== documentBeforeSuggestions) {
-                throw new Error('Canonical document changed after the first suggestion was rejected.');
-              }
-              if (rejectedDocument.markdown.includes(firstSuggestion.content)) {
-                throw new Error('Rejected suggestion content remained in the canonical document.');
-              }
-              await expect
-                .poll(
-                  async () => {
-                    const text = await polledProofText(proofDriver.page);
-                    return !text.includes(firstSuggestion.content) && text.includes(firstSuggestion.quote);
-                  },
-                  { timeout }
-                )
-                .toBe(true);
-              return { detail: 'suggestion rejected; canonical document is unchanged and Proof shows the original sentence' };
-            }
-          );
-
-          if (!suggestionReject.passed) {
-            for (const name of ['suggestion-create-2', 'suggestion-accept']) {
-              recordSkipped(name, 'first suggestion was not rejected and verified');
-            }
-          } else {
-            const suggestionCreate2 = await runStep(
-              'suggestion-create-2',
-              facilitatorPage,
-              null,
-              async () => {
-                const document = await postJson(
-                  proofDriver.context.request,
-                  '/game/mcp/get_document',
-                  {},
-                  { authorization: `Bearer ${mcpToken}` }
-                );
-                const lines = markdownLines(document.markdown);
-                secondSuggestion = {
-                  quote: lines.find(line => line !== firstSuggestion.quote),
-                  content: 'Fixture replacement two: een verse lezer reproduceert de controle en noteert de beperking.'
-                };
-                if (!secondSuggestion.quote) throw new Error('No distinct second suggestion quote was available.');
-                const documentBeforeSecondSuggestion = document.markdown;
-                await postJson(
-                  proofDriver.context.request,
-                  '/game/mcp/suggest_document',
-                  { requestId: randomUUID(), ...secondSuggestion },
-                  { authorization: `Bearer ${mcpToken}` }
-                );
-                const canonicalAfterSuggestion = await postJson(
-                  proofDriver.context.request,
-                  '/game/mcp/get_document',
-                  {},
-                  { authorization: `Bearer ${mcpToken}` }
-                );
-                if (canonicalAfterSuggestion.markdown !== documentBeforeSecondSuggestion) {
-                  throw new Error('Canonical document changed while the second suggestion was pending.');
-                }
-                const article = suggestionArticle(facilitatorPage, secondSuggestion.quote, secondSuggestion.content);
-                await expect(article).toHaveCount(1, { timeout });
-                await expect(article).toContainText('Voorstel, nog niet geaccepteerd', { timeout });
-                await expect.poll(() => polledProofText(proofDriver.page), { timeout }).toContain(secondSuggestion.quote);
-                return { detail: 'second distinct pending suggestion visible' };
-              }
-            );
-
-            if (!suggestionCreate2.passed) {
-              recordSkipped('suggestion-accept', 'second MCP suggestion was not created and verified');
-            } else {
-              await runStep(
-                'suggestion-accept',
-                facilitatorPage,
-                'suggestion-accepted.png',
-                async () => {
-                  const article = suggestionArticle(facilitatorPage, secondSuggestion.quote, secondSuggestion.content);
-                  await expect(article).toHaveCount(1, { timeout });
-                  await clickSuggestionDecision(facilitatorPage, article, 'Accepteer in document');
-                  await expect.poll(() => article.count(), { timeout }).toBe(0);
-                  await expect
-                    .poll(
-                      async () => {
-                        const document = await postJson(
-                          proofDriver.context.request,
-                          '/game/mcp/get_document',
-                          {},
-                          { authorization: `Bearer ${mcpToken}` }
-                        );
-                        const markdown = document.markdown;
-                        return markdown.includes(secondSuggestion.content) &&
-                          markdown.split(secondSuggestion.content).length - 1 === 1 &&
-                          !markdown.includes(secondSuggestion.quote);
-                      },
-                      { timeout }
-                    )
-                    .toBe(true);
-                  await expect
-                    .poll(() => polledProofText(proofDriver.page), { timeout })
-                    .toContain(secondSuggestion.content);
-                  return { detail: 'accepted replacement appears exactly once in canonical markdown and visibly in Proof; old quote is gone' };
-                }
-              );
-            }
-          }
+          return { detail: `intent link set by ${intentDriver.name} is visible for ${navigator[0]}` };
         }
-      }
+      );
 
       const p2Ready = Boolean(p2Page && p2Context && !p2Page.isClosed());
       if (!p2Ready) {
@@ -759,7 +544,7 @@ async function main() {
               await p2Page.getByLabel(label, { exact: true }).fill(value);
             }
             await p2Page.getByRole('button', { name: 'Lever bewijs in', exact: true }).click();
-            await expect(p2Page.getByRole('status')).toContainText('Bewijs toegevoegd aan Proof en de squad-review.', { timeout });
+            await expect(p2Page.getByRole('status')).toContainText('Bewijs toegevoegd aan de squad-review.', { timeout });
             return { detail: 'evidence form submitted and success status is visible' };
           }
         );
@@ -820,7 +605,7 @@ async function main() {
                 );
                 if (!result.response.ok()) throw new Error(responseError(result.response, result.data));
                 await expect(facilitatorPage.getByRole('status')).toContainText(
-                  'Overdracht in Proof vastgelegd. De facilitator roteert de driver apart.',
+                  'Overdracht vastgelegd. De facilitator roteert de driver apart.',
                   { timeout }
                 );
                 await expect(facilitatorPage.getByText('Volgende eigenaar:', { exact: false })).toBeVisible({ timeout });
@@ -850,8 +635,8 @@ async function main() {
             await openParticipantSquad(p1Page);
             await expect(p1Page.locator('.sdlc div.active span')).toHaveText(phaseForPersistence, { timeout });
             await expect(p1Page.locator('.member').filter({ hasText: 'Driver' })).toHaveCount(1, { timeout });
-            await proofFrameHeading(p1Page);
-            return { detail: 'phase, Driver role, and shared Proof heading persisted after reload' };
+            await intentPanel(p1Page);
+            return { detail: 'phase, Driver role, and intent panel persisted after reload' };
           }
         );
 
@@ -921,8 +706,7 @@ async function main() {
     const detail = safeMessage(error?.message || error);
     for (const name of [
       'facilitator-create-squad', 'participants-join', 'round-start', 'phase-change', 'driver-rotate',
-      'proof-shared-document', 'suggestion-create-1', 'suggestion-reject', 'suggestion-create-2',
-      'suggestion-accept', 'knowledge-search', 'quiz-answer', 'quiz-privacy', 'evidence-submit',
+      'intent-document', 'knowledge-search', 'quiz-answer', 'quiz-privacy', 'evidence-submit',
       'evidence-review', 'handoff-record', 'persistence-reload', 'duplicate-name-rejected',
       'persistence-fresh-context'
     ]) {

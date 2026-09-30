@@ -44,7 +44,7 @@ const rejectsWith=(run,status,message)=>assert.rejects(async()=>run(),error=>err
 const ip=()=>randomUUID();
 
 async function roomParticipant(store,name='Alice'){
- const room=await store.create('Squad Orion',{slug:`proof-${randomUUID()}`});
+ const room=await store.create('Squad Orion');
  const joined=await store.join(room.code,name);
  return {room,joined};
 }
@@ -55,7 +55,7 @@ async function attach(store,token,email=ALICE_MAIL){
 }
 
 async function cohortSeat(store){
- const room=await store.create('Squad Orion',{slug:`proof-${randomUUID()}`});
+ const room=await store.create('Squad Orion');
  const created=await store.createCohort(WAVE,['Alice','Bob'],{email:'facilitator@example.test',name:'Facilitator (synthetisch)'});
  await store.attachCohortRoom(created.cohort.id,room.roomId);
  const alice=created.codes.find(entry=>entry.name==='Alice');
@@ -163,7 +163,7 @@ for (const [label,backend,options] of backends) {
    assert.deepEqual(await env.store.removeEmail(bob.token),{email:null});
    env.clock.now+=MINUTE;
    assert.equal((await env.store.startEmailLogin('alice.nieuw@example.test',{ip:ip()})).code,null);
-   const facilitator=await env.store.create('Facilitator room',{slug:`proof-${randomUUID()}`});
+   const facilitator=await env.store.create('Facilitator room');
    await rejectsWith(()=>env.store.startEmailAttach(facilitator.token,ALICE_MAIL,{ip:ip()}),403,/Alleen deelnemers/);
   } finally {await env.close();}
  });
@@ -251,8 +251,7 @@ test('mail transport: log prints the mail and smtp hands nodemailer the configur
 async function gateway({mailer}={}){
  const dir=mkdtempSync(path.join(os.tmpdir(),'academy-email-routes-'));
  const clock={now:START};
- const instance=createApp({dir,repository:new LocalStore(dir,{now:()=>clock.now}),hostKey:'test-host',proofBase:'http://127.0.0.1:9',publicBaseUrl:'http://127.0.0.1:4317',slidesService:{run:async()=>null},mailer});
- instance.proof.create=async()=>({slug:'email-proof',editor:'editor-token'});
+ const instance=createApp({dir,repository:new LocalStore(dir,{now:()=>clock.now}),hostKey:'test-host',publicBaseUrl:'http://127.0.0.1:4317',slidesService:{run:async()=>null},mailer});
  await new Promise(resolve=>instance.server.listen(0,'127.0.0.1',resolve));
  const base=`http://127.0.0.1:${instance.server.address().port}`;
  const call=async(method,route,{body,cookie}={})=>{

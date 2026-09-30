@@ -17,7 +17,7 @@ const enabledConfig = withBody(prod.config, '{"googleSso":true,"portal":true,"po
 const SHA = 'a'.repeat(40);
 
 test('prod health is ready but its null revision fails the revision check', () => {
-  assert.deepEqual(evaluateHealth(prod.health), {name: 'Academy and Proof ready', status: 'pass', detail: 'ok=true proof=true'});
+  assert.deepEqual(evaluateHealth(prod.health), {name: 'Academy ready', status: 'pass', detail: 'ok=true'});
   assert.deepEqual(evaluateRevision(prod.health, SHA), {
     name: 'Deployed revision matches EXPECTED_REVISION', status: 'fail',
     detail: '/game/health reports no revision (null); set SOURCE_REVISION on the deployed process',
@@ -25,14 +25,14 @@ test('prod health is ready but its null revision fails the revision check', () =
 });
 
 test('revision check separates mismatch from match', () => {
-  const deployed = withBody(prod.health, JSON.stringify({ok: true, proof: true, revision: 'b'.repeat(40)}));
+  const deployed = withBody(prod.health, JSON.stringify({ok: true, revision: 'b'.repeat(40)}));
   assert.equal(evaluateRevision(deployed, SHA).detail, `revision mismatch: deployed ${'b'.repeat(40)}, expected ${SHA}`);
   assert.equal(evaluateRevision(deployed, 'b'.repeat(40)).status, 'pass');
 });
 
-test('health fails when Proof is down', () => {
-  const down = withBody(prod.health, '{"ok":true,"proof":false,"revision":null}');
-  assert.equal(evaluateHealth(down).detail, '/game/health proof is not true (Proof sidecar unreachable)');
+test('health fails when Academy is not ok', () => {
+  const down = withBody(prod.health, '{"ok":false,"revision":null}');
+  assert.equal(evaluateHealth(down).detail, '/game/health ok is not true');
 });
 
 test('prod /game/config reports its flags', () => {
@@ -148,11 +148,11 @@ async function runSmoke(origin, env) {
 
 test('smoke runner against recorded prod responses fails on revision and fails closed on SSO', async () => {
   const unauthorized = {status: 401, headers: {'content-type': 'application/json'}, body: '{"error":"unauthorized"}'};
-  const deployedHealth = withBody(prod.health, JSON.stringify({ok: true, proof: true, revision: SHA}));
+  const deployedHealth = withBody(prod.health, JSON.stringify({ok: true, revision: SHA}));
   const routes = {
     '/game/health': prod.health, '/game/config': prod.config, '/auth/google/start': prod.ssoDisabled,
     '/': {...prod.shell, headers: {'content-type': 'text/html; charset=utf-8'}},
-    '/game/state': unauthorized, '/game/document': unauthorized, '/game/knowledge': unauthorized, '/mcp': unauthorized,
+    '/game/state': unauthorized, '/game/intent.md': unauthorized, '/game/knowledge': unauthorized, '/mcp': unauthorized,
   };
   const {server, origin} = await serve(routes);
   try {

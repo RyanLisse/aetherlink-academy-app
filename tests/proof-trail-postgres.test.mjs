@@ -20,14 +20,14 @@ test('Proof trail transitions hold across two instances sharing Postgres',{skip:
  const servers=[];
  try{
   await one.init();
-  const apps=[one,two].map(repository=>{const app=createApp({dir,repository,hostKey:'test'});app.proof.comment=async()=>({ok:true});app.proof.state=async()=>({markdown:'# Intent',marks:{}});return app;});
+  const apps=[one,two].map(repository=>{const app=createApp({dir,repository,hostKey:'test'});return app;});
   servers.push(...apps.map(app=>app.server));
   const bases=await Promise.all(apps.map(app=>listen(app.server)));
   const call=async(index,route,token,{body,cookie}={})=>{
    const response=await fetch(bases[index]+'/game/'+route,{method:body?'POST':'GET',headers:{authorization:`Bearer ${token}`,'content-type':'application/json',...(cookie?{cookie}:{})},body:body&&JSON.stringify(body)});
    return {status:response.status,body:await response.json()};
   };
-  const host=await one.create('Trail',{slug:'trail'},{email:'fac@example.test',name:'Fac Ilitator'});
+  const host=await one.create('Trail',{email:'fac@example.test',name:'Fac Ilitator'});
   const learner=await one.join(host.code,'Bo');
   const ada=await two.join(host.code,'Ada');
   const cy=await one.join(host.code,'Cy');

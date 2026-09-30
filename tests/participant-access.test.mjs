@@ -10,7 +10,7 @@ import {PostgresStore} from '../server/postgres-store.mjs';
 function localFixture() {
  const dir=mkdtempSync(path.join(os.tmpdir(),'academy-participant-access-'));
  const store=new LocalStore(dir);
- const room=store.create('Access room',{slug:'access-room'});
+ const room=store.create('Access room');
  return {dir,store,room};
 }
 
@@ -92,7 +92,7 @@ test('Postgres stores durable participant access separately from room data',{ski
  const store=new PostgresStore(pool,{schema});
  try {
   await store.init();
-  const room=await store.create('Access room',{slug:'access-room'});
+  const room=await store.create('Access room');
   const joined=await store.join(room.code,'Alice');
   assert.match(joined.resumeToken,/^[a-f0-9]{64}$/);
   const stored=await pool.query(`SELECT secret_hash,verified_email FROM "${schema}".participant_access`);

@@ -73,8 +73,8 @@ async function gateway(){
  const dir=mkdtempSync(path.join(os.tmpdir(),'academy-certificate-'));
  const clock={now:START};
  const store=new LocalStore(dir,{now:()=>clock.now});
- const instance=createApp({dir,repository:store,hostKey:'test-host',proofBase:'http://127.0.0.1:9',publicBaseUrl:'http://127.0.0.1:4317',slidesService:{run:async()=>null}});
- Object.assign(instance.proof,{create:async()=>({slug:'certificate-proof',editor:'editor-token'}),state:async()=>({markdown:'# Onze intent\n',marks:{}}),comment:async()=>({ok:true})});
+ const instance=createApp({dir,repository:store,hostKey:'test-host',publicBaseUrl:'http://127.0.0.1:4317',slidesService:{run:async()=>null}});
+
  await new Promise(resolve=>instance.server.listen(0,'127.0.0.1',resolve));
  const base=`http://127.0.0.1:${instance.server.address().port}`;
  const call=async(method,route,{body,cookie}={})=>{
