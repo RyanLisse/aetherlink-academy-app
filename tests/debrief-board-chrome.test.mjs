@@ -61,9 +61,12 @@ test('F5 close/persist — reopen restores same Proof board', () => {
   assert.match(en['board.reopen'], /same content|Reopen/i);
   assert.match(debriefBoard, /if\(!r\.board\)\{/);
   assert.match(debriefBoard, /r\.board\.status=status/);
-  // open reuses stored proof; create only when absent (server/app.mjs)
-  const app = readFileSync(join(root, 'server/app.mjs'), 'utf8');
-  assert.match(app, /action==='open'&&!r\.board\?await proof\.createBoard/);
+  // open reuses stored proof; create only when absent (server/routes/game.mjs)
+  const gameRoutes = readFileSync(join(root, 'server/routes/game.mjs'), 'utf8');
+  assert.match(
+    gameRoutes,
+    /action\s*===\s*'open'\s*&&\s*!r\.board\s*\?\s*await proof\.createBoard/,
+  );
 });
 
 test('F6 disconnect shows human reconnect UX', () => {
