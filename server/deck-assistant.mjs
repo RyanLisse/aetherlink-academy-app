@@ -53,7 +53,7 @@ layout: "cards" (default card grid) | "pillars" | "steps" | "compare" | "exercis
 cards: [{title, body}] (2-4 cards, body may contain \\n line breaks),
 items: [{label, caption, detail}] for pillars/steps/recap,
 columns: [{title, items:[string], foot}] for compare (2 columns),
-steps: [string] and expected, check for layout "exercise" (assignment: facilitator sets the timer live),
+steps: [string], expected and timer (preset minutes, 1-120) for layout "exercise"; check is optional,
 prompt (exact text participants can copy), tagline (short bold closing line),
 keyPoints: [3-5 short presenter bullets], notes (full speaker notes, never shown to participants),
 dark (boolean), hidden (boolean, starts hidden),
@@ -64,6 +64,14 @@ visual: optional {bot:"wave"|"think"|"point"|"head", place:"beside"|"left"|"unde
  stepKeys:true (steps layout, arrow activates next step), recapKeys:true, levelUp:true, pairs:true, oneCol:true,
  phrase:"...", highlight:[{in:"title"|"subtitle"|"tagline"|"card:N", text:"verbatim substring", tone:"orange"|"purple"|"mark"}]}.
 Keep slides presentation-sized: title ≤ 2 lines, ≤ 4 cards, ≤ 6 steps.`;
+
+const STYLE = `Always use the AetherLink classroom style, on every slide you add or change:
+- context, concept and review slides: a subtitle, 2-4 cards (or pillars/steps/compare items) and visual {bot, place:"beside"}; bot "wave" for openings and context, "think" or "point" for concepts (alternate between consecutive slides), "point" for review and bridges, "head" for rules and guardrails.
+- practice slides: layout "exercise" with 3-6 short imperative steps, expected (one "done when" sentence) and timer in minutes.
+- breaks: type "pause" with visual {countdown: minutes, bot:"wave", place:"beside"}.
+- quizzes: type "quiz" with 3-4 option cards and visual {quiz:{answer:N}}.
+- recaps: layout "recap" with 3-5 items and visual {recapKeys:true}.
+- every slide: 3-5 keyPoints and speaker notes.`;
 
 const OPERATIONS = `Reply with JSON only, no other text:
 {"reply": string (what you did, max 3 sentences, in the facilitator's language),
@@ -79,8 +87,8 @@ If the request is not about building or changing this deck, return no operations
 Do not invent facts, metrics, URLs, names or dates; leave a clear placeholder instead.`;
 
 const INSTRUCTIONS = {
-  nl: 'Je bent de deck-assistent van AetherLink Academy. Je bouwt en wijzigt classroom-slides voor de facilitator, in dezelfde stijl als de AetherLink × Worldline cursusdeck: korte titels, concrete kaarten, oefenslides met stappen en een verwachte uitkomst, quizvragen met één goed antwoord, en pauzes. Schrijf de slide-inhoud in de taal van het verzoek.',
-  en: 'You are the AetherLink Academy deck assistant. You build and change classroom slides for the facilitator in the same style as the AetherLink × Worldline course deck: short titles, concrete cards, practice slides with steps and an expected outcome, quiz questions with one correct answer, and pauses. Write slide content in the language of the request.',
+  nl: 'Je bent de deck-assistent van AetherLink Academy. Je bouwt en wijzigt classroom-slides voor de facilitator, in dezelfde stijl als de AetherLink × Worldline cursusdeck: korte titels, concrete kaarten, oefenslides met stappen en een verwachte uitkomst, quizvragen met één goed antwoord, en pauzes. Schrijf de slide-inhoud in de taal van het verzoek. Elke slide gebruikt de classroom-stijl: AetherBOT, zichtbare conceptkaarten en oefentimers.',
+  en: 'You are the AetherLink Academy deck assistant. You build and change classroom slides for the facilitator in the same style as the AetherLink × Worldline course deck: short titles, concrete cards, practice slides with steps and an expected outcome, quiz questions with one correct answer, and pauses. Write slide content in the language of the request. Every slide uses the classroom look: AetherBOT, visible concept cards and exercise timers.',
 };
 
 const text = (value, max) => (typeof value === 'string' ? value.slice(0, max) : '');
@@ -103,7 +111,7 @@ export function deckAssistantRequestBody({config, message, deck, slideId, histor
   return {
     model: config.model,
     messages: [
-      {role: 'system', content: `${INSTRUCTIONS[lang]}\n\n${SLIDE_FORMAT}\n\n${OPERATIONS}`},
+      {role: 'system', content: `${INSTRUCTIONS[lang]}\n\n${SLIDE_FORMAT}\n\n${STYLE}\n\n${OPERATIONS}`},
       ...past,
       {role: 'user', content: `Deck state:\n${JSON.stringify(state)}\n\n${lang === 'en' ? 'Request' : 'Verzoek'}: ${message}`},
     ],

@@ -29,6 +29,20 @@ test('structured classroom slides render to escaped HTML and hide presenter data
  }finally{await svc.close();}
 });
 
+test('classroom exercise timer presets round-trip and enforce supported minutes',async()=>{
+ const svc=createSlidesService();
+ try{
+  const deck=await svc.run('createDeck',facilitator,{title:'Timer',slides:[{classroom:{title:'Oefening',type:'practice',layout:'exercise',steps:['Open de taak'],expected:'De taak is klaar.',timer:10}}]}) as any;
+  const slideId=deck.slides[0].id;
+  const own=await svc.run('getDeck',facilitator,{deckId:deck.id,slideId}) as any;
+  assert.equal(own.slide.classroom.timer,10);
+  const theirs=await svc.run('getDeck',participant,{deckId:deck.id,slideId}) as any;
+  assert.equal(theirs.slide.classroom.timer,10);
+  assert.equal(await status(svc.run('createDeck',facilitator,{title:'Invalid zero',slides:[{classroom:{title:'Oefening',timer:0}}]})),400);
+  assert.equal(await status(svc.run('createDeck',facilitator,{title:'Invalid high',slides:[{classroom:{title:'Oefening',timer:121}}]})),400);
+ }finally{await svc.close();}
+});
+
 test('patching classroom fields regenerates HTML, keeps key points, and an HTML edit drops the structure',async()=>{
  const svc=createSlidesService();
  try{

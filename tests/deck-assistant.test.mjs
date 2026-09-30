@@ -4,7 +4,7 @@ import {mkdtempSync} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {createApp} from '../server/app.mjs';
-import {readDeckAssistantConfig, toDeckOperations} from '../server/deck-assistant.mjs';
+import {deckAssistantRequestBody, readDeckAssistantConfig, toDeckOperations} from '../server/deck-assistant.mjs';
 
 async function invoke(app,method,route,{body={},query={},params={},cookies={}}={}){
  const layer=app.router.stack.find(candidate=>candidate.route?.path===route&&candidate.route.methods[method]);assert.ok(layer,`Missing ${method} ${route}`);
@@ -91,6 +91,13 @@ test('update-slide proposals merge onto the stored slide, including visual setti
   {op:'patch-slide',slideId:'s1',fields:{classroom:{title:'Nieuw',cards:[{title:'A',body:'B'}],keyPoints:['k'],visual:{reveal:'click',stagger:'pop'}},notes:'n'}},
  ]);
  assert.throws(()=>toDeckOperations([{op:'drop-table'}],deck),/unknown action/);
+});
+
+test('assistant prompt requires the classroom style and exercise timer presets',()=>{
+ const body=deckAssistantRequestBody({config,message:'Maak een oefening',deck:null,slideId:null,history:[],locale:'en'});
+ const system=body.messages[0].content;
+ assert.match(system,/Always use the AetherLink classroom style/);
+ assert.match(system,/timer \(preset minutes, 1-120\)/);
 });
 
 test('only the facilitator uses the assistant, and it is off without an OpenRouter key',async()=>{

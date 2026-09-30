@@ -150,6 +150,8 @@ in the deck editor (current deck and slide):
    deck revision it showed the model, so schema, room scope, notes permission and
    conflicts behave as in the editor and MCP.
 
+Assistant slides always use the classroom style, with bot pose by type and an exercise timer preset.
+
 Configuration: `OPENROUTER_API_KEY` (shared with the leercoach),
 `ACADEMY_DECK_ASSISTANT_MODEL` (defaults to `ACADEMY_COACH_MODEL`, must end in
 `:free`), `ACADEMY_DECK_ASSISTANT_DAILY_CAP` (30 per room facilitator) and

@@ -64,6 +64,7 @@ export const ClassroomSlide=Schema.Struct({
  steps:Schema.optional(Schema.Array(Text(500)).pipe(Schema.maxItems(12))),
  stepsHeading:Schema.optional(Text(200)),
  expected:Schema.optional(Text(600)),
+ timer:Schema.optional(Minutes),
  check:Schema.optional(Text(600)),
  prompt:Schema.optional(Text(4_000)),
  tagline:Schema.optional(Text(300)),
