@@ -111,7 +111,9 @@ export function CopyConfiguration({value,label}){
 function ProgressivePath({steps,compact=false}){
   const t=useT();
   if(!steps?.length)return null;
-  return <div className={compact?'progressive-path compact':'progressive-path'} aria-label={t('path.aria')}>{steps.map((s,i)=><div className="progressive-step" key={s.id||i}><span className="agent-badge">{s.badge}</span><strong>{s.title}{s.level==='stretch'&&<small className="muted"> · {t('path.stretch')}</small>}</strong><p>{s.goal}</p>{!compact&&s.doneWhen&&<small><span className="muted">{t('path.doneWhen')}</span> {s.doneWhen}</small>}{compact&&s.hint&&<small className="muted">{s.hint}</small>}</div>)}</div>;
+  const detailed=steps.some(s=>s.instructions?.length>0);
+  const className=`progressive-path${compact?' compact':''}${detailed?' detailed':''}`;
+  return <div className={className} aria-label={t('path.aria')}>{steps.map((s,i)=><div className="progressive-step" key={s.id||i}><span className="agent-badge">{s.badge}</span><strong>{s.title}{s.level==='stretch'&&<small className="muted"> · {t('path.stretch')}</small>}</strong><p>{s.goal}</p>{s.instructions?.length>0&&<ol className="step-instructions">{s.instructions.map((line,j)=><li key={j}>{line.split('`').map((segment,k)=>k%2===1?<code key={k}>{segment}</code>:segment)}</li>)}</ol>}{!compact&&s.doneWhen&&<small><span className="muted">{t('path.doneWhen')}</span> {s.doneWhen}</small>}{compact&&s.hint&&<small className="muted">{s.hint}</small>}</div>)}</div>;
 }
 function QuickCheck({room,action,busy,practice,shownDay,chosen,questions,quizError}){
   const t=useT();
