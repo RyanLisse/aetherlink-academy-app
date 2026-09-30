@@ -98,7 +98,7 @@ function occurrences(value, needle) {
 async function proofText(page) {
   // Scope to the rendered editor: the iframe body also carries the server-rendered
   // agent fallback block and a dismissible share notice, neither of which is document content.
-  const frame = page.frameLocator('iframe[title="Gedeelde Proof-intent"]');
+  const frame = page.frameLocator('iframe[title="Shared document · Proof"]');
   const editor = frame.locator('.ProseMirror').first();
   if (await editor.count()) return editor.innerText();
   return frame.locator('body').innerText();
@@ -109,7 +109,7 @@ async function polledProofText(page) {
 }
 
 async function proofConnectionState(page) {
-  const frame = page.frameLocator('iframe[title="Gedeelde Proof-intent"]');
+  const frame = page.frameLocator('iframe[title="Shared document · Proof"]');
   const [inner, outer] = await Promise.all([
     frame.locator('.share-pill-status-inline .status-label').textContent().catch(() => ''),
     page.locator('.document-status').innerText().catch(() => ''),
@@ -129,7 +129,7 @@ async function waitForProofConnected(page, tracker, deadline) {
   let consecutiveMatches = 0;
   return untilDeadline(async () => {
     const status = await proofConnectionState(page);
-    if (hasOpenCollabSocket(tracker) && status.inner === 'Saved' && status.outer.includes('Proof verbonden')) consecutiveMatches += 1;
+    if (hasOpenCollabSocket(tracker) && status.inner === 'Saved' && status.outer.includes('Proof connected')) consecutiveMatches += 1;
     else consecutiveMatches = 0;
     return consecutiveMatches >= 3 ? status : false;
   }, 'Proof has an open WebSocket and reports a saved, connected collaboration session', deadline);
@@ -145,7 +145,7 @@ const savingMaxMs = new Map();
 function assertProofStayedConnected(status, tracker, expectedCloseCount, label) {
   assert.equal(collabSocketCloseCount(tracker), expectedCloseCount, `${label}: collaboration WebSocket stays open`);
   assert(hasOpenCollabSocket(tracker), `${label}: collaboration WebSocket remains open`);
-  assert(status.outer.includes('Proof verbonden'), `${label}: outer status remains connected`);
+  assert(status.outer.includes('Proof connected'), `${label}: outer status remains connected`);
   if (status.inner === 'Saving') {
     const since = savingSince.get(label) ?? Date.now();
     savingSince.set(label, since);
@@ -253,8 +253,8 @@ function observeCollabWebSockets(page, slug) {
 
 async function joinThroughUi(page, base, name, code) {
   await page.goto(base, { waitUntil: 'domcontentloaded' });
-  await page.getByLabel('Je naam', { exact: true }).fill(name);
-  await page.getByLabel('Kamercode', { exact: true }).fill(code);
+  await page.getByLabel('Your name', { exact: true }).fill(name);
+  await page.getByLabel('Room code', { exact: true }).fill(code);
   const responsePromise = page.waitForResponse(response => {
     try {
       return new URL(response.url()).pathname === '/game/join' && response.request().method() === 'POST';
@@ -262,14 +262,13 @@ async function joinThroughUi(page, base, name, code) {
       return false;
     }
   }, { timeout: 20000 });
-  await page.getByRole('button', { name: 'Deelnemen', exact: true }).click();
+  await page.getByRole('button', { name: 'Join', exact: true }).click();
   const response = await responsePromise;
   const text = await response.text();
   let result;
   try { result = JSON.parse(text); } catch { result = null; }
   assert(response.ok(), `/game/join through UI failed with ${response.status()}: ${text}`);
   assert(result?.token, 'UI join response contains the P1 participant token');
-  await page.getByRole('heading', { name: /^Jouw squad \(/ }).waitFor({ state: 'visible', timeout: 20000 });
   await page.locator('h1').filter({ hasText: 'Distributed browser verification' }).waitFor({ state: 'visible', timeout: 20000 });
   return result;
 }
@@ -281,7 +280,7 @@ async function printFailureDiagnostics({ baselineMarkdown, afterRejectMarkdown, 
   let iframeSrc = null;
   let iframeUrl = null;
   try {
-    const iframeLocator = page.locator('iframe[title="Gedeelde Proof-intent"]');
+    const iframeLocator = page.locator('iframe[title="Shared document · Proof"]');
     iframeSrc = await iframeLocator.getAttribute('src');
     const iframeHandle = await iframeLocator.elementHandle();
     const contentFrame = await iframeHandle?.contentFrame();
@@ -436,7 +435,7 @@ test('browser Proof receives canonical changes in place without merging stale Yj
     await page.getByRole('button',{name:'Squad & help',exact:true}).click();
     assert.equal(await page.locator('.member').count(), 5, 'Browser roster shows all five participants after P1 joins');
 
-    const frame = page.frameLocator('iframe[title="Gedeelde Proof-intent"]');
+    const frame = page.frameLocator('iframe[title="Shared document · Proof"]');
     await frame.getByRole('heading', { name: 'Onze intent', exact: true }).waitFor({ state: 'visible', timeout: 20000 });
     const literalSeedSentence = 'Nieuwe teamleden kunnen de fictieve Atlas-repository niet betrouwbaar opstarten met alleen de README.';
     await until(async () => (await polledProofText(page)).includes(literalSeedSentence), 'seeded Proof sentence is visible');

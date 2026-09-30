@@ -150,6 +150,7 @@ function DeckView({room,deckId,action,busy,onRoom,onContext,onBack}){
   {deck&&count>0&&<div className="deck-body">
    <div className="deck-structure">
     <div className="deck-structure-head"><strong>{t('decks.structure')}</strong><span className="muted">{index+1} / {count}</span></div>
+    <p className="deck-structure-here muted" aria-live="polite">{t('decks.youAreHere',{n:index+1,count,title:deck.title})}</p>
     <ol className="slide-rail" aria-label={t('decks.rail')}>{deck.slides.map((slide,i)=><li key={slide.id} className={i===index?'selected':''}>
      <button type="button" className="slide-thumb" onClick={()=>setIndex(i)} aria-current={i===index} aria-label={t('decks.slideN',{n:i+1})}><SlideStage slide={slide} aspectRatio={deck.aspectRatio} designSystem={deck.designSystem} className="thumb"/><span>{i+1}</span></button>
     </li>)}</ol>

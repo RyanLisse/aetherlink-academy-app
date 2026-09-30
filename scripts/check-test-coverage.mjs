@@ -9,10 +9,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 // file (relative to tests/) -> one-line reason it is not run in CI.
 // Prefix `broken:` when the test fails because of a real product bug.
-export const EXCLUDED = {
-  'authoring-chrome.test.mjs': 'broken: F1 trail test expects decks.youAreHere in src/slides.jsx, removed by the slides UI simplification (#156)',
-  'distributed-browser.test.mjs': "broken: joins via getByLabel('Je naam') but the UI now defaults to EN ('Your name', AET-122 #175), so the join times out",
-};
+export const EXCLUDED = {};
 
 const escape = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
