@@ -1,6 +1,6 @@
 {
   "version": "w5-sdlc-loop",
-  "attribution": "Academy-authored ConceptSim for Workshop 5 / AET-77 (AI-native SDLC). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Not a port of an upstream chapter.",
+  "attribution": "Academy-authored ConceptSim for Workshop 5 (AI-native SDLC). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Not a port of an upstream chapter.",
   "locales": {
     "en": {
       "title": "SDLC harness loop — Plan → gate",
@@ -73,7 +73,7 @@
           "annotation": "Handoff closes the loop — the line becomes a loop."
         }
       ],
-      "attribution": "Academy-authored ConceptSim for Workshop 5 / AET-77 (AI-native SDLC). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Not a port of an upstream chapter."
+      "attribution": "Academy-authored ConceptSim for Workshop 5 (AI-native SDLC). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Not a port of an upstream chapter."
     },
     "nl": {
       "title": "SDLC-harnesslus — Plan → gate",
@@ -146,7 +146,7 @@
           "annotation": "Handoff sluit de lus — de lijn wordt een lus."
         }
       ],
-      "attribution": "Door Academy geschreven ConceptSim voor Workshop 5 / AET-77 (AI-native SDLC). Scenariovorm compatibel met shareAI-lab/learn-claude-code (MIT). Geen port van een upstream-hoofdstuk."
+      "attribution": "Door Academy geschreven ConceptSim voor Workshop 5 (AI-native SDLC). Scenariovorm compatibel met shareAI-lab/learn-claude-code (MIT). Geen port van een upstream-hoofdstuk."
     }
   }
 }

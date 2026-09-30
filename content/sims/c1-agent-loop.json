@@ -1,6 +1,6 @@
 {
   "version": "c1-agent-loop",
-  "attribution": "Academy-authored ConceptSim for Classroom 1 / AET-129 (Claude Code explore→plan→change→verify→commit). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches the product mechanism cue on the Aether Library vehicle. Not a port of an upstream chapter.",
+  "attribution": "Academy-authored ConceptSim for Classroom 1 (Claude Code explore→plan→change→verify→commit). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches the product mechanism cue on the Aether Library vehicle. Not a port of an upstream chapter.",
   "locales": {
     "en": {
       "title": "Agent loop · explore → plan → change → verify → commit",
@@ -78,7 +78,7 @@
           "annotation": "commit (Handoff) — file · command · result · limitation · owner."
         }
       ],
-      "attribution": "Academy-authored ConceptSim for Classroom 1 / AET-129 (Claude Code explore→plan→change→verify→commit). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches the product mechanism cue on the Aether Library vehicle. Not a port of an upstream chapter."
+      "attribution": "Academy-authored ConceptSim for Classroom 1 (Claude Code explore→plan→change→verify→commit). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches the product mechanism cue on the Aether Library vehicle. Not a port of an upstream chapter."
     },
     "nl": {
       "title": "Agent-loop · explore → plan → change → verify → commit",
@@ -156,7 +156,7 @@
           "annotation": "commit (Handoff) — bestand · commando · uitkomst · beperking · eigenaar."
         }
       ],
-      "attribution": "Door Academy geschreven ConceptSim voor Classroom 1 / AET-129 (Claude Code explore→plan→change→verify→commit). Scenariovorm compatibel met shareAI-lab/learn-claude-code (MIT). Leert de product-mechanisme-cue op het Aether Library-voertuig. Geen port van een upstream-hoofdstuk."
+      "attribution": "Door Academy geschreven ConceptSim voor Classroom 1 (Claude Code explore→plan→change→verify→commit). Scenariovorm compatibel met shareAI-lab/learn-claude-code (MIT). Leert de product-mechanisme-cue op het Aether Library-voertuig. Geen port van een upstream-hoofdstuk."
     }
   }
 }

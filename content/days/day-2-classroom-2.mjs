@@ -41,14 +41,14 @@ const en = {
  leerdoel:'You capture standing agreements in CLAUDE.md, turn a repeated method into a skill, use bounded subagents when a role should stay scoped, fetch read-only context via MCP with hooks as gates, and design the smallest useful team workflow. That artefact is the starting point for Workshop 6 and 7.',
  narrative:[
   'Classroom 2 teaches the customize stack / Agent Capability Map: CLAUDE.md for always-on rules, skills for methods you re-type, subagents for bounded specialist runs, then MCP read-only context with hooks as stop/allow gates.',
-  'The deck may lack dedicated subagent or hooks slides — the lesson plan already names them. Narrative, diagram, and ConceptSim still teach the full stack while solos A6–A13 stay the Apple bar vehicle.',
-  'Keep Uitleg → Voordoen → Zelf doen. Jessy/Cons TD2 is pedagogy SoT — we add the stack diagram and ConceptSim; we do not rewrite the assignments.',
+  'Subagents and hooks get little slide time, so the story, diagram and ConceptSim cover the full stack while you practise in assignments A6–A13.',
+  'Every block follows the same rhythm: explanation, demonstration, then you do it yourself. The stack diagram and ConceptSim support the assignments.',
  ],
  workedExample:'Mechanism: customize stack CLAUDE.md → skills → subagents → MCP/hooks on aetherlink-classroom-starter. Motto: CLAUDE.md → skills → subagents → MCP/hooks. Step ConceptSim c2-customize-stack (Agent Capability Map / smallest useful workflow) without API keys, then run A6–A13. Proof AC for day 2: use-case one-liner that Workshop 6 starts from + Agent Capability Map + one artefact. Room deck = Academy /classroom/2.',
  loop:[
   {label:'CLAUDE.md',prompt:'Which agreements must every new session know without briefing? (cite: slide 54 CLAUDE.md · A6–A7 slides 55/57)'},
   {label:'Skill',prompt:'Which method do you repeat and how do you make it reusable? (cite: slide 63 skills · A9–A10 slides 66/69)'},
-  {label:'Bounded run',prompt:'Which sequence of work may Claude do, and where does it stop for approval? Subagents keep roles bounded (cite: P3 diagram /diagrams/classroom/c2-customize-stack.svg · ConceptSim c2-customize-stack — no deck slide)'},
+  {label:'Bounded run',prompt:'Which sequence of work may Claude do, and where does it stop for approval? Subagents keep roles bounded (cite: stack diagram /diagrams/classroom/c2-customize-stack.svg · ConceptSim c2-customize-stack — no deck slide)'},
   {label:'MCP',prompt:'Which information do you read read-only, and which actions do you not approve? Hooks gate the rest (cite: slides 80/81 · A12)'},
   {label:'Workflow',prompt:'What is the smallest useful team workflow with a human checkpoint? Name it on your Agent Capability Map (cite: ConceptSim c2-customize-stack · A13 slide 84)'},
   {label:'Handoff',prompt:'Which use-case one-liner do you take to Workshop 6? Proof AC = Agent Capability Map + one artefact (feeds W6)'}
@@ -65,16 +65,16 @@ const en = {
  },
  solo:SOLO,
  materials:[
-  link('solo','Solo-in-Claude · C1–C2 concepts','/solos/c1-c2-concepts/index.html','AET-132 · clone/open → claude → /start-solo → Proof'),
-  link('assignment','Proof · artifact card','/solos/c1-c2-concepts/proof/artifact-card.html','AET-132 · paste into Academy Review'),
+  link('solo','Solo-in-Claude · C1–C2 concepts','/solos/c1-c2-concepts/index.html','clone/open → claude → /start-solo → Proof'),
+  link('assignment','Proof · artifact card','/solos/c1-c2-concepts/proof/artifact-card.html','paste into Academy Review'),
   link('vehicle','Practice repo aetherlink-classroom-starter','https://github.com/jyse/aetherlink-classroom-starter','Same copy as Classroom 1'),
   link('naslag','Introduction to Agent Skills','https://academy.claude.com/courses/introduction-to-agent-skills','NASLAG.md Teach Day 2 · Anthropic Academy'),
   link('naslag','Introduction to Subagents','https://academy.claude.com/courses/introduction-to-subagents','NASLAG.md Teach Day 2 · Anthropic Academy'),
   link('naslag','Agents / parallel','https://code.claude.com/docs/en/agents','NASLAG.md Teach Day 2 · code.claude.com'),
-  link('naslag','Claude Code skills docs','https://code.claude.com/docs/en/skills','AET-104 in-app Naslag SoT · official docs'),
-  link('naslag','Sub-agents docs','https://code.claude.com/docs/en/sub-agents','AET-104 in-app Naslag SoT · official docs'),
-  link('naslag','Claude Code concepts (Carl)','https://ccforeveryone.com/guides/claude-code-concepts-explained','Naslag only · CC BY-NC-ND · no re-host'),
-  link('diagram','Customize stack diagram','/diagrams/classroom/c2-customize-stack.svg','Classroom 2 · AET-129 P3 retrofit')
+  link('naslag','Claude Code skills docs','https://code.claude.com/docs/en/skills','Official docs'),
+  link('naslag','Sub-agents docs','https://code.claude.com/docs/en/sub-agents','Official docs'),
+  link('naslag','Claude Code concepts (Carl)','https://ccforeveryone.com/guides/claude-code-concepts-explained','External guide · CC BY-NC-ND'),
+  link('diagram','Customize stack diagram','/diagrams/classroom/c2-customize-stack.svg','Classroom 2')
  ],
  diagrams:[DIAGRAM_EN],
  simTitles:{'c2-customize-stack':'Concept sim · customize stack'},
@@ -104,10 +104,10 @@ const en = {
   stretch:'Have a partner copy your skills and run the workflow on their own tickets (assignment 13, slide 84).'
  },
  openItems:[
-  'The lesson plan names subagents and hooks for Classroom 2; the deck has no slide for them — P3 diagram + ConceptSim teach them.',
+  'The lesson plan names subagents and hooks for Classroom 2; the deck has no slide for them — the stack diagram and ConceptSim teach them.',
   'The deck has no separate live-demo slide; the facilitator chooses the demo piece.',
   'Assignments 12 and 13 need an approved Jira connection via MCP per participant (notes slide 80).',
-  'Room deck for this day = Academy /classroom/2 (AET-105 overlay out — thin pointer only).'
+  'The room deck for this day is Academy /classroom/2.'
  ]
 };
 
@@ -121,14 +121,14 @@ const nl = {
  leerdoel:'Je legt vaste afspraken vast in CLAUDE.md, maakt van een herhaalde werkwijze een skill, gebruikt begrensde subagents wanneer een rol scoped moet blijven, haalt via MCP read-only context op met hooks als gates, en ontwerpt de kleinste nuttige teamworkflow. Dat artefact is het vertrekpunt voor Workshop 6 en 7.',
  narrative:[
   'Classroom 2 leert de customize-stack / Agent Capability Map: CLAUDE.md voor always-on regels, skills voor methodes die je opnieuw typt, subagents voor begrensde specialistenruns, daarna MCP read-only context met hooks als stop/allow-gates.',
-  'De deck heeft mogelijk geen aparte subagent- of hooks-dia — het lesplan noemt ze al. Narrative, diagram en ConceptSim leren de volle stack terwijl solos A6–A13 het Apple-bar-voertuig blijven.',
-  'Houd Uitleg → Voordoen → Zelf doen. Jessy/Cons TD2 is pedagogie-SoT — we voegen stackdiagram en ConceptSim toe; we herschrijven de opdrachten niet.',
+  'Subagents en hooks krijgen weinig diatijd, dus het verhaal, het diagram en de ConceptSim behandelen de volle stack terwijl je oefent in opdrachten A6–A13.',
+  'Elk blok volgt hetzelfde ritme: uitleg, voordoen en daarna zelf doen. Het stackdiagram en de ConceptSim ondersteunen de opdrachten.',
  ],
  workedExample:'Mechanisme: customize-stack CLAUDE.md → skills → subagents → MCP/hooks op aetherlink-classroom-starter. Motto: CLAUDE.md → skills → subagents → MCP/hooks. Stap ConceptSim c2-customize-stack (Agent Capability Map / kleinste nuttige workflow) zonder API-sleutels, daarna A6–A13. Proof-AC voor dag 2: use-case-one-liner waar Workshop 6 mee start + Agent Capability Map + één artefact. Room-deck = Academy /classroom/2.',
  loop:[
   {label:'CLAUDE.md',prompt:'Welke afspraken moet elke nieuwe sessie kennen zonder uitleg? (cite: dia 54 CLAUDE.md · A6–A7 dia 55/57)'},
   {label:'Skill',prompt:'Welke werkwijze herhaal je en hoe maak je die herbruikbaar? (cite: dia 63 skills · A9–A10 dia 66/69)'},
-  {label:'Bounded run',prompt:'Welke reeks werk mag Claude doen en waar stopt het voor akkoord? Subagents houden rollen begrensd (cite: P3-diagram /diagrams/classroom/c2-customize-stack.svg · ConceptSim c2-customize-stack — geen deck-dia)'},
+  {label:'Bounded run',prompt:'Welke reeks werk mag Claude doen en waar stopt het voor akkoord? Subagents houden rollen begrensd (cite: stackdiagram /diagrams/classroom/c2-customize-stack.svg · ConceptSim c2-customize-stack — geen deck-dia)'},
   {label:'MCP',prompt:'Welke informatie lees je read-only en welke acties keur je niet goed? Hooks bewaken de rest (cite: dia 80/81 · A12)'},
   {label:'Workflow',prompt:'Wat is de kleinste nuttige teamworkflow met een menselijk checkpoint? Benoem die op je Agent Capability Map (cite: ConceptSim c2-customize-stack · A13 dia 84)'},
   {label:'Handoff',prompt:'Welke use-case-one-liner neem je mee naar Workshop 6? Proof-AC = Agent Capability Map + één artefact (voedt W6)'}
@@ -145,16 +145,16 @@ const nl = {
  },
  solo:SOLO_NL,
  materials:[
-  link('solo','Solo-in-Claude · C1–C2-concepten','/solos/c1-c2-concepts/index.html','AET-132 · clone/open → claude → /start-solo → Proof'),
-  link('assignment','Proof · artefactkaart','/solos/c1-c2-concepts/proof/artifact-card.html','AET-132 · plak in Academy Review'),
+  link('solo','Solo-in-Claude · C1–C2-concepten','/solos/c1-c2-concepts/index.html','clone/open → claude → /start-solo → Proof'),
+  link('assignment','Proof · artefactkaart','/solos/c1-c2-concepts/proof/artifact-card.html','plak in Academy Review'),
   link('vehicle','Oefenrepository aetherlink-classroom-starter','https://github.com/jyse/aetherlink-classroom-starter','Zelfde kopie als Classroom 1'),
   link('naslag','Introduction to Agent Skills','https://academy.claude.com/courses/introduction-to-agent-skills','NASLAG.md Teach Day 2 · Anthropic Academy'),
   link('naslag','Introduction to Subagents','https://academy.claude.com/courses/introduction-to-subagents','NASLAG.md Teach Day 2 · Anthropic Academy'),
   link('naslag','Agents / parallel','https://code.claude.com/docs/en/agents','NASLAG.md Teach Day 2 · code.claude.com'),
-  link('naslag','Claude Code skills-docs','https://code.claude.com/docs/en/skills','AET-104 in-app Naslag SoT · officiële docs'),
-  link('naslag','Sub-agents-docs','https://code.claude.com/docs/en/sub-agents','AET-104 in-app Naslag SoT · officiële docs'),
-  link('naslag','Claude Code-concepten (Carl)','https://ccforeveryone.com/guides/claude-code-concepts-explained','Naslag alleen · CC BY-NC-ND · niet herhosten'),
-  link('diagram','Customize-stackdiagram','/diagrams/classroom/c2-customize-stack.svg','Classroom 2 · AET-129 P3-retrofit')
+  link('naslag','Claude Code skills-docs','https://code.claude.com/docs/en/skills','Officiële docs'),
+  link('naslag','Sub-agents-docs','https://code.claude.com/docs/en/sub-agents','Officiële docs'),
+  link('naslag','Claude Code-concepten (Carl)','https://ccforeveryone.com/guides/claude-code-concepts-explained','Externe gids · CC BY-NC-ND'),
+  link('diagram','Customize-stackdiagram','/diagrams/classroom/c2-customize-stack.svg','Classroom 2')
  ],
  diagrams:[DIAGRAM_NL],
  simTitles:{'c2-customize-stack':'Concept-sim · customize-stack'},
@@ -184,10 +184,10 @@ const nl = {
   stretch:'Laat een partner je skills kopiëren en de workflow op eigen tickets draaien (opdracht 13, dia 84).'
  },
  openItems:[
-  'Het lesplan noemt subagents en hooks voor Classroom 2; de deck heeft er geen dia voor — P3-diagram + ConceptSim leren ze.',
+  'Het lesplan noemt subagents en hooks voor Classroom 2; de deck heeft er geen dia voor — het stackdiagram en de ConceptSim leren ze.',
   'De deck heeft geen aparte live-demo-dia; de facilitator kiest het demo-onderdeel.',
   'Opdracht 12 en 13 vragen per deelnemer een goedgekeurde Jira-verbinding via MCP (notities dia 80).',
-  'Room-deck voor deze dag = Academy /classroom/2 (AET-105-overlay buiten scope — alleen dunne pointer).'
+  'De room-deck voor deze dag is Academy /classroom/2.'
  ]
 };
 

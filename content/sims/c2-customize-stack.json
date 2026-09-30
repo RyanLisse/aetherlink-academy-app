@@ -1,6 +1,6 @@
 {
   "version": "c2-customize-stack",
-  "attribution": "Academy-authored ConceptSim for Classroom 2 / AET-129 (CLAUDE.md → skills → subagents → MCP/hooks). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches the customize stack / Agent Capability Map on the Aether Library vehicle. Not a port of an upstream chapter.",
+  "attribution": "Academy-authored ConceptSim for Classroom 2 (CLAUDE.md → skills → subagents → MCP/hooks). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches the customize stack / Agent Capability Map on the Aether Library vehicle. Not a port of an upstream chapter.",
   "locales": {
     "en": {
       "title": "Customize stack · CLAUDE.md → skills → subagents → MCP/hooks",
@@ -94,10 +94,10 @@
         {
           "type": "assistant_text",
           "content": "Smallest useful team workflow: CLAUDE.md rules → create-concept-card skill → research subagent → MCP read-only day-start brief → human checkpoint. Ready as a Workshop 6 use-case seed.",
-          "annotation": "Capability map closed. Apple bar solos A6–A13 unchanged."
+          "annotation": "Capability map closed."
         }
       ],
-      "attribution": "Academy-authored ConceptSim for Classroom 2 / AET-129 (CLAUDE.md → skills → subagents → MCP/hooks). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches the customize stack / Agent Capability Map on the Aether Library vehicle. Not a port of an upstream chapter."
+      "attribution": "Academy-authored ConceptSim for Classroom 2 (CLAUDE.md → skills → subagents → MCP/hooks). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches the customize stack / Agent Capability Map on the Aether Library vehicle. Not a port of an upstream chapter."
     },
     "nl": {
       "title": "Customize-stack · CLAUDE.md → skills → subagents → MCP/hooks",
@@ -191,10 +191,10 @@
         {
           "type": "assistant_text",
           "content": "Kleinste nuttige teamworkflow: CLAUDE.md-regels → create-concept-card-skill → research-subagent → MCP read-only day-start-brief → menselijk checkpoint. Klaar als use-case-zaadje voor Workshop 6.",
-          "annotation": "Capability map gesloten. Apple-bar-solos A6–A13 ongewijzigd."
+          "annotation": "Capability map gesloten."
         }
       ],
-      "attribution": "Door Academy geschreven ConceptSim voor Classroom 2 / AET-129 (CLAUDE.md → skills → subagents → MCP/hooks). Scenariovorm compatibel met shareAI-lab/learn-claude-code (MIT). Leert de customize-stack / Agent Capability Map op het Aether Library-voertuig. Geen port van een upstream-hoofdstuk."
+      "attribution": "Door Academy geschreven ConceptSim voor Classroom 2 (CLAUDE.md → skills → subagents → MCP/hooks). Scenariovorm compatibel met shareAI-lab/learn-claude-code (MIT). Leert de customize-stack / Agent Capability Map op het Aether Library-voertuig. Geen port van een upstream-hoofdstuk."
     }
   }
 }

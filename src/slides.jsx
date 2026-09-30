@@ -56,7 +56,7 @@ export function Decks({room,action,busy,onRoom,onContext}){
   <div className="notice"><strong><Sparkles size={14}/> {t('decks.agentTitle')}</strong><p>{t('decks.agentBody')}</p></div>
   {listError&&<StatusState kind="error" title={t('decks.loadFailed')} action={<button type="button" onClick={refresh}>{t('status.retry')}</button>}>{listError}<p>{t('decks.loadFailedHelp')}</p></StatusState>}
   {decks===null&&!listError&&<StatusState kind="loading" title={t('common.loading')}/>}
-  {decks&&!decks.length&&!listError&&<StatusState kind="empty" title={t('decks.empty')} action={<button type="button" className="gradient" onClick={()=>createRef.current?.querySelector('input')?.focus()}>{t('decks.create')}</button>}>{t('decks.emptyHelp')}</StatusState>}
+  {decks&&!decks.length&&!listError&&<StatusState kind="empty" title={t('decks.empty')}>{t('decks.emptyHelp')}</StatusState>}
   {decks&&decks.length>0&&<div className="deck-list">{decks.map(deck=><article className="deck-card" key={deck.id}>
    <button type="button" className="deck-open" onClick={()=>setOpen(deck.id)}><strong>{deck.title}</strong><small className="muted">{t('decks.meta',{count:deck.slideCount,revision:deck.revision,by:deck.createdBy?.name||'?'})}</small></button>
    <div className="deck-card-actions">

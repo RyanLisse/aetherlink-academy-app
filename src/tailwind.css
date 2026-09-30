@@ -29,10 +29,9 @@
    * `border` (width-only) utility renders. Instead of resetting the whole document we scope
    * it to generated components: their own `[data-slot]` markers plus `.academy-ui` panels.
    */
-  [data-slot],
-  [data-slot] *,
-  .academy-ui,
-  .academy-ui * {
+  :where([data-slot], [data-slot] *, .academy-ui, .academy-ui *) {
+    border-width: 0;
     border-style: solid;
+    border-color: var(--border);
   }
 }
