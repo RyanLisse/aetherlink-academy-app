@@ -322,6 +322,7 @@ function SoloShell({navigate, search}) {
           className="arcade-solo-frame"
           title={title}
           src={soloPlayerSrc(resolved.id)}
+          sandbox="allow-scripts allow-same-origin"
           allow="autoplay"
         />
       </div>

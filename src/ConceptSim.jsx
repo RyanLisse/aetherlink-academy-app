@@ -19,18 +19,15 @@ function useStepThrough(steps){
   const clear=useCallback(()=>{if(timer.current){clearTimeout(timer.current);timer.current=null;}},[]);
   const total=steps.length;
   const complete=index>=total-1;
-  const stepForward=useCallback(()=>{
-    setIndex(prev=>{
-      if(prev>=total-1){setPlaying(false);return prev;}
-      return prev+1;
-    });
-  },[total]);
+  const stepForward=useCallback(()=>setIndex(prev=>Math.min(prev+1,total-1)),[total]);
   const play=useCallback(()=>{if(!complete)setPlaying(true);},[complete]);
   const pause=useCallback(()=>{clear();setPlaying(false);},[clear]);
   const reset=useCallback(()=>{clear();setPlaying(false);setIndex(-1);},[clear]);
   useEffect(()=>{
     if(playing&&index<total-1){
-      timer.current=setTimeout(stepForward,1200/speed);
+      const id=setTimeout(stepForward,1200/speed);
+      timer.current=id;
+      return ()=>{clearTimeout(id);if(timer.current===id)timer.current=null;};
     }else if(playing&&index>=total-1){
       setPlaying(false);
     }
