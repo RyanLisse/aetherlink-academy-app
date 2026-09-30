@@ -91,9 +91,9 @@ test('participant views: loading, empty, error and offline states are visible an
     await page.getByRole('heading',{name:'Squad Noord'}).waitFor();
     const navigation=page.getByRole('navigation',{name:'Hoofdnavigatie'});
     const nav=name=>navigation.getByRole('button',{name,exact:true});
-    const selectNav=async name=>{if(name!=='Mijn route'&&name!=='Les'&&name!=='Squad-room'&&!await nav(name).isVisible())await nav('Meer').click();await nav(name).click();};
+    const selectNav=async name=>{if(name!=='Vandaag'&&name!=='Les'&&name!=='Squad-room'&&!await nav(name).isVisible())await nav('Meer').click();await nav(name).click();};
     assert.equal(await page.locator('.right-rail').count(),0,'participant support rail is closed by default');
-    for(const [label,ready] of [['Mijn route','Vijf dagen. Echte voortgang.'],['Les',null],['Solo-missie',null],['Naslag','Alles wat al vrijgegeven is, om na te lezen'],['Review & overdracht','Alles klaar voor overdracht?']]){
+    for(const [label,ready] of [['Vandaag','Je plan voor vandaag'],['Mijn route','Vijf dagen. Echte voortgang.'],['Les',null],['Solo-missie',null],['Naslag','Alles wat al vrijgegeven is, om na te lezen'],['Review & overdracht','Alles klaar voor overdracht?']]){
       await selectNav(label);
       await page.waitForFunction(()=>!document.querySelector('.primary [data-status="loading"]'),null,{timeout:10000});
       assert.equal(await page.locator('.primary').innerText().then(text=>text.trim().length>0),true,`${label} is never blank`);
@@ -128,7 +128,7 @@ test('participant views: loading, empty, error and offline states are visible an
     assert.equal(await nav('Debriefbord').count(),0,'participants only see the board once it exists');
 
     await page.route('**/game/day-route?*',route=>route.fulfill({status:500,contentType:'application/json',body:JSON.stringify({error:'Synthetische serverfout.'})}));
-    await nav('Mijn route').click();
+    await selectNav('Mijn route');
     const failure=page.locator('.primary [data-status="error"]');
     await failure.waitFor();
     assert.equal(await failure.getAttribute('role'),'alert');

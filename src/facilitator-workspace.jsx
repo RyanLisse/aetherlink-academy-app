@@ -1,8 +1,9 @@
 import React,{useEffect,useRef,useState} from 'react';
-import {ArrowRight,BookOpen,ChevronDown,Code2,Copy,ExternalLink,MoreHorizontal,Presentation,Settings2,Sparkles,Users,X} from 'lucide-react';
+import {ArrowRight,BookOpen,Check,ChevronDown,ClipboardCheck,Code2,Copy,ExternalLink,HelpCircle,MoreHorizontal,Pause,Play,Presentation,RotateCw,Settings2,Sparkles,Users,X} from 'lucide-react';
 import {Chat} from './chat';
 import {Coach} from './panels';
 import {useT} from './i18n';
+import {clock} from './today';
 import './facilitator-workspace.css';
 
 function RoomInvite({room}){
@@ -22,7 +23,57 @@ function RoomInvite({room}){
  </section>;
 }
 
-export function FacilitatorWorkspace({room,view,onNavigate,renderContent,controls,classroom,onPresent,account,error,connected}){
+function SessionCockpit({room,control,busy,connected,onNavigate}){
+ const t=useT();
+ const online=room.members.filter(m=>m.online);
+ const help=room.members.filter(m=>m.help);
+ const status=room.running?t('room.practice'):room.remaining===0?t('room.timeUp'):t('room.paused');
+ const send=(...args)=>{if(!busy)control?.(...args);};
+ return <div className="cockpit" data-testid="session-cockpit">
+  <RoomInvite room={room}/>
+  <section className="cockpit-card" aria-labelledby="cockpit-people" data-testid="cockpit-people">
+   <h2 id="cockpit-people"><Users size={17} aria-hidden="true"/>{t('cockpit.people')}</h2>
+   <p className="cockpit-stat">{online.length}<small>{t('cockpit.onlineOf',{total:room.members.length})}</small></p>
+   {help.length>0&&<p className="cockpit-alert"><HelpCircle size={15} aria-hidden="true"/>{t('cockpit.help',{names:help.map(m=>m.name).join(', ')})}</p>}
+   {room.members.length?<ul className="cockpit-members">{room.members.slice(0,6).map(m=><li key={m.id}><span className={'presence'+(m.online?' present':'')} aria-hidden="true"/>{m.name}<small>{m.role}</small></li>)}</ul>:<p className="muted">{t('cockpit.nobody')}</p>}
+   <button type="button" className="text-button" onClick={()=>onNavigate('participants')}>{t('cockpit.allParticipants')}<ArrowRight size={15} aria-hidden="true"/></button>
+  </section>
+  <section className="cockpit-card" aria-labelledby="cockpit-round" data-testid="cockpit-round">
+   <h2 id="cockpit-round">{t('fac.round')} {room.round} · {room.phase}</h2>
+   <p className="cockpit-stat">{clock(room.remaining)}<small>{status}</small></p>
+   <div className="cockpit-actions">
+    <button type="button" disabled={!connected} aria-pressed={room.running} onClick={()=>send(room.running?'pause':'start')}>{room.running?<Pause size={16} aria-hidden="true"/>:<Play size={16} aria-hidden="true"/>}{room.running?t('cockpit.pauseRound'):t('cockpit.startRound')}</button>
+    <button type="button" disabled={!connected} onClick={()=>send('next')}><RotateCw size={16} aria-hidden="true"/>{t('fac.nextRound')}</button>
+   </div>
+  </section>
+ </div>;
+}
+
+function SessionChecklist({room,onNavigate}){
+ const t=useT();
+ const pending=room.evidence.filter(e=>e.status==='pending').length;
+ const joined=room.members.length;
+ const groups=[
+  ['cockpit.before',[
+   ['decks','simple.prepare','simple.prepareHelp',Presentation,room.classroomOverlayDeckId?t('cockpit.deckPinned'):null,Boolean(room.classroomOverlayDeckId)],
+   ['participants','cockpit.invite','cockpit.inviteHelp',Users,joined?t('cockpit.joined',{count:joined}):t('cockpit.waiting'),joined>0],
+  ]],
+  ['cockpit.during',[
+   ['lesson','simple.teach','simple.teachHelp',BookOpen,null,false],
+   ['review','cockpit.review','cockpit.reviewHelp',ClipboardCheck,pending?t('cockpit.pending',{count:pending}):room.evidence.length?t('cockpit.reviewed'):null,room.evidence.length>0&&!pending],
+  ]],
+  ['cockpit.after',[
+   ['debrief','simple.reflect','simple.reflectHelp',Users,room.board?t(room.board.status==='closed'?'cockpit.boardClosed':'cockpit.boardOpen'):null,room.board?.status==='closed'],
+  ]],
+ ];
+ return <div className="simple-agenda" data-testid="session-checklist"><h2>{t('simple.today')}</h2>
+  {groups.map(([heading,items])=><section key={heading} className="cockpit-phase" aria-label={t(heading)}><h3>{t(heading)}</h3>
+   {items.map(([id,title,help,Icon,status,done])=><button type="button" key={title} data-state={done?'done':'todo'} onClick={()=>onNavigate(id)}>{done?<Check size={22} aria-hidden="true" className="cockpit-done"/>:<Icon size={22} aria-hidden="true"/>}<span><strong>{t(title)}</strong><small>{t(help)}</small></span>{status&&<span className={done?'progress-chip on':'progress-chip'}>{status}</span>}<ArrowRight size={18} aria-hidden="true"/></button>)}
+  </section>)}
+ </div>;
+}
+
+export function FacilitatorWorkspace({room,view,onNavigate,renderContent,controls,classroom,onPresent,account,error,connected,control,busy}){
  const t=useT();
  const [assistant,setAssistant]=useState(false);
  const [connection,setConnection]=useState(false);
@@ -62,10 +113,8 @@ export function FacilitatorWorkspace({room,view,onNavigate,renderContent,control
      <p className="simple-eyebrow">{t('simple.facilitator')} · {t('classroom.dayHint',{day:room.day})}</p>
      <h1>{room.name}</h1><p className="simple-intro">{t('simple.intro')}</p>
      <button type="button" className="simple-primary" onClick={onPresent}><Presentation size={19}/>{t('simple.present')}</button>
-     <RoomInvite room={room}/>
-     <div className="simple-agenda"><h2>{t('simple.today')}</h2>
-      {[['decks','simple.prepare','simple.prepareHelp',Presentation],['lesson','simple.teach','simple.teachHelp',BookOpen],['debrief','simple.reflect','simple.reflectHelp',Users]].map(([id,title,help,Icon])=><button type="button" key={id} onClick={()=>navigate(id)}><Icon size={22}/><span><strong>{t(title)}</strong><small>{t(help)}</small></span><ArrowRight size={18}/></button>)}
-     </div>
+     <SessionCockpit room={room} control={control} busy={busy} connected={connected} onNavigate={navigate}/>
+     <SessionChecklist room={room} onNavigate={navigate}/>
      <div className="simple-help"><span>{t('simple.help')}</span><button type="button" onClick={()=>{setConnection(false);setAssistant(true);}}><Sparkles size={17}/>{t('simple.assistant')}</button></div>
     </section>:view==='participants'?<section className="simple-participants"><h1>{t('simple.participants')}</h1><p className="muted">{t('simple.participantHelp')}</p><RoomInvite room={room}/><ul>{room.members.map(m=><li key={m.id}><strong>{m.name}</strong><span>{m.role} · {m.online?t('roster.online'):t('roster.offline')}{m.help?' · '+t('roster.helpAsked'):''}</span></li>)}</ul>{!room.members.length&&<p>{t('roster.empty')}</p>}</section>:renderContent(setContext)}
    </main>

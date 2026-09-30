@@ -40,6 +40,8 @@ test('public /mcp lists get_screen_state and returns the caller\'s live screen a
   assert.deepEqual(await g.screen(c),expected(room.roomId));
   assert.equal((await g.post('/game/screen-state',ann.browser,{tabId:TAB_A,view:'lesson'})).status,204);
   assert.deepEqual(await g.screen(c),expected(room.roomId,{lessonId:'day-1',route:'lesson',proof:{open:false,section:null},quiz:{id:'day-1-quiz',status:'idle',itemIndex:null}}));
+  assert.equal((await g.post('/game/screen-state',ann.browser,{tabId:TAB_A,view:'today'})).status,204);
+  assert.deepEqual(await g.screen(c),expected(room.roomId,{lessonId:'day-1',route:'today',proof:{open:false,section:null}}));
   assert.equal((await g.post('/game/screen-state',ann.browser,{tabId:TAB_A,view:'decks',deckId:DECK,slideIndex:2,slideId:'s3'})).status,204);
   assert.deepEqual(await g.screen(c),expected(room.roomId,{route:`decks/${DECK}`,slideIndex:2,proof:{open:false,section:null}}));
  }finally{await g.close();}
