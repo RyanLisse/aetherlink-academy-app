@@ -1,276 +1,265 @@
-/** AET-80 Workshop day 4 — classroom-style deck with visible concepts and assignment timers.
- *  OUTLINE-AET-80 · PRODUCT-ACCEPT-OUTLINE-AET-80 · PEDAGOGY-RHYTHM · CLASSROOM-STYLE
- *  Vehicle LOCKED: https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent — flat SOLO 0→4, no SDLC
- *  Parity: same support-ticket L/M/H fixture as Workshop 3
- *  Classroom style: visible concept cards, AetherBOT, and on-slide exercise timers.
- *  Exercises show their steps and timers on-slide; facilitator notes remain.
- *  Forbidden: Eve required; Classroom rewrite; W5 SDLC into this deck; merging W4/W5 vehicles; secrets.
- */
+/** AET-80 Workshop 4 · Claude Agent SDK lessons · classroom deck. */
 export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
-
-/* ========== Open ========== */
-
-{ // 1
-  lessonId: "workshop-4",
-  title: "Same triage. Claude Agent SDK.",
-  kicker: "Workshop 4 · Day 4 · rebuild",
-  type: "concept",
-  visual: { bot: 'wave', place: 'beside' },
-  subtitle: "Rebuild yesterday’s ticket triage on Claude Agent SDK, using the same labels.",
-  keyPoints: ["Same tickets.","Same acceptance labels.","SOLO 2 is required; SOLO 3 is stretch."],
-  cards: [
-    { title: "Yesterday", body: "n8n routes the shared ticket fixture." },
-    { title: "Today", body: "Rebuild that behavior with Claude Agent SDK." },
-  ],
-  notes: "Open. Yesterday = n8n. Today = same tickets on Claude Agent SDK. Rhythm: I explain → I show → you do on your laptop. No dual-track required path. Solo bar ≥ SOLO 2; SOLO 3 stretch."
-},
-
-{ // 2
-  lessonId: "workshop-4",
-  title: "Clone the rebuild vehicle.",
-  kicker: "Vehicle · aetherlink-day5-n8n-to-agent",
-  type: "context",
-  visual: { bot: 'wave', place: 'beside' },
-  cards: [
-    { title: "Repository", body: "github.com/RyanLisse/aetherlink-day5-n8n-to-agent" },
-    { title: "Shape", body: "Work through SOLO 0–4; this is not an SDLC lab." },
-  ],
-  subtitle: "Use the separate day-4 repository for the flat SOLO 0–4 rebuild.",
-  keyPoints: ["Clone the locked repository.","Follow SOLO 0–4.","Keep the W5 lab separate."],
-  notes: "Vehicle LOCKED. Same GitHub URL — flat SOLO 0–4, no SDLC. Point /workshop/4, not old Day-5 SDLC deck. W5 SDLC lab is a different repo tomorrow — do not merge vehicles."
-},
-
-{ // 3
-  lessonId: "workshop-4",
-  title: "Watch: clone, install, open the export.",
-  kicker: "Demo · SOLO 0",
-  type: "concept",
-  visual: { bot: 'think', place: 'beside' },
-  subtitle: "Watch the facilitator clone the repo, install it, and inspect the n8n export.",
-  keyPoints: ["Find support-triage.json.","Name Ticket Input, AI Agent, Reply, and Risk.","Watch before building."],
-  cards: [
-    { title: "Clone", body: "Start from the day-4 repository." },
-    { title: "Install", body: "Run npm install." },
-  ],
-  notes: "Demo — clone path. Facilitator clones / shows npm install + where n8n/support-triage.json lives. Room watches; does not build yet. Script: git clone → npm install → open export → name Ticket Input / AI Agent / Reply / Risk."
-},
-
-{ // 4
-  lessonId: "workshop-4",
-  title: "Clone and open the n8n export.",
-  kicker: "SOLO 0 · Your turn",
-  type: "practice",
-  layout: "exercise",
-  timer: 10,
-  visual: { bot: 'point', place: 'beside' },
-  cards: [
-    { title: "Level", body: "SOLO 0" }
-  ],
-  steps: ["Clone the aetherlink-day5-n8n-to-agent repository.","Run npm install.","Open n8n/support-triage.json.","Use your own work/<name> branch."],
-  expected: "The n8n export is open locally on an owned work/<name> branch.",
-  subtitle: "Set up the local export on your own branch before checking parity.",
-  keyPoints: ["Clone the locked repo.","Install and open the export.","Work on your own branch."],
-  notes: "Your turn — SOLO 0 on your machine. Timer: 10 min. Checklist: (1) clone github.com/RyanLisse/aetherlink-day5-n8n-to-agent (2) npm install (3) open n8n/support-triage.json (4) own work/<name> branch. Gate before parity."
-},
-
-/* ========== Parity ========== */
-
-{ // 5
-  lessonId: "workshop-4",
-  title: "Labels don’t move.",
-  kicker: "Explain · shared acceptance",
-  type: "concept",
-  visual: { bot: 'point', place: 'beside' },
-  subtitle: "Claude reproduces the Low / Med / High labels on the same fixture as Workshop 3.",
-  keyPoints: ["Reuse Low / Med / High.","Let the Academy autograder confirm.","Do not say the labels out loud."],
-  cards: [
-    { title: "Same fixture", body: "Keep the Workshop 3 ticket inputs." },
-    { title: "Same labels", body: "Do not invent a new product or answer key." },
-  ],
-  notes: "Explain — Labels don’t move. Low/Med/High on the same fixture as Workshop 3. Claude must reproduce the n8n labels — not invent a new product. The Academy autograder holds the answer key; never say the labels out loud."
-},
-
-{ // 6
-  lessonId: "workshop-4",
-  title: "Watch: fixture tickets, predict L/M/H.",
-  kicker: "Demo · SOLO 1",
-  type: "concept",
-  visual: { bot: 'think', place: 'beside' },
-  subtitle: "Predict each fixture’s label before the Academy autograder confirms it.",
-  keyPoints: ["Predict before checking.","Use the Academy autograder.","Open W3 Proof if attendees have it."],
-  cards: [
-    { title: "Fixtures", body: "Read ticket.json and ticket-followup.json." },
-    { title: "Predict", body: "Name a Low / Med / High label for each." },
-  ],
-  notes: "Demo — fixture tickets, predict L/M/H. Show fixtures/ticket.json and ticket-followup.json; let the room predict a label per ticket without revealing the answer. The autograder in the Academy confirms. Point at W3 Proof if attendees have it."
-},
-
-{ // 7
-  lessonId: "workshop-4",
-  title: "Confirm the fixture on your machine.",
-  kicker: "SOLO 1 · Your turn",
-  type: "practice",
-  layout: "exercise",
-  timer: 10,
-  visual: { bot: 'point', place: 'beside' },
-  cards: [
-    { title: "Level", body: "SOLO 1" }
-  ],
-  steps: ["List at least two fixture tickets.","Predict each Low / Med / High label.","Submit predictions to the autograder.","Open W3 Proof if available."],
-  expected: "At least two fixture predictions are submitted and correct, with W3 Proof open when available.",
-  subtitle: "Submit predictions for at least two fixture tickets and check them with the autograder.",
-  keyPoints: ["List two tickets.","Predict and submit their labels.","Check the autograder result."],
-  notes: "Your turn — SOLO 1 predict and check. Timer: 10 min. Checklist: (1) ≥2 tickets listed (2) predicted L/M/H submitted to the autograder and all correct (3) W3 Proof open if they have it. Gate before first agent."
-},
-
-/* ========== First agent (SOLO 2) ========== */
-
-{ // 8
-  lessonId: "workshop-4",
-  title: "systemPrompt · prompt · tools · memory.",
-  kicker: "Explain · four fundamentals",
-  type: "concept",
-  visual: { bot: 'point', place: 'beside' },
-  subtitle: "Map the n8n AI Agent to the SDK fields used for today’s ticket-to-priority run.",
-  keyPoints: ["Map the four fundamentals.","Today uses systemPrompt and prompt.","maxTurns is part of the SDK map."],
-  cards: [
-    { title: "systemPrompt + prompt", body: "Set the system instructions and ticket input." },
-    { title: "Tools + memory", body: "Tools and subagents deepen in stretch; memory is markdown." },
-  ],
-  notes: "Explain — Four fundamentals. Map n8n AI Agent → SDK fields: systemPrompt, prompt, tools/subagents, markdown memory (+ maxTurns). Today’s bar = ticket → priority with systemPrompt + prompt. Tools/memory deepen in stretch. Dry-run OK (AGENT_MODEL=offline)."
-},
-
-{ // 9
-  lessonId: "workshop-4",
-  title: "Watch: first agent, ticket to priority.",
-  kicker: "Demo · SOLO 2",
-  type: "concept",
-  visual: { bot: 'think', place: 'beside' },
-  subtitle: "Run the agent on a fixture and show its priority before human acceptance.",
-  keyPoints: ["Run the fixture.","Show the priority output.","Pause for human review before accept."],
-  cards: [
-    { title: "Run", body: "Use the live flow or an offline dry-run." },
-    { title: "Review", body: "Show the priority and the human gate." },
-  ],
-  notes: "Demo — first agent run. Live or dry-run: npm run triage -- fixtures/ticket.json --dry-run. Show priority out + human gate before accept. Room watches."
-},
-
-{ // 10
-  lessonId: "workshop-4",
-  title: "Run your first agent on a fixture.",
-  kicker: "SOLO 2 · Your turn · solo bar",
-  type: "practice",
-  layout: "exercise",
-  timer: 20,
-  visual: { bot: 'point', place: 'beside' },
-  cards: [
-    { title: "Level", body: "SOLO 2" }
-  ],
-  steps: ["Run the agent on at least one fixture.","Capture the priority output.","Have a human review it.","Keep secrets out of the repo."],
-  expected: "The agent runs on a fixture, returns a priority, receives human review, and adds no secrets to the repo.",
-  subtitle: "Run at least one fixture through the agent and show the human review.",
-  keyPoints: ["Run one fixture.","Show the priority.","Record human review."],
-  notes: "Your turn — SOLO 2 solo bar (required ≥SOLO 2). Timer: 20 min. Checklist: (1) agent runs on ≥1 fixture (2) priority out (3) human reviewed (4) no secrets committed. Optional: edit src/prompts.ts then re-run offline."
-},
-
-/* ========== Stretch (SOLO 3) ========== */
-
-{ // 11
-  lessonId: "workshop-4",
-  title: "Reply and Risk as specialists.",
-  kicker: "Explain · subagents or skills",
-  type: "concept",
-  visual: { bot: 'point', place: 'beside' },
-  subtitle: "Optionally split the same ticket work into Reply and Risk specialists.",
-  keyPoints: ["Mirror the n8n L3 split.","Show a joint output.","Keep the human gate."],
-  cards: [
-    { title: "Reply", body: "Draft the customer-reply role." },
-    { title: "Risk", body: "Keep risk or priority with its specialist." },
-  ],
-  notes: "Explain — Reply / Risk specialists. Optional split mirroring n8n L3. Still this ticket vehicle — not SDLC artifacts. Subagents/skills + joint output + human gate."
-},
-
-{ // 12
-  lessonId: "workshop-4",
-  title: "Watch: one specialist split.",
-  kicker: "Demo · SOLO 3",
-  type: "concept",
-  visual: { bot: 'think', place: 'beside' },
-  subtitle: "Watch one optional customer-reply or risk specialist produce a joint output.",
-  keyPoints: ["This is a stretch demo.","Keep the same ticket vehicle.","Room watches the gate."],
-  cards: [
-    { title: "Specialist", body: "Use the customer-reply or risk role." },
-    { title: "Joint output", body: "Show the combined result and its gate." },
-  ],
-  notes: "Demo — one specialist. Demo subagent/skill (customer-reply or risk) + joint output + gate. Stretch demo — not required for solo bar. Room watches."
-},
-
-{ // 13
-  lessonId: "workshop-4",
-  title: "Stretch — add a specialist role.",
-  kicker: "SOLO 3 · Your turn · optional",
-  type: "practice",
-  layout: "exercise",
-  timer: 15,
-  visual: { bot: 'point', place: 'beside' },
-  cards: [
-    { title: "Level", body: "SOLO 3" }
-  ],
-  steps: ["Name two specialist roles.","Produce a joint output.","Set draft_only and human_approval_required."],
-  expected: "Two roles produce a joint output with draft_only and human_approval_required at the gate.",
-  subtitle: "Stretch the same ticket into two roles and an explicit human approval gate.",
-  keyPoints: ["Name both roles.","Show the joint output.","Require human approval."],
-  notes: "Your turn — SOLO 3 stretch (optional). Timer: 15 min. Checklist: (1) two roles (2) joint output (3) gate (draft_only + human_approval_required)."
-},
-
-/* ========== Acceptance (SOLO 4) + close ========== */
-
-{ // 14
-  lessonId: "workshop-4",
-  title: "Acceptance is the same labels.",
-  kicker: "Explain · SOLO 4",
-  type: "concept",
-  visual: { bot: 'point', place: 'beside' },
-  subtitle: "Compare Claude output to the n8n expected labels on the same fixture.",
-  keyPoints: ["Use the same labels.","Surface mismatches.","Fix prompt or tools, not the answer key."],
-  cards: [
-    { title: "Expected", body: "Read the ticket’s n8n label." },
-    { title: "Actual", body: "Compare the Claude result." },
-  ],
-  notes: "Explain — Acceptance = same labels. Table: ticket → n8n expected → Claude actual. Mismatches = fix prompt/tools, not new labels."
-},
-
-{ // 15
-  lessonId: "workshop-4",
-  title: "Fill the acceptance table. Ship Proof.",
-  kicker: "SOLO 4 · Your turn · Proof",
-  type: "practice",
-  layout: "exercise",
-  timer: 15,
-  visual: { bot: 'point', place: 'beside' },
-  cards: [
-    { title: "Level", body: "SOLO 4" }
-  ],
-  steps: ["Fill the acceptance table.","Add a dry-run or trace.","Name the human gate.","Record the level reached (2, 3, or 4)."],
-  expected: "The acceptance table, run evidence, human gate, and attained level are recorded.",
-  subtitle: "Record parity, the run evidence, and the level reached in the acceptance table.",
-  keyPoints: ["Record expected and actual labels.","Attach a trace or dry-run.","Name the gate and level."],
-  notes: "Your turn — SOLO 4 + Proof on your machine. Timer: 15 min. Checklist: (1) acceptance table (2) dry-run or trace (3) human gate (4) level reached (2 / 3 / 4)."
-},
-
-{ // 16
-  lessonId: "workshop-4",
-  title: "Tomorrow’s lab is a different repo.",
-  kicker: "Done when · bridge → Workshop 5",
-  type: "recap",
-  layout: "recap",
-  visual: { recapKeys: true, bot: 'point', place: 'beside' },
-  items: [
-    { label: "W4 Done", caption: "Parity on aetherlink-day5-n8n-to-agent at SOLO 2 or higher." },
-    { label: "W5", caption: "AI-native SDLC uses a different repository." },
-    { label: "Keep separate", caption: "Do not drag SDLC back into the W4 repo." },
-  ],
-  notes: "Close. W4 Done = parity on aetherlink-day5-n8n-to-agent (SOLO ≥2). W5 = AI-native SDLC on aetherlink-daily-brief-lab-s1 — do not drag SDLC back into this repo. Outline ≠ Linear Done. Rhythm held: uitleg → voordoen → zelf doen."
-},
-
-];
+  {
+    lessonId: "workshop-4",
+    title: "Yesterday's n8n. Today's Agent SDK.",
+    kicker: "Workshop 4 · Day 4 · three lessons",
+    type: "concept",
+    visual: { bot: "wave", place: "beside" },
+    subtitle: "Carry the labels, specialist split, and human gate from n8n into three Agent SDK lessons.",
+    keyPoints: ["Keep LOW, MEDIUM, and HIGH.", "Separate analysis from reply writing.", "Review drafts before they reach a customer."],
+    cards: [
+      { title: "Workshop 3", body: "n8n routes a support message." },
+      { title: "Workshop 4", body: "The Agent SDK uses query(), subagents, and MCP." },
+    ],
+    notes: "Open with the bridge from Workshop 3. Keep the labels, specialist split, and human review gate. Workshop 4 uses new customer messages and transaction data. Rhythm: explain, demonstrate, participants try, discuss.",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "Map n8n to the Agent SDK.",
+    kicker: "Concept · the four questions",
+    type: "context",
+    visual: { bot: "wave", place: "beside" },
+    subtitle: "The Agent SDK keeps familiar roles while changing how you configure and run them.",
+    keyPoints: ["AI Agent node → query().", "System message → CLAUDE.md via settingSources.", "Specialists, tools, and human review keep their roles."],
+    cards: [
+      { title: "AI Agent node", body: "query() receives the prompt and SDK options." },
+      { title: "System message", body: "CLAUDE.md loads through settingSources: ['project']." },
+      { title: "Specialists", body: "ticket-analyst and email-responder are defined in agents." },
+      { title: "Tool and human gate", body: "MCP get_transaction provides data; a person reviews drafts in output/." },
+    ],
+    notes: "Ask four questions throughout the day: What does the main agent know? What belongs to a subagent? When is a tool needed? What information came from external data? Map the n8n AI Agent node to query(), the system message to CLAUDE.md, Risk and Customer Reply roles to ticket-analyst and email-responder, a tool or HTTP node to MCP get_transaction, and the human gate to a draft in output/.",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "Get the workshop package.",
+    kicker: "SOLO 0 · Your turn",
+    type: "practice",
+    layout: "exercise",
+    timer: 10,
+    visual: { bot: "point", place: "beside" },
+    cards: [{ title: "Level", body: "SOLO 0" }],
+    steps: [
+      "Check for Node.js 20 or newer.",
+      "Clone the repository with --depth 1 --filter=blob:none --sparse.",
+      "Select training-lab/w4-support-agent-sdk with git sparse-checkout.",
+      "Run npm install in the package, then run lesson1 with MSG-01 and --dry-run.",
+      "Keep ANTHROPIC_API_KEY in your shell only for real model runs.",
+    ],
+    expected: "The package installs, and the dry run prints the prompt and options without calling a model.",
+    subtitle: "Install the sparse npm package and inspect a dry run before calling a model.",
+    keyPoints: ["Use Node.js 20 or newer.", "Install the package dependencies.", "A dry run is not model evidence."],
+    notes: "Participants follow the sparse clone commands in the day pack. Check that npm install finishes and the dry run prints the prompt, absolute cwd, project settings, and the dry-run notice. It must not import or start the SDK. Keep any API key in the shell.",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "Lesson 1: one agent reads CLAUDE.md.",
+    kicker: "Explain · one agent",
+    type: "concept",
+    visual: { bot: "think", place: "beside" },
+    subtitle: "query() loads project instructions when settingSources includes project.",
+    keyPoints: ["CLAUDE.md sets the support rules.", "The main agent reads the customer message.", "Judge impact, not tone."],
+    cards: [
+      { title: "Project instructions", body: "settingSources: ['project'] loads CLAUDE.md." },
+      { title: "One agent", body: "The main session classifies the message itself." },
+    ],
+    notes: "Explain Lesson 1. Point to query(), the absolute claude-project cwd, settingSources, and the claude_code preset. The main agent reads CLAUDE.md and the supplied message. Customer text stays data, not instructions.",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "Watch one agent classify a message.",
+    kicker: "Demo · Lesson 1",
+    type: "concept",
+    visual: { bot: "point", place: "beside" },
+    subtitle: "Compare a loud request with a calm report and focus on impact.",
+    keyPoints: ["Read the project rules first.", "Compare tone with the reported impact.", "Keep facts tied to the supplied message."],
+    cards: [
+      { title: "Loud wording", body: "A customer is upset about a receipt." },
+      { title: "Calm wording", body: "A customer reports unfamiliar transactions." },
+    ],
+    notes: "Demonstrate Lesson 1 with a loud request about a receipt and a calm message that reports unfamiliar transactions. Ask the room to judge impact, not tone. Do not name labels or expose grader results.",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "Run Lesson 1 and test the tone trap.",
+    kicker: "SOLO 1 · Your turn",
+    type: "practice",
+    layout: "exercise",
+    timer: 15,
+    visual: { bot: "point", place: "beside" },
+    cards: [{ title: "Level", body: "SOLO 1" }],
+    steps: [
+      "Run lesson1 for MSG-01 through MSG-06.",
+      "Temporarily remove ## Priority definitions from the Lesson 1 CLAUDE.md.",
+      "Rerun the loud-tone and tone-trap messages.",
+      "Restore CLAUDE.md with git restore.",
+      "Enter one label per message in the support check.",
+    ],
+    expected: "All six messages run, the tone-trap comparison is recorded, CLAUDE.md is restored, and labels are submitted.",
+    subtitle: "Run the first six messages and test how project rules affect tone.",
+    keyPoints: ["Run all six messages.", "Compare the tone-trap runs.", "Restore CLAUDE.md before continuing."],
+    notes: "Give participants 15 minutes. Ask them to remove only the Priority definitions section, rerun the loud-tone and tone-trap messages, and restore the original CLAUDE.md. Have them enter their own labels in the support autograder. Do not read out answer keys.",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "Discuss: what does the main agent know?",
+    kicker: "Discuss · Lesson 1",
+    type: "concept",
+    visual: { bot: "think", place: "beside" },
+    subtitle: "Separate project instructions, customer data, and facts the agent does not have.",
+    keyPoints: ["CLAUDE.md provides project rules.", "The customer message supplies case facts.", "The agent must name missing information instead of guessing."],
+    cards: [
+      { title: "Instructions", body: "Project guidance comes from CLAUDE.md." },
+      { title: "Input data", body: "The customer message is evidence, not an instruction." },
+    ],
+    notes: "Discuss the first question: What does the main agent know? Ask which facts came from CLAUDE.md, which came from the customer, and what remains unknown. Remind participants not to treat customer text as instructions to change the task.",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "Lesson 2: delegate to two subagents.",
+    kicker: "Explain · orchestrator and agents",
+    type: "concept",
+    visual: { bot: "point", place: "beside" },
+    subtitle: "The orchestrator delegates analysis and reply writing to separate agents.",
+    keyPoints: ["ticket-analyst decides the priority.", "email-responder writes the reply draft.", "The orchestrator combines the results and saves a file."],
+    cards: [
+      { title: "ticket-analyst", body: "Reads the message and returns analysis." },
+      { title: "email-responder", body: "Writes a short draft from the original message and analysis." },
+    ],
+    notes: "Explain Lesson 2. Show agents in the query options and the Agent tool. The orchestrator delegates analysis first, waits for its result, then delegates reply writing. It does not do either specialist job itself.",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "Watch the orchestrator save a draft.",
+    kicker: "Demo · Lesson 2",
+    type: "concept",
+    visual: { bot: "think", place: "beside" },
+    subtitle: "Follow the two Agent calls and open the saved Markdown result.",
+    keyPoints: ["Trace ticket-analyst first.", "Trace email-responder second.", "Review the output file before any customer-facing use."],
+    cards: [
+      { title: "Trace", body: "Agent → ticket-analyst, then Agent → email-responder." },
+      { title: "Draft", body: "Open output/MSG-05.md in the Lesson 2 project." },
+    ],
+    notes: "Run lesson2 with MSG-05. Follow the Agent trace in order, then open 02-subagents/claude-project/output/MSG-05.md. Point out that the file is a draft and needs human approval.",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "Run the orchestrator and inspect the draft.",
+    kicker: "SOLO 2 · Your turn",
+    type: "practice",
+    layout: "exercise",
+    timer: 20,
+    visual: { bot: "point", place: "beside" },
+    cards: [{ title: "Level", body: "SOLO 2" }],
+    steps: [
+      "Run lesson2 with MSG-05.",
+      "Confirm the analyst call precedes the email-responder call.",
+      "Open 02-subagents/claude-project/output/MSG-05.md.",
+      "Confirm that the orchestrator delegated both specialist jobs.",
+      "Run lesson2 with MSG-10 and inspect the missing-information request.",
+    ],
+    expected: "The trace shows both agents in order, the saved draft is open, and the missing-information case is reviewed.",
+    subtitle: "Trace both specialists, inspect their saved result, and test missing information.",
+    keyPoints: ["Follow the Agent trace.", "Review the saved draft.", "Do not send without human approval."],
+    notes: "Give participants 20 minutes. The expected order is ticket-analyst followed by email-responder. Ask them to point to the orchestrator instructions that keep the two specialist jobs separate. MSG-10 tests how the analyst reports missing information.",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "Lesson 3: look up transaction data through MCP.",
+    kicker: "Explain · stdio MCP",
+    type: "concept",
+    visual: { bot: "point", place: "beside" },
+    subtitle: "The analyst receives workbook facts only through the get_transaction tool.",
+    keyPoints: ["npm install installs dependencies, not a running server.", "The Agent SDK starts the server on demand over stdio.", "The workbook and server stay outside claude-project."],
+    cards: [
+      { title: "Data path", body: "Excel → server.js → get_transaction → query() → ticket-analyst." },
+      { title: "Project boundary", body: "Only the MCP server reads transactions.xlsx." },
+    ],
+    notes: "Explain Lesson 3. Show that 03-mcp/data/transactions.xlsx and transaction-mcp/server.js are outside 03-mcp/claude-project. npm install downloads dependencies only. The Agent SDK starts server.js on demand and connects over stdio.",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "Watch an MCP transaction lookup.",
+    kicker: "Demo · Lesson 3",
+    type: "concept",
+    visual: { bot: "think", place: "beside" },
+    subtitle: "Follow one transaction ID from the customer message to the tool result.",
+    keyPoints: ["The analyst calls get_transaction.", "The server reads the workbook.", "The final response names facts from external data."],
+    cards: [
+      { title: "Tool trace", body: "mcp → mcp__transactions__get_transaction." },
+      { title: "Data boundary", body: "The analyst receives the record through MCP, not a file read." },
+    ],
+    notes: "Run Lesson 3 with the message about TX-1014. Show the MCP trace and the returned record as tool data. Point out the External data: line. Do not display a priority answer or put a label beside a message ID.",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "Run Lesson 3 with transaction messages.",
+    kicker: "SOLO 3 · Your turn",
+    type: "practice",
+    layout: "exercise",
+    timer: 20,
+    visual: { bot: "point", place: "beside" },
+    cards: [{ title: "Level", body: "SOLO 3" }],
+    steps: [
+      "Run npm install in 03-mcp/transaction-mcp; do not start server.js yourself.",
+      "Run lesson3 with MSG-08, MSG-07, and MSG-09.",
+      "Follow the mcp__transactions__get_transaction trace for each lookup.",
+      "Read the External data: line and list the facts that came from the tool.",
+      "Confirm the workbook stays outside claude-project.",
+    ],
+    expected: "The three runs show the MCP trace and external-data source, and the workbook remains outside the project directory.",
+    subtitle: "Use the MCP tool for transaction facts and record their source.",
+    keyPoints: ["Install MCP dependencies.", "Follow each lookup trace.", "Keep the workbook outside the project."],
+    notes: "Give participants 20 minutes. Remind them that npm install does not start the server. They should run the three messages, inspect each External data: line, and confirm that the workbook is outside claude-project.",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "Discuss: tools and external data.",
+    kicker: "Discuss · Lesson 3",
+    type: "concept",
+    visual: { bot: "point", place: "beside" },
+    subtitle: "Name when a tool is needed and where each fact came from.",
+    keyPoints: ["Use a tool when the needed fact is outside the message.", "The MCP result is external data.", "The final response records the source of those facts."],
+    cards: [
+      { title: "Tool needed", body: "A transaction ID needs a controlled workbook lookup." },
+      { title: "External data", body: "get_transaction returns the record to the analyst." },
+    ],
+    notes: "Discuss two questions: When is a tool needed? What information came from external data? Ask participants to trace one claim to the customer message and one to the MCP result. Keep the workbook outside the agent project.",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "Complete the acceptance table and Proof.",
+    kicker: "SOLO 4 · Your turn · Proof",
+    type: "practice",
+    layout: "exercise",
+    timer: 15,
+    visual: { bot: "point", place: "beside" },
+    cards: [{ title: "Level", body: "SOLO 4" }],
+    steps: [
+      "Build a table with message, agent label, and facts from external data.",
+      "Submit your labels to the support-mcp check.",
+      "Review drafts in the Lesson 2 and Lesson 3 output folders.",
+      "Attach the table and a run trace to Proof.",
+      "Record the human review gate; a dry run is not model evidence.",
+    ],
+    expected: "The acceptance table, submitted labels, run trace, and human review gate are recorded in Proof.",
+    subtitle: "Record the labels, external facts, run evidence, and human review.",
+    keyPoints: ["Fill the acceptance table.", "Trace external facts to MCP.", "Have a human review each draft."],
+    notes: "Give participants 15 minutes to complete the acceptance table and support-mcp check. They should attach their trace, review the drafts in both output folders, and record the human gate. Do not use dry-run output as model evidence.",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "Close: keep a human in the loop.",
+    kicker: "Done when · bridge to Workshop 5",
+    type: "recap",
+    layout: "recap",
+    visual: { recapKeys: true, bot: "point", place: "beside" },
+    items: [
+      { label: "One agent", caption: "Project rules and message data guide the first lesson." },
+      { label: "Two subagents", caption: "The orchestrator separates analysis from reply writing." },
+      { label: "One MCP tool", caption: "The transaction analyst gets external facts through get_transaction." },
+      { label: "Human review", caption: "A person reviews every draft before customer-facing use." },
+    ],
+    notes: "Close by recapping the three lessons and the human review gate. Bridge to Workshop 5 without carrying this package or vehicle into the next workshop.",
+  },
+] satisfies ReadonlyArray<Record<string, unknown>>;

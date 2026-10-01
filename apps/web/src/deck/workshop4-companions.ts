@@ -4,6 +4,6 @@
  */
 export const W4_SOLO_COMPANIONS: ReadonlyArray<{readonly label: string; readonly href: string}> = [
   {label: "weather", href: "/courses/weather-agent-sdk/index.html"},
-  {label: "day5 n8n→agent", href: "/courses/aetherlink-day5-n8n-to-agent/index.html"},
+  {label: "day5 n8n→agent (optional parity bonus)", href: "/courses/aetherlink-day5-n8n-to-agent/index.html"},
   {label: "council", href: "/courses/council-agent-sdk/index.html"},
 ];

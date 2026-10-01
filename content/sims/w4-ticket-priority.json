@@ -1,118 +1,114 @@
 {
   "version": "w4-ticket-priority",
-  "attribution": "Academy-authored ConceptSim for Workshop 4 (n8n → Claude Agent SDK). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches ticket→tool_use→priority (s01–s02 territory). Not a port of an upstream chapter.",
+  "attribution": "Academy-authored ConceptSim for Workshop 4 (Claude Agent SDK). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches message→tool_use→priority. Not a port of an upstream chapter.",
   "locales": {
     "en": {
       "title": "Ticket → tool_use → priority",
-      "description": "Step one support ticket through the Claude Agent SDK loop: messages, tool_use, tool_result, then a priority label — without API keys.",
+      "description": "Step one support message through the Claude Agent SDK loop: messages, tool_use, tool_result, and a priority label. No API key is needed.",
       "steps": [
         {
           "type": "user_message",
-          "content": "Triage fixture ticket WL-1026: \"I was charged twice. I need this fixed today or I will file a complaint.\" Return low, medium, or high — same labels as the n8n path.",
-          "annotation": "Ticket enters the agent loop. Labels stay fixed to the shared fixture."
+          "content": "Customer support message: use the project rules to return LOW, MEDIUM, or HIGH. If the message contains a transaction ID, look it up through MCP.",
+          "annotation": "The message enters the Agent SDK query. Workshop 4 uses new messages."
         },
         {
           "type": "assistant_text",
-          "content": "I will classify WL-1026 with the keyword_priority tool, then propose a label for human review before accept.",
-          "annotation": "s01 beat — model plans to call a tool; does not invent a new label set."
+          "content": "I will check whether this message needs a transaction lookup, then propose a priority for human review.",
+          "annotation": "The analyst uses the project rules and supplied message."
         },
         {
           "type": "tool_call",
-          "toolName": "keyword_priority",
-          "content": "{\"ticket_id\":\"WL-1026\",\"message\":\"I was charged twice. I need this fixed today or I will file a complaint.\"}",
-          "annotation": "s02 tool_use — TOOL_HANDLERS dispatch keyword_priority."
+          "toolName": "mcp__transactions__get_transaction",
+          "content": "{\"transaction_id\":\"<id-from-message>\"}",
+          "annotation": "The analyst requests transaction data through the MCP tool."
         },
         {
           "type": "tool_result",
-          "toolName": "keyword_priority",
-          "content": "{\"priority\":\"high\",\"hits\":[\"charged twice\",\"today\",\"complaint\"],\"rule\":\"support-triage-v1\"}",
-          "annotation": "tool_result returns signals. Exit path matches n8n L1 keyword rule."
+          "toolName": "mcp__transactions__get_transaction",
+          "content": "{\"transaction_id\":\"<id>\",\"status\":\"<status>\",\"amount\":\"<amount>\",\"issue_details\":\"<issue>\",\"fraud_flag\":\"<value>\"}",
+          "annotation": "The tool result supplies external facts to the analyst."
         },
         {
           "type": "assistant_text",
-          "content": "Proposed priority for WL-1026: **high**. Duplicate charge + same-day urgency + complaint threat. Awaiting human review.",
-          "annotation": "Model maps tool_result → priority. Solo bar = SOLO 2."
+          "content": "The analyst returns a priority and reason from the message and any transaction facts. A human reviews the draft.",
+          "annotation": "The analyst uses the tool result to inform the priority."
         },
         {
           "type": "system_event",
-          "content": "HUMAN GATE · Review — facilitator checks proposed high against the acceptance table (ticket → expected n8n → Claude). Mismatch → fix prompt/tools, never invent a label.",
-          "annotation": "Human decides before accept. Offline dry-run alone is not model proof."
-        },
-        {
-          "type": "tool_call",
-          "toolName": "write_acceptance_row",
-          "content": "{\"ticket_id\":\"WL-1026\",\"expected_n8n\":\"high\",\"claude\":\"high\",\"match\":true}",
-          "annotation": "Acceptance table row — same fixture as Workshop 3."
-        },
-        {
-          "type": "tool_result",
-          "toolName": "write_acceptance_row",
-          "content": "Row recorded. gradeTriage so far: 1/1 match. Continue remaining fixtures for SOLO 4.",
-          "annotation": "Proof stays on the shared fixture."
+          "content": "HUMAN GATE · Review the proposed priority and reply draft before customer use. Record the message, label, and any external facts.",
+          "annotation": "A human reviews the result before it reaches a customer."
         },
         {
           "type": "assistant_text",
-          "content": "WL-1026 accepted as high. Next: run the remaining fixture tickets; keep the human gate before you claim ship.",
-          "annotation": "Loop closes for one ticket. Stretch SOLO 3 can split Reply/Risk specialists."
+          "content": "The acceptance table records the message, the agent label, and any facts from external data.",
+          "annotation": "Record the result without copying labels from Workshop 3."
+        },
+        {
+          "type": "system_event",
+          "content": "Acceptance table saved for Proof.",
+          "annotation": "Proof records the new support message and external-data source."
+        },
+        {
+          "type": "assistant_text",
+          "content": "The run is ready for human review. Keep the draft behind the gate and record the tool facts in Proof.",
+          "annotation": "The Agent SDK loop closes with a reviewable result."
         }
       ],
-      "attribution": "Academy-authored ConceptSim for Workshop 4 (n8n → Claude Agent SDK). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches ticket→tool_use→priority (s01–s02 territory). Not a port of an upstream chapter."
+    "attribution": "Academy-authored ConceptSim for Workshop 4 (Claude Agent SDK). Scenario shape compatible with shareAI-lab/learn-claude-code (MIT). Teaches message→tool_use→priority. Not a port of an upstream chapter."
     },
     "nl": {
       "title": "Ticket → tool_use → prioriteit",
-      "description": "Stap één supportticket door de Claude Agent SDK-lus: messages, tool_use, tool_result en daarna een prioriteitslabel — zonder API-sleutels.",
+      "description": "Stap één supportbericht door de Claude Agent SDK-lus: messages, tool_use, tool_result en een prioriteitslabel. Geen API-sleutel nodig.",
       "steps": [
         {
           "type": "user_message",
-          "content": "Triage fixture-ticket WL-1026: \"I was charged twice. I need this fixed today or I will file a complaint.\" Geef low, medium of high terug — dezelfde labels als het n8n-pad.",
-          "annotation": "Het ticket komt in de agent-lus. Labels blijven vast op de gedeelde fixture."
+          "content": "Supportbericht van een klant: gebruik de projectregels om LOW, MEDIUM of HIGH terug te geven. Zoek een transactie-ID via MCP op als het bericht die bevat.",
+          "annotation": "Het bericht komt binnen bij de Agent SDK-query. Workshop 4 gebruikt nieuwe berichten."
         },
         {
           "type": "assistant_text",
-          "content": "Ik classificeer WL-1026 met de keyword_priority-tool en stel daarna een label voor ter menselijke review vóór acceptatie.",
-          "annotation": "s01-beat — het model plant een tool-aanroep; verzint geen nieuwe labelset."
+          "content": "Ik controleer of dit bericht een transactie-opzoeking nodig heeft en stel daarna een prioriteit voor ter menselijke review.",
+          "annotation": "De analist gebruikt de projectregels en het aangeleverde bericht."
         },
         {
           "type": "tool_call",
-          "toolName": "keyword_priority",
-          "content": "{\"ticket_id\":\"WL-1026\",\"message\":\"I was charged twice. I need this fixed today or I will file a complaint.\"}",
-          "annotation": "s02 tool_use — TOOL_HANDLERS dispatchen keyword_priority."
+          "toolName": "mcp__transactions__get_transaction",
+          "content": "{\"transaction_id\":\"<id-uit-bericht>\"}",
+          "annotation": "De analist vraagt transactiegegevens op via de MCP-tool."
         },
         {
           "type": "tool_result",
-          "toolName": "keyword_priority",
-          "content": "{\"priority\":\"high\",\"hits\":[\"charged twice\",\"today\",\"complaint\"],\"rule\":\"support-triage-v1\"}",
-          "annotation": "tool_result levert signalen. Pad komt overeen met de n8n L1-keywordregel."
+          "toolName": "mcp__transactions__get_transaction",
+          "content": "{\"transaction_id\":\"<id>\",\"status\":\"<status>\",\"amount\":\"<bedrag>\",\"issue_details\":\"<issue>\",\"fraud_flag\":\"<waarde>\"}",
+          "annotation": "Het toolresultaat levert externe feiten aan de analist."
         },
         {
           "type": "assistant_text",
-          "content": "Voorstelprioriteit voor WL-1026: **high**. Dubbele afschrijving + same-day urgentie + klachtdreiging. Wacht op menselijke review.",
-          "annotation": "Model koppelt tool_result → prioriteit. Solo-lat = SOLO 2."
+          "content": "De analist geeft een prioriteit en reden op basis van het bericht en eventuele transactiefeiten. Een mens beoordeelt het concept.",
+          "annotation": "De analist gebruikt het toolresultaat om de prioriteit te bepalen."
         },
         {
           "type": "system_event",
-          "content": "MENSELIJKE GATE · Review — facilitator checkt voorgesteld high tegen de acceptatietabel (ticket → verwacht n8n → Claude). Mismatch → prompt/tools verbeteren, nooit een nieuw label verzinnen.",
-          "annotation": "De mens beslist vóór acceptatie. Alleen een offline dry-run is geen modelbewijs."
-        },
-        {
-          "type": "tool_call",
-          "toolName": "write_acceptance_row",
-          "content": "{\"ticket_id\":\"WL-1026\",\"expected_n8n\":\"high\",\"claude\":\"high\",\"match\":true}",
-          "annotation": "Rij in de acceptatietabel — dezelfde fixture als Workshop 3."
-        },
-        {
-          "type": "tool_result",
-          "toolName": "write_acceptance_row",
-          "content": "Rij vastgelegd. gradeTriage tot nu toe: 1/1 match. Ga door met de overige fixtures voor SOLO 4.",
-          "annotation": "Bewijs blijft op de gedeelde fixture."
+          "content": "MENSELIJKE GATE · Beoordeel de voorgestelde prioriteit en antwoordconcept voordat het naar een klant gaat. Noteer het bericht, het label en eventuele externe feiten.",
+          "annotation": "Een mens beoordeelt het resultaat voordat het naar een klant gaat."
         },
         {
           "type": "assistant_text",
-          "content": "WL-1026 geaccepteerd als high. Volgende: de overige fixture-tickets; houd de menselijke gate vóór je ship claimt.",
-          "annotation": "Lus sluit voor één ticket. Stretch SOLO 3 kan Reply/Risk-specialisten afsplitsen."
+          "content": "De acceptatietabel bevat het bericht, het agentlabel en eventuele feiten uit externe data.",
+          "annotation": "Neem geen labels uit Workshop 3 over."
+        },
+        {
+          "type": "system_event",
+          "content": "Acceptatietabel opgeslagen voor Proof.",
+          "annotation": "Proof legt het nieuwe supportbericht en de bron van externe data vast."
+        },
+        {
+          "type": "assistant_text",
+          "content": "De run is klaar voor menselijke review. Houd het concept achter de gate en noteer de toolfeiten in Proof.",
+          "annotation": "De Agent SDK-lus eindigt met een resultaat dat kan worden beoordeeld."
         }
       ],
-      "attribution": "Door Academy geschreven ConceptSim voor Workshop 4 (n8n → Claude Agent SDK). Scenariovorm compatibel met shareAI-lab/learn-claude-code (MIT). Leert ticket→tool_use→priority (s01–s02-terrein). Geen port van een upstream-hoofdstuk."
+    "attribution": "Door Academy geschreven ConceptSim voor Workshop 4 (Claude Agent SDK). Scenariovorm compatibel met shareAI-lab/learn-claude-code (MIT). Leert bericht→tool_use→prioriteit. Geen port van een upstream-hoofdstuk."
     }
   }
 }

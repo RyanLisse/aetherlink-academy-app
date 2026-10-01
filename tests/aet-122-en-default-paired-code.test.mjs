@@ -36,10 +36,15 @@ test('122-2 workshop day 4 ships one paired TS/Python identity', () => {
   const pack = packFor(4);
   assert.ok(pack?.codeExamples?.length >= 1, 'day 4 needs ≥1 codeExamples');
   const ex = pack.codeExamples[0];
-  assert.equal(ex.id, 'w4-tool-handler-sketch');
+  assert.equal(ex.id, 'w4-agent-sdk-mcp-options');
   assert.ok(ex.typescript && ex.python);
-  assert.match(ex.typescript, /TOOL_HANDLERS/);
-  assert.match(ex.python, /TOOL_HANDLERS/);
+  assert.match(ex.typescript, /query\(\{\s*prompt,\s*options\s*\}\)/);
+  assert.match(ex.python, /query\(prompt=prompt,\s*options=options\)/);
+  assert.match(ex.typescript, /mcpServers[\s\S]*mcp__transactions__get_transaction/);
+  assert.match(ex.python, /mcp_servers[\s\S]*mcp__transactions__get_transaction/);
+  assert.equal(ex.slide?.slide, 11);
+  assert.equal(ex.slide?.title, 'Lesson 3: look up transaction data through MCP.');
+  assert.doesNotMatch(`${ex.typescript}\n${ex.python}`, /\b(?:LOW|MEDIUM|HIGH)\b/);
 });
 
 test('122-2 PairedCodeExample + Copy wire present in UI', () => {
@@ -59,7 +64,7 @@ test('122-3 no whole-lesson body duplication per programming language', () => {
   // One lesson body; codeExamples are variants under one identity, not duplicated narratives
   assert.equal(projected.lesson.narrative?.length, pack.copy.en.narrative.length);
   assert.ok(projected.codeExamples.length >= 1);
-  assert.equal(projected.codeExamples[0].id, 'w4-tool-handler-sketch');
+  assert.equal(projected.codeExamples[0].id, 'w4-agent-sdk-mcp-options');
 });
 
 test('122-4 nl projection still differs from EN (no silent EN leak on content)', () => {

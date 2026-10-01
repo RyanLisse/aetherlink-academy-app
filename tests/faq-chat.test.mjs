@@ -85,8 +85,8 @@ test('no match or a conceptual question hands off to the participant’s own Cla
 test('every released day is searchable and nothing after the room’s day',()=>{
  const day4Titles=DAY_SOURCES[3].solo.map(step=>step.title);
  for(const title of day4Titles){
-  assert.ok(answerQuestion({day:4,query:title}).hits[0].id.startsWith('d4:'),title);
-  assert.deepEqual(answerQuestion({day:3,query:title}).hits.filter(hit=>/^d[4-7]:/.test(hit.id)),[],title);
+  assert.ok(answerQuestion({day:4,locale:'nl',query:title}).hits[0].id.startsWith('d4:'),title);
+  assert.deepEqual(answerQuestion({day:3,locale:'nl',query:title}).hits.filter(hit=>/^d[4-7]:/.test(hit.id)),[],title);
  }
  assert.equal(answerQuestion({day:5,query:'Heb ik een credential nodig voor L1?'}).hits[0].id,'d3:step:w3-l1');
  assert.deepEqual(answerQuestion({day:2,query:'Heb ik een credential nodig voor L1?'}).hits.filter(hit=>hit.id.startsWith('d3:')),[]);

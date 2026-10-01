@@ -1,0 +1,85 @@
+{
+  "id": "support-messages-v1",
+  "tickets": [
+    {
+      "ticket": {
+        "ticket_id": "MSG-01",
+        "subject": "THIS IS RIDICULOUS!!!",
+        "message": "I have been trying for ten minutes to find where I can download last month's receipt. Why is this so difficult? Please send me the receipt or tell me where to find it."
+      },
+      "expected_priority": "low"
+    },
+    {
+      "ticket": {
+        "ticket_id": "MSG-02",
+        "subject": "Question about transactions",
+        "message": "Hello, I noticed three card transactions in my account this morning that I don't recognise. I still have my card with me. Could you please check this?"
+      },
+      "expected_priority": "high"
+    },
+    {
+      "ticket": {
+        "ticket_id": "MSG-03",
+        "subject": "Payment failed",
+        "message": "Hi, I tried to pay an invoice this morning but the payment failed. I need to complete it today. Can you tell me what I should do next?"
+      },
+      "expected_priority": "medium"
+    },
+    {
+      "ticket": {
+        "ticket_id": "MSG-04",
+        "subject": "Change company address",
+        "message": "Hello, our company moved offices last month. How can I update the billing address shown on future invoices?"
+      },
+      "expected_priority": "low"
+    },
+    {
+      "ticket": {
+        "ticket_id": "MSG-05",
+        "subject": "Possible duplicate charges",
+        "message": "Hi, our finance team sees the same €4,850 payment charged three times. Please investigate urgently because this affects today's cash position."
+      },
+      "expected_priority": "high"
+    },
+    {
+      "ticket": {
+        "ticket_id": "MSG-06",
+        "subject": "URGENT!!! My logo is wrong!!!",
+        "message": "Your portal is showing our old company logo and this is completely unacceptable!!! Fix it NOW please."
+      },
+      "expected_priority": "low"
+    },
+    {
+      "ticket": {
+        "ticket_id": "MSG-07",
+        "subject": "TX-1007",
+        "message": "Hello, transaction TX-1007 still doesn't look right in our system. Can you check what happened and tell me whether I need to take action?"
+      },
+      "expected_priority": "medium"
+    },
+    {
+      "ticket": {
+        "ticket_id": "MSG-08",
+        "subject": "TX-1014",
+        "message": "Hi, I don't recognise transaction TX-1014. I haven't shared my card with anyone. Please investigate."
+      },
+      "expected_priority": "high"
+    },
+    {
+      "ticket": {
+        "ticket_id": "MSG-09",
+        "subject": "TX-1018",
+        "message": "Hello, could you check TX-1018? The merchant says the payment did not arrive, but I thought it had completed."
+      },
+      "expected_priority": "medium"
+    },
+    {
+      "ticket": {
+        "ticket_id": "MSG-10",
+        "subject": "Payment issue",
+        "message": "My payment isn't working. Please fix it."
+      }
+    }
+  ],
+  "ungraded": ["MSG-10"]
+}

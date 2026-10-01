@@ -27,16 +27,20 @@ for (const [day, pack] of [[3, day3], [4, day4]]) {
   });
 }
 
-test('day 4 English instructions include the required repository commands', () => {
+test('day 4 English instructions include the Agent SDK package and lesson commands', () => {
   const instructions = projectPackLocale(day4, 'en').steps
     .flatMap((step) => step.instructions)
     .join('\n');
 
   for (const literal of [
-    'git clone https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent.git',
+    'git clone --depth 1 --filter=blob:none --sparse https://github.com/RyanLisse/aetherlink-academy-app.git w4-support',
+    'git sparse-checkout set training-lab/w4-support-agent-sdk',
+    'cd training-lab/w4-support-agent-sdk && npm install',
+    'npm run lesson1 -- MSG-01 --dry-run',
+    'npm run lesson2 -- MSG-05',
+    'npm run lesson3 -- MSG-08',
+    'cd 03-mcp/transaction-mcp && npm install',
     'npm install',
-    'npm run triage -- fixtures/ticket.json --dry-run',
-    'npm run verify',
   ]) {
     assert.ok(instructions.includes(literal), `day 4 instructions include ${literal}`);
   }

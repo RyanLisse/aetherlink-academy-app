@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {DAY_PACKS} from '../content/days/index.mjs';
 import {loadDeckSlides,validateDayPacks} from '../content/days/validate.mjs';
-import {TRIAGE_FIXTURES,gradeTriage,keywordPriority} from '../content/triage/grade.mjs';
+import {SUPPORT_FIXTURES} from '../content/support/grade.mjs';
 import {getDayPack,listDaySummaries,listRouteDays,starterFileNames} from '../server/content.mjs';
 
 const root=process.cwd();
@@ -30,6 +30,7 @@ test('every pack passes the day-pack lint and every slide citation matches its d
  assert.deepEqual(validateDayPacks(DAY_PACKS,{root,decks}),[]);
  assert.deepEqual(getDayPack(3).quiz.questions.map(q=>q.id),['d3-q1','d3-q2','d3-q3']);
  assert.deepEqual(getDayPack(3).quiz.key,{'d3-q1':'b','d3-q2':'a','d3-q3':'c'});
+ assert.equal(getDayPack(4).quiz.questions.length,3);
  assert.equal(decks['classroom-2'][10].title,'Assignment 6: Design AetherBOT');
  assert.deepEqual(getDayPack(2).steps[0].slide,{deck:'classroom-2',slide:78,title:'Assignment 6: Design AetherBOT',href:'/classroom/2?index=10'});
  assert.deepEqual(getDayPack(3).demo.slides.map(s=>s.href),['/workshop/3?index=5','/workshop/3?index=8','/workshop/3?index=11']);
@@ -59,31 +60,44 @@ test('the lint names a citation whose slide title drifted and a missing starter'
  drifted[2].mission.starterFiles=['missing.json'];
  assert.deepEqual(validateDayPacks(drifted,{root,decks}),[
   'day 3: starter file missing: starter/missing.json',
-  'day 4: step w4-solo2 cites workshop-4 slide 10 "Run your agent" but the deck has "Run your first agent on a fixture."'
+  'day 4: step w4-solo2 cites workshop-4 slide 10 "Run your agent" but the deck has "Run the orchestrator and inspect the draft."'
  ]);
 });
 
-test('day 3 and day 4 are graded on one fixture set with the same labels',()=>{
- const day3=getDayPack(3).triage,day4=getDayPack(4).triage;
- assert.equal(day3,day4);
- assert.deepEqual(day3.tickets,[
-  {ticketId:'WL-1026',synthetic:false},
-  {ticketId:'WL-1027',synthetic:false},
-  {ticketId:'WL-9001',synthetic:true},
-  {ticketId:'WL-9002',synthetic:true}
+test('Workshop 3 keeps triage fixtures; Workshop 4 grades new support messages',()=>{
+ const day3=getDayPack(3),day4=getDayPack(4);
+ assert.deepEqual(day3.steps.filter(s=>s.autograde).map(s=>s.autograde),['triage','triage','triage']);
+ assert.deepEqual(day4.steps.filter(s=>s.autograde).map(s=>[s.id,s.autograde]),[
+  ['w4-solo1','support'],
+  ['w4-solo4','support-mcp']
  ]);
- assert.deepEqual(TRIAGE_FIXTURES.tickets.map(t=>`${t.ticket.ticket_id}=${t.expected_priority}`),['WL-1026=high','WL-1027=low','WL-9001=medium','WL-9002=medium']);
- const n8nL1=Object.fromEntries(TRIAGE_FIXTURES.tickets.map(({ticket})=>[ticket.ticket_id,keywordPriority(ticket.message)]));
- assert.deepEqual(n8nL1,{'WL-1026':'high','WL-1027':'low','WL-9001':'medium','WL-9002':'medium'});
- assert.equal(gradeTriage(n8nL1).pass,true);
- const claude=gradeTriage({'WL-1026':'HIGH','WL-1027':'low','WL-9001':'low','WL-9002':'urgent'});
- assert.deepEqual(claude.rows.map(r=>[r.ticketId,r.actual,r.match]),[['WL-1026','high',true],['WL-1027','low',true],['WL-9001','low',false],['WL-9002',null,false]]);
- assert.equal(claude.pass,false);
+ assert.deepEqual(day4.mission.starterFiles,['customer-messages.md']);
+ assert.equal(SUPPORT_FIXTURES.id,'support-messages-v1');
+ assert.deepEqual(SUPPORT_FIXTURES.tickets.map(({ticket})=>ticket.ticket_id),Array.from({length:10},(_,i)=>`MSG-${String(i+1).padStart(2,'0')}`));
+ assert.deepEqual(SUPPORT_FIXTURES.tickets.filter(ticket=>ticket.expected_priority).map(({ticket,expected_priority})=>`${ticket.ticket_id}=${expected_priority}`),[
+  'MSG-01=low','MSG-02=high','MSG-03=medium','MSG-04=low','MSG-05=high','MSG-06=low','MSG-07=medium','MSG-08=high','MSG-09=medium'
+ ]);
+ assert.deepEqual(SUPPORT_FIXTURES.ungraded,['MSG-10']);
+ assert.equal(SUPPORT_FIXTURES.tickets.at(-1).expected_priority,undefined);
 });
 
-test('workshop rhythm: W3 solo bar is L2 with L3 as stretch, W4 bar is SOLO 2',()=>{
+test('Workshop 4 quiz covers project settings, delegation, and stdio MCP',()=>{
+ const pack=getDayPack(4);
+ for(const lang of ['en','nl']){
+  const quiz=pack.copy[lang].quiz;
+  assert.equal(quiz.questions.length,3,lang);
+  const quizText=JSON.stringify(quiz.questions);
+  assert.match(quizText,/settingSources: \['project'\]/,lang);
+  assert.match(quizText,/ticket-analyst/,lang);
+  assert.match(quizText,/npm install/,lang);
+  assert.match(quizText,lang==='en'?/on demand over stdio/i:/op verzoek via stdio/i,lang);
+  assert.doesNotMatch(quizText,/transactions\.xlsx/i,lang);
+ }
+});
+
+test('Workshop 3 keeps its levels; all Workshop 4 lessons are required',()=>{
  assert.deepEqual(getDayPack(3).steps.map(s=>`${s.badge}:${s.level}`),['L1:required','L2:required','L3:stretch','P:required']);
- assert.deepEqual(getDayPack(4).steps.map(s=>`${s.badge}:${s.level}`),['S0:required','S1:required','S2:required','S3:stretch','S4:required']);
+ assert.deepEqual(getDayPack(4).steps.map(s=>`${s.badge}:${s.level}`),['S0:required','S1:required','S2:required','S3:required','S4:required']);
  assert.deepEqual(getDayPack(5).lesson.loop.map(s=>s.label),['Intent','Spec','Plan','Build','Test','Review','Handoff']);
  assert.deepEqual(getDayPack(1).lesson.loop.map(s=>s.label),['Explore','Plan','Create','Test','Human review','Handoff']);
 });
@@ -164,8 +178,8 @@ test('Classroom 2 and missing days gain naslag links from NASLAG SoT (AET-84)',(
 });
 
 
-test('starter whitelist keeps legacy files and adds the triage starters',()=>{
- for(const file of ['README.md','n8n-repository-review.json','n8n-triage-l1-switch.json','n8n-triage-l2-agent-memory.json','n8n-triage-l3-multi-agent.json','triage-fixtures.json'])assert.equal(starterFileNames.includes(file),true,file);
+test('starter whitelist keeps legacy files and adds the triage and support starters',()=>{
+ for(const file of ['README.md','n8n-repository-review.json','n8n-triage-l1-switch.json','n8n-triage-l2-agent-memory.json','n8n-triage-l3-multi-agent.json','triage-fixtures.json','customer-messages.md'])assert.equal(starterFileNames.includes(file),true,file);
  assert.equal(starterFileNames.includes('../package.json'),false);
 });
 
@@ -177,6 +191,8 @@ test('Workshop 4 cites HTML Solo packs weather + day5 + council (AET-130)',()=>{
   '/courses/aetherlink-day5-n8n-to-agent/index.html',
   '/courses/council-agent-sdk/index.html'
  ]);
+ assert.match(solos[1].label,/optional parity bonus|optionele pariteitsbonus/i);
+ assert.ok(d4.materials.some(m=>m.kind==='vehicle'&&m.href.endsWith('/training-lab/w4-support-agent-sdk')));
  for(const lang of ['en','nl']){
   const mats=d4.copy[lang].materials.filter(m=>m.kind==='solo');
   assert.deepEqual(mats.map(m=>m.href),[
@@ -184,6 +200,7 @@ test('Workshop 4 cites HTML Solo packs weather + day5 + council (AET-130)',()=>{
    '/courses/aetherlink-day5-n8n-to-agent/index.html',
    '/courses/council-agent-sdk/index.html'
   ],lang);
+  assert.match(mats[1].label,lang==='en'?/optional parity bonus/i:/optionele pariteitsbonus/i,lang);
   // no EN leak under nl labels for the three solos — labels stay product ids + short NL notes
   assert.equal(mats.every(m=>typeof m.label==='string'&&m.label.length>0),true,lang);
  }
