@@ -16,8 +16,9 @@ const nl = JSON.parse(readFileSync(join(root, 'src/i18n/nl.json'), 'utf8'));
 test('F1 open debrief from room chrome ≤2 clicks (teach bar + debrief panel)', () => {
   assert.match(main, /data-testid="fac-board-open"/);
   assert.match(main, /onOpenBoard=\{\(\)=>action/);
+  assert.match(main, /const navigate=useCallback\(\(next,\{page='lesson',day\}=\{\}\)=>\{\s*setView\(next\);/);
+  assert.match(main, /onOpenBoard=\{\(\)=>action\(async\(\)=>\{navigate\('board'\);/);
   assert.match(main, /api\('board',\{action:'open'\}\)/);
-  assert.match(main, /setView\('board'\)/);
   const teachIdx = main.indexOf('facilitator-teach');
   const dialsIdx = main.indexOf('facilitator-dials');
   assert.ok(main.slice(teachIdx, dialsIdx).includes('fac-board-open'), 'board open belongs in teach bar');
