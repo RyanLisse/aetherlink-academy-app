@@ -15,13 +15,13 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   kicker: "Workshop 3 · Day 3 · L1→L3",
   type: "concept",
   visual: { bot: 'wave', place: 'beside' },
-  subtitle: "One scenario climbs three agency levels before its acceptance is rebuilt on Claude on day 4.",
-  keyPoints: ["One shared scenario.","Three levels of agency.","Workshop 4 keeps the acceptance fixture."],
+  subtitle: "Workshop 4 carries the labels, specialist split, and human review gate into three Agent SDK lessons.",
+  keyPoints: ["Keep the same priority labels.","Keep analysis and reply writing separate.","Review drafts before they reach a customer."],
   cards: [
     { title: "One ticket", body: "Carry the same scenario through the day." },
     { title: "L1 → L2 → L3", body: "Move from business rules to judgment to specialists." },
   ],
-  notes: "Open. One scenario, three agency levels on n8n. Rhythm all day: I explain → I show → you do on your laptop. Goal ≥L2; stretch L3. Day 4 rebuilds acceptance on Claude Agents SDK. n8n→Claude lock; no dual-track required path."
+  notes: "Open. One scenario, three agency levels on n8n. Rhythm all day: explain, demonstrate, participants try, discuss. Goal ≥L2; stretch L3. Workshop 4 keeps the labels, specialist split, and human review gate while teaching one Agent SDK agent, subagents, and MCP transaction lookup."
 },
 
 { // 2
@@ -66,7 +66,7 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     { title: "Examples", body: "Use at least three example tickets." },
     { title: "Expected", body: "Record the expected Low / Med / High label." },
   ],
-  notes: "Shared fixture. ≥3 example tickets with expected L/M/H. Labels return on day 4. No prod writes. Secrets off screen."
+  notes: "Shared fixture. ≥3 example tickets with expected L/M/H. Workshop 4 uses new messages. No prod writes. Secrets off screen."
 },
 
 /* ========== Cycle L1 — Switch ========== */
@@ -238,17 +238,17 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
 
 { // 16
   lessonId: "workshop-3",
-  title: "Day 4 rebuilds this on Claude.",
+  title: "Workshop 4 takes this pattern to the Agent SDK.",
   kicker: "Bridge · → Workshop 4",
   type: "concept",
   visual: { bot: 'point', place: 'beside' },
-  subtitle: "Workshop 4 rebuilds the same acceptance fixture on Claude Agents SDK.",
-  keyPoints: ["Same acceptance fixture.","Claude Agents SDK on day 4.","Dual-track is not required."],
+  subtitle: "Workshop 4 keeps the labels, specialist split, and human gate while teaching three Agent SDK lessons.",
+  keyPoints: ["Keep the same priority labels.","Keep the specialist split and human review gate.","Learn one agent, subagents, and MCP."],
   cards: [
-    { title: "Keep", body: "Bring the same tickets and labels." },
-    { title: "Rebuild", body: "Move the flow to Claude Agents SDK." },
+    { title: "Keep", body: "Carry labels, specialist roles, and human review forward." },
+    { title: "Learn", body: "Start with one agent, then subagents, then MCP." },
   ],
-  notes: "Bridge. Day 4 = Claude Agents SDK on the same acceptance fixture. Keep tickets + labels. Dual-track not required. n8n→Claude lock."
+  notes: "Bridge. Workshop 4 carries the LOW, MEDIUM, and HIGH labels, the specialist split, and the human review gate into the Claude Agent SDK. The three lessons are one agent with CLAUDE.md, an orchestrator with subagents, and MCP transaction lookup. Workshop 4 uses new messages and a separate workbook."
 },
 
 { // 17

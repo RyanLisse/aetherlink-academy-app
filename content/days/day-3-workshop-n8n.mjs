@@ -73,7 +73,7 @@ const en = {
   'The L/M/H routing rules in one paragraph (slide 15).',
   'Human gate named before anything becomes customer-facing (slides 3 and 15).',
   'Achieved level recorded; minimum L2 (slide 10).',
-  'Labels on the shared fixture match expected labels (gradeTriage PASS); day 4 is graded on the same tickets (slides 4 and 16).',
+  'Labels on the shared fixture match expected labels (gradeTriage PASS); Workshop 4 keeps the labels, specialist split, and human review gate on new messages.',
   'Agency-ladder diagram viewed; ConceptSim stepped L1→L2→L3 without API keys.'
  ],
  quiz:[

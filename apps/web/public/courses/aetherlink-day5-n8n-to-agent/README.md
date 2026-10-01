@@ -1,11 +1,13 @@
-# Workshop 4 · rebuild your n8n triage agent on the Claude Agent SDK
+# Optional parity bonus · n8n triage to a Claude Agent SDK
 
-**AetherLink Academy · `/workshop/4` · ticket priority L/M/H (same fixture as Workshop 3)**
+**AetherLink Academy · standalone companion to Workshop 4 · not a required Workshop 4 lesson**
 
-You built a support-triage flow in n8n. Here you rebuild it as an agent on the
+This optional exercise compares an n8n support-triage flow with an agent on the
 [**Claude Agent SDK**](https://github.com/anthropics/claude-agent-sdk-typescript)
 — `systemPrompt` · `prompt` · tools/subagents · markdown memory · `maxTurns`.
-Offline/dry-run works without an API key.
+It uses this course's own fixtures to explore parity; its fixtures are separate
+from Workshop 4's required customer messages and transaction workbook. Complete
+the three required lessons in `training-lab/w4-support-agent-sdk`.
 
 Attendee path: **[SOLO.md](SOLO.md)** (SOLO 0 → 4). Pedagogy: Uitleg → Voordoen → Zelf doen.
 
@@ -20,7 +22,8 @@ npm test                               # includes n8n source pins
 npm run triage -- fixtures/ticket.json --dry-run   # offline, no key
 ```
 
-Deck: Academy **`/workshop/4`** (alias `/lesson/workshop-4`). Do not download ZIPs, credentials, or customer data.
+This course is linked from Academy **`/workshop/4`** as an optional companion.
+Do not download ZIPs, credentials, or customer data.
 
 ## The four fundamentals
 
@@ -101,4 +104,4 @@ open course/index.html          # read it
 
 - [Claude Agent SDK (TypeScript)](https://github.com/anthropics/claude-agent-sdk-typescript) · [quickstart](https://code.claude.com/docs/en/agent-sdk/quickstart)
 - Academy Workshop 4 deck: `/workshop/4`
-- Workshop 3 vehicle / fixture parity (same tickets · same L/M/H labels)
+- Optional parity practice using this course's own fixtures; not Workshop 4's acceptance set

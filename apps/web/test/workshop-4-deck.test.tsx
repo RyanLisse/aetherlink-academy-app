@@ -8,132 +8,120 @@ import {workshop3SourceSlides} from '../src/deck/workshop3-slides.ts';
 import {workshop5SourceSlides} from '../src/deck/workshop5-slides.ts';
 import {expectWorkshopClassroomContract} from './workshop-classroom-contract.ts';
 
-describe('AET-80 workshop 4 n8n→Claude Agent SDK deck', () => {
+const titles = [
+  "Yesterday's n8n. Today's Agent SDK.",
+  'Map n8n to the Agent SDK.',
+  'Get the workshop package.',
+  'Lesson 1: one agent reads CLAUDE.md.',
+  'Watch one agent classify a message.',
+  'Run Lesson 1 and test the tone trap.',
+  'Discuss: what does the main agent know?',
+  'Lesson 2: delegate to two subagents.',
+  'Watch the orchestrator save a draft.',
+  'Run the orchestrator and inspect the draft.',
+  'Lesson 3: look up transaction data through MCP.',
+  'Watch an MCP transaction lookup.',
+  'Run Lesson 3 with transaction messages.',
+  'Discuss: tools and external data.',
+  'Complete the acceptance table and Proof.',
+  'Close: keep a human in the loop.',
+];
+
+describe('Workshop 4 Agent SDK classroom deck', () => {
   const slides = normalizeSlides(workshop4SourceSlides);
-  const practice = workshop4SourceSlides.filter((s) => s.type === 'practice');
-  const visualOf = (s: Record<string, unknown>): Record<string, unknown> =>
-    s.visual && typeof s.visual === 'object' && !Array.isArray(s.visual)
-      ? (s.visual as Record<string, unknown>)
-      : {};
+  const practice = workshop4SourceSlides.filter((slide) => slide.type === 'practice');
 
-  it('ships the workshop-4 faces (16 ±2)', () => {
-    expect(workshop4SourceSlides.length).toBeGreaterThanOrEqual(14);
-    expect(workshop4SourceSlides.length).toBeLessThanOrEqual(18);
-    expect(slides).toHaveLength(workshop4SourceSlides.length);
-    expect(slides.every((s) => s.lessonId === 'workshop-4')).toBe(true);
-    expect(slides[0]?.title).toMatch(/Same triage|Claude Agent SDK/i);
-    expect(slides[slides.length - 1]?.title).toMatch(/different repo|Tomorrow/i);
+  it('has the requested 16-slide sequence', () => {
+    expect(workshop4SourceSlides).toHaveLength(16);
+    expect(slides).toHaveLength(16);
+    expect(workshop4SourceSlides.every((slide) => slide.lessonId === 'workshop-4')).toBe(true);
+    expect(workshop4SourceSlides.map((slide) => String(slide.title))).toEqual(titles);
   });
 
-  it('vehicle is day5-n8n-to-agent flat SOLO 0→4 (not SDLC / not Eve / not W5 lab as vehicle)', () => {
+  it('teaches the Agent SDK package, mapping, and four questions', () => {
     const blob = JSON.stringify(workshop4SourceSlides);
-    expect(blob).toMatch(/aetherlink-day5-n8n-to-agent/);
-    expect(blob).toMatch(/SOLO 0/);
-    expect(blob).toMatch(/SOLO 2/);
-    expect(blob).toMatch(/systemPrompt|prompt/i);
-    expect(blob).toMatch(/Low|Med|High|L\/M\/H|labels/i);
-    expect(blob).not.toMatch(/\bEve\b/);
-    expect(blob).not.toMatch(/intent\.md|progress\.md|step-1-plan|docs\/gate\.md/);
-    expect(blob).not.toMatch(/Plan → Design → Build|one lesson per SDLC/i);
-    // W5 lab may be named only on the close/bridge face — never as the W4 vehicle chip
-    const vehicle = workshop4SourceSlides.find((s) => String(s.kicker ?? '').startsWith('Vehicle'));
-    expect(JSON.stringify(vehicle)).toMatch(/aetherlink-day5-n8n-to-agent/);
-    expect(JSON.stringify(vehicle)).not.toMatch(/aetherlink-daily-brief-lab-s1/);
-    const body = workshop4SourceSlides.slice(0, -1); // exclude close
-    expect(JSON.stringify(body)).not.toMatch(/aetherlink-daily-brief-lab-s1/);
-  });
+    expect(blob).toMatch(/training-lab\/w4-support-agent-sdk/);
+    expect(blob).toMatch(/settingSources/);
+    expect(blob).toMatch(/ticket-analyst/);
+    expect(blob).toMatch(/email-responder/);
+    expect(blob).toMatch(/get_transaction/);
+    expect(blob).toMatch(/stdio/);
 
-  it('pedagogy: Open/Parity/First-agent/Stretch/Acceptance cycles (uitleg→voordoen→zelf doen)', () => {
-    const demos = workshop4SourceSlides.filter((s) => String(s.kicker ?? '').startsWith('Demo'));
-    expect(demos.length).toBeGreaterThanOrEqual(3);
-    expect(practice.length).toBeGreaterThanOrEqual(4); // SOLO 0 1 2 3 (+4)
-    for (const solo of ['SOLO 0', 'SOLO 1', 'SOLO 2', 'SOLO 3']) {
-      const demoIdx = workshop4SourceSlides.findIndex((s) => String(s.kicker ?? '') === `Demo · ${solo}`);
-      const zelfIdx = workshop4SourceSlides.findIndex(
-        (s) => String(s.kicker ?? '').startsWith(solo) && String(s.kicker ?? '').includes('Your turn'),
-      );
-      expect(demoIdx, `demo ${solo}`).toBeGreaterThanOrEqual(0);
-      expect(zelfIdx, `zelf ${solo}`).toBe(demoIdx + 1);
+    const notes = workshop4SourceSlides.map((slide) => String(slide.notes ?? '')).join('\n');
+    for (const question of [
+      'What does the main agent know?',
+      'What belongs to a subagent?',
+      'When is a tool needed?',
+      'What information came from external data?',
+    ]) {
+      expect(notes).toContain(question);
     }
-    // First practice (SOLO 0) arrives before first-agent uitleg — no theory-dump then practice
-    const firstPractice = workshop4SourceSlides.findIndex((s) => s.type === 'practice');
-    const fundamentals = workshop4SourceSlides.findIndex((s) =>
-      String(s.kicker ?? '').includes('four fundamentals'),
-    );
-    expect(firstPractice).toBeGreaterThanOrEqual(0);
-    expect(fundamentals).toBeGreaterThan(firstPractice);
   });
 
-  it('clone URL chip on vehicle face; SOLO chips on zelf-doen faces', () => {
-    const vehicle = workshop4SourceSlides.find((s) => String(s.kicker ?? '').startsWith('Vehicle'));
-    expect(vehicle).toBeTruthy();
-    const vCards = Array.isArray(vehicle!.cards) ? vehicle!.cards : [];
-    expect(vCards.length).toBeGreaterThanOrEqual(2);
-    expect(String((vCards[0] as {body?: string}).body ?? '')).toMatch(
-      /github\.com\/RyanLisse\/aetherlink-day5-n8n-to-agent/,
-    );
-
-    const expectedChips = ['SOLO 0', 'SOLO 1', 'SOLO 2', 'SOLO 3', 'SOLO 4'];
+  it('gives every practice slide a timer, checklist, expected outcome, and point pose', () => {
     expect(practice).toHaveLength(5);
-    practice.forEach((slide, i) => {
-      expect(String(slide.title).length, String(slide.title)).toBeGreaterThan(10);
-      const cards = Array.isArray(slide.cards) ? slide.cards : [];
-      expect(cards).toHaveLength(1);
-      expect(String((cards[0] as {body?: string}).body ?? '')).toBe(expectedChips[i]);
+    expect(practice.map((slide) => String(slide.kicker))).toEqual([
+      'SOLO 0 · Your turn',
+      'SOLO 1 · Your turn',
+      'SOLO 2 · Your turn',
+      'SOLO 3 · Your turn',
+      'SOLO 4 · Your turn · Proof',
+    ]);
+
+    for (const slide of practice) {
       expect(slide.layout, String(slide.title)).toBe('exercise');
-      expect(Array.isArray(slide.steps) && slide.steps.length, String(slide.title)).toBeGreaterThanOrEqual(2);
-      expect(String(slide.expected ?? '').trim(), String(slide.title)).not.toBe('');
-      const notes = String(slide.notes ?? '');
-      expect(notes, String(slide.title)).toMatch(/Timer:\s*\d+\s*min/i);
       expect(typeof slide.timer, String(slide.title)).toBe('number');
-      expect(notes.toLowerCase()).toMatch(/checklist:/);
-      expect(notes, String(slide.title)).toMatch(/Your turn/i);
-    });
+      expect(Array.isArray(slide.steps) && slide.steps.length, String(slide.title)).toBeGreaterThanOrEqual(3);
+      expect(String(slide.expected ?? '').trim(), String(slide.title)).not.toBe('');
+      expect(String(slide.notes ?? '').trim(), String(slide.title)).not.toBe('');
+      expect(Array.isArray(slide.keyPoints) && slide.keyPoints.length, String(slide.title)).toBeGreaterThanOrEqual(3);
+      expect(slide.visual).toMatchObject({bot: 'point', place: 'beside'});
+    }
   });
 
-  it('uses the Classroom visual and assignment contract', () => {
+  it('gives each concept and context slide notes, cards, and key points', () => {
+    const concepts = workshop4SourceSlides.filter((slide) => slide.type === 'concept' || slide.type === 'context');
+    expect(concepts.length).toBeGreaterThan(0);
+
+    for (const slide of concepts) {
+      expect(String(slide.subtitle ?? '').trim(), String(slide.title)).not.toBe('');
+      expect(String(slide.notes ?? '').trim(), String(slide.title)).not.toBe('');
+      expect(Array.isArray(slide.keyPoints) && slide.keyPoints.length, String(slide.title)).toBeGreaterThanOrEqual(3);
+      expect(Array.isArray(slide.keyPoints) && slide.keyPoints.length, String(slide.title)).toBeLessThanOrEqual(5);
+      expect(Array.isArray(slide.cards) && slide.cards.length, String(slide.title)).toBeGreaterThanOrEqual(2);
+    }
+  });
+
+  it('keeps Workshop 3 labels and human review without leaking a support answer key', () => {
+    const blob = JSON.stringify(workshop4SourceSlides);
+    expect(blob).toMatch(/LOW, MEDIUM, and HIGH|LOW.*MEDIUM.*HIGH/);
+    expect(blob).toMatch(/human review/i);
+    expect(blob).not.toMatch(/\bEve\b/);
+    expect(blob).not.toMatch(/aetherlink-daily-brief-lab-s1|intent\.md|progress\.md|step-1-plan|docs\/gate\.md/);
+    expect(blob).not.toMatch(/Plan → Design → Build|one lesson per SDLC/i);
+    expect(blob).not.toMatch(/MSG-\d{2}\W{1,3}(?:low|medium|high)\b/i);
+    expect(blob).not.toMatch(/\b(?:low|medium|high)\W{1,3}MSG-\d{2}/i);
+  });
+
+  it('uses the classroom contract and keeps the bridge and companion routes', () => {
     expectWorkshopClassroomContract(workshop4SourceSlides);
-  });
-
-  it('solo bar ≥ SOLO 2; SOLO 3 stretch; bridge to W5 different repo', () => {
-    const solo2 = workshop4SourceSlides.find((s) => String(s.kicker ?? '').includes('SOLO 2') && String(s.kicker ?? '').includes('solo bar'));
-    expect(solo2).toBeTruthy();
-    expect(String(solo2!.notes)).toMatch(/required|solo bar|≥\s*SOLO 2/i);
-    const solo3 = workshop4SourceSlides.find((s) => String(s.kicker ?? '').includes('SOLO 3') && String(s.kicker ?? '').includes('optional'));
-    expect(solo3).toBeTruthy();
-    const close = workshop4SourceSlides[workshop4SourceSlides.length - 1]!;
-    const blob = `${close.title}\n${close.notes ?? ''}`;
-    expect(blob).toMatch(/Workshop 5|W5|daily-brief|different repo/i);
-    expect(blob).toMatch(/do not drag SDLC|not.*this repo|different/i);
-  });
-
-  it('exposes Workshop 4 facilitator paths (not W3/W5)', () => {
+    expect(workshop4SourceSlides.at(-1)?.kicker).toMatch(/Workshop 5/);
     expect(isWorkshop4Path('/workshop/4')).toBe(true);
     expect(isWorkshop4Path('/lesson/workshop-4')).toBe(true);
     expect(isWorkshop4Path('/workshop/3')).toBe(false);
     expect(isWorkshop4Path('/workshop/5')).toBe(false);
-    expect(isWorkshop4Path('/classroom/1')).toBe(false);
     expect(isWorkshop3Path('/workshop/4')).toBe(false);
     expect(isWorkshop5Path('/workshop/4')).toBe(false);
-  });
-
-  it('does not break Classroom 1 SoT, Workshop 3, or Workshop 5 packs', () => {
+    expect(W4_SOLO_COMPANIONS.map((companion) => companion.href)).toEqual([
+      '/courses/weather-agent-sdk/index.html',
+      '/courses/aetherlink-day5-n8n-to-agent/index.html',
+      '/courses/council-agent-sdk/index.html',
+    ]);
+    expect(W4_SOLO_COMPANIONS[1]?.label).toMatch(/optional parity bonus/i);
     expect(sourceSlides).toHaveLength(113);
-    const classroom = normalizeSlides(sourceSlides);
-    expect(classroom.filter((s) => s.lessonId === 'teaching-day-1')).toHaveLength(67);
-    expect(classroom.filter((s) => s.lessonId === 'workshop-4')).toHaveLength(0);
-    expect(workshop3SourceSlides.length).toBe(18);
-    expect(workshop3SourceSlides.every((s) => s.lessonId === 'workshop-3')).toBe(true);
-    expect(workshop5SourceSlides.length).toBe(49);
-    expect(workshop5SourceSlides.every((s) => s.lessonId === 'workshop-5')).toBe(true);
-  });
-
-  it('AET-134 exposes clickable HTML Solo companion paths (weather · day5 · council)', () => {
-    expect(W4_SOLO_COMPANIONS).toHaveLength(3);
-    const hrefs = W4_SOLO_COMPANIONS.map((c) => c.href);
-    expect(hrefs).toContain('/courses/weather-agent-sdk/index.html');
-    expect(hrefs).toContain('/courses/aetherlink-day5-n8n-to-agent/index.html');
-    expect(hrefs).toContain('/courses/council-agent-sdk/index.html');
-    expect(W4_SOLO_COMPANIONS.every((c) => c.label && c.href.startsWith('/courses/'))).toBe(true);
+    expect(workshop3SourceSlides).toHaveLength(18);
+    expect(workshop3SourceSlides.every((slide) => slide.lessonId === 'workshop-3')).toBe(true);
+    expect(workshop5SourceSlides).toHaveLength(49);
+    expect(workshop5SourceSlides.every((slide) => slide.lessonId === 'workshop-5')).toBe(true);
   });
 });

@@ -93,12 +93,19 @@ describe('AET-79 workshop 3 n8n L1→L3 deck', () => {
     expectWorkshopClassroomContract(workshop3SourceSlides);
   });
 
-  it('bridge names Workshop 4 / Claude; n8n→Claude lock', () => {
+  it('opening and bridge carry the Workshop 3 safety pattern to new Agent SDK lessons', () => {
+    const opening = workshop3SourceSlides[0]!;
+    const openingBlob = `${opening.subtitle}\n${JSON.stringify(opening.keyPoints)}\n${opening.notes}`;
+    expect(openingBlob).toMatch(/labels.*specialist split.*human review gate/i);
+    expect(openingBlob).toMatch(/one Agent SDK agent.*subagents.*MCP transaction lookup/i);
+
     const bridge = workshop3SourceSlides.find((s) => String(s.kicker ?? '').includes('Bridge'));
     expect(bridge).toBeTruthy();
-    const blob = `${bridge!.title}\n${bridge!.notes ?? ''}`;
-    expect(blob).toMatch(/Claude|Workshop 4|day 4/i);
-    expect(JSON.stringify(workshop3SourceSlides)).toMatch(/n8n→Claude|n8n->Claude|Claude Agents SDK/i);
+    const blob = `${bridge!.title}\n${bridge!.subtitle}\n${JSON.stringify(bridge!.keyPoints)}\n${bridge!.notes ?? ''}`;
+    expect(blob).toMatch(/Workshop 4.*Agent SDK/i);
+    expect(blob).toMatch(/LOW, MEDIUM, and HIGH/i);
+    expect(blob).toMatch(/new messages and a separate workbook/i);
+    expect(blob).not.toMatch(/same acceptance fixture|same tickets/i);
   });
 
   it('exposes Workshop 3 facilitator paths (not W5)', () => {

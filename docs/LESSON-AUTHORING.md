@@ -43,7 +43,7 @@ P0 Workshop 5 (AET-77) → P1 Workshop 4 (AET-80) → P2 Workshop 3 (AET-79). W6
 
 **P0 status:** Workshop 5 ships harness-loop diagram (`public/diagrams/workshop/w5-harness-loop.svg`) + ConceptSim `w5-sdlc-loop` (EN+NL) while keeping Apple bar / Uitleg→Voordoen→Zelf doen and the daily-brief lab vehicle.
 
-**P1 status:** Workshop 4 ships ticket→tool_use→priority diagram (`public/diagrams/workshop/w4-ticket-tool-priority.svg`) + ConceptSim `w4-ticket-priority` (EN+NL) while keeping Apple bar / Uitleg→Voordoen→Zelf doen and SOLO 0–4 on aetherlink-day5-n8n-to-agent.
+**P1 status:** Workshop 4 uses the standalone Agent SDK package for SOLO 0–4 and keeps the `ticket→tool_use→priority` diagram (`public/diagrams/workshop/w4-ticket-tool-priority.svg`) and ConceptSim `w4-ticket-priority` (EN+NL). The day-5 n8n-to-agent course is an optional parity bonus.
 
 **P2 status:** Workshop 3 ships agency-ladder diagram (`public/diagrams/workshop/w3-agency-ladder.svg`) + ConceptSim `w3-agency-ladder` (EN+NL) while keeping Apple bar / Uitleg→Voordoen→Zelf doen and L1→L2 (L3 stretch) on the n8n triage starters. Must B P0–P2 complete.
 
@@ -53,7 +53,7 @@ P0 Workshop 5 (AET-77) → P1 Workshop 4 (AET-80) → P2 Workshop 3 (AET-79). W6
 **P3 status:** Classroom 1–2 retrofit (AET-129). Classroom 1 ships explore→plan→change→verify→commit diagram (`public/diagrams/classroom/c1-explore-plan-change-verify-commit.svg`) + ConceptSim `c1-agent-loop` (EN+NL). Classroom 2 ships customize-stack diagram (`public/diagrams/classroom/c2-customize-stack.svg`) + ConceptSim `c2-customize-stack` (EN+NL). Apple bar / Uitleg→Voordoen→Zelf doen and solos A1–A4 / A6–A13 kept. Do not rename Classroom→Workshop; W6/W7 not forced.
 
 ## AET-130 W4 HTML Solos
-Workshop 4 cites `/courses/{weather-agent-sdk,aetherlink-day5-n8n-to-agent,council-agent-sdk}/` HTML companions; `/start-solo` is not required for Done.
+Workshop 4 cites the weather-agent-sdk and council-agent-sdk HTML companions. The day-5 n8n-to-agent course is an optional parity bonus. Participants use `training-lab/w4-support-agent-sdk` for the three required lessons.
 
 ## AET-131 W5 daily-brief Assignments + SOLO
 Workshop 5 cites `/courses/aetherlink-daily-brief-lab-s1/index.html` (modules 01–06), Assignments (`intent.md` · `docs/spec.md` · `docs/gate.md`), `SOLO.md`, and rulebook companions; `/start-solo` is not required for Done.

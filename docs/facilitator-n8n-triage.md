@@ -61,7 +61,7 @@ Het ritme is steeds uitleg, voordoen, zelf doen (W3 dia 1). De zaal kijkt tijden
 
 ## Fixture en grader
 
-`starter/triage-fixtures.json` is de gedeelde set voor dag 3 en dag 4. Hij bevat vier beoordeelde tickets.
+`starter/triage-fixtures.json` is de fixture-set voor dag 3. Hij bevat vier beoordeelde tickets. Workshop 4 gebruikt nieuwe supportberichten en aparte graders.
 
 | Ticket | Verwacht | Herkomst |
 | --- | --- | --- |
@@ -78,7 +78,7 @@ Leg de labels van een run vast in een JSON-bestand, bijvoorbeeld `labels.json` m
 node content/triage/grade.mjs labels.json
 ```
 
-De grader print de acceptatietabel (Ticket, Verwacht, Werkelijk, Match). Hij eindigt met exit code 0 bij PASS en 1 bij REVISE. Een ontbrekend label verschijnt als OPEN. Op dag 4 draait dezelfde tabel tegen de uitvoer van Claude (W4 dia 14). Bij een mismatch pas je prompt of tools aan, niet de labels.
+De grader print de acceptatietabel (Ticket, Verwacht, Werkelijk, Match). Hij eindigt met exit code 0 bij PASS en 1 bij REVISE. Een ontbrekend label verschijnt als OPEN. Workshop 4 gebruikt een aparte `support`- of `support-mcp`-check voor de Agent SDK-uitvoer. Bij een mismatch pas je de prompt of tools aan, niet de triage-labels.
 
 ## Veelvoorkomende fouten
 
