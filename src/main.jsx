@@ -19,7 +19,7 @@ import {classifyJoinError} from './join-errors.mjs';
 import {useAsyncAction} from './use-async-action';
 import './tailwind.css';
 import './style.css';
-import {FacilitatorWorkspace} from './facilitator-workspace';
+import {FacilitatorWorkspace as FacilitatorRoomWorkspace} from './facilitator-workspace';
 
 const phases=['Plan','Design','Build','Test','Deploy','Maintain'];
 // AET-115: teach-path primary (learner order 1–7). Apps / Reference / Decks → tertiary Tools.
@@ -116,7 +116,7 @@ function App(){
   const participantPrimary=[['today','nav.today',House],['route','nav.courseOverview',Compass],['lesson','nav.lesson',BookOpen],['squad','nav.squad',Users]];
   const participantMore=[['solo','nav.solo',Target],['coach','nav.coach',Sparkles],['review','nav.review',ClipboardCheck],['debrief','nav.debrief',ClipboardCheck],['naslag','nav.naslag',Library],['decks','nav.decks',Presentation],...(agentChatAvailable&&!room.readOnly?[['agentChat','nav.agentChat',MessageSquare]]:[]),...(room.board?[['board','nav.board',Columns3]]:[]),...(room.me.cohortMemberId?[['certificate','nav.certificate',Award]]:[])];
   const participantSquadMode=view==='squad';
-  if(facilitator)return <FacilitatorWorkspace room={room} view={view} onNavigate={navigate} connected={connected} error={error} control={control} busy={busy}
+  if(facilitator)return <FacilitatorRoomWorkspace room={room} view={view} onNavigate={navigate} connected={connected} error={error} control={control} busy={busy}
     account={<>{localeToggle}{themeButton}<button type="button" onClick={leaveSession}><LogOut size={16}/>{t('account.leave')}</button></>}
     onPresent={()=>setClassroomOpen(true)}
     controls={<FacilitatorControls room={room} control={control} busy={busy} connected={connected} onOpenClassroom={()=>setClassroomOpen(true)} onOpenBoard={()=>action(async()=>{navigate('board');if(!room.board||room.board.status==='closed'){const board=await api('board',{action:'open'});if(board)setRoom(current=>({...current,board}));}})}/>}
@@ -381,58 +381,55 @@ function EmailAccess(){
 function Join({ready,action,busy,error,clearError,joined}){
   const t=useT();
   const params=new URLSearchParams(location.search);
-  const [mode,setMode]=useState(params.get('facilitator')==='1'?'create':'join');
+  const [mode,setMode]=useState(params.get('facilitator')==='1'?'facilitator':'join');
   const [code,setCode]=useState(()=>params.get('code')?.toUpperCase()||'');
   const [joinPath,setJoinPath]=useState(params.get('cohort')==='1'?'cohort':'room');
-  const [hostKey,setHostKey]=useState('');
-  const [overview,setOverview]=useState(null);
   const [googleSso,setGoogleSso]=useState(false);
   const [emailLogin,setEmailLogin]=useState(false);
-  const [facilitator,setFacilitator]=useState(null);
+  const [facilitatorSession,setFacilitatorSession]=useState(null);
   const nameRef=useRef(null);
   // Focus only from the initial join code; later edits should not steal focus.
   // eslint-disable-next-line react-hooks/exhaustive-deps -- this focus is intentionally mount-only
   useEffect(()=>{if(code)nameRef.current?.focus();},[]);
   // Read URL parameters once when the Join screen mounts.
   // eslint-disable-next-line react-hooks/exhaustive-deps -- params represents the initial URL query
-  useEffect(()=>{let active=true;(async()=>{try{const config=await api('config');if(!active)return;setGoogleSso(config.googleSso);setEmailLogin(Boolean(config.emailLogin));if(params.get('facilitator')==='1'||config.googleSso)try{const identity=await api('facilitator/me');if(active){setFacilitator(identity);if(!params.get('code'))setMode('create');}}catch{}}catch{}})();return()=>{active=false;};},[]);
-  const create=mode==='create',facilitatorOverview=mode==='overview',participant=!create&&!facilitatorOverview,cohortPath=participant&&joinPath==='cohort',emailPath=participant&&emailLogin&&joinPath==='email';
-  const setRole=next=>{setMode(next);setOverview(null);clearError();};
+  useEffect(()=>{let active=true;(async()=>{try{const config=await api('config');if(!active)return;setGoogleSso(config.googleSso);setEmailLogin(Boolean(config.emailLogin));if(params.get('facilitator')==='1'||config.googleSso)try{const identity=await api('facilitator/me');const squads=await api('facilitator/overview',{});if(active){setFacilitatorSession({hostKey:'',identity,squads});if(!params.get('code'))setMode('facilitator');}}catch{}}catch{}})();return()=>{active=false;};},[]);
+  const participant=mode==='join',cohortPath=participant&&joinPath==='cohort',emailPath=participant&&emailLogin&&joinPath==='email';
+  const setRole=next=>{setMode(next);clearError();};
   const choosePath=next=>{setJoinPath(next);clearError();};
   const emailMessage=error&&emailError(t,error);
   const failure=emailMessage&&emailMessage!==error?{key:null,title:'join.errTitle.generic',field:null,message:emailMessage}:classifyJoinError(error);
   const invalid=field=>failure?.field===field?{'aria-invalid':true,'aria-describedby':'join-error'}:{};
-  const heading=facilitatorOverview?t('join.heading.overview'):create?t('join.heading.create'):t('join.heading.join');
-  const hint=facilitatorOverview?(facilitator?t('join.hint.overviewAuthed'):t('join.hint.overviewKey')):create?(facilitator?t('join.hint.createAuthed'):googleSso?t('join.hint.createGoogle'):t('join.hint.createKey')):emailPath?t('join.hint.email'):cohortPath?t('join.hint.cohort'):t('join.hint.join');
+  const heading=mode==='facilitator'?(facilitatorSession?t('join.heading.workspace'):t('join.heading.facilitator')):t('join.heading.join');
+  const hint=mode==='facilitator'?(facilitatorSession?t('join.hint.workspace'):googleSso?t('join.hint.facilitatorGoogle'):t('join.hint.facilitatorKey')):emailPath?t('join.hint.email'):cohortPath?t('join.hint.cohort'):t('join.hint.join');
   return <main className="join">
     <div className="join-copy"><p className="muted">{t('join.eyebrow')}</p><h1>{t('join.title')} <br/><span>{t('join.titleAccent')}</span></h1><p>{t('join.lede').split('\n').map((line,i)=><React.Fragment key={i}>{line}{i===0&&<br/>}</React.Fragment>)}</p><div className="join-principles"><span><Users aria-hidden="true"/>{t('join.principle.squad')}</span><span><FileText aria-hidden="true"/>{t('join.principle.intent')}</span><span><Sparkles aria-hidden="true"/>{t('join.principle.coach')}</span></div></div>
     <section className="join-form panel" aria-labelledby="join-heading">
-      <Segmented name="join-role" className="join-role" legend={t('join.roleList')} value={participant?'join':'create'} onChange={setRole} options={[{value:'join',label:t('join.participant')},{value:'create',label:t('join.facilitator')}]}/>
+      <Segmented name="join-role" className="join-role" legend={t('join.roleList')} value={participant?'join':'facilitator'} onChange={setRole} options={[{value:'join',label:t('join.participant')},{value:'facilitator',label:t('join.facilitator')}]}/>
       <h2 id="join-heading">{heading}</h2>
       {participant&&<Segmented name="join-path" className="join-path" legend={t('join.path.label')} value={joinPath} onChange={choosePath} options={[{value:'room',label:t('join.path.room'),detail:t('join.path.roomDetail')},{value:'cohort',label:t('join.path.cohort'),detail:t('join.path.cohortDetail')},...(emailLogin?[{value:'email',label:t('join.path.email'),detail:t('join.path.emailDetail')}]:[])]}/>}
       <p className="muted join-hint">{hint}</p>
-      {facilitator&&<p className="facilitator-login" aria-live="polite">{t('join.signedIn',{name:facilitator.name,email:facilitator.email})} <button type="button" className="text-button" onClick={()=>action(async()=>{await authApi('logout',{});setFacilitator(null);setMode('join');})}>{t('join.signOut')}</button></p>}
-      {create&&!facilitator&&googleSso&&<div className="join-google-block">
+      {facilitatorSession?.identity&&<p className="facilitator-login" aria-live="polite">{t('join.signedIn',{name:facilitatorSession.identity.name,email:facilitatorSession.identity.email})} <button type="button" className="text-button" onClick={()=>action(async()=>{await authApi('logout',{});setFacilitatorSession(null);setMode('join');})}>{t('join.signOut')}</button></p>}
+      {mode==='facilitator'&&!facilitatorSession&&googleSso&&<div className="join-google-block">
         <p className="join-google-lede">{t('join.googleLede')}</p>
         <a className="gradient google-login" href="/auth/google/start"><strong>G</strong> {t('join.googleButton')}</a>
         <p className="join-or" role="separator"><span>{t('join.orKey')}</span></p>
       </div>}
-      {emailPath?<EmailLogin action={action} busy={busy} joined={joined}/>:<form onSubmit={e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.currentTarget));action(async()=>{if(facilitatorOverview){setOverview(await api('facilitator/overview',data));return;}if(cohortPath){saveSession(await api('cohort/activate',{code:data.code}));history.replaceState(null,'',location.pathname);joined();return;}const result=await api(create?'create':'join',data);saveSession(result);if(!create)history.replaceState(null,'',location.pathname);joined(result.resumeToken);});}}>
-        {!facilitatorOverview&&!cohortPath&&<label htmlFor="join-name">{create?t('join.nameSquad'):t('join.nameYou')}<input id="join-name" ref={!create?nameRef:null} name="name" required maxLength={50} placeholder={create?t('join.placeholderSquad'):t('join.placeholderName')} autoComplete="nickname" {...invalid('name')}/></label>}
-        {(facilitatorOverview||create)&&!facilitator&&<label htmlFor="join-hostkey">{t('join.hostKey')}<input id="join-hostkey" name="hostKey" value={hostKey} onChange={e=>setHostKey(e.target.value)} required={!googleSso||facilitatorOverview} type="password" autoComplete="off" placeholder={t('join.hostKeyPlaceholder')} {...invalid('hostKey')}/></label>}
+      {mode==='facilitator'&&facilitatorSession?<FacilitatorWorkspace session={facilitatorSession} action={action} busy={busy} joined={joined} onError={e=>action(async()=>{throw e;})}/>
+      :emailPath?<EmailLogin action={action} busy={busy} joined={joined}/>:<form onSubmit={e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.currentTarget));action(async()=>{if(mode==='facilitator'){const squads=await api('facilitator/overview',{hostKey:data.hostKey});setFacilitatorSession({hostKey:data.hostKey,identity:null,squads});return;}if(cohortPath){saveSession(await api('cohort/activate',{code:data.code}));history.replaceState(null,'',location.pathname);joined();return;}const result=await api('join',data);saveSession(result);history.replaceState(null,'',location.pathname);joined(result.resumeToken);});}}>
+        {mode==='facilitator'&&<label htmlFor="join-hostkey">{t('join.hostKey')}<input id="join-hostkey" name="hostKey" required type="password" autoComplete="off" placeholder={t('join.hostKeyPlaceholder')} {...invalid('hostKey')}/></label>}
+        {participant&&!cohortPath&&<label htmlFor="join-name">{t('join.nameYou')}<input id="join-name" ref={nameRef} name="name" required maxLength={50} placeholder={t('join.placeholderName')} autoComplete="nickname" {...invalid('name')}/></label>}
         {cohortPath&&<label htmlFor="join-cohort-code">{t('join.cohortCode')}<input id="join-cohort-code" name="code" required type="text" autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={40} placeholder={t('join.cohortCodePlaceholder')} aria-describedby={failure?.field==='code'?'join-error join-cohort-code-help':'join-cohort-code-help'} aria-invalid={failure?.field==='code'||undefined}/><small id="join-cohort-code-help" className="muted">{t('join.cohortCodeHelp')}</small></label>}
         {participant&&!cohortPath&&<label htmlFor="join-code">{t('join.roomCode')}<input id="join-code" name="code" value={code} onChange={e=>setCode(e.target.value.toUpperCase())} required type="text" autoComplete="off" autoCapitalize="characters" placeholder={t('join.roomCodePlaceholder')} spellCheck={false} {...invalid('code')}/></label>}
-        <button type="submit" className="gradient" disabled={busy} aria-busy={busy||undefined}>{busy?t('join.submitBusy'):facilitatorOverview?t('join.submitOverview'):create?t('join.submitCreate'):cohortPath?t('join.submitCohort'):t('join.submitJoin')}<ArrowRight size={18} aria-hidden="true"/></button>
+        <button type="submit" className="gradient" disabled={busy} aria-busy={busy||undefined}>{busy?t('join.submitBusy'):mode==='facilitator'?t('join.submitSignIn'):cohortPath?t('join.submitCohort'):t('join.submitJoin')}<ArrowRight size={18} aria-hidden="true"/></button>
       </form>}
       <div className="join-live" id="join-error">{failure&&<StatusState kind="error" title={t(failure.title)} action={<button type="button" className="status-dismiss" onClick={clearError} aria-label={t('common.closeAlert')}><X size={14}/></button>}>{failure.key?t(failure.key):failure.message}</StatusState>}</div>
       {ready&&<StatusState kind="loading" inline title={t('join.restoring')}/>}
-      {!create&&!facilitatorOverview&&googleSso&&!facilitator&&<p className="join-side-hint muted">{t('join.sideHint')}</p>}
+      {participant&&googleSso&&!facilitatorSession&&<p className="join-side-hint muted">{t('join.sideHint')}</p>}
       <div className="join-secondary">
-        <button type="button" className="text-button" onClick={()=>setRole('overview')}>{t('join.overviewLink')}</button>
         <a href="/arcade" data-arcade-entry>{t('join.arcadeLink')}</a>
       </div>
       <small>{t('join.noApiKey')}</small>
-      {facilitatorOverview&&overview&&<FacilitatorOverview squads={overview} hostKey={hostKey} action={action} joined={joined} onError={e=>action(async()=>{throw e;})}/>}
     </section>
   </main>;
 }
@@ -507,11 +504,12 @@ function FacilitatorControls({room,control:send,busy,connected,onOpenClassroom,o
   </div>;
 }
 
-function FacilitatorOverview({squads:initial,hostKey,action,joined,onError}){
+function FacilitatorWorkspace({session,action,busy,joined,onError}){
   const t=useT();
-  const [squads,setSquads]=useState(initial);
+  const hostKey=session.hostKey;
+  const [squads,setSquads]=useState(session.squads);
   useEffect(()=>{let active=true;const poll=async()=>{try{const next=await api('facilitator/overview',{hostKey});if(active)setSquads(next);}catch(e){if(active)onError(e);}};const timer=setInterval(poll,5000);return()=>{active=false;clearInterval(timer);};},[hostKey,onError]);
-  return <div className="facilitator-overview"><CohortPanel squads={squads} hostKey={hostKey} action={action}/>{!squads.length?<StatusState kind="empty" title={t('overview.empty')}/>:squads.map(squad=><article className="evidence" key={squad.id}><h3>{squad.name}</h3><p>{t('overview.roomCode')} <code>{squad.code}</code></p><p>{t('overview.round',{round:squad.round,phase:squad.phase,day:squad.day})}</p><p>{squad.running?t('overview.running'):t('overview.paused')} · {formatSeconds(squad.remaining)}</p><ul>{squad.members.map(member=><li key={member.id}>{member.name} · {member.online?t('overview.online'):t('overview.offline')} · {member.help?t('overview.askingHelp'):''}</li>)}</ul><p>{t('overview.evidence',{evidence:squad.evidence,handoffs:squad.handoffs})}</p>{squad.awaitingReview>0&&<p className="cyan">{t('overview.awaitingReview',{count:squad.awaitingReview})}</p>}<p>{t('overview.board',{status:squad.board==='open'?t('board.open'):squad.board==='closed'?t('board.closed'):t('overview.boardNone')})}</p><button type="button" onClick={()=>action(async()=>{const result=await api('facilitator/attach',{hostKey,roomId:squad.id});saveSession(result);joined();})}>{t('overview.open')}</button></article>)}</div>;
+  return <div className="facilitator-overview"><section className="facilitator-create"><h2>{t('join.heading.create')}</h2><form onSubmit={e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.currentTarget));action(async()=>{const result=await api('create',{name:data.name,hostKey});saveSession(result);joined(result.resumeToken);});}}><label htmlFor="join-name">{t('join.nameSquad')}<input id="join-name" name="name" required maxLength={50} placeholder={t('join.placeholderSquad')} autoComplete="nickname"/></label><button type="submit" className="gradient" disabled={busy} aria-busy={busy||undefined}>{busy?t('join.submitBusy'):t('join.submitCreate')}<ArrowRight size={18} aria-hidden="true"/></button></form></section><CohortPanel squads={squads} hostKey={hostKey} action={action}/>{!squads.length?<StatusState kind="empty" title={t('overview.empty')}/>:squads.map(squad=><article className="evidence" key={squad.id}><h3>{squad.name}</h3><p>{t('overview.roomCode')} <code>{squad.code}</code></p><p>{t('overview.round',{round:squad.round,phase:squad.phase,day:squad.day})}</p><p>{squad.running?t('overview.running'):t('overview.paused')} · {formatSeconds(squad.remaining)}</p><ul>{squad.members.map(member=><li key={member.id}>{member.name} · {member.online?t('overview.online'):t('overview.offline')} · {member.help?t('overview.askingHelp'):''}</li>)}</ul><p>{t('overview.evidence',{evidence:squad.evidence,handoffs:squad.handoffs})}</p>{squad.awaitingReview>0&&<p className="cyan">{t('overview.awaitingReview',{count:squad.awaitingReview})}</p>}<p>{t('overview.board',{status:squad.board==='open'?t('board.open'):squad.board==='closed'?t('board.closed'):t('overview.boardNone')})}</p><button type="button" onClick={()=>action(async()=>{const result=await api('facilitator/attach',{hostKey,roomId:squad.id});saveSession(result);joined();})}>{t('overview.open')}</button></article>)}</div>;
 }
 
 function CohortPanel({squads,hostKey,action}){
