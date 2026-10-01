@@ -3,7 +3,7 @@
 // (actions/export-html.ts), the `.fmd-slide` wrapper contract and templates
 // (.agents/skills/create-deck) and ensureUniqueSlideIds (shared/slide-ids.ts).
 import {randomBytes} from 'node:crypto';
-import type {Layout,SlideInput} from './schema.ts';
+import type {ClassroomSlide,Layout,SlideInput} from './schema.ts';
 
 /** FNV-1a, identical to upstream so hashes stay comparable across tools. */
 export function hashSlideContent(content:string):string{
@@ -55,6 +55,26 @@ export function templateSlide(input:Pick<SlideInput,'heading'|'body'|'label'|'la
   case 'blank':return {layout,content:wrap(input.heading?heading(input.heading,'h2'):'')};
   default:return {layout:'content',content:wrap(label(input.label)+heading(input.heading,'h2')+`  <div style="display: flex; flex-direction: column; gap: 14px;">\n${body.map(point).join('\n')}\n  </div>`)};
  }
+}
+
+const box=(title:string,body:string|undefined)=>`    <div style="border-left: 3px solid var(--deck-accent); padding: 12px 16px; background: var(--deck-surface); border-radius: var(--deck-radius); font-size: 17px; line-height: 1.4;"><strong>${escapeHtml(title)}</strong>${body?`<div style="color: var(--deck-muted); white-space: pre-line;">${escapeHtml(body)}</div>`:''}</div>`;
+const grid=(cells:string[],columns=Math.min(3,Math.max(1,cells.length)))=>cells.length?`  <div style="display: grid; grid-template-columns: repeat(${columns}, 1fr); gap: 16px; align-items: start;">\n${cells.join('\n')}\n  </div>\n`:'';
+const line=(text:string|undefined,style:string)=>text?`  <p style="margin: 0; ${style}">${escapeHtml(text)}</p>\n`:'';
+
+/** Static `.fmd-slide` rendering of a structured classroom slide for thumbnails, export and the HTML viewer. */
+export function classroomSlideHtml(slide:ClassroomSlide):string{
+ const body=[
+  line(slide.subtitle,'font-size: 20px; color: var(--deck-muted);'),
+  grid((slide.cards??[]).map(card=>box(card.title,card.body))),
+  grid((slide.items??[]).map(item=>box(item.label,[item.caption,item.detail].filter(Boolean).join('\n')))),
+  grid((slide.columns??[]).map(column=>box(column.title,[...column.items,column.foot].filter(Boolean).join('\n'))),Math.max(1,slide.columns?.length??1)),
+  slide.steps?.length?`${line(slide.stepsHeading,'font-weight: 700;')}  <ol style="margin: 0; padding-left: 24px; font-size: 18px; line-height: 1.5;">\n${slide.steps.map(step=>`    <li>${escapeHtml(step)}</li>`).join('\n')}\n  </ol>\n`:'',
+  line(slide.expected,'font-size: 16px; color: var(--deck-muted);'),
+  line(slide.check,'font-size: 16px; font-weight: 700;'),
+  slide.prompt?`  <pre style="margin: 0; padding: 14px 16px; background: var(--deck-surface); border-radius: var(--deck-radius); white-space: pre-wrap; font-size: 15px;">${escapeHtml(slide.prompt)}</pre>\n`:'',
+  line(slide.tagline,'font-size: 20px; font-weight: 750; color: var(--deck-accent);'),
+ ].join('');
+ return wrap(label(slide.kicker)+heading(slide.title,body?'h2':'h1')+body,body?undefined:'justify-content: center; align-items: flex-start; gap: 18px;');
 }
 
 /** Repair missing or duplicate ids without renaming the first occurrence. */
