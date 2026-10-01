@@ -31,6 +31,14 @@ test('Solo renders assignment boxes with practical try-it guidance and inline ev
   assert.doesNotMatch(solo, /ProgressivePath/);
 });
 
+test('assignment history localizes evidence statuses and omits absent fields', () => {
+  assert.ok(assignmentTaskBox.includes("t('review.status.'+submission.status)"), 'submission statuses use evidence-status translations');
+  assert.ok(!assignmentTaskBox.includes("t('tasks.status.'+submission.status)"), 'submission statuses do not use task-status translations');
+  for (const [field, tag] of [['finding', 'p'], ['command', 'small'], ['observed', 'p'], ['limitation', 'small']]) {
+    assert.ok(assignmentTaskBox.includes(`{submission.${field}&&<${tag}>{submission.${field}}</${tag}>}`), `${field} renders only when present`);
+  }
+});
+
 test('Solo step-card translations exist in English and Dutch', () => {
   for (const key of ['steps.progress', 'steps.minutes', 'steps.submitEvidence', 'activity.progress', 'nav.courseOverview', 'course.overviewLede', 'assignment.goal', 'assignment.runThis', 'assignment.prompts', 'assignment.copy', 'assignment.copied', 'assignment.watchFor', 'assignment.otherEvidence', 'submissionsGrid.title']) {
     assert.equal(typeof en[key], 'string', `English translation exists for ${key}`);

@@ -74,7 +74,10 @@ test('task → submit → changes requested → resubmit → approved, visible t
  const first=await submit(learner.token,'t-1','c1-setup');
  assert.equal(first.statusCode,200);
  assert.equal(first.body.taskId,'c1-setup');
- assert.equal((await tasks(learner.token)).body.tasks[0].status,'submitted');
+ const submittedTask=(await tasks(learner.token)).body.tasks[0];
+ assert.equal(submittedTask.status,'submitted');
+ const submittedEvidence=instance.store.auth(learner.token).r.evidence.find(e=>e.id===first.body.id);
+ for(const field of ['finding','command','observed','limitation'])assert.equal(submittedTask.submissions[0][field],submittedEvidence[field]);
  assert.deepEqual((await invoke(instance.app,'/game/day-route',{cookies:as(learner.token)})).body.days[0].tasks,{total:5,approved:0,awaiting:1,changesRequested:0});
  assert.equal((await tasks(ada.token)).body.tasks[0].status,'open','another participant sees only their own trail');
 
@@ -87,6 +90,7 @@ test('task → submit → changes requested → resubmit → approved, visible t
  assert.deepEqual(waiting.body.queue.map(({name,taskId,taskTitle,attempt,day})=>({name,taskId,taskTitle,attempt,day})),[{name:'Bo',taskId:'c1-setup',taskTitle:'Set up the practice repository',attempt:1,day:1}]);
  assert.deepEqual(waiting.body.members.map(m=>[m.name,m.tasks[0].status]),[['Ada','open'],['Bo','submitted'],['Cy','open']]);
  assert.deepEqual(waiting.body.members.map(m=>[m.name,m.tasks[0].required,m.tasks[0].latestEvidenceId]),[['Ada',true,null],['Bo',true,first.body.id],['Cy',true,null]]);
+ assert.ok(waiting.body.members.every(member=>member.tasks.every(task=>!Object.hasOwn(task,'finding'))),'review queue member summaries do not expose submission finding text');
 
  const self=await review(as(learner.token),first.body.id,'accepted','Mijn eigen werk','r-self');
  assert.equal(self.statusCode,403);

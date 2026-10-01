@@ -59,7 +59,7 @@ export function submitAutograde(room,person,task,body,at){
  return {recorded,taskId:task.id,day:room.day,status:taskStatus(room,person.id,task.id,room.day),autograde:autogradeView(task.grader,record)};
 }
 
-const submissionView=e=>({evidenceId:e.id,at:e.at,status:e.status,review:e.review?{note:e.review.note,at:e.review.at,reviewer:e.review.reviewer||null}:null});
+const submissionView=e=>({evidenceId:e.id,at:e.at,status:e.status,finding:e.finding,command:e.command,observed:e.observed,limitation:e.limitation,review:e.review?{note:e.review.note,at:e.review.at,reviewer:e.review.reviewer||null}:null});
 export function taskTrail(room,personId,day,locale='en'){
  return dayTasks(day,locale).map(({grader,...task})=>{
   const submissions=submissionsFor(room,personId,task.id,day),record=autogradeRecord(room,personId,task.id,day);
