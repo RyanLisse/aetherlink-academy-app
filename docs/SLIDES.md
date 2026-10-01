@@ -7,7 +7,8 @@ template is ~160k lines welded to the agent-native runtime (Dispatch, A2A,
 Creative Context, TipTap/Yjs editor, Drizzle). Academy keeps the part that
 matters for a workshop: the deck/slide model, the agent-facing action contract,
 the wrapper/template HTML idiom, hash-guarded edits and the standalone HTML
-export. No model call, no API key, no new external service.
+export. The optional facilitator deck assistant (below) is the only model call;
+without `OPENROUTER_API_KEY` the module needs no external service.
 
 ## What was ported and what was left out
 
@@ -21,7 +22,9 @@ export. No model call, no API key, no new external service.
 | `export-html` viewer (scale-to-fit, arrows/space/Home/End, `F`, click zones) | `exportHtml` (`export-html.ts`) | Sanitised, inline script only, CSP on the route |
 | `hashSlideContent` (FNV-1a), `sanitizeSlideContent`, `ensureUniqueSlideIds`, `.fmd-slide` wrapper with `--deck-*` / `--ds-*` tokens, title / content / two-column / image templates | `html.ts` | Hashes are byte-compatible with upstream |
 | Aspect ratios 16:9, 4:3, 1:1, 9:16, 4:5 | `schema.ts` | Same canonical canvas sizes |
-| Sharing / org visibility, comments, versions, design-system indexing, image generation, PDF/PPTX/DOCX/URL import, PPTX & Google Slides export, presenter view, real-time Yjs editing, A2A / Dispatch | not ported | Academy scopes a deck to one squad room; the "agent" is the participant's own Claude Code over the existing MCP bridge |
+| `generate-slides-ai` + agent chat editing the open deck | Facilitator deck assistant (`server/deck-assistant.mjs`) | Model proposes operations as JSON; the server applies them through `createDeck` / `patchDeck` |
+| Presenter view | `/decks/:deckId` in `apps/web` (`@academy/deck`) | Classroom-parity presenter, reveals, quiz, timers, Plan B, hidden slides |
+| Sharing / org visibility, comments, versions, design-system indexing, image generation, PDF/PPTX/DOCX/URL import, PPTX & Google Slides export, real-time Yjs editing, A2A / Dispatch | not ported | Academy scopes a deck to one squad room; the "agent" is the participant's own Claude Code over the existing MCP bridge |
 
 ## Module layout
 
@@ -111,3 +114,48 @@ Lesson authoring SoT is **Effect Slide decks** (UI + MCP, `server/slides`) — n
 4. **Unpin** (`DELETE /game/classroom-overlay`) → falls back to same-origin `/classroom/{n}` (days 1–2) or `/workshop/{n}` (days 3–7) — Jessy/Cons and workshop packs.
 5. **Google overlay deprecated** as teaching SoT. Do not document a Google iframe or `CLASSROOM_DECK_ID` as the Wave-1 path. Facilitator Google SSO login is unrelated and stays documented elsewhere.
 6. **Cons** remains content SoT for static `/classroom/{n}` until a day is re-authored in-app and PRODUCT-ACCEPT’d. Pins do **not** promote to static `/classroom` routes.
+
+## Classroom slides and the facilitator deck assistant
+
+A slide can carry a structured `classroom` object with the same fields as
+[`aetherlink-classroom-slides`](https://github.com/jyse/aetherlink-classroom-slides):
+`title`, `kicker`, `subtitle`, `type` (context, concept, practice, review, quiz,
+recap, pause), `layout` (cards, pillars, steps, compare, exercise, recap), `cards`,
+`items`, `columns`, `steps`, `expected`, `check`, `prompt`, `tagline`, `keyPoints`,
+`hidden`, `dark` and a validated `visual` subset (quiz answer, click reveal,
+step-through, countdown/quiet timers, highlights). The server renders it to a static
+`.fmd-slide` for thumbnails and HTML export, and keeps the structure for presenting.
+
+- `keyPoints` and `visual.quiz.answer` are presenter data: like `notes`, only the
+  facilitator or deck owner reads or writes them. Participants get the slide without them.
+- An HTML edit (`updateSlide`, or `patch-slide` with `content`) makes the HTML
+  authoritative and drops the structure. A `patch-slide` with `classroom` re-renders
+  the HTML and keeps existing `keyPoints` when the patch omits them.
+- `/game/decks/:deckId/present` redirects decks with classroom slides to `/decks/:deckId`,
+  the `@academy/deck` renderer (projector, `?mode=presenter`, `?mode=follow`,
+  `?mode=reader`). `?html=1` keeps the static viewer. The classroom overlay pin uses the same path.
+
+The deck assistant is the facilitator's in-app chat on the Decks page (new deck) and
+in the deck editor (current deck and slide):
+
+1. `POST /game/decks/assistant` `{message, deckId?, slideId?, history?, locale?}` —
+   facilitator session only; participants get 403.
+2. The server sends the redacted request plus the deck state (titles and structure,
+   the active slide in full, never `notes` or `keyPoints`) to a `:free` OpenRouter
+   model with `data_collection: deny`.
+3. The model answers with JSON operations (`add-slide`, `update-slide`,
+   `delete-slide`, `reorder-slides`, optional `title`). `update-slide` merges onto the
+   stored slide. Unknown slide ids or actions are rejected (502), not guessed.
+4. The server applies them with `createDeck` or one `patchDeck` call guarded by the
+   deck revision it showed the model, so schema, room scope, notes permission and
+   conflicts behave as in the editor and MCP.
+
+Assistant slides always use the classroom style, with bot pose by type and an exercise timer preset.
+
+Configuration: `OPENROUTER_API_KEY` (shared with the leercoach),
+`ACADEMY_DECK_ASSISTANT_MODEL` (defaults to `ACADEMY_COACH_MODEL`, must end in
+`:free`), `ACADEMY_DECK_ASSISTANT_DAILY_CAP` (30 per room facilitator) and
+`ACADEMY_DECK_ASSISTANT_TIMEOUT_MS` (45000). Calls count towards
+`ACADEMY_COACH_PLATFORM_DAILY_CAP`. Without a key the panel explains that the
+facilitator's own Claude Code can build decks over MCP (`create_deck`, `add_slide`,
+`patch_deck` accept the same `classroom` object).

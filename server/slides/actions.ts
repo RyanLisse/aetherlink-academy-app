@@ -7,11 +7,11 @@ import {randomUUID} from 'node:crypto';
 import {Effect,ParseResult,Schema} from 'effect';
 import {applySlideEdits} from './edits.ts';
 import {DeckNotFound,EditFailed,Forbidden,InvalidInput,RevisionConflict,SlideNotFound,StaleContent,type SlidesError} from './errors.ts';
-import {ensureUniqueSlideIds,hashSlideContent,newSlideId,sanitizeSlideContent,templateSlide,textPreview} from './html.ts';
+import {classroomSlideHtml,ensureUniqueSlideIds,hashSlideContent,newSlideId,sanitizeSlideContent,templateSlide,textPreview} from './html.ts';
 import {renderDeckHtml} from './export-html.ts';
 import type {Actor} from '../shared/actor.ts';
 import {DeckRepository} from './repository.ts';
-import {AddSlideInput,CreateDeckInput,Deck,DeckIdInput,type DeckOperation,GetDeckInput,PatchDeckInput,Slide,type SlideInput,UpdateSlideInput} from './schema.ts';
+import {AddSlideInput,type ClassroomSlide,CreateDeckInput,Deck,DeckIdInput,type DeckOperation,GetDeckInput,PatchDeckInput,Slide,type SlideInput,UpdateSlideInput} from './schema.ts';
 
 export type {Actor};
 
@@ -19,6 +19,7 @@ const parse=<A,I>(schema:Schema.Schema<A,I>)=>(input:unknown)=>Schema.decodeUnkn
  Effect.mapError(error=>new InvalidInput({reason:ParseResult.ArrayFormatter.formatErrorSync(error).map(issue=>`${issue.path.join('.')||'input'}: ${issue.message}`).join('; ')})));
 
 const buildSlide=(input:SlideInput,id=input.id??newSlideId()):Effect.Effect<Slide,InvalidInput>=>{
+ if(input.classroom!==undefined&&input.content===undefined)return Effect.succeed(new Slide({id,content:classroomSlideHtml(input.classroom),notes:input.notes??'',layout:'content',background:input.background,transition:input.transition,classroom:input.classroom}));
  if(input.content!==undefined){
   const content=sanitizeSlideContent(input.content);
   if(!content.trim())return Effect.fail(new InvalidInput({reason:'Slide-inhoud is leeg na opschonen.'}));
@@ -31,8 +32,10 @@ const buildSlide=(input:SlideInput,id=input.id??newSlideId()):Effect.Effect<Slid
 const buildSlides=(inputs:readonly SlideInput[])=>Effect.map(Effect.forEach(inputs,input=>buildSlide(input)),slides=>ensureUniqueSlideIds(slides).map(slide=>slide instanceof Slide?slide:new Slide(slide)));
 
 const summary=(deck:Deck)=>({id:deck.id,title:deck.title,aspectRatio:deck.aspectRatio,slideCount:deck.slides.length,revision:deck.revision,createdBy:deck.createdBy,createdAt:deck.createdAt,updatedAt:deck.updatedAt,hasDesignSystem:Boolean(deck.designSystem)});
-const compactSlide=(slide:Slide,index:number)=>({slideNumber:index+1,id:slide.id,layout:slide.layout,contentHash:hashSlideContent(slide.content),textPreview:textPreview(slide.content),hasNotes:Boolean(slide.notes),transition:slide.transition,background:slide.background});
-const fullSlide=(slide:Slide,index:number,includeNotes:boolean)=>({...compactSlide(slide,index),content:slide.content,...(includeNotes?{notes:slide.notes}:{})});
+const compactSlide=(slide:Slide,index:number)=>({slideNumber:index+1,id:slide.id,layout:slide.layout,kind:slide.classroom?'classroom' as const:'html' as const,contentHash:hashSlideContent(slide.content),textPreview:textPreview(slide.content),hasNotes:Boolean(slide.notes),transition:slide.transition,background:slide.background});
+/** keyPoints are presenter-only and a quiz answer would spoil the reveal, like notes. */
+const publicClassroom=({keyPoints:_keyPoints,...classroom}:ClassroomSlide):ClassroomSlide=>classroom.visual?.quiz?{...classroom,visual:(({quiz:_quiz,...visual})=>visual)(classroom.visual)}:classroom;
+const fullSlide=(slide:Slide,index:number,includeNotes:boolean)=>({...compactSlide(slide,index),content:slide.content,...(slide.classroom?{classroom:includeNotes?slide.classroom:publicClassroom(slide.classroom)}:{}),...(includeNotes?{notes:slide.notes}:{})});
 const canReadNotes=(actor:Actor,deck:Deck)=>actor.role==='facilitator'||deck.createdBy.id===actor.id;
 const slideIndex=(deck:Deck,slideId:string)=>{const index=deck.slides.findIndex(slide=>slide.id===slideId);return index===-1?Effect.fail(new SlideNotFound({deckId:deck.id,slideId})):Effect.succeed(index);};
 const insertAt=(slides:readonly Slide[],slide:Slide,afterSlideId:string|undefined)=>{const at=afterSlideId?slides.findIndex(candidate=>candidate.id===afterSlideId):-1;const next=[...slides];next.splice(at===-1?next.length:at+1,0,slide);return next;};
@@ -68,7 +71,7 @@ export const makeDeckActions=Effect.gen(function*(){
   let added:Slide|undefined;
   const deck=yield* modifyOwned(actor,input.deckId,deck=>Effect.gen(function*(){
    yield* revisionGuard(deck,input.expectedRevision);
-   if(input.notes!==undefined&&!canReadNotes(actor,deck))return yield* Effect.fail(new Forbidden({reason:'Only the facilitator or deck owner can read or edit presenter notes.'}));
+   if((input.notes!==undefined||input.classroom?.keyPoints!==undefined)&&!canReadNotes(actor,deck))return yield* Effect.fail(new Forbidden({reason:'Only the facilitator or deck owner can read or edit presenter notes.'}));
    if(input.afterSlideId)yield* slideIndex(deck,input.afterSlideId);
    const existing=new Set(deck.slides.map(slide=>slide.id));
    const slide=yield* buildSlide({...input,id:input.id&&!existing.has(input.id)?input.id:undefined});
@@ -96,7 +99,7 @@ export const makeDeckActions=Effect.gen(function*(){
    else if(input.fullContent!==undefined){content=input.fullContent;summaries=['fullContent'];}
    content=sanitizeSlideContent(content);
    if(!content.trim())return yield* Effect.fail(new EditFailed({index:0,reason:'The slide would become empty.'}));
-   const slides=[...deck.slides];slides[index]=new Slide({...slide,content,notes:input.notes??slide.notes});
+   const slides=[...deck.slides];slides[index]=new Slide({...slide,content,notes:input.notes??slide.notes,classroom:content===slide.content?slide.classroom:undefined});
    return new Deck({...deck,slides});
   }));
   const index=deck.slides.findIndex(slide=>slide.id===input.slideId);
@@ -106,7 +109,7 @@ export const makeDeckActions=Effect.gen(function*(){
 
  const applyOperation=(deck:Deck,operation:DeckOperation):Effect.Effect<Deck,SlidesError>=>{
   switch(operation.op){
-   case 'patch-slide':return Effect.map(slideIndex(deck,operation.slideId),index=>{const slides=[...deck.slides];const slide=slides[index]!;const {content,...rest}=operation.fields;slides[index]=new Slide({...slide,...Object.fromEntries(Object.entries(rest).filter(([,value])=>value!==undefined)),...(content!==undefined?{content:sanitizeSlideContent(content)}:{})});return new Deck({...deck,slides});});
+   case 'patch-slide':return Effect.map(slideIndex(deck,operation.slideId),index=>{const slides=[...deck.slides];const slide=slides[index]!;const {content,classroom,...rest}=operation.fields;slides[index]=new Slide({...slide,...Object.fromEntries(Object.entries(rest).filter(([,value])=>value!==undefined)),...(content!==undefined?{content:sanitizeSlideContent(content),classroom}:classroom!==undefined?{content:classroomSlideHtml(classroom),classroom:classroom.keyPoints===undefined&&slide.classroom?.keyPoints?{...classroom,keyPoints:slide.classroom.keyPoints}:classroom}:{})});return new Deck({...deck,slides});});
    case 'delete-slide':return Effect.map(slideIndex(deck,operation.slideId),index=>new Deck({...deck,slides:deck.slides.filter((_,i)=>i!==index)}));
    case 'reorder-slides':{
     const ids=new Set(deck.slides.map(slide=>slide.id));
@@ -123,7 +126,7 @@ export const makeDeckActions=Effect.gen(function*(){
   let before=new Map<string,string>();
   const deck=yield* modifyOwned(actor,input.deckId,deck=>Effect.gen(function*(){
    yield* revisionGuard(deck,input.expectedRevision);
-   if(!canReadNotes(actor,deck)&&input.operations.some(operation=>(operation.op==='patch-slide'&&operation.fields.notes!==undefined)||(operation.op==='add-slide'&&operation.slide.notes!==undefined)))return yield* Effect.fail(new Forbidden({reason:'Only the facilitator or deck owner can read or edit presenter notes.'}));
+   if(!canReadNotes(actor,deck)&&input.operations.some(operation=>(operation.op==='patch-slide'&&(operation.fields.notes!==undefined||operation.fields.classroom?.keyPoints!==undefined))||(operation.op==='add-slide'&&(operation.slide.notes!==undefined||operation.slide.classroom?.keyPoints!==undefined))))return yield* Effect.fail(new Forbidden({reason:'Only the facilitator or deck owner can read or edit presenter notes.'}));
    before=new Map(deck.slides.map(slide=>[slide.id,hashSlideContent(slide.content)]));
    return yield* Effect.reduce(input.operations,deck,applyOperation);
   }));
@@ -150,7 +153,7 @@ export const makeDeckActions=Effect.gen(function*(){
   const {deckId}=yield* parse(DeckIdInput)(raw);
   const source=yield* owned(actor,deckId);
   const now=new Date().toISOString();
-  const copy=yield* repo.insert(new Deck({...source,id:randomUUID(),title:`${source.title} (kopie)`,slides:source.slides.map(slide=>new Slide({...slide,id:newSlideId(),...(!canReadNotes(actor,source)?{notes:''}:{})})),revision:1,createdBy:{id:actor.id,name:actor.name},createdAt:now,updatedAt:now}));
+  const copy=yield* repo.insert(new Deck({...source,id:randomUUID(),title:`${source.title} (kopie)`,slides:source.slides.map(slide=>new Slide({...slide,id:newSlideId(),...(!canReadNotes(actor,source)?{notes:'',classroom:slide.classroom&&publicClassroom(slide.classroom)}:{})})),revision:1,createdBy:{id:actor.id,name:actor.name},createdAt:now,updatedAt:now}));
   return {...summary(copy),sourceDeckId:source.id};
  });
 

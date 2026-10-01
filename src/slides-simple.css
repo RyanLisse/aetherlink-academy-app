@@ -49,3 +49,10 @@
  .academy-simple .simple-deck-edit,.academy-simple .simple-deck-more>summary{padding-inline:9px}
  .academy-simple .simple-deck-present{min-width:0}
 }
+.deck-assistant{display:grid;gap:10px;margin:14px 0}
+.deck-assistant .panel-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.deck-assistant .panel-heading h3{display:inline-flex;align-items:center;gap:6px;margin:0;font-size:15px}
+.deck-assistant-lede{margin:0;font-size:12.5px}
+.deck-assistant-log{height:clamp(160px,28vh,300px)}
+.deck-assistant-suggestions{gap:6px}
+.deck-assistant-suggestions button{white-space:normal;text-align:left;height:auto;min-height:32px}

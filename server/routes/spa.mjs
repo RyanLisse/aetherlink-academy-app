@@ -33,7 +33,8 @@ export function registerSpaRoutes(app, deps) {
     p === '/harness' ||
     p === '/lesson' ||
     p.startsWith('/lesson/') ||
-    p.startsWith('/live/');
+    p.startsWith('/live/') ||
+    p.startsWith('/decks/');
   app.get('/legacy-redirect', (req, res) => {
     const site = req.query.site;
     if (!isLegacySite(site))
