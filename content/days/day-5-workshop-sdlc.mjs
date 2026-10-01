@@ -18,9 +18,9 @@ const DEMO_SLIDES=[
  slide(d,17,'Watch: red schema → green'),
  slide(d,21,'Watch: plan mode until accept'),
  slide(d,28,'Watch: brief:sample → out/latest.html'),
- slide(d,34,'Watch: one read-only tool'),
- slide(d,38,'Watch: three commands + screenshot'),
- slide(d,44,'Watch: fill the gate, open the PR'),
+ slide(d,35,'Watch: one read-only tool'),
+ slide(d,39,'Watch: three commands + screenshot'),
+ slide(d,45,'Watch: fill the gate, open the PR'),
 ];
 
 const en = {
@@ -54,7 +54,7 @@ const en = {
    'SOLO 1 (slide 13): open intent.md; Claude Code interviews one question at a time; the bound must be a rule, not a wish.',
    'SOLO 2 (slide 17): quote one field from reference/ in docs/spec.md, let test/schema.test.ts fail red then go green.',
    'SOLO 3 (slide 21): stay in plan mode, draft docs/plan.md with one proof command per step, pause for human accept.',
-   'SOLO 4–7 (slides 28, 34, 38, 44): render out/latest.html, add one read-only tool, fill docs/evidence.md and docs/gate.md, open the PR.',
+   'SOLO 4–7 (slides 28, 35, 39, 45): render out/latest.html, add one read-only tool, fill docs/evidence.md and docs/gate.md, open the PR.',
   ]
  },
  solo:[
@@ -62,9 +62,9 @@ const en = {
   {id:'w5-solo2',badge:'2',level:'required',timerMinutes:25,title:'SOLO 2 · docs/spec.md and schema test',goal:'Quote an example from reference/ per field, let test/schema.test.ts fail red, then make src/brief.ts plus sample/brief.sample.json green.',doneWhen:'npm test is green and the test commit sits before brief.ts in git log.',slide:slide(d,18,'Quoted examples → red schema → green.')},
   {id:'w5-solo3',badge:'3',level:'required',timerMinutes:15,title:'SOLO 3 · design, ADR and plan',goal:'Write docs/design.md, one real ADR under docs/decisions/, and docs/plan.md with ordered steps, exact paths, one proof command per step, and rollback.',doneWhen:'Every step has a proof command and rollback; you stay in plan mode until a human accepts.',slide:slide(d,22,'Stay in plan mode until a human accepts.')},
   {id:'w5-solo4',badge:'4',level:'required',timerMinutes:25,title:'SOLO 4 · render the sample',goal:'Make test/render.test.ts red, then green with src/render.ts, and write out/latest.html with npm run brief:sample.',doneWhen:'npm run brief:sample produces out/latest.html; screenshot kept as proof.',slide:slide(d,29,'Red render test → green sample HTML.')},
-  {id:'w5-solo5',badge:'5',level:'required',timerMinutes:20,title:'SOLO 5 · one read-only tool',goal:'Add one read-only tool to the agent, run npm run brief live, and trace every sentence to a tool call in run.log.',doneWhen:'No shell tool and no write tool; every sentence is traceable.',slide:slide(d,35,'One read-only tool. No shell, no write.')},
-  {id:'w5-solo6',badge:'6',level:'required',timerMinutes:15,title:'SOLO 6 · docs/evidence.md',goal:'Run typecheck, test, and brief; note exit codes and one quoted line per command, a screenshot under docs/evidence/, and a reviewer.',doneWhen:'A stranger can re-run the three commands; PDF diffs sit as OPEN.',slide:slide(d,39,'Proof a stranger can re-run.')},
-  {id:'w5-solo7',badge:'7',level:'required',timerMinutes:15,title:'SOLO 7 · gate and PR',goal:'Fill docs/gate.md with PASS, FAIL, or OPEN and citations; refuse PASS on unread checks; keep credentials out of the repo; open the PR.',doneWhen:'Gate filled, no secrets in the repo, and the PR is open.',slide:slide(d,45,'Fill the gate. Open the PR.')}
+  {id:'w5-solo5',badge:'5',level:'required',timerMinutes:20,title:'SOLO 5 · one read-only tool',goal:'Add one read-only tool to the agent, run npm run brief live, and trace every sentence to a tool call in run.log.',doneWhen:'No shell tool and no write tool; every sentence is traceable.',slide:slide(d,36,'One read-only tool. No shell, no write.')},
+  {id:'w5-solo6',badge:'6',level:'required',timerMinutes:15,title:'SOLO 6 · docs/evidence.md',goal:'Run typecheck, test, and brief; note exit codes and one quoted line per command, a screenshot under docs/evidence/, and a reviewer.',doneWhen:'A stranger can re-run the three commands; PDF diffs sit as OPEN.',slide:slide(d,40,'Proof a stranger can re-run.')},
+  {id:'w5-solo7',badge:'7',level:'required',timerMinutes:15,title:'SOLO 7 · gate and PR',goal:'Fill docs/gate.md with PASS, FAIL, or OPEN and citations; refuse PASS on unread checks; keep credentials out of the repo; open the PR.',doneWhen:'Gate filled, no secrets in the repo, and the PR is open.',slide:slide(d,46,'Fill the gate. Open the PR.')}
  ],
  materials:[
   link('solo','HTML course · daily-brief modules 01–06','/courses/aetherlink-daily-brief-lab-s1/index.html','modules 01–06 · empty-main pedagogy'),
@@ -84,15 +84,15 @@ const en = {
   'intent.md with outcome, three verifiable checks, hard bound, owners, and at least one OPEN (slide 14).',
   'docs/spec.md and docs/plan.md, with the plan accepted by a human before build (slides 18 and 22).',
   'out/latest.html produced by npm run brief:sample (slide 29).',
-  'docs/evidence.md with three commands, exit codes, quoted lines, screenshot, and reviewer (slide 39).',
-  'docs/gate.md with PASS, FAIL, or OPEN and citations, and an open PR without secrets (slide 45).',
-  'Together: seven files a stranger can point to (slide 48).',
+  'docs/evidence.md with three commands, exit codes, quoted lines, screenshot, and reviewer (slide 40).',
+  'docs/gate.md with PASS, FAIL, or OPEN and citations, and an open PR without secrets (slide 46).',
+  'Together: seven files a stranger can point to (slide 49).',
   'Harness-loop diagram viewed; ConceptSim stepped Plan → gate without API keys.'
  ],
  quiz:[
-  question('What order does the lab artifact chain follow?',['intent.md → docs/spec.md → docs/plan.md → diff + tests → PR → docs/gate.md','docs/plan.md → diff → intent.md → PR','PR → docs/gate.md → docs/spec.md → intent.md'],0,slide(d,48,'Seven files. One brief. One gate.')),
+  question('What order does the lab artifact chain follow?',['intent.md → docs/spec.md → docs/plan.md → diff + tests → PR → docs/gate.md','docs/plan.md → diff → intent.md → PR','PR → docs/gate.md → docs/spec.md → intent.md'],0,slide(d,49,'Seven files. One brief. One gate.')),
   question('When do you leave plan mode?',['As soon as the plan exists','When a human accepts the plan','After the first green test'],1,slide(d,22,'Stay in plan mode until a human accepts.')),
-  question('What belongs in docs/evidence.md?',['A summary from the agent','Only a screenshot','Three commands with exit codes, one quoted line each, a screenshot, and a reviewer'],2,slide(d,37,'A command, its exit code, one quoted line, and the name of who reran it.'))
+  question('What belongs in docs/evidence.md?',['A summary from the agent','Only a screenshot','Three commands with exit codes, one quoted line each, a screenshot, and a reviewer'],2,slide(d,38,'A command, its exit code, one quoted line, and the name of who reran it.'))
  ],
  mission:{
   id:'SDLC-BRIEF-05',
@@ -102,7 +102,7 @@ const en = {
   allowed:['Work on your own branch or fork of aetherlink-daily-brief-lab-s1.','The brief agent gets no shell tool and no write tool.','Credentials only in secrets, never in the repo; a human decides PASS.'],
   starterFiles:[],
   hints:['A bound that sounds like a wish is NEEDS REVISION.','Commit the test before brief.ts.','Refuse PASS on a check you have not read.'],
-  stretch:'Pin the weekday schedule with gitlab-ci.example.yml or GitHub Actions (slides 41 and 45).'
+  stretch:'Pin the weekday schedule with gitlab-ci.example.yml or GitHub Actions (slides 42 and 46).'
  },
  openItems:[
   'aetherlink-daily-brief-lab-s1 is a private repository; per-participant access is not arranged in the lesson plan.'
@@ -140,7 +140,7 @@ const nl = {
    'SOLO 1 (dia 13): open intent.md; Claude Code interviewt één vraag per keer; de grens moet een regel zijn, geen wens.',
    'SOLO 2 (dia 17): citeer één veld uit reference/ in docs/spec.md, laat test/schema.test.ts rood falen en daarna groen worden.',
    'SOLO 3 (dia 21): blijf in plan mode, schets docs/plan.md met één bewijscommando per stap en pauzeer bij het menselijke akkoord.',
-   'SOLO 4 tot 7 (dia 28, 34, 38, 44): render out/latest.html, voeg één read-only tool toe, vul docs/evidence.md en docs/gate.md en open de PR.',
+   'SOLO 4 tot 7 (dia 28, 35, 39, 45): render out/latest.html, voeg één read-only tool toe, vul docs/evidence.md en docs/gate.md en open de PR.',
   ]
  },
  solo:[
@@ -148,9 +148,9 @@ const nl = {
   {id:'w5-solo2',badge:'2',level:'required',timerMinutes:25,title:'SOLO 2 · docs/spec.md en schematest',goal:'Citeer per veld een voorbeeld uit reference/, laat test/schema.test.ts rood falen en maak src/brief.ts plus sample/brief.sample.json groen.',doneWhen:'npm test is groen en de testcommit staat vóór brief.ts in git log.',slide:slide(d,18,'Quoted examples → red schema → green.')},
   {id:'w5-solo3',badge:'3',level:'required',timerMinutes:15,title:'SOLO 3 · design, ADR en plan',goal:'Schrijf docs/design.md, één echte ADR onder docs/decisions/ en docs/plan.md met geordende stappen, exacte paden, een bewijscommando per stap en rollback.',doneWhen:'Elke stap heeft een bewijscommando en rollback; je blijft in plan mode tot een mens akkoord geeft.',slide:slide(d,22,'Stay in plan mode until a human accepts.')},
   {id:'w5-solo4',badge:'4',level:'required',timerMinutes:25,title:'SOLO 4 · render de sample',goal:'Maak test/render.test.ts rood, dan groen met src/render.ts, en schrijf out/latest.html met npm run brief:sample.',doneWhen:'npm run brief:sample levert out/latest.html op; screenshot bewaard als bewijs.',slide:slide(d,29,'Red render test → green sample HTML.')},
-  {id:'w5-solo5',badge:'5',level:'required',timerMinutes:20,title:'SOLO 5 · één read-only tool',goal:'Voeg één read-only tool toe aan de agent, run npm run brief live en herleid elke zin naar een tool-call in run.log.',doneWhen:'Geen shell-tool en geen write-tool; elke zin is herleidbaar.',slide:slide(d,35,'One read-only tool. No shell, no write.')},
-  {id:'w5-solo6',badge:'6',level:'required',timerMinutes:15,title:'SOLO 6 · docs/evidence.md',goal:'Run typecheck, test en brief; noteer exitcodes en één geciteerde regel per commando, een screenshot onder docs/evidence/ en een reviewer.',doneWhen:'Een vreemde kan de drie commando’s opnieuw draaien; verschillen met de PDF’s staan als OPEN.',slide:slide(d,39,'Proof a stranger can re-run.')},
-  {id:'w5-solo7',badge:'7',level:'required',timerMinutes:15,title:'SOLO 7 · gate en PR',goal:'Vul docs/gate.md met PASS, FAIL of OPEN en citaten, weiger PASS op ongelezen checks, houd credentials buiten de repo en open de PR.',doneWhen:'Gate ingevuld, geen secrets in de repo en de PR staat open.',slide:slide(d,45,'Fill the gate. Open the PR.')}
+  {id:'w5-solo5',badge:'5',level:'required',timerMinutes:20,title:'SOLO 5 · één read-only tool',goal:'Voeg één read-only tool toe aan de agent, run npm run brief live en herleid elke zin naar een tool-call in run.log.',doneWhen:'Geen shell-tool en geen write-tool; elke zin is herleidbaar.',slide:slide(d,36,'One read-only tool. No shell, no write.')},
+  {id:'w5-solo6',badge:'6',level:'required',timerMinutes:15,title:'SOLO 6 · docs/evidence.md',goal:'Run typecheck, test en brief; noteer exitcodes en één geciteerde regel per commando, een screenshot onder docs/evidence/ en een reviewer.',doneWhen:'Een vreemde kan de drie commando’s opnieuw draaien; verschillen met de PDF’s staan als OPEN.',slide:slide(d,40,'Proof a stranger can re-run.')},
+  {id:'w5-solo7',badge:'7',level:'required',timerMinutes:15,title:'SOLO 7 · gate en PR',goal:'Vul docs/gate.md met PASS, FAIL of OPEN en citaten, weiger PASS op ongelezen checks, houd credentials buiten de repo en open de PR.',doneWhen:'Gate ingevuld, geen secrets in de repo en de PR staat open.',slide:slide(d,46,'Fill the gate. Open the PR.')}
  ],
  materials:[
   link('solo','HTML-cursus · daily-brief modules 01–06','/courses/aetherlink-daily-brief-lab-s1/index.html','modules 01–06 · lege-main-pedagogiek'),
@@ -170,15 +170,15 @@ const nl = {
   'intent.md met uitkomst, drie controleerbare checks, harde grens, eigenaren en minstens één OPEN (dia 14).',
   'docs/spec.md en docs/plan.md, met het plan geaccepteerd door een mens vóór de build (dia 18 en 22).',
   'out/latest.html gegenereerd door npm run brief:sample (dia 29).',
-  'docs/evidence.md met drie commando’s, exitcodes, geciteerde regels, screenshot en reviewer (dia 39).',
-  'docs/gate.md met PASS, FAIL of OPEN en citaten, en een open PR zonder secrets (dia 45).',
-  'Samen zeven bestanden die een vreemde kan aanwijzen (dia 48).',
+  'docs/evidence.md met drie commando’s, exitcodes, geciteerde regels, screenshot en reviewer (dia 40).',
+  'docs/gate.md met PASS, FAIL of OPEN en citaten, en een open PR zonder secrets (dia 46).',
+  'Samen zeven bestanden die een vreemde kan aanwijzen (dia 49).',
   'Harnesslus-diagram bekeken; ConceptSim Plan → gate gestapt zonder API-sleutels.'
  ],
  quiz:[
-  question('Welke volgorde heeft de artefactketen in het lab?',['intent.md → docs/spec.md → docs/plan.md → diff + tests → PR → docs/gate.md','docs/plan.md → diff → intent.md → PR','PR → docs/gate.md → docs/spec.md → intent.md'],0,slide(d,48,'Seven files. One brief. One gate.')),
+  question('Welke volgorde heeft de artefactketen in het lab?',['intent.md → docs/spec.md → docs/plan.md → diff + tests → PR → docs/gate.md','docs/plan.md → diff → intent.md → PR','PR → docs/gate.md → docs/spec.md → intent.md'],0,slide(d,49,'Seven files. One brief. One gate.')),
   question('Wanneer verlaat je plan mode?',['Zodra het plan er staat','Als een mens het plan accepteert','Na de eerste groene test'],1,slide(d,22,'Stay in plan mode until a human accepts.')),
-  question('Wat hoort in docs/evidence.md?',['Een samenvatting van de agent','Alleen een screenshot','Drie commando’s met exitcodes, één geciteerde regel elk, een screenshot en een reviewer'],2,slide(d,37,'A command, its exit code, one quoted line, and the name of who reran it.'))
+  question('Wat hoort in docs/evidence.md?',['Een samenvatting van de agent','Alleen een screenshot','Drie commando’s met exitcodes, één geciteerde regel elk, een screenshot en een reviewer'],2,slide(d,38,'A command, its exit code, one quoted line, and the name of who reran it.'))
  ],
  mission:{
   id:'SDLC-BRIEF-05',
@@ -188,7 +188,7 @@ const nl = {
   allowed:['Werk op je eigen branch of fork van aetherlink-daily-brief-lab-s1.','De brief-agent krijgt geen shell- en geen write-tool.','Credentials alleen in secrets, nooit in de repo; een mens beslist over PASS.'],
   starterFiles:[],
   hints:['Een grens die als wens klinkt is NEEDS REVISION.','Commit de test vóór brief.ts.','Weiger PASS op een check die je niet hebt gelezen.'],
-  stretch:'Leg de weekday-schedule vast met gitlab-ci.example.yml of GitHub Actions (dia 41 en 45).'
+  stretch:'Leg de weekday-schedule vast met gitlab-ci.example.yml of GitHub Actions (dia 42 en 46).'
  },
  openItems:[
   'aetherlink-daily-brief-lab-s1 is een privé-repository; toegang per deelnemer is niet geregeld in het lesplan.'

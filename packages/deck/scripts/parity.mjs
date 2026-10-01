@@ -18,6 +18,9 @@ const fixedEpoch = Number(process.env.PARITY_FIXED_EPOCH ?? Date.parse('2025-01-
 const INTENDED_DIFFERENCES = new Map([
   ['tablet:28', 'pointer bot scaled and kept inside #stage; the source clips it to a hand at the right edge'],
   ['mobile:28', 'pointer bot scaled and kept inside #stage; the source clips it at the right edge'],
+  ['desktop:108', 'recap items stay visible when reduced motion disables reveal animations'],
+  ['tablet:108', 'recap items stay visible when reduced motion disables reveal animations'],
+  ['mobile:108', 'recap items stay visible when reduced motion disables reveal animations'],
 ]);
 const viewports = [
   {name: 'desktop', width: 1440, height: 900},

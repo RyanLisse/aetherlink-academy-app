@@ -5,8 +5,9 @@ import {workshop5SourceSlides} from '../src/deck/workshop5-slides.ts';
 import {normalizeSlides} from '../src/deck/normalize.ts';
 import {isWorkshop5Path} from '../src/routes.tsx';
 import {sourceSlides} from '../src/deck/slides.ts';
+import {expectWorkshopClassroomContract} from './workshop-classroom-contract.ts';
 
-describe('AET-77 workshop 5 ultra-minimal AI-native SDLC deck', () => {
+describe('AET-77 workshop 5 AI-native SDLC deck', () => {
   const slides = normalizeSlides(workshop5SourceSlides);
   const practice = workshop5SourceSlides.filter((s) => s.type === 'practice');
   const kicker = (s: Record<string, unknown> | undefined): string => String(s?.kicker ?? '');
@@ -14,7 +15,7 @@ describe('AET-77 workshop 5 ultra-minimal AI-native SDLC deck', () => {
     s.visual && typeof s.visual === 'object' && !Array.isArray(s.visual)
       ? (s.visual as Record<string, unknown>)
       : {};
-  const definitions = workshop5SourceSlides.filter((s) => visualOf(s).opener === 'definition');
+  const definitions = workshop5SourceSlides.filter((s) => visualOf(s).hero === 0);
   const terms = definitions.map((s) => kicker(s));
 
   const REQUIRED_TERMS = [
@@ -46,8 +47,8 @@ describe('AET-77 workshop 5 ultra-minimal AI-native SDLC deck', () => {
   it('the line vs loop face is the Academy-dark diagram', () => {
     const face = workshop5SourceSlides.find((s) => String(visualOf(s).image ?? '').includes('line-vs-loop'))!;
     const visual = visualOf(face);
-    expect(visual.keynote).toBe(true);
     expect(visual.opener).toBe('showcase');
+    expect(visual.bot).toBeUndefined();
     expect(String(visual.image ?? '')).toMatch(/workshop-5\/line-vs-loop-dark\.png/);
     expect(face.cards).toBeUndefined();
   });
@@ -55,7 +56,11 @@ describe('AET-77 workshop 5 ultra-minimal AI-native SDLC deck', () => {
   it('the AI-native SDLC definition follows the loop and says loop + AI at each point', () => {
     const def = workshop5SourceSlides.find((s) => kicker(s) === 'AI-native SDLC')!;
     expect(kicker(def)).toBe('AI-native SDLC');
-    expect(visualOf(def).opener).toBe('definition');
+    expect(visualOf(def).hero).toBe(0);
+    expect((def.cards as ReadonlyArray<{title: string; body: string}>)[0]).toEqual({
+      title: 'AI-native SDLC',
+      body: def.title,
+    });
     expect(String(def.title)).toMatch(/loop/i);
     expect(String(def.title)).toMatch(/AI embedded at each point/i);
   });
@@ -65,7 +70,9 @@ describe('AET-77 workshop 5 ultra-minimal AI-native SDLC deck', () => {
     expect(JSON.stringify(vehicle)).toMatch(/RyanLisse\/aetherlink-daily-brief-lab-s1/);
     expect(String(vehicle.notes ?? '')).toMatch(/main is empty/i);
     expect(String(vehicle.title ?? '')).toMatch(/Clone the lab/i);
-    expect(visualOf(vehicle).popOut).toBe(0);
+    const cards = vehicle.cards as ReadonlyArray<{title: string; body: string}>;
+    expect(cards.length).toBeGreaterThanOrEqual(2);
+    expect(cards[0]?.body).toContain('github.com/RyanLisse/aetherlink-daily-brief-lab-s1');
   });
 
   it('A3: the loop face names the lab artifact chain in its notes', () => {
@@ -78,7 +85,7 @@ describe('AET-77 workshop 5 ultra-minimal AI-native SDLC deck', () => {
 
   it('the gap quote replaces the artifact-chain face, with its source', () => {
     const gap = workshop5SourceSlides.find((s) => kicker(s) === 'Explain · the gap')!;
-    expect(visualOf(gap).opener).toBe('quote');
+    expect(visualOf(gap).phrase).toBe(gap.title);
     expect(JSON.stringify(gap.cards)).toContain('Louis Claxton · The AI-Native SDLC playbook');
     expect(String(gap.title)).toMatch(/processes around the code haven't changed/);
     expect(workshop5SourceSlides.indexOf(gap)).toBe(8);
@@ -92,7 +99,10 @@ describe('AET-77 workshop 5 ultra-minimal AI-native SDLC deck', () => {
   it('definition faces are dictionary entries: headword kicker, the definition as the face', () => {
     for (const def of definitions) {
       const term = kicker(def);
+      const cards = Array.isArray(def.cards) ? def.cards as ReadonlyArray<{title?: string; body?: string}> : [];
       expect(term.length, term).toBeLessThanOrEqual(20);
+      expect(visualOf(def).hero, term).toBe(0);
+      expect(cards[0], term).toEqual({title: term, body: def.title});
       expect(String(def.title), term).not.toBe(term);
       expect(String(def.title).split(/\s+/).length, term).toBeGreaterThanOrEqual(7);
       expect(String(def.title).length, term).toBeLessThanOrEqual(130);
@@ -106,7 +116,7 @@ describe('AET-77 workshop 5 ultra-minimal AI-native SDLC deck', () => {
       const lookIdx = workshop5SourceSlides.findIndex((s) => kicker(s) === `Look · SOLO ${n}`);
       expect(demoIdx, `demo SOLO ${n}`).toBeGreaterThanOrEqual(0);
       expect(kicker(workshop5SourceSlides[demoIdx + 1]), `your turn SOLO ${n}`).toBe(`SOLO ${n} / 7 · Your turn`);
-      expect(visualOf(workshop5SourceSlides[demoIdx - 1]!).opener, `definition SOLO ${n}`).toBe('definition');
+      expect(visualOf(workshop5SourceSlides[demoIdx - 1]!).hero, `definition SOLO ${n}`).toBe(0);
       expect(lookIdx, `look SOLO ${n}`).toBe(demoIdx - 2);
     }
   });
@@ -119,6 +129,17 @@ describe('AET-77 workshop 5 ultra-minimal AI-native SDLC deck', () => {
       expect(image, String(face.title)).toMatch(/^workshop-5\/.+-dark\.png$/);
       expect(existsSync(fileURLToPath(new URL(`../public/${image}`, import.meta.url))), image).toBe(true);
     }
+  });
+
+  it('inserts the scheduled 15-minute pause immediately after SOLO 4', () => {
+    const pause = workshop5SourceSlides.find((s) => s.type === 'pause')!;
+    const pauseIndex = workshop5SourceSlides.indexOf(pause);
+    const visual = visualOf(pause);
+    expect(pauseIndex).toBe(workshop5SourceSlides.indexOf(practice[3]!) + 1);
+    expect(visual.countdown).toBe(15);
+    expect(visual.bot).toBe('wave');
+    expect(visual.place).toBe('beside');
+    expect(new Set(slides.map((s) => s.id)).size).toBe(slides.length);
   });
 
   it('every face is English: no Dutch rhythm labels left', () => {
@@ -145,24 +166,14 @@ describe('AET-77 workshop 5 ultra-minimal AI-native SDLC deck', () => {
       const cards = Array.isArray(slide.cards) ? slide.cards : [];
       expect(cards).toHaveLength(1);
       expect(String((cards[0] as {body?: string}).body ?? '')).toBe(expectedPaths[i]);
-      expect(visualOf(slide).popOut, String(slide.title)).toBe(0);
-      expect(slide.layout, String(slide.title)).not.toBe('exercise');
-      expect(slide.steps, String(slide.title)).toBeUndefined();
+      expect(slide.layout, String(slide.title)).toBe('exercise');
+      expect(Array.isArray(slide.steps) && slide.steps.length, String(slide.title)).toBeGreaterThanOrEqual(2);
+      expect(String(slide.expected ?? '').trim(), String(slide.title)).not.toBe('');
     });
   });
 
-  it('ultra-minimal: every face is keynote; no card walls / compare / steps layouts', () => {
-    for (const slide of workshop5SourceSlides) {
-      expect(visualOf(slide).keynote, String(slide.title)).toBe(true);
-      expect(slide.subtitle, String(slide.title)).toBeUndefined();
-      expect(slide.layout, String(slide.title)).toBeUndefined();
-      const cards = Array.isArray(slide.cards) ? slide.cards : [];
-      expect(cards.length, String(slide.title)).toBeLessThanOrEqual(1);
-      if (cards.length === 1) {
-        expect(visualOf(slide).popOut, String(slide.title)).toBe(0);
-        expect(String((cards[0] as {body?: string}).body ?? '')).not.toMatch(/\n/);
-      }
-    }
+  it('uses the Classroom visual and assignment contract', () => {
+    expectWorkshopClassroomContract(workshop5SourceSlides);
   });
 
   it('A5: presenter notes keep timers/checklists and open lab path lines', () => {
@@ -176,10 +187,11 @@ describe('AET-77 workshop 5 ultra-minimal AI-native SDLC deck', () => {
     }
   });
 
-  it('A6: recap names seven lab files + lab repo (in notes; face stays one sentence)', () => {
+  it('A6: recap names seven lab files + lab repo in notes', () => {
     const recap = workshop5SourceSlides[workshop5SourceSlides.length - 1]!;
     expect(recap.title).toMatch(/Seven files|One brief|One gate/i);
     expect(kicker(recap)).toMatch(/aetherlink-daily-brief-lab-s1/);
+    expect(recap.layout).toBe('recap');
     const notes = String(recap.notes ?? '');
     for (const name of ['intent.md', 'docs/spec.md', 'docs/plan.md', 'out/latest.html', 'docs/evidence.md', 'docs/gate.md', 'PR open']) {
       expect(notes).toContain(name);

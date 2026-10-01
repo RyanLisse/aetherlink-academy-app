@@ -270,7 +270,7 @@
   .academy-deck .cards{gap:.7rem}.academy-deck .card{padding:1rem}.academy-deck .card p{font-size:1rem}
 }
 @media(max-width:480px){.academy-deck .cards{grid-template-columns:1fr}.academy-deck h1{font-size:1.7rem}.academy-deck .brand{font-size:.85rem}}
-@media(prefers-reduced-motion:reduce){.academy-deck,.academy-deck *,.academy-deck *::before,.academy-deck *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+@media(prefers-reduced-motion:reduce){.academy-deck,.academy-deck *,.academy-deck *::before,.academy-deck *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.academy-deck .recap-item.won{opacity:1!important}}
 
 /* ==========================================================================
    Playful type (Nunito, self-hosted — no external font requests in class)
@@ -1261,4 +1261,3 @@
 .academy-deck .asg-steps.many .asg-step{padding:clamp(.5rem,1.1vh,.75rem) 1.1rem;font-size:clamp(1.02rem,1.65vw,1.3rem)}
 
 .academy-deck .code-card .code-block{margin:.5rem 0 0;background:#0b0f19;border:1px solid #2a3350;border-radius:10px;padding:.7rem .9rem;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:clamp(.66rem,.82vw,.8rem);line-height:1.4;white-space:pre;overflow-x:auto;color:#dbe4ff}
-

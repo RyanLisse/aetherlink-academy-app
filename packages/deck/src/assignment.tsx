@@ -50,18 +50,22 @@ export function usePersistentTimer(slideId: string) {
   };
 }
 
-function TimerPill({slideId}: {readonly slideId: string}) {
+function TimerPill({slideId, preset}: {readonly slideId: string; readonly preset?: number | undefined}) {
   const timer = usePersistentTimer(slideId);
   const [open, setOpen] = useState(false);
-  const [minutes, setMinutes] = useState(() => timer.total ? String(Math.round(timer.total / 60)) : '');
-  useEffect(() => setMinutes(timer.total ? String(Math.round(timer.total / 60)) : ''), [timer.total]);
+  const [minutes, setMinutes] = useState(() => timer.total ? String(Math.round(timer.total / 60)) : preset === undefined ? '' : String(preset));
+  useEffect(() => setMinutes(timer.total ? String(Math.round(timer.total / 60)) : preset === undefined ? '' : String(preset)), [preset, timer.total]);
   const commit = () => timer.setMinutes(Number(minutes));
-  const face = timer.done ? 'TIME' : formatClock(timer.left);
+  const face = timer.done ? 'TIME' : formatClock(timer.total === 0 && preset !== undefined ? preset * 60 : timer.left);
   const playLabel = timer.running ? '❚❚ Pause' : timer.left > 0 && timer.left < timer.total ? '▶ Resume' : '▶ Start';
+  const toggle = () => {
+    if (!timer.running && timer.total === 0 && preset !== undefined) timer.setMinutes(preset);
+    timer.toggle();
+  };
   return <div className="tpill-wrap">
     {open && <div className="tpill-bar"><div className="tpill-controls widget-controls timer-controls">
-      <label className="timer-field"><input type="number" min="0" max="180" step="1" placeholder="0" aria-label="Minutes" value={minutes} onChange={(event) => setMinutes(event.target.value)} onBlur={commit} onKeyDown={(event: ReactKeyboardEvent<HTMLInputElement>) => { if (event.key === 'Enter') { event.preventDefault(); commit(); if (!timer.running) timer.toggle(); } }}/><span>min</span></label>
-      <button type="button" className="timer-play" onClick={timer.toggle}>{playLabel}</button>
+      <label className="timer-field"><input type="number" min="0" max="180" step="1" placeholder="0" aria-label="Minutes" value={minutes} onChange={(event) => setMinutes(event.target.value)} onBlur={commit} onKeyDown={(event: ReactKeyboardEvent<HTMLInputElement>) => { if (event.key === 'Enter') { event.preventDefault(); timer.setMinutes(Number(minutes)); if (!timer.running) timer.toggle(); } }}/><span>min</span></label>
+      <button type="button" className="timer-play" onClick={toggle}>{playLabel}</button>
       <button type="button" className="secondary" onClick={() => timer.add(-60)}>−1 min</button>
       <button type="button" className="secondary" onClick={() => timer.add(60)}>+1 min</button>
       <button type="button" className="secondary" onClick={timer.reset}>Reset</button>
@@ -92,7 +96,7 @@ export function AssignmentView({slide, index, total, hidden}: {readonly slide: D
   const cards = Array.isArray(slide.cards) ? slide.cards : [];
   return <>
     <section className="heading asg-head">
-      <div className="heading-top"><p className="eyebrow"><span className="type-chip">{label}</span>{hidden && <span className="hidden-chip">Hidden · H to show</span>}</p><div className="asg-top-right"><TimerPill slideId={slide.id}/><p className="slide-count">{`${index + 1} / ${total}`}</p></div></div>
+      <div className="heading-top"><p className="eyebrow"><span className="type-chip">{label}</span>{hidden && <span className="hidden-chip">Hidden · H to show</span>}</p><div className="asg-top-right"><TimerPill slideId={slide.id} preset={typeof slide.timer === 'number' ? slide.timer : undefined}/><p className="slide-count">{`${index + 1} / ${total}`}</p></div></div>
       <h1>{title}</h1>{slide.subtitle && <p className="subtitle">{slide.subtitle}</p>}
     </section>
     <div className="asg-body">

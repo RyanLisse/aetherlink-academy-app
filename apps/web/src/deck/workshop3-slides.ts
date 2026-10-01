@@ -1,8 +1,8 @@
-/** AET-79 Workshop day 3 — ultra-minimal keynote (carry W5 density SoT).
- *  OUTLINE-AET-79 · PRODUCT-ACCEPT-OUTLINE-AET-79 · PEDAGOGY-RHYTHM · ULTRA-MINIMAL
+/** AET-79 Workshop day 3 — classroom-style deck with visible concepts and assignment timers.
+ *  OUTLINE-AET-79 · PRODUCT-ACCEPT-OUTLINE-AET-79 · PEDAGOGY-RHYTHM · CLASSROOM-STYLE
  *  Vehicle: n8n support ticket → priority Low/Med/High · L1 Switch → L2 AI Agent+memory → L3 Reply+Risk
- *  Face bar: eyebrow chip + one short huge sentence + ≤1 chip.
- *  Timers/checklists → presenter notes only. Pedagogy: Explain → Demo → Your turn per ladder rung.
+ *  Classroom style: visible concept cards, AetherBOT, and on-slide exercise timers.
+ *  Exercises show their steps and timers on-slide; facilitator notes remain.
  *  Forbidden: Classroom 1–2 rewrite; Eve dual-track; W5 SDLC into this deck; secrets on screen.
  */
 export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
@@ -14,7 +14,13 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   title: "One ticket. Three agency levels.",
   kicker: "Workshop 3 · Day 3 · L1→L3",
   type: "concept",
-  visual: { keynote: true },
+  visual: { bot: 'wave', place: 'beside' },
+  subtitle: "One scenario climbs three agency levels before its acceptance is rebuilt on Claude on day 4.",
+  keyPoints: ["One shared scenario.","Three levels of agency.","Workshop 4 keeps the acceptance fixture."],
+  cards: [
+    { title: "One ticket", body: "Carry the same scenario through the day." },
+    { title: "L1 → L2 → L3", body: "Move from business rules to judgment to specialists." },
+  ],
   notes: "Open. One scenario, three agency levels on n8n. Rhythm all day: I explain → I show → you do on your laptop. Goal ≥L2; stretch L3. Day 4 rebuilds acceptance on Claude Agents SDK. n8n→Claude lock; no dual-track required path."
 },
 
@@ -23,7 +29,13 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   title: "Ticket in. Low / Med / High out.",
   kicker: "Vehicle · one ticket · three levels",
   type: "context",
-  visual: { keynote: true },
+  visual: { bot: 'wave', place: 'beside' },
+  subtitle: "Keep one n8n ticket in view while routing it to Low, Med, or High.",
+  keyPoints: ["One ticket.","Three labels.","Optional reply at L3."],
+  cards: [
+    { title: "Input", body: "Start with the shared ticket fixture." },
+    { title: "Output", body: "Return a Low, Med, or High label." },
+  ],
   notes: "The vehicle. Ticket in → Low/Med/High out (+ optional reply at L3). Point at the workshop n8n instance + screenshot pack under /workshop-3/. No vehicle = fail the through-line. Soft: AET-84 starter JSON when ready — does not block today."
 },
 
@@ -32,7 +44,13 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   title: "Automation is not an agent.",
   kicker: "Explain · why the ladder",
   type: "concept",
-  visual: { keynote: true },
+  visual: { bot: 'think', place: 'beside' },
+  subtitle: "L1 is a business rule; agent judgment starts at L2.",
+  keyPoints: ["L1 has no LLM.","L2 adds an AI Agent and memory.","A human gate stays before done."],
+  cards: [
+    { title: "L1 · Rules", body: "Route the ticket without an LLM." },
+    { title: "L2 · Judgment", body: "A bounded AI Agent drafts priority." },
+  ],
   notes: "Explain. L1 = business rule without LLM. L2 = judgment (one AI Agent + memory). L3 = specialists (Reply + Risk). Human gate before “done” / customer-facing."
 },
 
@@ -41,7 +59,13 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   title: "Same tickets all day.",
   kicker: "Scenario · shared fixture",
   type: "concept",
-  visual: { keynote: true },
+  visual: { bot: 'point', place: 'beside' },
+  subtitle: "A shared fixture keeps expected labels stable as agency increases.",
+  keyPoints: ["Reuse the fixture.","Keep the expected label visible.","No production writes or secrets on screen."],
+  cards: [
+    { title: "Examples", body: "Use at least three example tickets." },
+    { title: "Expected", body: "Record the expected Low / Med / High label." },
+  ],
   notes: "Shared fixture. ≥3 example tickets with expected L/M/H. Labels return on day 4. No prod writes. Secrets off screen."
 },
 
@@ -52,7 +76,13 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   title: "L1 is a Switch — no LLM.",
   kicker: "Explain · L1 · deterministic routing",
   type: "concept",
-  visual: { keynote: true },
+  visual: { bot: 'think', place: 'beside' },
+  subtitle: "Route each ticket with deterministic Switch rules, without an LLM.",
+  keyPoints: ["Use deterministic rules.","Cover the branches.","Show the error path."],
+  cards: [
+    { title: "Input", body: "Read the ticket fields." },
+    { title: "Branches", body: "Route to Low, Med, or High." },
+  ],
   notes: "Explain — L1 Switch / rules. Ticket → Switch → L/M/H. No LLM. Cover input, branches, and error path."
 },
 
@@ -61,12 +91,7 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   title: "Watch: L1 Switch routes the ticket.",
   kicker: "Demo · L1",
   type: "concept",
-  visual: {
-    keynote: true,
-    opener: "showcase",
-    image: "workshop-3/01-n8n.jpeg",
-    imageLink: "n8n · L1 Switch"
-  },
+  visual: { opener: "showcase", image: "workshop-3/01-n8n.jpeg", imageLink: "n8n · L1 Switch" },
   notes: "Demo — L1. Facilitator walks screenshot 01-n8n.jpeg or live import. Room watches; does not build yet. Script: open flow → show Switch branches → run one fixture ticket → label matches."
 },
 
@@ -75,11 +100,16 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   title: "Build or inspect L1 on your machine.",
   kicker: "L1 · Your turn",
   type: "practice",
+  layout: "exercise",
   timer: 15,
-  visual: { keynote: true, popOut: 0 },
+  visual: { bot: 'point', place: 'beside' },
   cards: [
     { title: "Level", body: "L1" }
   ],
+  steps: ["Run the flow.","Match the fixture label.","Note the steps.","Ask a human to confirm the branch."],
+  expected: "The flow runs, its label matches the fixture, the steps are noted, and a human confirms the branch before L2.",
+  subtitle: "Run or inspect the deterministic L1 flow and hold the human gate before L2.",
+  keyPoints: ["Run the L1 flow.","Match the expected label.","Confirm the branch with a human."],
   notes: "Your turn — L1 on your machine. Timer: 15 min. Checklist: (1) flow runs (2) label matches fixture (3) steps noted (4) human confirms branch. Gate before L2 — required."
 },
 
@@ -90,7 +120,13 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   title: "L2 adds one AI Agent with memory.",
   kicker: "Explain · L2 · judgment enters",
   type: "concept",
-  visual: { keynote: true },
+  visual: { bot: 'point', place: 'beside' },
+  subtitle: "One bounded AI Agent drafts priority while a human reviews it.",
+  keyPoints: ["Same ticket chain.","Agent drafts priority.","Human review before sending."],
+  cards: [
+    { title: "Agent", body: "Add one bounded AI Agent to the same chain." },
+    { title: "Memory", body: "Keep the existing ticket context." },
+  ],
   notes: "Explain — L2. Same chain + one bounded AI Agent. Agent drafts priority; human reviews. Capture trace/settings. OpenAI node in screenshots OK — day 4 swaps stack."
 },
 
@@ -99,12 +135,7 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   title: "Watch: L2 Agent drafts priority.",
   kicker: "Demo · L2",
   type: "concept",
-  visual: {
-    keynote: true,
-    opener: "showcase",
-    image: "workshop-3/02-n8n.jpeg",
-    imageLink: "n8n · L2 AI Agent + memory"
-  },
+  visual: { opener: "showcase", image: "workshop-3/02-n8n.jpeg", imageLink: "n8n · L2 AI Agent + memory" },
   notes: "Demo — L2. Screenshot 02-n8n.jpeg or live. Show Agent + memory, draft priority, human review pause. Room watches."
 },
 
@@ -113,11 +144,16 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   title: "Reach L2 on your own machine.",
   kicker: "L2 · Your turn · solo bar",
   type: "practice",
+  layout: "exercise",
   timer: 20,
-  visual: { keynote: true, popOut: 0 },
+  visual: { bot: 'point', place: 'beside' },
   cards: [
     { title: "Level", body: "L2" }
   ],
+  steps: ["Record an AI run.","Have a human review the priority.","Prevent silent auto-send.","Start the Proof fields."],
+  expected: "An AI run is recorded, a human reviews the priority, auto-send stays off, and Proof fields are started.",
+  subtitle: "Record one AI run and make the human review visible before anything is sent.",
+  keyPoints: ["Record the AI run.","Review the priority with a human.","Keep auto-send off."],
   notes: "Your turn — L2. Solo bar = ≥L2 required. Timer: 20 min. Checklist: (1) AI run recorded (2) human reviewed priority (3) no silent auto-send (4) Proof fields started."
 },
 
@@ -128,7 +164,13 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   title: "L3 splits Reply and Risk.",
   kicker: "Explain · L3 · specialists · one gate",
   type: "concept",
-  visual: { keynote: true },
+  visual: { bot: 'think', place: 'beside' },
+  subtitle: "L3 separates Reply and Risk specialists but keeps one human gate.",
+  keyPoints: ["Split the specialist roles.","Document who does what.","Keep the human gate before done."],
+  cards: [
+    { title: "Reply", body: "Draft a customer-facing reply." },
+    { title: "Risk", body: "Assess risk or priority." },
+  ],
   notes: "Explain — L3. Split reply vs risk/priority; orchestrate; document who does what; human gate before done. Stretch — not required for solo bar."
 },
 
@@ -137,12 +179,7 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   title: "Watch: L3 specialists, one gate.",
   kicker: "Demo · L3",
   type: "concept",
-  visual: {
-    keynote: true,
-    opener: "showcase",
-    image: "workshop-3/03-n8n.jpeg",
-    imageLink: "n8n · L3 Reply + Risk"
-  },
+  visual: { opener: "showcase", image: "workshop-3/03-n8n.jpeg", imageLink: "n8n · L3 Reply + Risk" },
   notes: "Demo — L3. Screenshot 03-n8n.jpeg or live. Stretch demo — not required for solo bar. Name two roles and the human gate."
 },
 
@@ -151,11 +188,16 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   title: "Stretch L3 — same tickets.",
   kicker: "L3 · Your turn · optional",
   type: "practice",
+  layout: "exercise",
   timer: 15,
-  visual: { keynote: true, popOut: 0 },
+  visual: { bot: 'point', place: 'beside' },
   cards: [
     { title: "Level", body: "L3" }
   ],
+  steps: ["Name two specialist roles.","Produce a joint output.","Make the human gate explicit."],
+  expected: "Two specialist roles produce a joint output with an explicit human gate.",
+  subtitle: "Stretch the same tickets into two specialist roles with one explicit human gate.",
+  keyPoints: ["Name the two roles.","Show their joint output.","Keep the human gate explicit."],
   notes: "Your turn — L3 stretch (optional). Timer: 15 min. Checklist: (1) two roles named (2) joint output (3) human gate explicit."
 },
 
@@ -166,7 +208,13 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   title: "Proof is not vibes.",
   kicker: "Explain · export · rules · gate",
   type: "concept",
-  visual: { keynote: true },
+  visual: { bot: 'point', place: 'beside' },
+  subtitle: "A working flow, export or screenshot, and short routing explanation make the result checkable.",
+  keyPoints: ["Show the working flow.","Explain the routing rules.","Keep labels for day 4 to rerun."],
+  cards: [
+    { title: "Working flow", body: "Leave the flow runnable." },
+    { title: "Proof pack", body: "Capture an export or screenshot." },
+  ],
   notes: "Explain — Proof. Working flow + export/screenshot + short routing explanation. Same labels day 4 will re-run."
 },
 
@@ -175,11 +223,16 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   title: "Export your Proof pack before you leave.",
   kicker: "Proof · Your turn",
   type: "practice",
+  layout: "exercise",
   timer: 10,
-  visual: { keynote: true, popOut: 0 },
+  visual: { bot: 'point', place: 'beside' },
   cards: [
     { title: "Pack", body: "Proof" }
   ],
+  steps: ["Capture a screenshot or export.","Write the L/M/H rules in one paragraph.","Name the human gate.","Record the level reached."],
+  expected: "The Proof pack includes an export or screenshot, routing rules, a named human gate, and the level reached.",
+  subtitle: "Capture what ran and leave the routing rules and human gate in a checkable Proof pack.",
+  keyPoints: ["Capture the flow.","Explain the L/M/H rules.","Name the gate and level."],
   notes: "Your turn — Proof pack on your machine before you leave. Timer: 10 min. Checklist: (1) screenshot/export (2) L/M/H rules in one paragraph (3) human gate named (4) level reached."
 },
 
@@ -188,7 +241,13 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   title: "Day 4 rebuilds this on Claude.",
   kicker: "Bridge · → Workshop 4",
   type: "concept",
-  visual: { keynote: true },
+  visual: { bot: 'point', place: 'beside' },
+  subtitle: "Workshop 4 rebuilds the same acceptance fixture on Claude Agents SDK.",
+  keyPoints: ["Same acceptance fixture.","Claude Agents SDK on day 4.","Dual-track is not required."],
+  cards: [
+    { title: "Keep", body: "Bring the same tickets and labels." },
+    { title: "Rebuild", body: "Move the flow to Claude Agents SDK." },
+  ],
   notes: "Bridge. Day 4 = Claude Agents SDK on the same acceptance fixture. Keep tickets + labels. Dual-track not required. n8n→Claude lock."
 },
 
@@ -197,7 +256,13 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   title: "Workshop instance. No prod.",
   kicker: "Guardrails",
   type: "concept",
-  visual: { keynote: true },
+  visual: { bot: 'head', place: 'beside' },
+  subtitle: "Keep the exercise on the workshop instance and show evidence for model runs.",
+  keyPoints: ["Use the workshop instance.","Never show secrets.","An import alone is not model-run proof."],
+  cards: [
+    { title: "No production writes", body: "Do not connect real Jira or payments." },
+    { title: "Protect secrets", body: "Keep credentials off screen." },
+  ],
   notes: "Guardrails. No real Jira/payments; no secrets on screen; import ≠ model-run proof without trace."
 },
 
@@ -208,7 +273,14 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   title: "L1 rules. L2 judgment. L3 specialists.",
   kicker: "Done when · ladder recap",
   type: "recap",
-  visual: { keynote: true },
+  layout: "recap",
+  visual: { recapKeys: true },
+  items: [
+    { label: "L1 · Rules", caption: "Deterministic routing without an LLM." },
+    { label: "L2 · Judgment", caption: "One AI Agent drafts priority; a human reviews." },
+    { label: "L3 · Specialists", caption: "Reply and Risk share one human gate." },
+    { label: "Proof", caption: "Export or screenshot plus routing rules on /workshop/3." },
+  ],
   notes: "Close. Recap L1 rules · L2 judgment · L3 specialists. Outline ≠ Linear Done. Linear Done = live /workshop/3 + Proof AC (export/screenshot + routing rules). Rhythm held: uitleg → voordoen → zelf doen."
 },
 
