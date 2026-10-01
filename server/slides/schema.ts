@@ -24,7 +24,56 @@ const Text=(max:number)=>Schema.String.pipe(Schema.maxLength(max));
 export const SlideId=Schema.String.pipe(Schema.pattern(/^[A-Za-z0-9_-]{1,64}$/));
 export const DeckId=Schema.UUID;
 
-/** A slide's HTML is the unit of authoring; notes are presenter-only. */
+const Ordinal=(max:number)=>Schema.Int.pipe(Schema.between(0,max));
+const Minutes=Schema.Int.pipe(Schema.between(1,120));
+/** Safe subset of the classroom deck's `visual` options (packages/deck source-visuals). Unknown keys are dropped. */
+export const ClassroomVisual=Schema.Struct({
+ bot:Schema.optional(Schema.Literal('wave','think','point','head')),
+ place:Schema.optional(Schema.Literal('left','beside','under')),
+ quiz:Schema.optional(Schema.Struct({answer:Ordinal(11)})),
+ reveal:Schema.optional(Schema.Literal('click')),
+ stepThrough:Schema.optional(Schema.Literal(true)),
+ stagger:Schema.optional(Schema.Literal('pop')),
+ spotlight:Schema.optional(Ordinal(11)),
+ hero:Schema.optional(Ordinal(11)),
+ checklist:Schema.optional(Ordinal(11)),
+ countdown:Schema.optional(Minutes),
+ quietTimer:Schema.optional(Minutes),
+ stepKeys:Schema.optional(Schema.Boolean),
+ recapKeys:Schema.optional(Schema.Boolean),
+ levelUp:Schema.optional(Schema.Boolean),
+ pairs:Schema.optional(Schema.Boolean),
+ oneCol:Schema.optional(Schema.Boolean),
+ phrase:Schema.optional(Text(300)),
+ highlight:Schema.optional(Schema.Array(Schema.Struct({in:Schema.Union(Schema.Literal('title','subtitle','tagline'),Schema.String.pipe(Schema.pattern(/^card:\d{1,2}$/))),text:Text(200).pipe(Schema.minLength(1)),tone:Schema.Literal('orange','purple','mark')})).pipe(Schema.maxItems(6))),
+});
+export const ClassroomType=Schema.Literal('context','concept','practice','review','quiz','recap','pause');
+export const ClassroomLayout=Schema.Literal('cards','pillars','steps','compare','exercise','recap');
+/** Structured classroom slide (aetherlink-classroom-slides field reference), rendered by @academy/deck. */
+export const ClassroomSlide=Schema.Struct({
+ title:Text(300).pipe(Schema.minLength(1)),
+ kicker:Schema.optional(Text(120)),
+ subtitle:Schema.optional(Text(600)),
+ type:Schema.optional(ClassroomType),
+ layout:Schema.optional(ClassroomLayout),
+ dark:Schema.optional(Schema.Boolean),
+ hidden:Schema.optional(Schema.Boolean),
+ cards:Schema.optional(Schema.Array(Schema.Struct({title:Text(200),body:Text(1_500)})).pipe(Schema.maxItems(12))),
+ items:Schema.optional(Schema.Array(Schema.Struct({label:Text(200),caption:Schema.optional(Text(400)),detail:Schema.optional(Text(1_500))})).pipe(Schema.maxItems(12))),
+ columns:Schema.optional(Schema.Array(Schema.Struct({title:Text(200),items:Schema.Array(Text(500)).pipe(Schema.maxItems(12)),foot:Schema.optional(Text(400))})).pipe(Schema.maxItems(4))),
+ steps:Schema.optional(Schema.Array(Text(500)).pipe(Schema.maxItems(12))),
+ stepsHeading:Schema.optional(Text(200)),
+ expected:Schema.optional(Text(600)),
+ timer:Schema.optional(Minutes),
+ check:Schema.optional(Text(600)),
+ prompt:Schema.optional(Text(4_000)),
+ tagline:Schema.optional(Text(300)),
+ keyPoints:Schema.optional(Schema.Array(Text(200)).pipe(Schema.maxItems(8))),
+ visual:Schema.optional(ClassroomVisual),
+});
+export type ClassroomSlide=typeof ClassroomSlide.Type;
+
+/** A slide's HTML is the unit of authoring; notes are presenter-only. `classroom` is the structured source when present. */
 export class Slide extends Schema.Class<Slide>('Slide')({
  id:SlideId,
  content:Text(200_000),
@@ -32,6 +81,7 @@ export class Slide extends Schema.Class<Slide>('Slide')({
  layout:Schema.optionalWith(Layout,{default:()=>'content' as const}),
  background:Schema.optional(Text(200)),
  transition:Schema.optional(Transition),
+ classroom:Schema.optional(ClassroomSlide),
 }){}
 
 /** Design-system tokens the renderer exposes as `--ds-*` variables. */
@@ -74,6 +124,7 @@ export const SlideInput=Schema.Struct({
  layout:Schema.optional(Layout),
  background:Schema.optional(Text(200)),
  transition:Schema.optional(Transition),
+ classroom:Schema.optional(ClassroomSlide),
 });
 export type SlideInput=typeof SlideInput.Type;
 
@@ -111,6 +162,7 @@ export const UpdateSlideInput=Schema.Struct({
 
 export const SlideFields=Schema.Struct({
  content:Schema.optional(Text(200_000)),
+ classroom:Schema.optional(ClassroomSlide),
  notes:Schema.optional(Text(20_000)),
  layout:Schema.optional(Layout),
  background:Schema.optional(Text(200)),

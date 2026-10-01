@@ -19,6 +19,7 @@ import {matchArchive} from './archive/archive.ts';
 import {ArchiveView} from './archive/ArchiveView.tsx';
 import './deck/deck.css';
 import {AuthoringPage} from './authoring/AuthoringPage.tsx';
+import {fetchRoomDeck, matchRoomDeck, roomDeckSlides, type RoomDeckFetcher} from './room-deck/room-deck.ts';
 
 export type RouteId = 'squad' | 'route' | 'lesson' | 'solo' | 'coach' | 'review' | 'connection' | 'authoring';
 
@@ -217,7 +218,7 @@ export function AppRoutes({children}: {readonly children?: ReactNode}) {
   const [referencePath = '', referenceAnchor] = pathname.split('#');
   const reference = matchReference(referencePath);
   const archive = matchArchive(referencePath);
-  const deckLike = reference !== null || archive !== null || pathname === '/deck' || isClassroom1Path(pathname) || isClassroom2Path(pathname) || isWorkshop5Path(pathname) || isWorkshop3Path(pathname) || isWorkshop4Path(pathname) || isWorkshop6Path(pathname) || isWorkshop7Path(pathname) || isHarnessPath(pathname) || pathname === '/authoring';
+  const deckLike = reference !== null || archive !== null || pathname === '/deck' || isClassroom1Path(pathname) || isClassroom2Path(pathname) || isWorkshop5Path(pathname) || isWorkshop3Path(pathname) || isWorkshop4Path(pathname) || isWorkshop6Path(pathname) || isWorkshop7Path(pathname) || isHarnessPath(pathname) || pathname === '/authoring' || matchRoomDeck(pathname) !== null;
   const connection = useConnection(fetchConnection, 5000, !deckLike);
   if (reference) return <ReferenceView page={reference} navigate={navigate} anchor={referenceAnchor ?? (window.location.hash.slice(1) || null)} />;
   if (archive) return <ArchiveView page={archive} navigate={navigate} anchor={referenceAnchor ?? (window.location.hash.slice(1) || null)} />;
@@ -232,6 +233,8 @@ export function AppRoutes({children}: {readonly children?: ReactNode}) {
   if (isWorkshop7Path(pathname)) return <DeckDemo slides={WORKSHOP_7_SLIDES} />;
   if (isHarnessPath(pathname)) return <DeckDemo slides={HARNESS_SLIDES} />;
   if (pathname.startsWith('/live/')) return <LiveRoute pathname={pathname} />;
+  const roomDeckId = matchRoomDeck(pathname);
+  if (roomDeckId) return <RoomDeckRoute deckId={roomDeckId} />;
   return (
     <>
       <Shell pathname={pathname} navigate={navigate} connection={connection} />
@@ -257,7 +260,7 @@ export function isClassroom2Path(pathname: string): boolean {
  */
 export function matchProductDeck(
   pathname: string,
-): 'deck' | 'authoring' | 'classroom-1' | 'classroom-2' | 'workshop-3' | 'workshop-4' | 'workshop-5' | 'workshop-6' | 'workshop-7' | 'harness' | 'live' | null {
+): 'deck' | 'authoring' | 'classroom-1' | 'classroom-2' | 'workshop-3' | 'workshop-4' | 'workshop-5' | 'workshop-6' | 'workshop-7' | 'harness' | 'live' | 'room-deck' | null {
   if (pathname === '/deck') return 'deck';
   if (pathname === '/authoring') return 'authoring';
   if (isClassroom1Path(pathname)) return 'classroom-1';
@@ -269,6 +272,7 @@ export function matchProductDeck(
   if (isWorkshop7Path(pathname)) return 'workshop-7';
   if (isHarnessPath(pathname)) return 'harness';
   if (pathname.startsWith('/live/')) return 'live';
+  if (matchRoomDeck(pathname)) return 'room-deck';
   return null;
 }
 
@@ -337,6 +341,33 @@ function DeckDemo({slides, companions}: {readonly slides: typeof DECK_SLIDES; re
   const requested = new URLSearchParams(window.location.search).get('mode');
   const mode: DeckMode = requested === 'reader' || requested === 'presenter' || requested === 'follow' ? requested : 'projector';
   return <Deck slides={slides} index={index} revealStep={revealStep} mode={mode} presence={<span>Presence slot</span>} {...(companions ? {companions} : {})} onIndexChange={(next) => { setIndex(next); setRevealStep(-1); }} onRevealStepChange={setRevealStep}/>;
+}
+
+type RoomDeckState =
+  | {readonly kind: 'loading'}
+  | {readonly kind: 'error'; readonly error: string}
+  | {readonly kind: 'ready'; readonly slides: typeof DECK_SLIDES};
+
+/** Squad-room deck (in-app chat, UI or MCP authored) in the classroom renderer. Polls so edits appear while presenting. */
+export function RoomDeckRoute({deckId, fetcher = fetchRoomDeck, intervalMs = 5000}: {readonly deckId: string; readonly fetcher?: RoomDeckFetcher; readonly intervalMs?: number}) {
+  const [state, setState] = useState<RoomDeckState>({kind: 'loading'});
+  useEffect(() => {
+    let alive = true;
+    let revision = -1;
+    const load = () => fetcher(deckId).then((deck) => {
+      if (!alive || deck.revision === revision) return;
+      revision = deck.revision;
+      const slides = roomDeckSlides(deck);
+      setState(slides.length ? {kind: 'ready', slides} : {kind: 'error', error: 'This deck has no slides yet.'});
+    }, (error: unknown) => {
+      if (alive && revision === -1) setState({kind: 'error', error: error instanceof Error ? error.message : String(error)});
+    });
+    void load();
+    const timer = setInterval(() => { void load(); }, intervalMs);
+    return () => { alive = false; clearInterval(timer); };
+  }, [deckId, fetcher, intervalMs]);
+  if (state.kind === 'ready') return <DeckDemo slides={state.slides} />;
+  return <p className="status" role={state.kind === 'error' ? 'alert' : 'status'} data-testid="room-deck-status">{state.kind === 'error' ? state.error : 'Loading deck…'}</p>;
 }
 
 function LiveRoute({pathname}: {readonly pathname: string}) {

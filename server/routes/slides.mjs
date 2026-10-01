@@ -1,9 +1,11 @@
 import { fail } from '../store.mjs';
 import { WAVE_DAYS } from '../../content/days/course.mjs';
 import { uuid } from './shared.mjs';
+import { redactQuestion } from '../coach.mjs';
+import { deckAssistantStatus, runDeckAssistant } from '../deck-assistant.mjs';
 
 export function registerSlidesRoutes(app, deps) {
-  const { store, slides, token, browser, wrap } = deps;
+  const { store, slides, token, browser, wrap, fetchImpl, deckAssistantConfig } = deps;
 
   // Slide decks (Effect-TS module, server/slides). Same squad session, no model call.
   const deckActor = ({ r, s, p }) => ({
@@ -14,6 +16,49 @@ export function registerSlidesRoutes(app, deps) {
     source: s.kind === 'mcp' ? 'ai' : 'human',
   });
   const deckId = (req) => String(req.params.deckId || '');
+  const facilitatorOnly = (context) => {
+    if (context.s.personId !== 'facilitator')
+      fail(403, 'Alleen de facilitator gebruikt de deck-assistent.');
+    return context;
+  };
+  const assistantPerson = ({ r }) => `${r.id}:facilitator`;
+  // Registered before /game/decks/:deckId so "assistant" is never read as a deck id.
+  app.get(
+    '/game/decks/assistant',
+    wrap(async (req, res) => {
+      const context = facilitatorOnly(await browser(req));
+      res.json(
+        await deckAssistantStatus({
+          config: deckAssistantConfig,
+          store,
+          personKey: assistantPerson(context),
+        }),
+      );
+    }),
+  );
+  app.post(
+    '/game/decks/assistant',
+    wrap(async (req, res) => {
+      const context = facilitatorOnly(await browser(req));
+      const { r, s } = context;
+      res.json(
+        await runDeckAssistant({
+          config: deckAssistantConfig,
+          store,
+          slides,
+          fetchImpl,
+          actor: deckActor(context),
+          personKey: assistantPerson(context),
+          input: req.body,
+          redact: (q) =>
+            redactQuestion(q, {
+              names: [...r.members.map((m) => m.name), s.displayName],
+              codes: [r.code],
+            }),
+        }),
+      );
+    }),
+  );
   app.get(
     '/game/decks',
     wrap(async (req, res) =>
@@ -122,11 +167,22 @@ export function registerSlidesRoutes(app, deps) {
   app.get(
     '/game/decks/:deckId/present',
     wrap(async (req, res) => {
-      const result = await slides.run(
-        'exportHtml',
-        deckActor(await browser(req)),
-        { deckId: deckId(req) },
-      );
+      const actor = deckActor(await browser(req));
+      // Structured classroom decks present in @academy/deck (presenter view, reveals, quiz, timers).
+      if (req.query.html !== '1') {
+        const compact = await slides.run('getDeck', actor, {
+          deckId: deckId(req),
+          compact: true,
+        });
+        if (compact.slides.some((slide) => slide.kind === 'classroom'))
+          return res.redirect(
+            302,
+            `/decks/${encodeURIComponent(compact.id)}`,
+          );
+      }
+      const result = await slides.run('exportHtml', actor, {
+        deckId: deckId(req),
+      });
       res
         .type('text/html')
         .set('Cache-Control', 'private, no-store')
