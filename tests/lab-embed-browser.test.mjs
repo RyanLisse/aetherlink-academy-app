@@ -19,6 +19,11 @@ async function shot(page,name){
  await page.screenshot({path:path.join(screenshotDir,name),fullPage:false});
 }
 
+async function openTryItPage(page){
+ await page.getByTestId('lesson-stepper').getByRole('button',{name:'Probeer het',exact:true}).click();
+ await page.locator('[data-testid="lesson-page"][data-lesson-page="sim"]').waitFor();
+}
+
 test('a real Arcade lesson embedded in the day-1 lesson reports completion into room progress',async()=>{
  for(const built of ['dist/index.html','apps/arcade-lab/dist/index.html'])assert.ok(existsSync(path.join(root,built)),`${built} missing: run pnpm run build first`);
  const port=await freePort(),base=`http://127.0.0.1:${port}`;
@@ -35,6 +40,7 @@ test('a real Arcade lesson embedded in the day-1 lesson reports completion into 
   const state=()=>page.evaluate(async()=>(await fetch('/game/state',{headers:{authorization:`Bearer ${sessionStorage.getItem('academy-token')}`}})).json());
   await page.goto(`${base}/#access=${resumeToken}`);
   await page.getByTestId('participant-primary-nav').getByRole('button',{name:'Les',exact:true}).click();
+  await openTryItPage(page);
   const embed=page.locator('article.lab-embed[data-lab-id="sample-counter"]');
   await embed.getByTestId('lab-play').click();
   const chip=embed.getByRole('status');
@@ -66,12 +72,13 @@ test('a real Arcade lesson embedded in the day-1 lesson reports completion into 
   assert.equal(saved.evidence,'sample-counter: 1/1 checkpoints, end reached');
   await shot(page,'lab-embed-desktop-done.png');
 
-  await page.locator('.participant-more > button').click();
-  await page.getByRole('button',{name:'Mijn route'}).click();
-  await assert.doesNotReject(page.locator('.progress-chip.on',{hasText:'Labs 1/1'}).waitFor({timeout:10000}),'route shows the lab chip');
+  await page.getByTestId('participant-primary-nav').locator('[data-nav="route"]').click();
+  await page.getByTestId('course-overview').waitFor();
+  await page.locator('.course-chapter[data-day="1"]').waitFor({state:'visible'});
 
   await page.setViewportSize({width:390,height:844});
   await page.getByTestId('participant-primary-nav').getByRole('button',{name:'Les',exact:true}).click();
+  await openTryItPage(page);
   await embed.scrollIntoViewIfNeeded();
   await chip.filter({hasText:'Afgerond'}).waitFor();
   const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
@@ -103,6 +110,7 @@ test('graded Arcade stops are checked by the server before the lab can complete'
   const stops=async()=>(await state()).me.progressByDay['1']?.labStops?.['ws-2-eve-state'];
   await page.goto(`${base}/#access=${resumeToken}`);
   await page.getByTestId('participant-primary-nav').getByRole('button',{name:'Les',exact:true}).click();
+  await openTryItPage(page);
   const embed=page.locator('article.lab-embed[data-lab-id="ws-2-eve-state"]');
   await embed.getByTestId('lab-play').click();
   const chip=embed.getByRole('status');
