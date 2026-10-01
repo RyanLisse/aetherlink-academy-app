@@ -1,4 +1,4 @@
-/** Squad runtime types. Driver/Navigator only when room.mode === 'squad'. */
+/** Squad runtime types. The facilitator is the only special role. */
 
 export const MAX_SQUAD_SIZE = 12;
 export const MIN_PRACTICE_SIZE = 4;
@@ -40,7 +40,6 @@ export interface Room {
   createdAt: number;
   roundSeconds: number;
   members: Member[];
-  driver: number;
   round: number;
   phase: RoomPhase;
   day: number;

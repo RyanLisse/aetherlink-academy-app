@@ -145,7 +145,7 @@ Neem de fixtures opnieuw op met `node tests/fixtures/deployed/record.mjs [origin
 
 ### Functionele controles
 
-Zes geslaagde Node-tests: squadgrootte en één driver; onafhankelijke timer/rol/fase; privé-diagnostiek en persistente gescheiden credentials; minimum vier deelnemers; echte HTTP/stdio MCP-integratie; twee onafhankelijke Proof Yjs-clients met gelijktijdige wijzigingen en reconnect. De startertest is eveneens geslaagd.
+Zes geslaagde Node-tests: squadgrootte; onafhankelijke timer/ronde/fase; privé-diagnostiek en persistente gescheiden credentials; minimum vier deelnemers; echte HTTP/stdio MCP-integratie; twee onafhankelijke Proof Yjs-clients met gelijktijdige wijzigingen en reconnect. De startertest is eveneens geslaagd.
 
 De integratietest controleert roomisolatie, geweigerde onbevoegde bediening, vijf echte MCP-tools, curriculumzoekresultaten, idempotent bewijs als echt Proof-commentaar, een wachtend voorstel zonder tekstwijziging, menselijke acceptatie, review/handoff en intrekking van de oude token. De Yjs-test verifieert samengevoegde tekst via de echte Proof-server en weigering van een buitenlandse room-WebSocket.
 
@@ -161,7 +161,7 @@ De geaccepteerde ontwerpafbeelding en gerenderde screenshots zijn rechtstreeks m
 |---|---|
 | Donker/licht merkpalet | Donkere inkttinten en lichte vlakken behouden; cyaan/violet accenten toegepast. |
 | Zijbalk en hoofdhiërarchie | Academy-branding, route/squad/coach/kennis-navigatie en centrale werkruimte behouden. |
-| SDLC-fasen | Zichtbare fasebalk, los van driverrotatie en rondetimer. |
+| SDLC-fasen | Zichtbare fasebalk, los van ronden en rondetimer. |
 | Squadwerkruimte | Centrale documentruimte en rechter roster/rondekolom sluiten aan op het concept. |
 | Typografie en ruimte | Heldere koppen, secundaire metadata en rustige paneelafstand beoordeeld op desktop. |
 | Doorlopend document | Bewuste functionele afwijking: één echte Proof-editor vervangt losse voorbeeldkaarten. |
@@ -175,7 +175,7 @@ Screenshots staan naast de repository in `../screenshots/`: squad-dark.png, squa
 
 ### Nog door mensen te valideren
 
-Twee echte Claude Code-accounts op twee computers zijn niet beschikbaar gesteld en dus niet getest. De concrete acceptatietest staat in README.md. Ook volledige curriculumdekking, SSO, internetdeployment, productiebelasting en Liveblocks behoren niet tot de gerealiseerde lokale pilot. De menselijke driverrol beperkt Proof-editorrechten niet. Er zijn geen modelantwoorden of bewijsresultaten gesimuleerd.
+Twee echte Claude Code-accounts op twee computers zijn niet beschikbaar gesteld en dus niet getest. De concrete acceptatietest staat in README.md. Ook volledige curriculumdekking, SSO, internetdeployment, productiebelasting en Liveblocks behoren niet tot de gerealiseerde lokale pilot. De squadleden beperken Proof-editorrechten niet. Er zijn geen modelantwoorden of bewijsresultaten gesimuleerd.
 
 ### Aanvulling na echte browserwalkthrough
 

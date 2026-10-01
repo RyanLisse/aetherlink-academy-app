@@ -9,7 +9,7 @@ import {PostgresStore} from '../server/postgres-store.mjs';
 
 const listen=server=>new Promise(resolve=>server.listen(0,'127.0.0.1',()=>resolve(`http://127.0.0.1:${server.address().port}`)));
 const close=server=>new Promise(resolve=>{server.closeAllConnections();server.close(resolve);});
-test('request retries replay across processes and driver rotation',{skip:process.env.ACADEMY_POSTGRES_TEST!=='1'},async()=>{
+test('request retries replay across processes and round advances',{skip:process.env.ACADEMY_POSTGRES_TEST!=='1'},async()=>{
  const {Pool}=await import('pg');
  const url=new URL(process.env.DATABASE_URL);url.searchParams.delete('sslmode');url.searchParams.delete('channel_binding');
  const pool=new Pool({connectionString:url.href,ssl:{rejectUnauthorized:true},max:5,connectionTimeoutMillis:10000});
@@ -40,7 +40,7 @@ test('request retries replay across processes and driver rotation',{skip:process
   await two.control(host.token,'next');
   assert.equal((await two.auth(host.token)).r.evidence[0].status,'accepted');
   await request(1,'review',people[0].token,review);
-  await request(1,'review',people[0].token,{...review,requestId:'unauthorized-new'},403);
+  await request(1,'review',people[1].token,{...review,requestId:'self-review'},403);
   const handoff={requestId:'handoff-1',decision:'decision',checked:'checked',open:'open'};
   await request(0,'handoff',people[1].token,handoff);
   await two.control(host.token,'next');

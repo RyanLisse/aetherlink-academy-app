@@ -57,7 +57,6 @@ export function registerMcpRoutes(app, deps) {
               day: r.day,
               phase: r.phase,
               route: p.route,
-              role: r.members[r.driver]?.id === p.id ? 'Driver' : 'Navigator',
               tasks: taskTrail(r, p.id, r.day),
               intent: { url: r.intentUrl || null, file: 'intent.md' },
               coach:

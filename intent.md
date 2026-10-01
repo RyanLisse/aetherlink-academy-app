@@ -2,7 +2,7 @@
 
 ## What this is
 
-AetherLink Academy is a Dutch learning environment for squad-based workshops: a shared squad intent document (a Proof cloud link or `intent.md` in the squad repo), flexible squads (default ~4–5, soft max ~12) with one driver and navigators, facilitator controls, private quiz, source-bound knowledge, and evidence / review / handoff. Participants connect their own Claude Code via a limited MCP bridge. The app does **not** host model chat and does **not** ask for an Anthropic API key.
+AetherLink Academy is a Dutch learning environment for squad-based workshops: a shared squad intent document (a Proof cloud link or `intent.md` in the squad repo), flexible squads (default ~4–5, soft max ~12) of equal participants, facilitator controls, private quiz, source-bound knowledge, and evidence / review / handoff. Participants connect their own Claude Code via a limited MCP bridge. The app does **not** host model chat and does **not** ask for an Anthropic API key.
 
 ## Why it exists
 
@@ -35,5 +35,4 @@ Done means live behavior plus evidence (screenshot/video or linked proof), not a
 ## Workshop roster (AET-12 thin slice)
 
 - Soft max squad size **12** (no hard fail at 5); practice still starts from **4** members.
-- Facilitator **Shuffle roles** randomizes Driver among current members (others remain Navigator).
 - Rejoin: a personal access link (high-entropy, only its hash stored) restores the existing seat/role/progress (no email OTP). A display name is never a credential; a duplicate name in a room is rejected (AET-56).

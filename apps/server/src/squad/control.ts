@@ -12,7 +12,6 @@ export const applyControl = (
   action: string,
   value: unknown = undefined,
   now = Date.now(),
-  random: () => number = Math.random,
 ): void => {
   if (action === 'start') {
     if (r.members.length < MIN_PRACTICE_SIZE) {
@@ -30,19 +29,10 @@ export const applyControl = (
     if (r.members.length < MIN_PRACTICE_SIZE) {
       throw squadFail(409, `Wacht op minimaal ${MIN_PRACTICE_SIZE} deelnemers.`);
     }
-    r.driver = (r.driver + 1) % r.members.length;
     r.round++;
     r.running = false;
     r.remaining = r.roundSeconds || 1500;
     r.deadline = null;
-  } else if (action === 'shuffle') {
-    if (!r.members.length) throw squadFail(409, 'Nog geen deelnemers om rollen te schudden.');
-    if (r.members.length === 1) r.driver = 0;
-    else {
-      let next = r.driver;
-      for (let i = 0; i < 16 && next === r.driver; i++) next = Math.floor(random() * r.members.length);
-      r.driver = next;
-    }
   } else if (action === 'time') {
     if (!Number.isInteger(value) || (value as number) < 0 || (value as number) > 7200) {
       throw squadFail(400, 'Kies een tijd tussen 0 en 120 minuten.');
@@ -79,7 +69,3 @@ export const applyControl = (
   r.version++;
 };
 
-export const roleForIndex = (r: Room, index: number): 'Driver' | 'Navigator' | null => {
-  if (r.mode !== 'squad') return null;
-  return index === r.driver ? 'Driver' : 'Navigator';
-};

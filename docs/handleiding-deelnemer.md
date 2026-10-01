@@ -22,24 +22,20 @@ Stap voor stap door AetherLink Academy als squadlid. Alle labels komen letterlij
    De applicatie opent "Squad-room".
    Een facilitator kan ook een uitnodigingslink sturen die de squadcode vooraf invult; vul dan alleen nog je naam in.
 5. Controleer de roster.
-   Je ziet "Jouw squad ({n}/12)", je eigen naam met "(jij)", je rol "Driver" of "Navigator" en de aanwezigheid "Recent actief" of "Geen recente activiteit".
+   Je ziet "Jouw squad ({n}/12)", je eigen naam met "(jij)" en de aanwezigheid "Recent actief" of "Geen recente activiteit".
 6. Deel de code alleen met je squad.
    In het blok "Kamercode" staat de code met de knop "Kopieer kamercode".
 7. Wacht met de praktijk tot vier deelnemers zijn aangesloten.
    Onder de roster staat "De praktijk start vanaf 4 deelnemers.".
 
-## Rollen: driver en navigators
+## Samenwerken in de squad
 
-1. Lees je rol in "Jouw squad ({n}/12)".
-   De applicatie toont precies één "Driver" en één of meer "Navigator"-rollen.
-2. Werk samen in het document.
+1. Werk samen in het document.
    Alle squadleden kunnen samenwerken in dit document.
-3. Verwerk als Driver het gezamenlijke besluit in de intent.
-   Het bijdragepaneel toont: "Verwerk het gezamenlijke besluit in de intent. Spreek hardop uit wat je verandert.".
-4. Onderzoek als Navigator één aanname.
-   Het bijdragepaneel toont: "Onderzoek één aanname. Stel een gerichte vraag of voeg onderbouwd commentaar toe.".
-5. Review als Driver het bewijs.
-   Alleen een Driver of Facilitator kan bewijs reviewen, de intent-link zetten en een overdracht vastleggen.
+2. Leg het gezamenlijke besluit vast in de intent.
+   Het bijdragepaneel toont: "Leg gezamenlijke besluiten vast in de intent en onderzoek één aanname met een gerichte, onderbouwde vraag.".
+3. Review het bewijs.
+   Elk squadlid of de facilitator kan bewijs reviewen, de intent-link zetten en een overdracht vastleggen.
 
 ## Het gedeelde intent-document
 
@@ -48,9 +44,9 @@ Stap voor stap door AetherLink Academy als squadlid. Alle labels komen letterlij
 2. Open het document.
    Is er een link ingesteld, klik dan op "Open intent-document". Het document opent in een nieuw tabblad.
 3. Geen link? Werk vanuit `intent.md` in de root van je squad-repo.
-   Je ziet "Je driver of facilitator heeft de intent nog niet gekoppeld. Werk vanuit intent.md in je squad-repo.".
+   Je ziet "Nog niemand heeft de intent gekoppeld. Werk vanuit intent.md in je squad-repo.".
    Met "Download intent.md-sjabloon" haal je een startversie op.
-4. Zet als Driver de link.
+4. Zet als squadlid de link.
    Plak een volledige `https://`-link onder "Link naar het intent-document" en klik op "Link opslaan". Met "Link verwijderen" haal je hem weg.
 5. Dien waargenomen feiten in als bewijs.
    Bewijs komt in de squad-review en is nog geen geaccepteerde conclusie.
@@ -88,7 +84,7 @@ Stap voor stap door AetherLink Academy als squadlid. Alle labels komen letterlij
    - `search_knowledge`: Zoek in alle meegeleverde curriculumlessen; citeer de les-IDs. Lege query geeft alle lessen.
    - `submit_evidence`: Dien werkelijk waargenomen bewijs in als toegeschreven squadbijdrage. Geen acceptatie; behoud requestId bij retry.
 9. Laat een mens elk bewijs beoordelen.
-   Een Driver of Facilitator beoordeelt het in "Review & overdracht".
+   Een squadlid of de facilitator beoordeelt het in "Review & overdracht".
 10. Beveilig de token.
    De token geeft alleen toegang tot jouw squad en is twaalf uur geldig.
    Een nieuwe token trekt de vorige direct in.
@@ -131,11 +127,11 @@ Stap voor stap door AetherLink Academy als squadlid. Alle labels komen letterlij
 3. Open "Review & overdracht".
    Je bewijs staat onder "Bewijsmateriaal ({n})" met de status "Nog te beoordelen".
 4. Wacht op een menselijke beoordeling.
-   Een Driver of Facilitator gebruikt "Jouw controle en besluit", de selectie "Beoordeling" met "Voldoende onderbouwd" of "Meer bewijs nodig" en de knop "Bewaar review".
+   Een squadlid of de facilitator gebruikt "Jouw controle en besluit", de selectie "Beoordeling" met "Voldoende onderbouwd" of "Meer bewijs nodig" en de knop "Bewaar review".
 5. Leg samen de overdracht vast.
    Vul "Wat is besloten?", "Wat is getest of gereproduceerd?" en "Wat staat nog open?" in.
-6. Laat de Driver of Facilitator op "Overdracht vastleggen" klikken.
-   De applicatie toont "Overdracht vastgelegd. De facilitator roteert de driver apart.".
+6. Laat een squadlid of de facilitator op "Overdracht vastleggen" klikken.
+   De applicatie toont "Overdracht vastgelegd.".
 
 ## Verbinding kwijt of pagina herladen
 
@@ -144,7 +140,7 @@ Stap voor stap door AetherLink Academy als squadlid. Alle labels komen letterlij
 2. Wacht op herstel van de verbinding.
    De applicatie pollt de roomstatus en toont weer "Room verbonden" zodra de verbinding terug is.
 3. Herlaad de pagina als dat nodig is.
-   De applicatie toont kort "Bestaande sessie herstellen…" en zet dezelfde room, ronde, roster en rol terug zolang je browserprofiel de sessie bewaart.
+   De applicatie toont kort "Bestaande sessie herstellen…" en zet dezelfde room, ronde en roster terug zolang je browserprofiel de sessie bewaart.
 4. Gebruik één deelnemer per browserprofiel.
    Alle tabbladen in een profiel delen dezelfde sessiecookie.
 5. Gebruik je persoonlijke toegangslink als je `sessionStorage` hebt gewist of een ander apparaat of browser gebruikt.
@@ -157,7 +153,7 @@ Stap voor stap door AetherLink Academy als squadlid. Alle labels komen letterlij
 2. Gebruik geen Anthropic API-key.
    De game start geen agent en gebruikt geen model-API.
 3. Gebruik MCP niet voor roombeheer.
-   MCP-tools kunnen de driver niet roteren, de timer niet bedienen en bewijs niet zelf goedkeuren.
+   MCP-tools kunnen geen volgende ronde starten, de timer niet bedienen en bewijs niet zelf goedkeuren.
 4. Vraag naar functies buiten de beschreven schermen.
    Nog niet beschikbaar in deze versie.
 

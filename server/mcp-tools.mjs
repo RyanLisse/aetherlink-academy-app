@@ -3,7 +3,7 @@ import {z} from 'zod';
 export function createAcademyMcpServer(call){
 const server=new McpServer({name:'aetherlink-academy',version:'0.2.0'});
 const invoke=(name,args,ctx)=>call(name,args,ctx).then(data=>({content:[{type:'text',text:JSON.stringify(data,null,2)}]})).catch(e=>({content:[{type:'text',text:e.message}],isError:true}));
-server.registerTool('get_mission',{description:'Read the current mission, boundaries, help choice and squad role.'},async ctx=>invoke('get_mission',{},ctx));
+server.registerTool('get_mission',{description:'Read the current mission, boundaries and help choice.'},async ctx=>invoke('get_mission',{},ctx));
 server.registerTool('get_screen_state',{description:'Read what your own browser shows right now: view, deck slide, quiz and room. Released lessons only; no answers, notes or anyone else’s screen.'},async ctx=>invoke('get_screen_state',{},ctx));
 server.registerTool('search_knowledge',{description:'Search all bundled curriculum lessons; cite the lesson ids. An empty query returns every lesson.',inputSchema:z.object({query:z.string().max(200).default('')})},async(args,ctx)=>invoke('search_knowledge',args,ctx));
 server.registerTool('submit_evidence',{description:'Submit actually observed evidence as an attributed squad contribution. This does not accept it; keep the requestId when retrying.',inputSchema:z.object({requestId:z.string().min(1).max(100),finding:z.string().min(1).max(4000),command:z.string().min(1).max(1000),observed:z.string().min(1).max(4000),limitation:z.string().min(1).max(4000),taskId:z.string().min(1).max(100).optional().describe('Assignment id from get_mission.tasks; links this evidence to that assignment so the facilitator reviews it.')})},async(args,ctx)=>invoke('submit_evidence',args,ctx));

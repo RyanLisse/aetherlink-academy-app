@@ -32,9 +32,9 @@ const writeSeat = (seat: Seat | null) => {
 
 const demoPeers = (meId: string): ReadonlyArray<SquadMemberView> => {
   const peers: ReadonlyArray<SquadMemberView> = [
-    {id: 'peer-ada', name: 'Ada', role: 'Driver', online: true},
-    {id: 'peer-nik', name: 'Nik', role: 'Navigator', online: true},
-    {id: 'peer-lee', name: 'Lee', role: null, online: false},
+    {id: 'peer-ada', name: 'Ada', online: true},
+    {id: 'peer-nik', name: 'Nik', online: true},
+    {id: 'peer-lee', name: 'Lee', online: false},
   ];
   return peers.filter((peer) => peer.id !== meId);
 };
@@ -54,7 +54,7 @@ export function SquadPanel() {
       code,
       name,
       memberId: `m-${Math.random().toString(36).slice(2, 10)}`,
-      role: 'Navigator',
+      role: null,
     };
     writeSeat(next);
     setSeat(next);
@@ -70,7 +70,6 @@ export function SquadPanel() {
     const me: SquadMemberView = {
       id: seat.memberId,
       name: seat.name,
-      role: seat.role === 'Facilitator' ? 'Facilitator' : seat.role,
       online: true,
     };
     return {
@@ -79,7 +78,7 @@ export function SquadPanel() {
       name: `Squad ${seat.code.toUpperCase()}`,
       mode: 'squad',
       members: [...demoPeers(seat.memberId), me],
-      me: {id: me.id, name: me.name, role: me.role ?? null},
+      me: {id: me.id, name: me.name, role: seat.role},
     };
   }, [seat]);
 

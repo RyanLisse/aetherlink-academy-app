@@ -30,7 +30,7 @@ test('Postgres Academy state survives independent concurrent instances', {skip:!
   await Promise.all([one.control(room.token,'next'),two.control(room.token,'next')]);
   const after=await two.auth(room.token,'browser');
   assert.equal(after.r.round,3);
-  assert.equal(after.r.driver,2);
+  assert.equal(after.r.driver,undefined);
   assert.equal(after.r.phase,'Test');
   const first=await one.rotateMcpToken(participant.token);
   assert.equal((await two.auth(first.token,'mcp')).s.kind,'mcp');

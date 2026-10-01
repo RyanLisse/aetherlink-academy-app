@@ -63,7 +63,6 @@ export function Today({room,onNavigate}){
     </ol>
     <div className="today-squad" data-testid="today-squad">
       <span><Users size={16} aria-hidden="true"/>{t('today.squadOnline',{online,total:room.members.length})}</span>
-      <span>{t('today.role',{role:room.me.role==='Driver'?t('today.driver'):t('today.navigator')})}</span>
       <span>{t('fac.round')} {room.round} · {round}{room.running?` · ${clock(room.remaining)}`:''}</span>
       {room.intentUrl&&<a href={room.intentUrl} target="_blank" rel="noopener noreferrer"><ExternalLink size={15} aria-hidden="true"/>{t('doc.open')}</a>}
       <button type="button" className="text-button" onClick={()=>onNavigate('squad')}>{t('today.openSquad')}<ArrowRight size={15} aria-hidden="true"/></button>

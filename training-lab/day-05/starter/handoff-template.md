@@ -7,8 +7,8 @@
 - Case ID:
 - Shape chosen (agent / workflow / analysis / dashboard / AI service / knowledge assistant / test assistant / transaction monitoring):
 - Solo or duo:
-- Driver:
-- Navigator (if duo):
+- Owner:
+- Reviewer (if duo):
 
 ## What we built
 

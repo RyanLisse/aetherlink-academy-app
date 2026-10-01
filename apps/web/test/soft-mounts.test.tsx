@@ -35,12 +35,12 @@ describe('AET-27 soft route mounts', () => {
             code: 'ABCD',
             name: 'Squad ABCD',
             mode: 'squad',
-            members: [{id: '1', name: 'Ada', role: 'Driver', online: true}],
-            me: {id: '2', name: 'Sam', role: 'Navigator'},
+            members: [{id: '1', name: 'Ada', online: true}],
+            me: {id: '2', name: 'Sam', role: null},
           }}
         />,
       ),
-    ).toContain('squad-role-driver');
+    ).not.toContain('squad-role-driver');
     expect(renderToString(<RoleBadge role="Facilitator" />)).toContain('Facilitator');
   });
 

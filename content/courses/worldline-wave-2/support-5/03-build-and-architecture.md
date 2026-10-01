@@ -29,8 +29,8 @@ items:
 ```
 
 > notes:
-> EN: Prefer boring clarity over clever fog. Duo = driver/navigator light until squad room.
-> NL: Liever saaie helderheid dan slimme mist. Duo = licht driver/navigator tot de squad room.
+> EN: Prefer boring clarity over clever fog. Duo = light pair work until squad room.
+> NL: Liever saaie helderheid dan slimme mist. Duo = licht duo-werk tot de squad room.
 
 ## Slide: Architecture reading — agent-native chat
 

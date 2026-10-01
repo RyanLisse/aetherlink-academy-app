@@ -22,7 +22,7 @@ The implementation task owns application changes and source publication. The CI/
 1. PR: frozen dependency install, application build, unit and PostgreSQL/Redis integration checks, actual Docker build and runtime readiness.
 2. Candidate: deployment built from a recorded commit, using runtime secret integration and no build secrets.
 3. Deployed smoke: exact revision, HTML, Academy readiness and authentication boundaries.
-4. Acceptance: independent browser participants, roles/rotation, intent link and debrief board across instances, reconnect/restart, evidence/review, quiz privacy and remote MCP.
+4. Acceptance: independent browser participants, equal-participant roster, intent link and debrief board across instances, reconnect/restart, evidence/review, quiz privacy and remote MCP.
 5. Production promotion: accept only after the owner records the passing deployed acceptance results.
 
 A smoke pass does not claim the full acceptance gate. The first release has no prior known-good deployment to roll back to; record that explicitly.

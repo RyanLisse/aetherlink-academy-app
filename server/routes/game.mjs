@@ -89,12 +89,9 @@ export function registerRoomRoutes(app, deps) {
     '/game/intent',
     wrap(async (req, res) =>
       res.json(
-        await store.withSession(token(req), 'browser', ({ r, s }) => {
-          if (
-            s.personId !== 'facilitator' &&
-            s.personId !== r.members[r.driver]?.id
-          )
-            fail(403, 'Only the driver or facilitator sets the intent link.');
+        await store.withSession(token(req), 'browser', ({ r, s, p }) => {
+          if (s.personId !== 'facilitator' && !p)
+            fail(403, 'Only a squad member or the facilitator sets the intent link.');
           r.intentUrl = intentUrl(req.body?.url);
           r.version++;
           return { intentUrl: r.intentUrl };
@@ -418,9 +415,9 @@ export function registerLiveRoutes(app, deps) {
       }
     }),
   );
-  function reviewer({ r, s }) {
-    if (s.personId !== 'facilitator' && s.personId !== r.members[r.driver]?.id)
-      fail(403, 'The driver or facilitator reviews the evidence.');
+  function reviewer({ s, p }) {
+    if (s.personId !== 'facilitator' && !p)
+      fail(403, 'Only a squad member or the facilitator reviews evidence.');
   }
   async function evidence(token, input) {
     const { r, p, s } = await store.auth(token);
@@ -645,9 +642,6 @@ export function registerLiveRoutes(app, deps) {
             day: r.day,
             by: s.personId,
             ...fields,
-            next:
-              r.members[(r.driver + 1) % r.members.length]?.name ||
-              'To be decided',
             at: new Date().toISOString(),
           },
           actor: `human:${s.personId}`,

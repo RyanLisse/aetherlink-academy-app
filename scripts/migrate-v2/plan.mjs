@@ -96,15 +96,13 @@ function mapRoom({sourceRoomId,data},verified){
  };
  const members=data.members.filter(member=>!retained.has(member.id)).map(toMember);
  const retainedMembers=data.members.filter(member=>retained.has(member.id)).map(toMember);
- const driverId=data.members[data.driver]?.id;
- const driver=Math.max(0,members.findIndex(member=>member.id===driverId));
- const {requests,...room}=data;
+ const requests=data.requests;const room={...data};delete room.requests;delete room.driver;
  const sourceFingerprint=fingerprint(data);
  return {
   exceptions,
   droppedAccess,
   droppedRequestLedger:isObject(requests)?Object.keys(requests).length:0,
-  row:{id:data.id,code:data.code,sourceFingerprint,data:{...room,members,driver,migration:{
+  row:{id:data.id,code:data.code,sourceFingerprint,data:{...room,members,migration:{
    source:MIGRATION_SOURCE,
    sourceRoomId,
    sourceCode:data.code,

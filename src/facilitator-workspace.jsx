@@ -35,7 +35,7 @@ function SessionCockpit({room,control,busy,connected,onNavigate}){
    <h2 id="cockpit-people"><Users size={17} aria-hidden="true"/>{t('cockpit.people')}</h2>
    <p className="cockpit-stat">{online.length}<small>{t('cockpit.onlineOf',{total:room.members.length})}</small></p>
    {help.length>0&&<p className="cockpit-alert"><HelpCircle size={15} aria-hidden="true"/>{t('cockpit.help',{names:help.map(m=>m.name).join(', ')})}</p>}
-   {room.members.length?<ul className="cockpit-members">{room.members.slice(0,6).map(m=><li key={m.id}><span className={'presence'+(m.online?' present':'')} aria-hidden="true"/>{m.name}<small>{m.role}</small></li>)}</ul>:<p className="muted">{t('cockpit.nobody')}</p>}
+   {room.members.length?<ul className="cockpit-members">{room.members.slice(0,6).map(m=><li key={m.id}><span className={'presence'+(m.online?' present':'')} aria-hidden="true"/>{m.name}</li>)}</ul>:<p className="muted">{t('cockpit.nobody')}</p>}
    <button type="button" className="text-button" onClick={()=>onNavigate('participants')}>{t('cockpit.allParticipants')}<ArrowRight size={15} aria-hidden="true"/></button>
   </section>
   <section className="cockpit-card" aria-labelledby="cockpit-round" data-testid="cockpit-round">
@@ -116,7 +116,7 @@ export function FacilitatorWorkspace({room,view,onNavigate,renderContent,control
      <SessionCockpit room={room} control={control} busy={busy} connected={connected} onNavigate={navigate}/>
      <SessionChecklist room={room} onNavigate={navigate}/>
      <div className="simple-help"><span>{t('simple.help')}</span><button type="button" onClick={()=>{setConnection(false);setAssistant(true);}}><Sparkles size={17}/>{t('simple.assistant')}</button></div>
-    </section>:view==='participants'?<section className="simple-participants"><h1>{t('simple.participants')}</h1><p className="muted">{t('simple.participantHelp')}</p><RoomInvite room={room}/><ul>{room.members.map(m=><li key={m.id}><strong>{m.name}</strong><span>{m.role} · {m.online?t('roster.online'):t('roster.offline')}{m.help?' · '+t('roster.helpAsked'):''}</span></li>)}</ul>{!room.members.length&&<p>{t('roster.empty')}</p>}</section>:renderContent(setContext)}
+    </section>:view==='participants'?<section className="simple-participants"><h1>{t('simple.participants')}</h1><p className="muted">{t('simple.participantHelp')}</p><RoomInvite room={room}/><ul>{room.members.map(m=><li key={m.id}><strong>{m.name}</strong><span>{m.online?t('roster.online'):t('roster.offline')}{m.help?' · '+t('roster.helpAsked'):''}</span></li>)}</ul>{!room.members.length&&<p>{t('roster.empty')}</p>}</section>:renderContent(setContext)}
    </main>
    {assistant&&<aside ref={drawer} id="academy-assistant" className="simple-assistant" aria-label={t('simple.assistantTitle')}>
     <div className="simple-assistant-heading"><div><h2>{t('simple.assistantTitle')}</h2><p>{t('classroom.dayHint',{day:room.day})}{context?.slideIndex!=null?` · ${t('decks.slideN',{n:context.slideIndex+1})}`:''}</p></div><button type="button" onClick={closeAssistant} aria-label={t('simple.close')}><X size={20}/></button></div>
