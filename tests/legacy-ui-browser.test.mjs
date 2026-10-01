@@ -80,6 +80,7 @@ test('participant views: loading, empty, error and offline states are visible an
       const page=await open({width,height});
       await page.goto(`${fixture.base}/#access=${fixture.participantAccess}`);
       await page.getByRole('heading',{name:'Squad Noord'}).waitFor();
+      await page.waitForFunction(()=>document.documentElement.dataset.theme==='light');
       assert.deepEqual(await blockingViolations(page),[],`room ${width}px`);
       assert.equal(await overflow(page),0,`room has no horizontal scroll at ${width}px`);
       await shot(page,`room-${width}.png`);
@@ -93,7 +94,7 @@ test('participant views: loading, empty, error and offline states are visible an
     const nav=name=>navigation.getByRole('button',{name,exact:true});
     const selectNav=async name=>{if(name!=='Vandaag'&&name!=='Les'&&name!=='Squad-room'&&!await nav(name).isVisible())await nav('Meer').click();await nav(name).click();};
     assert.equal(await page.locator('.right-rail').count(),0,'participant support rail is closed by default');
-    for(const [label,ready] of [['Vandaag','Je plan voor vandaag'],['Mijn route','Vijf dagen. Echte voortgang.'],['Les',null],['Solo-missie',null],['Naslag','Alles wat al vrijgegeven is, om na te lezen'],['Review & overdracht','Alles klaar voor overdracht?']]){
+    for(const [label,ready] of [['Vandaag','Je plan voor vandaag'],['Cursus','Kies een activiteit en ga verder waar je was gebleven.'],['Les',null],['Solo-missie',null],['Naslag','Alles wat al vrijgegeven is, om na te lezen'],['Review & overdracht','Alles klaar voor overdracht?']]){
       await selectNav(label);
       await page.waitForFunction(()=>!document.querySelector('.primary [data-status="loading"]'),null,{timeout:10000});
       assert.equal(await page.locator('.primary').innerText().then(text=>text.trim().length>0),true,`${label} is never blank`);
@@ -101,21 +102,71 @@ test('participant views: loading, empty, error and offline states are visible an
       if(ready)assert.ok(await page.locator('.primary').getByText(ready).first().isVisible(),`${label} shows ${ready}`);
     }
 
+    await selectNav('Cursus');
+    await page.getByTestId('course-overview').waitFor();
+    assert.equal(await page.locator('.course-chapter.current .course-chapter-toggle').getAttribute('aria-expanded'),'true','the current chapter opens by default');
+    assert.ok(await page.locator('.course-activity-row').count()>=3,'the chapter lists lesson, assignment and quiz activities');
+    assert.ok(await page.locator('.course-progress-sidebar progress').count(), 'course progress is visible');
+    assert.equal(await page.locator('.course-overview-heading>.cyan').innerText(),'Cursus','Course uses the localized eyebrow');
+    await page.setViewportSize({width:390,height:844});
+    assert.equal(await overflow(page),0,'Course has no horizontal page overflow at 390px');
+    assert.deepEqual(await blockingViolations(page),[],'Course view passes axe at 390px');
+    await page.setViewportSize({width:1440,height:900});
+
     await selectNav('Les');
     await page.getByTestId('course-pages').waitFor();
     const courseNav=page.getByRole('navigation',{name:"Cursuspagina's"});
-    assert.ok(await courseNav.isVisible(),'participants can reach the course pages from Lesson');
+    assert.equal(await courseNav.count(),0,'ActivityFrame replaces the legacy Lesson page tabs');
+    const activityFrame=page.getByTestId('activity-frame');
+    await activityFrame.waitFor();
+    const frameLayout=await page.evaluate(()=>{
+      const breadcrumb=document.querySelector('.activity-breadcrumb');
+      const pager=document.querySelector('.activity-frame-bottom');
+      const rect=element=>{
+        const {left,right,width}=element.getBoundingClientRect();
+        return {left,right,width};
+      };
+      return {
+        breadcrumbDirection:getComputedStyle(breadcrumb).flexDirection,
+        breadcrumbAlignment:getComputedStyle(breadcrumb).justifyContent,
+        pagerDirection:getComputedStyle(pager).flexDirection,
+        previous:rect(pager.querySelector(':scope > button')),
+        position:rect(pager.querySelector(':scope > span')),
+        actions:rect(pager.querySelector('.activity-frame-actions')),
+        pager:rect(pager)
+      };
+    });
+    assert.equal(frameLayout.breadcrumbDirection,'row','activity breadcrumb stays on one horizontal line');
+    assert.equal(frameLayout.breadcrumbAlignment,'flex-start','activity breadcrumb stays left-aligned');
+    assert.equal(frameLayout.pagerDirection,'row','activity pager stays on one horizontal line');
+    assert.ok(frameLayout.previous.right<frameLayout.position.left+frameLayout.position.width/2,'Previous is left of the centered position');
+    assert.ok(frameLayout.position.left+frameLayout.position.width/2<frameLayout.actions.left,'the position is centered before the right-side actions');
+    assert.ok(frameLayout.actions.right<=frameLayout.pager.right,'activity actions stay inside the pager');
+    const activityProgress=page.getByRole('navigation',{name:'Voortgang van activiteiten'});
+    assert.ok(await activityProgress.isVisible(),'Lesson is framed by activity progress');
+    const activityPagination=page.getByRole('navigation',{name:'Activiteitsnavigatie'});
+    assert.ok(await activityPagination.getByText('1 van 4').isVisible(),'the frame shows position and total activities');
+    assert.ok(await activityPagination.getByRole('button',{name:'Vorige: Cursus',exact:true}).isDisabled(),'the first activity names its previous target');
+    await page.setViewportSize({width:390,height:844});
+    assert.equal(await overflow(page),0,'ActivityFrame has no horizontal page overflow at 390px');
+    assert.ok(await activityPagination.getByRole('button',{name:'Volgende: Opdrachten',exact:true}).isVisible(),'the mobile pager keeps its next action visible');
+    await page.setViewportSize({width:1440,height:900});
+    await activityPagination.getByRole('button',{name:'Volgende: Opdrachten',exact:true}).click();
+    assert.equal(await page.getByRole('navigation',{name:'Voortgang van activiteiten'}).getByRole('button',{name:'Opdrachten',exact:true}).getAttribute('aria-current'),'page','Next opens the assignment activity');
+    assert.ok(await activityPagination.getByRole('button',{name:'Vorige: Les',exact:true}).isVisible(),'the assignment pager names Lesson as its previous target');
+    assert.ok(await activityPagination.getByRole('button',{name:'Volgende: Quiz',exact:true}).isVisible(),'the assignment pager names Quiz as its next target');
+    await activityPagination.getByRole('button',{name:'Vorige: Les',exact:true}).click();
+    await page.getByTestId('lesson-panel').waitFor();
     assert.equal(await page.getByTestId('lesson-panel').getByTestId('classroom-exercises').count(),0,'assignments are not embedded in Lesson');
-    await courseNav.getByRole('button',{name:'Quiz',exact:true}).click();
-    assert.ok(await page.getByTestId('quiz-page').isVisible(),'quiz has its own course page');
+    await activityProgress.getByRole('button',{name:'Opdrachten',exact:true}).click();
+    await page.locator('.assignment-page').waitFor();
+    assert.ok(await page.getByTestId('step-card').count()>0,'the assignment activity opens practical task boxes');
+    await page.getByRole('navigation',{name:'Voortgang van activiteiten'}).getByRole('button',{name:'Quiz',exact:true}).click();
+    await page.getByTestId('quiz-page').waitFor();
+    assert.ok(await activityPagination.getByRole('button',{name:'Volgende: Review & overdracht',exact:true}).isVisible(),'the quiz pager names Review as its next target');
+    assert.ok(await page.getByTestId('quiz-page').isVisible(),'quiz has its own course activity');
     const answer=page.locator('[data-testid="quiz-page"] input[type="radio"]').first();
     await answer.check();
-    await courseNav.getByRole('button',{name:'Opdrachten',exact:true}).click();
-    assert.ok(await page.getByTestId('assignments-page').getByTestId('classroom-exercises').isVisible(),'assignments have their own course page');
-    assert.equal(await page.locator('[data-testid="quiz-page"] form').isVisible(),false,'quiz is hidden while Assignments is open');
-    assert.deepEqual(await blockingViolations(page),[],'assignment page passes axe');
-    await courseNav.getByRole('button',{name:'Quiz',exact:true}).click();
-    assert.equal(await answer.isChecked(),true,'switching pages preserves the in-progress quiz answers');
     assert.deepEqual(await blockingViolations(page),[],'quiz page passes axe');
     const squadHelp=page.getByRole('button',{name:'Squad en hulp',exact:true});
     await squadHelp.click();
@@ -124,11 +175,14 @@ test('participant views: loading, empty, error and offline states are visible an
     await squadHelp.click();
     assert.equal(await page.locator('.right-rail').count(),0,'participants can close squad support');
     assert.equal(await answer.isChecked(),true,'closing squad support keeps the active quiz mounted');
+    await activityProgress.getByRole('button',{name:'Review & overdracht',exact:true}).click();
+    const backToCourse=activityPagination.getByRole('button',{name:'Terug naar de cursus',exact:true});
+    await backToCourse.waitFor();
 
     assert.equal(await nav('Debriefbord').count(),0,'participants only see the board once it exists');
 
     await page.route('**/game/day-route?*',route=>route.fulfill({status:500,contentType:'application/json',body:JSON.stringify({error:'Synthetische serverfout.'})}));
-    await selectNav('Mijn route');
+    await selectNav('Cursus');
     const failure=page.locator('.primary [data-status="error"]');
     await failure.waitFor();
     assert.equal(await failure.getAttribute('role'),'alert');

@@ -35,6 +35,24 @@ test('every pack passes the day-pack lint and every slide citation matches its d
  assert.deepEqual(getDayPack(3).demo.slides.map(s=>s.href),['/workshop/3?index=5','/workshop/3?index=8','/workshop/3?index=11']);
 });
 
+test('s05 Try it fields project to both locales and validate their shape and parity',()=>{
+ const pack=getDayPack(12);
+ assert.deepEqual(pack.steps.map(step=>step.id),['s05-see','s05-sim','s05-run']);
+ assert.equal(pack.steps[0].run.length,3);
+ assert.equal(pack.steps[0].prompts.length,2);
+ assert.equal(pack.steps[0].watchFor,pack.copy.en.solo[0].watchFor);
+ assert.equal(pack.copy.nl.solo[0].run.length,3);
+ assert.equal(pack.copy.nl.solo[0].prompts.length,2);
+ for(const locale of ['en','nl'])assert.doesNotMatch(JSON.stringify(pack.copy[locale].solo),/state the motto|noem het motto/i);
+ const invalid=structuredClone(DAY_PACKS);
+ invalid[11].copy.en.solo[0].run[0]=' ';
+ invalid[11].copy.nl.solo[0].prompts.pop();
+ assert.deepEqual(validateDayPacks(invalid,{root,decks}),[
+  'day 12: step s05-see en.run must be a non-empty string array',
+  'day 12: step s05-see copy.nl.prompts must match the EN count'
+ ]);
+});
+
 test('the lint names a citation whose slide title drifted and a missing starter',()=>{
  const drifted=structuredClone(DAY_PACKS);
  drifted[3].steps[2].slide.title='Run your agent';

@@ -25,6 +25,36 @@ export function slideRefs(pack){
  ];
 }
 
+function validateTryItFields(pack,err){
+ const copies=[
+  ['en',pack.copy?.en?.solo??pack.steps??[]],
+  ['nl',pack.copy?.nl?.solo??pack.steps??[]]
+ ];
+ for(const [locale,steps] of copies){
+  for(const step of steps){
+   for(const field of ['run','prompts']){
+    const values=step[field];
+    if(values!==undefined&&(!Array.isArray(values)||!values.length||values.some(value=>typeof value!=='string'||!value.trim())))
+     err(pack,`step ${step.id} ${locale}.${field} must be a non-empty string array`);
+   }
+   if(step.watchFor!==undefined&&(typeof step.watchFor!=='string'||!step.watchFor.trim()))
+    err(pack,`step ${step.id} ${locale}.watchFor must be a non-empty string`);
+  }
+ }
+ const enSteps=pack.copy?.en?.solo,nlSteps=pack.copy?.nl?.solo;
+ if(!enSteps||!nlSteps)return;
+ const dutchById=new Map(nlSteps.map(step=>[step.id,step]));
+ for(const step of enSteps){
+  const translated=dutchById.get(step.id);
+  for(const field of ['run','prompts']){
+   if(step[field]!==undefined&&(!Array.isArray(translated?.[field])||translated[field].length!==step[field].length))
+    err(pack,`step ${step.id} copy.nl.${field} must match the EN count`);
+  }
+  if(step.watchFor!==undefined&&translated?.watchFor===undefined)
+   err(pack,`step ${step.id} copy.nl.watchFor is required when EN has it`);
+ }
+}
+
 export function validateDayPacks(packs,{root,decks}){
  const errors=[];
  const err=(pack,message)=>errors.push(`day ${pack.day}: ${message}`);
@@ -36,6 +66,7 @@ export function validateDayPacks(packs,{root,decks}){
   if(!pack.reviewCriteria.length)err(pack,'no Proof acceptance');
   if(!pack.demo.open&&!pack.demo.slides.length)err(pack,'demo has neither slides nor an OPEN note');
   if(pack.quiz.questions.length!==3)err(pack,'quiz needs exactly 3 questions');
+  validateTryItFields(pack,err);
   for(const file of pack.mission.starterFiles)if(!existsSync(path.join(root,'starter',file)))err(pack,`starter file missing: starter/${file}`);
   for(const material of pack.materials)if(!material.href&&!material.open)err(pack,`material "${material.label}" has no href and no OPEN reason`);
   for(const [where,ref] of slideRefs(pack)){

@@ -17,6 +17,17 @@ test('five-day progress survives restart; private reflection and debrief stay ac
  try{
  const {app,store}=createApp({dir,hostKey:'test'});
  const host=store.create('Test squad'),alice=store.join(host.code,'Alice'),bob=store.join(host.code,'Bob');
+ assert.equal((await call(app,'/game/lesson-complete',host.token,{done:true})).status,403);
+ const lessonDone=await call(app,'/game/lesson-complete',alice.token,{done:true});
+ assert.equal(lessonDone.status,200);
+ assert.equal(lessonDone.body.done,true);
+ assert.match(lessonDone.body.lessonDoneAt,/^\d{4}-\d\d-\d\dT/);
+ assert.equal((await call(app,'/game/lesson-complete',alice.token,{day:2,done:true})).status,403);
+ assert.equal((await call(app,'/game/lesson-complete',alice.token,{done:'yes'})).status,400);
+ const lessonUndone=await call(app,'/game/lesson-complete',alice.token,{done:false});
+ assert.equal(lessonUndone.status,200);
+ assert.equal(lessonUndone.body.lessonDoneAt,null);
+ assert.equal(store.auth(alice.token).p.progressByDay['1'].lessonDoneAt,undefined);
  for(let day=1;day<=7;day++){
   assert.equal((await call(app,'/game/control',host.token,{action:'day',value:day})).status,200);
   assert.equal(store.auth(alice.token).p.route,'standard');
@@ -31,10 +42,12 @@ test('five-day progress survives restart; private reflection and debrief stay ac
  assert.equal((await call(app,'/game/reflection',host.token,{learned:'x',next:'y'})).status,403);
  const bobRoute=(await call(app,'/game/day-route',bob.token)).body;
  assert.ok(bobRoute.days.every(day=>day.progress.reflection===null&&day.progress.evidenceCount===0));
+ assert.ok(bobRoute.days.every(day=>day.tasks.approved===0&&day.tasks.awaiting===0&&day.tasks.changesRequested===0));
  const restored=new LocalStore(dir),{r,p}=restored.auth(alice.token);
  for(let day=1;day<=7;day++){
   const progress=dayProgress(r,p,day);
   assert.equal(progress.route,'guided');assert.equal(progress.acceptedCount,1);assert.equal(progress.hasHandoff,true);assert.equal(progress.reflection.learned,`Geleerd op dag ${day}`);
+  assert.equal(progress.lessonDone,false);
  }
  await call(app,'/game/control',host.token,{action:'day',value:1});
  assert.equal(store.auth(alice.token).p.route,'guided');
