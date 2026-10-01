@@ -13,6 +13,97 @@ const DIAGRAM_NL=diagram(
  'Klantbericht → tool_use → tool_result → prioriteitslabel → menselijke gate'
 );
 
+const CODE_EXAMPLES = [
+  {
+    id: 'w4-agent-sdk-mcp-options',
+    title: 'Agent SDK MCP options',
+    slide: slide(d, 11, 'Lesson 3: look up transaction data through MCP.'),
+    typescript: `import { query, type Options } from "@anthropic-ai/claude-agent-sdk";
+
+const analyst_prompt = "Look up transaction IDs with get_transaction, then analyze the record and message.";
+const email_prompt = "Draft a concise reply from the analyst result; do not invent facts.";
+const prompt = "Review the supplied customer message.";
+
+const options = {
+  cwd: "./03-mcp/claude-project",
+  settingSources: ["project"],
+  systemPrompt: { type: "preset", preset: "claude_code" },
+  tools: ["Agent", "Write"],
+  agents: {
+    "ticket-analyst": {
+      description: "Looks up transaction IDs and summarizes record facts.",
+      prompt: analyst_prompt,
+      tools: ["mcp__transactions__get_transaction"],
+    },
+    "email-responder": {
+      description: "Drafts a customer reply from the analyst result.",
+      prompt: email_prompt,
+      tools: [],
+    },
+  },
+  mcpServers: {
+    transactions: {
+      type: "stdio",
+      command: "node",
+      args: ["../transaction-mcp/server.js"],
+      env: { TRANSACTIONS_XLSX: "../data/transactions.xlsx" },
+    },
+  },
+  allowedTools: ["Agent", "Write", "mcp__transactions__get_transaction"],
+  disallowedTools: ["WebSearch", "WebFetch", "Bash"],
+  permissionMode: "acceptEdits",
+  maxTurns: 10,
+} satisfies Options;
+
+for await (const message of query({ prompt, options })) {
+  console.log(message);
+}`,
+    python: `import asyncio
+from claude_agent_sdk import AgentDefinition, ClaudeAgentOptions, query
+
+analyst_prompt = "Look up transaction IDs with get_transaction, then analyze the record and message."
+email_prompt = "Draft a concise reply from the analyst result; do not invent facts."
+prompt = "Review the supplied customer message."
+
+options = ClaudeAgentOptions(
+    cwd="./03-mcp/claude-project",
+    setting_sources=["project"],
+    system_prompt={"type": "preset", "preset": "claude_code"},
+    tools=["Agent", "Write"],
+    agents={
+        "ticket-analyst": AgentDefinition(
+            description="Looks up transaction IDs and summarizes record facts.",
+            prompt=analyst_prompt,
+            tools=["mcp__transactions__get_transaction"],
+        ),
+        "email-responder": AgentDefinition(
+            description="Drafts a customer reply from the analyst result.",
+            prompt=email_prompt,
+            tools=[],
+        ),
+    },
+    mcp_servers={
+        "transactions": {
+            "type": "stdio",
+            "command": "node",
+            "args": ["../transaction-mcp/server.js"],
+            "env": {"TRANSACTIONS_XLSX": "../data/transactions.xlsx"},
+        },
+    },
+    allowed_tools=["Agent", "Write", "mcp__transactions__get_transaction"],
+    disallowed_tools=["WebSearch", "WebFetch", "Bash"],
+    permission_mode="acceptEdits",
+    max_turns=10,
+)
+
+async def main():
+    async for message in query(prompt=prompt, options=options):
+        print(message)
+
+asyncio.run(main())`,
+  },
+];
+
 const DEMO_SLIDES=[
  slide(d,2,'Map n8n to the Agent SDK.'),
  slide(d,5,'Watch one agent classify a message.'),
@@ -180,4 +271,5 @@ export default {
  // Structural defaults (NL) for lint / FAQ index — deck citations live here
  ...nl,
  sims:[{id:'w4-ticket-priority',title:'Concept-sim · Ticket → prioriteit'}],
+ codeExamples:CODE_EXAMPLES,
 };
