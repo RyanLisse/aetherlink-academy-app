@@ -39,13 +39,16 @@ test("AET-134 i18n key parity EN+NL for new chrome", () => {
 });
 
 test("AET-134 Path = pedagogy; Assignments = Done-when SoT", () => {
-  assert.match(panels, /path-pedagogy/);
-  assert.match(panels, /path-assignments-crosslink/);
+  const overview = panels.split("currentStep.id==='overview'&&")[1]?.split("currentStep.id==='idea'&&")[0] || "";
+  assert.match(overview, /data-testid="path-pedagogy"/);
+  assert.match(overview, /data-testid="path-assignments-crosslink"/);
   assert.match(panels, /assignments-sot-hint/);
-  assert.match(panels, /path\.pedagogyLabel/);
+  assert.match(panels, /lessonPages\.flowLabel/);
   assert.match(panels, /path\.assignmentsSoT/);
-  // Lesson Path uses compact ProgressivePath (no Done when duplicate)
-  assert.match(panels, /ProgressivePath steps=\{pack\.steps\} compact\/>/);
+  // Lesson Path keeps one task-count CTA without duplicating the Assignment checklist.
+  assert.match(panels, /lessonPages\.taskSummary/);
+  assert.match(panels, /lessonPages\.openAssignment/);
+  assert.doesNotMatch(overview, /ProgressivePath/);
   // Assignments C1/C2 render full ProgressivePath then ClassroomExercises
   assert.match(panels, /assignments-sot-hint[\s\S]*ProgressivePath steps=\{pack\.steps\}\/>[\s\S]*ClassroomExercises/);
 });

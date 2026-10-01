@@ -56,8 +56,9 @@ function SimMessage({step,t}){
 }
 
 /** Academy-native in-lesson step-through player (no iframe, no API keys). */
-export function ConceptSim({scenario}){
+export function ConceptSim({scenario,showDescription=true}){
   const t=useT();
+  const description=scenario?.description||scenario?.summary;
   const steps=useMemo(()=>scenario?.steps||[],[scenario]);
   const sim=useStepThrough(steps);
   const scrollRef=useRef(null);
@@ -73,7 +74,7 @@ export function ConceptSim({scenario}){
       <strong>{scenario.title}</strong>
       <span className="progress-chip" role="status">{t('sim.progress',{step:Math.max(sim.index+1,0),total:sim.total})}</span>
     </header>
-    {scenario.description&&<p className="muted sim-lede">{scenario.description}</p>}
+    {showDescription&&description&&<p className="muted sim-lede">{description}</p>}
     <div className="sim-controls" role="group" aria-label={t('sim.controls')}>
       {sim.playing
         ?<button type="button" className="sim-btn" onClick={sim.pause} data-testid="sim-pause" title={t('sim.pause')} aria-label={t('sim.pause')}><Pause size={16}/></button>
@@ -93,12 +94,18 @@ export function ConceptSim({scenario}){
 }
 
 /** Renders every resolved sim on a day pack inside the Lesson panel. */
-export function ConceptSimSlot({sims}){
+export function ConceptSimSlot({sims,watchLabel}){
   const t=useT();
   if(!sims?.length)return null;
   return <section className="sim-slot" aria-label={t('sim.heading')} data-testid="sim-slot">
     <h3>{t('sim.heading')}</h3>
     <p className="muted">{t('sim.help')}</p>
-    {sims.map(scenario=><ConceptSim key={scenario.id||scenario.version} scenario={scenario}/>)}
+    {sims.map(scenario=>{
+      const description=scenario.description||scenario.summary;
+      return <div className="sim-slot-item" key={scenario.id||scenario.version}>
+        {watchLabel&&description&&<p className="lesson-watch-caption" data-testid="lesson-watch-caption"><strong>{watchLabel}</strong>{' '}{description}</p>}
+        <ConceptSim scenario={scenario} showDescription={!watchLabel}/>
+      </div>;
+    })}
   </section>;
 }

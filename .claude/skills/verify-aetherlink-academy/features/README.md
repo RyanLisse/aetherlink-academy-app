@@ -36,5 +36,6 @@ Status as of 2026-09-24 at 768910c. Proven means the recipe was executed end to 
 - [Workshop decks](./workshop-decks.md) covers `/workshop/3` to `/workshop/7` and their `/lesson/workshop-N` aliases. Recipe-only.
 - [Squad room](./squad-room.md) covers facilitator squad creation, participant join, roster roles, duplicate-name rejection and personal-link resume in the legacy game. Recipe-only.
 - [Intent, evidence and review](./intent-evidence-review.md) covers the external intent link, solo evidence submission, facilitator review and the native debrief board. Recipe-only.
+- [Lesson pages](./lesson-pages.md) covers participant and facilitator lesson-page navigation, existing pack diagrams, the ConceptSim view and ActivityFrame boundaries.
 - [Remote MCP](./remote-mcp.md) covers participant MCP tokens and the `/mcp` tools, plus where `get_screen_state` and release policy actually live. Recipe-only; the 401 on unauthenticated `/mcp` was observed.
 - [Live follow](./live-follow.md) covers `/live/<room>/presenter|follow|projector` sync, detach and "everyone back". Proven through the repo harness only (`live-sync.spec.ts`, 2 passed on port 4735); not deployed on the gateway.

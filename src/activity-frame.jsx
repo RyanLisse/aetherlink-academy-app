@@ -7,7 +7,7 @@ import './activity-frame.css';
 
 const ICONS={lesson:BookOpen,assignments:ClipboardList,quiz:Check,review:ClipboardCheck};
 
-export function ActivityFrame({room,day,activity,onGo,children}){
+export function ActivityFrame({room,day,activity,onGo,children,steps}){
   const t=useT();
   const {locale}=useI18n();
   const progressKey=JSON.stringify(room.me?.progressByDay||{});
@@ -25,6 +25,7 @@ export function ActivityFrame({room,day,activity,onGo,children}){
     ...(day===room.day?[{id:'review',label:t('nav.review')}]:[])
   ];
   const activeIndex=Math.max(0,activities.findIndex(item=>item.id===activity));
+  const pageSteps=activity==='lesson'&&steps?.count>0?steps:null;
   const progress=summary?.progress||{};
   const isDone=id=>id==='lesson'?Boolean(progress.lessonDone):
     id==='assignments'?Boolean(summary?.tasks?.total>0&&summary.tasks.approved===summary.tasks.total):
@@ -41,13 +42,23 @@ export function ActivityFrame({room,day,activity,onGo,children}){
   const courseName=route.data?.course?.name||t('route.title');
   const dayTitle=summary?.title||t('activity.day',{day:dayPosition});
   const activityLabel=activities.find(item=>item.id===activity)?.label||t('coursePages.lesson');
-  const previousTarget=activeIndex===0?t('nav.courseOverview'):activities[activeIndex-1].label;
-  const nextLabel=activeIndex===activities.length-1?t('activity.backToCourse'):t('activity.nextTo',{target:activities[activeIndex+1].label});
+  const previousTarget=pageSteps?.index>0?pageSteps.labels[pageSteps.index-1]:activeIndex===0?t('nav.courseOverview'):activities[activeIndex-1].label;
+  const nextLabel=pageSteps&&pageSteps.index<pageSteps.count-1
+    ?t('activity.nextTo',{target:pageSteps.labels[pageSteps.index+1]})
+    :activeIndex===activities.length-1?t('activity.backToCourse'):t('activity.nextTo',{target:activities[activeIndex+1].label});
+  const positionLabel=pageSteps
+    ?t('lessonPages.pagePosition',{current:pageSteps.index+1,total:pageSteps.count})
+    :t('activity.position',{current:activeIndex+1,total:activities.length});
+  const canMarkLessonComplete=activity==='lesson'&&!room.readOnly&&(
+    steps===undefined||(pageSteps&&pageSteps.index===pageSteps.count-1)
+  );
   const goTo=index=>{
     if(index<0){onGo('course',day);return;}
     if(index>=activities.length){onGo('course',day);return;}
     onGo(activities[index].id,day);
   };
+  const goPrevious=()=>pageSteps?.index>0?pageSteps.onChange(pageSteps.index-1):goTo(activeIndex-1);
+  const goNext=()=>pageSteps&&pageSteps.index<pageSteps.count-1?pageSteps.onChange(pageSteps.index+1):goTo(activeIndex+1);
   return <div className="activity-frame" data-testid="activity-frame">
     <nav className="activity-breadcrumb" aria-label={t('activity.breadcrumb')}>
       <button type="button" className="activity-course-link" onClick={()=>onGo('course',day)}>{courseName}</button>
@@ -68,15 +79,15 @@ export function ActivityFrame({room,day,activity,onGo,children}){
     <div className="activity-frame-card"><div className="activity-frame-content">{children}</div></div>
     {error&&<p className="error activity-frame-error" role="alert">{error}</p>}
     <nav className="activity-frame-bottom" aria-label={t('activity.pagination')}>
-      <button type="button" onClick={()=>goTo(activeIndex-1)} disabled={activeIndex===0}>
+      <button type="button" onClick={goPrevious} disabled={activeIndex===0&&(!pageSteps||pageSteps.index===0)}>
         <ArrowLeft size={17} aria-hidden="true"/>{t('activity.previousTo',{target:previousTarget})}
       </button>
-      <span>{t('activity.position',{current:activeIndex+1,total:activities.length})}</span>
+      <span>{positionLabel}</span>
       <div className="activity-frame-actions">
-        {activity==='lesson'&&!room.readOnly&&<button type="button" className={lessonDone?'activity-complete':'activity-mark-complete'} disabled={saving} onClick={changeCompletion}>
+        {canMarkLessonComplete&&<button type="button" className={lessonDone?'activity-complete':'activity-mark-complete'} disabled={saving} onClick={changeCompletion}>
           <Check size={17} aria-hidden="true"/>{saving?t('activity.saving'):lessonDone?t('activity.lessonComplete'):t('activity.markLessonComplete')}
         </button>}
-        <button type="button" className="gradient" onClick={()=>goTo(activeIndex+1)}>
+        <button type="button" className="gradient" onClick={goNext}>
           {nextLabel}<ArrowRight size={17} aria-hidden="true"/>
         </button>
       </div>

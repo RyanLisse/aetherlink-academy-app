@@ -4,6 +4,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {createApp} from '../../server/app.mjs';
 import {LocalStore} from '../../server/local-store.mjs';
+import {harnessCourseTemplate} from '../../content/days/course.mjs';
 
 // Synthetic, deterministic Academy for browser checks: fixed server clock, fixed
 // room code, invented names. Nothing here is real participant data.
@@ -13,7 +14,7 @@ export const ROOM_CODE='SQUAD7';
 export const HOST_KEY='test-host';
 const DAY=24*60*60*1000;
 
-export async function startLegacyFixture({port=0}={}){
+export async function startLegacyFixture({port=0,harness=false}={}){
   const dir=mkdtempSync(path.join(os.tmpdir(),'academy-legacy-ui-'));
   const clock={now:FIXED_NOW};
   const store=new LocalStore(dir,{now:()=>clock.now});
@@ -25,7 +26,9 @@ export async function startLegacyFixture({port=0}={}){
   const post=async(route,body)=>{const response=await fetch(base+route,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});const json=await response.json();if(!response.ok)throw Error(`${route}: ${json.error}`);return json;};
 
   const squad=store.create('Squad Noord');
-  store.data.rooms[squad.roomId].code=ROOM_CODE;
+  const room=store.data.rooms[squad.roomId];
+  room.code=ROOM_CODE;
+  if(harness){room.day=12;room.course=harnessCourseTemplate();}
   store.save();
   for(const name of ['Ada','Grace','Linus','Margaret'])store.join(ROOM_CODE,name);
   const participant=store.join(ROOM_CODE,'Tim');

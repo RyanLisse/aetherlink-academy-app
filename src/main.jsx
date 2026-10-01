@@ -61,6 +61,7 @@ function App(){
   const [view,setView]=useState('today');
   const [lessonPage,setLessonPage]=useState('lesson');
   const [lessonDay,setLessonDay]=useState(null);
+  const [lessonSteps,setLessonSteps]=useState(null);
   const [connected,setConnected]=useState(false);
   const [copied,setCopied]=useState(null);
   const [classroomOpen,setClassroomOpen]=useState(false);
@@ -87,6 +88,8 @@ function App(){
   useEffect(()=>{
     if(room?.day){setLessonPage('lesson');setLessonDay(room.day);}
   },[room?.day]);
+  useEffect(()=>{setLessonSteps(null);},[lessonDay,room?.day]);
+  useEffect(()=>{setLessonSteps(null);},[lessonDay,room?.day]);
   useEffect(()=>()=>clearTimeout(copiedTimer.current),[]);
   useEffect(()=>{document.documentElement.dataset.theme=theme;localStorage.setItem('academy-theme',theme);},[theme]);
   useEffect(()=>{if(!accessFromUrl)return;const url=new URL(location.href);url.hash='';history.replaceState(null,'',url.pathname+url.search);},[accessFromUrl]);
@@ -164,8 +167,8 @@ function App(){
           {view==='squad'&&<Document room={room} action={action} busy={busy} onIntent={intentUrl=>setRoom(current=>({...current,intentUrl}))}/>}
           {view==='route'&&<Route room={room} onNavigate={navigate}/>}
           {view==='lesson'&&(participant
-            ?<ActivityFrame room={room} day={lessonDay??room.day} activity={lessonPage} onGo={goActivity}>
-              <Lesson room={room} action={action} busy={busy} day={lessonDay??room.day} page={lessonPage} onNavigate={navigate} framed/>
+            ?<ActivityFrame room={room} day={lessonDay??room.day} activity={lessonPage} onGo={goActivity} steps={lessonSteps}>
+              <Lesson room={room} action={action} busy={busy} day={lessonDay??room.day} page={lessonPage} onNavigate={navigate} onStepsChange={setLessonSteps} framed/>
             </ActivityFrame>
             :<Lesson room={room} action={action} busy={busy} day={lessonDay??room.day} page={lessonPage} onNavigate={navigate}/>)}
           {view==='solo'&&(participant

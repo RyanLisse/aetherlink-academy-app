@@ -5,6 +5,7 @@ import path from 'node:path';
 import {chromium} from '@playwright/test';
 import {AxeBuilder} from '@axe-core/playwright';
 import {startLegacyFixture,root,HOST_KEY,ROOM_CODE} from './support/legacy-fixture.mjs';
+import {getSim} from '../server/sims.mjs';
 
 const screenshotDir=process.env.ACADEMY_SCREENSHOT_DIR;
 
@@ -21,13 +22,13 @@ async function blockingViolations(page){
 
 const overflow=page=>page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
 
-async function withBrowser(run){
+async function withBrowser(run,{harness=false}={}){
   assert.ok(existsSync(path.join(root,'dist/index.html')),'dist/index.html missing: run pnpm run build first');
-  const fixture=await startLegacyFixture();
+  const fixture=await startLegacyFixture({harness});
   const browser=await chromium.launch();
-  const open=async({width,height,token=null})=>{
+  const open=async({width,height,token=null,locale='nl'})=>{
     const context=await browser.newContext({viewport:{width,height},reducedMotion:'reduce'});
-    await context.addInitScript(value=>{localStorage.setItem('academy-locale','nl');if(value)sessionStorage.setItem('academy-token',value);},token);
+    await context.addInitScript(({token:sessionToken,locale:initialLocale})=>{localStorage.setItem('academy-locale',initialLocale);if(sessionToken)sessionStorage.setItem('academy-token',sessionToken);},{token,locale});
     return context.newPage();
   };
   try{await run({fixture,open});}
@@ -145,12 +146,23 @@ test('participant views: loading, empty, error and offline states are visible an
     const activityProgress=page.getByRole('navigation',{name:'Voortgang van activiteiten'});
     assert.ok(await activityProgress.isVisible(),'Lesson is framed by activity progress');
     const activityPagination=page.getByRole('navigation',{name:'Activiteitsnavigatie'});
+    const lessonStepper=page.getByTestId('lesson-stepper');
+    await lessonStepper.locator('.lesson-step-label').first().waitFor();
+    const lessonLabels=(await lessonStepper.locator('.lesson-step-label').allTextContents()).map(label=>label.trim());
+    const nextLessonPage=lessonLabels.length>1?`Volgende: ${lessonLabels[1]}`:'Volgende: Opdrachten';
     assert.ok(await activityPagination.getByText('1 van 4').isVisible(),'the frame shows position and total activities');
     assert.ok(await activityPagination.getByRole('button',{name:'Vorige: Cursus',exact:true}).isDisabled(),'the first activity names its previous target');
     await page.setViewportSize({width:390,height:844});
     assert.equal(await overflow(page),0,'ActivityFrame has no horizontal page overflow at 390px');
-    assert.ok(await activityPagination.getByRole('button',{name:'Volgende: Opdrachten',exact:true}).isVisible(),'the mobile pager keeps its next action visible');
+    assert.ok(await activityPagination.getByRole('button',{name:nextLessonPage,exact:true}).isVisible(),'the mobile pager keeps its next destination visible');
     await page.setViewportSize({width:1440,height:900});
+    if(lessonLabels.length>1){
+      for(const [index,label] of lessonLabels.slice(1).entries()){
+        await activityPagination.getByRole('button',{name:`Volgende: ${label}`,exact:true}).click();
+        assert.equal(await lessonStepper.getByRole('button',{name:label,exact:true}).getAttribute('aria-current'),'step',`Next opens lesson page ${label}`);
+        if(index===0)await activityPagination.getByText(`Pagina 2 van ${lessonLabels.length}`).waitFor();
+      }
+    }
     await activityPagination.getByRole('button',{name:'Volgende: Opdrachten',exact:true}).click();
     assert.equal(await page.getByRole('navigation',{name:'Voortgang van activiteiten'}).getByRole('button',{name:'Opdrachten',exact:true}).getAttribute('aria-current'),'page','Next opens the assignment activity');
     assert.ok(await activityPagination.getByRole('button',{name:'Vorige: Les',exact:true}).isVisible(),'the assignment pager names Lesson as its previous target');
@@ -249,6 +261,45 @@ test('facilitator workshop landing keeps settings tucked away and exposes usable
     const courseNavigation=page.getByRole('navigation',{name:"Cursuspagina's"});
     await courseNavigation.waitFor({state:'visible'});
     assert.ok(await courseNavigation.isVisible(),'facilitators see the same Lesson, Assignments, and Quiz navigation');
+    assert.equal(await page.locator('.simple-nav').evaluate(element=>getComputedStyle(element).flexDirection),'row','facilitator navigation remains a horizontal row');
+    assert.equal(await courseNavigation.evaluate(element=>getComputedStyle(element).flexDirection),'row','unframed course-page navigation remains horizontal');
+    assert.equal(await page.locator('.lesson-stepper-scroll').evaluate(element=>getComputedStyle(element).flexDirection),'row','unframed lesson stepper remains horizontal');
+  });
+});
+
+test('participant, reference, Learn, and deck navigation retain their intended layouts',async()=>{
+  await withBrowser(async({fixture,open})=>{
+    const page=await open({width:1440,height:900,locale:'en'});
+    await page.goto(`${fixture.base}/#access=${fixture.participantAccess}`);
+    await page.getByRole('heading',{name:'Squad Noord'}).waitFor();
+    const todayNav=page.locator('.participant-sidebar .sidebar-nav');
+    assert.equal(await todayNav.evaluate(element=>getComputedStyle(element).flexDirection),'row','participant Today navigation stays horizontal');
+
+    await page.locator('.participant-more > button').click();
+    await page.locator('.participant-more-menu [data-nav="naslag"]').click();
+    const referenceDays=page.locator('.naslag-days');
+    await referenceDays.waitFor();
+    assert.equal(await referenceDays.evaluate(element=>getComputedStyle(element).display),'grid','the Naslag day selector stays a responsive grid');
+
+    await page.locator('.participant-more > button').click();
+    await page.locator('.participant-more-menu [data-nav="decks"]').click();
+    const deckTrail=page.locator('.deck-trail');
+    await deckTrail.waitFor();
+    assert.equal(await deckTrail.evaluate(element=>getComputedStyle(element).flexDirection),'row','deck breadcrumbs stay horizontal');
+    assert.equal(await deckTrail.locator('ol').evaluate(element=>getComputedStyle(element).flexDirection),'row','deck breadcrumb items stay inline');
+
+    await page.goto(`${fixture.base}/?learn=s01`);
+    await page.locator('.learn-course').waitFor();
+    await page.locator('.learn-contents > summary').click();
+    const contentsNav=page.locator('.learn-contents nav').first();
+    await contentsNav.waitFor();
+    const tabs=page.locator('.learn-tabs');
+    await tabs.waitFor();
+    const chapterNav=page.locator('.learn-pagination');
+    await chapterNav.waitFor();
+    assert.equal(await contentsNav.evaluate(element=>getComputedStyle(element).flexDirection),'column','Learn contents stay vertically grouped');
+    assert.equal(await tabs.evaluate(element=>getComputedStyle(element).flexDirection),'row','Learn content tabs stay horizontal');
+    assert.equal(await chapterNav.evaluate(element=>getComputedStyle(element).flexDirection),'row','Learn chapter pagination stays horizontal');
   });
 });
 
@@ -282,4 +333,81 @@ test('facilitator overview and read-only cohort room pass axe and show their sta
     assert.equal(await overflow(reader),0);
     await shot(reader,'readonly-390.png');
   });
+});
+
+test('s05 lesson pages, accessible diagram zoom, and page-aware activity navigation',async()=>{
+  await withBrowser(async({fixture,open})=>{
+    const page=await open({width:1440,height:900,locale:'en'});
+    await page.goto(`${fixture.base}/#access=${fixture.participantAccess}`);
+    await page.getByRole('heading',{name:'Squad Noord'}).waitFor();
+    await page.locator('.participant-primary-nav [data-nav="lesson"]').click();
+    await page.getByTestId('lesson-panel').waitFor();
+    assert.equal(await page.getByTestId('course-pages').getAttribute('data-course-day'),'12','the fixture opens the s05 content day');
+
+    const stepper=page.getByTestId('lesson-stepper');
+    assert.ok(await stepper.isVisible(),'s05 Lesson exposes its numbered page stepper');
+    await page.getByTestId('lesson-page').waitFor();
+    const labels=stepper.locator('.lesson-step-label');
+    assert.deepEqual((await labels.allTextContents()).map(label=>label.trim()),['Overview','The idea','Try it','Sources'],'empty Code page is omitted from s05');
+    const activityPagination=page.getByRole('navigation',{name:'Activity navigation'});
+    const breadcrumb=page.locator('.activity-breadcrumb');
+    assert.equal(await breadcrumb.evaluate(element=>getComputedStyle(element).flexDirection),'row','ActivityFrame breadcrumb stays inline');
+    assert.equal(await breadcrumb.evaluate(element=>getComputedStyle(element).justifyContent),'flex-start','ActivityFrame breadcrumb stays left aligned');
+    assert.equal(await activityPagination.evaluate(element=>getComputedStyle(element).flexDirection),'row','ActivityFrame pager stays in a desktop row');
+    await activityPagination.getByText('Page 1 of 4').waitFor();
+    assert.equal(await stepper.getByRole('button',{name:'Overview'}).getAttribute('aria-current'),'step');
+    assert.equal(await page.getByTestId('lesson-narrative').count(),0,'narrative is not visible on Overview');
+    assert.equal((await page.getByTestId('path-assignments-crosslink').innerText()).replace(/\s+/g,' ').trim(),'This lesson has 3 tasks → Open assignment','the Overview keeps one compact assignment CTA instead of a checklist');
+    assert.equal(await activityPagination.getByRole('button',{name:'Mark lesson complete',exact:true}).count(),0,'lesson completion is hidden before the final page');
+    assert.ok(await activityPagination.getByRole('button',{name:'Previous: Course',exact:true}).isDisabled(),'Previous falls back to the activity sequence on the first lesson page');
+
+    await activityPagination.getByRole('button',{name:'Next: The idea',exact:true}).click();
+    await page.getByTestId('lesson-narrative').waitFor();
+    await activityPagination.getByText('Page 2 of 4').waitFor();
+    assert.ok(await activityPagination.getByRole('button',{name:'Previous: Overview',exact:true}).isVisible());
+    assert.equal(await stepper.getByRole('button',{name:'The idea'}).getAttribute('aria-current'),'step');
+    assert.equal(await stepper.getByRole('button',{name:'Overview'}).locator('.lesson-step-check').count(),1,'visited lesson pages show a check');
+    assert.equal(await page.getByTestId('lesson-concept-card').count(),4,'s05 narrative is rendered as concept cards');
+    assert.equal(await page.locator('.lesson-concept-icon').count(),4,'each concept card has an icon');
+    assert.ok(await page.getByTestId('lesson-worked-example').isVisible(),'the worked example appears on The idea page');
+
+    await page.setViewportSize({width:390,height:844});
+    assert.equal(await overflow(page),0,'the lesson stepper and content do not overflow at 390px');
+    await page.setViewportSize({width:1440,height:900});
+    await stepper.getByRole('button',{name:'Overview'}).click();
+
+    const zoom=page.getByRole('button',{name:'Zoom diagram: TodoWrite overview'});
+    await zoom.click();
+    const dialog=page.getByRole('dialog',{name:'Diagram preview'});
+    await dialog.waitFor({state:'visible'});
+    const zoomedImage=dialog.getByRole('img');
+    assert.ok(await zoomedImage.isVisible()&&Boolean(await zoomedImage.getAttribute('alt')),'the zoomed diagram has accessible alternate text');
+    assert.equal((await dialog.locator('figcaption').innerText()).trim(),'TodoWrite overview');
+    await page.keyboard.press('Escape');
+    await dialog.waitFor({state:'hidden'});
+    assert.equal(await zoom.evaluate(element=>document.activeElement===element),true,'Escape restores focus to the diagram trigger');
+    await zoom.click();
+    await dialog.getByRole('button',{name:'Close diagram'}).click();
+    await dialog.waitFor({state:'hidden'});
+    assert.equal(await zoom.evaluate(element=>document.activeElement===element),true,'the close button restores focus to the diagram trigger');
+
+    await stepper.getByRole('button',{name:'Try it'}).click();
+    const sim=page.getByTestId('concept-sim');
+    await sim.waitFor({state:'visible'});
+    assert.equal((await page.getByTestId('lesson-watch-caption').innerText()).replace(/\s+/g,' ').trim(),`What to watch for ${getSim('s05','en').description}`);
+    const simWidth=await sim.evaluate(element=>Math.round(element.getBoundingClientRect().width));
+    const contentWidth=await page.getByTestId('lesson-page').evaluate(element=>Math.round(element.getBoundingClientRect().width));
+    assert.ok(simWidth>=contentWidth-4,'ConceptSim fills the Try it page width');
+
+    await stepper.getByRole('button',{name:'Sources'}).click();
+    const markComplete=activityPagination.getByRole('button',{name:'Mark lesson complete',exact:true});
+    await markComplete.waitFor();
+    assert.equal(await markComplete.count(),1,'lesson completion appears on the last page');
+    const assignments=activityPagination.getByRole('button',{name:'Next: Assignments',exact:true});
+    await assignments.waitFor();
+    await assignments.click();
+    await page.locator('.assignment-page').waitFor();
+    assert.equal(await page.getByTestId('lesson-page').count(),0,'the last-page activity fallback opens Assignments');
+    assert.equal(await overflow(page),0,'the assignment destination has no horizontal overflow');
+  },{harness:true});
 });

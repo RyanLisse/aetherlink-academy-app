@@ -1,5 +1,5 @@
-import React,{useCallback,useEffect,useState,useRef} from 'react';
-import {Search,Sparkles,ArrowRight,BookOpen,FileText,Check,Copy,Download,Target,Columns3,ClipboardList,ClipboardCheck,Circle,CircleDot,ChevronDown,ChevronRight,Lock} from 'lucide-react';
+import React,{useCallback,useEffect,useState,useRef,useMemo} from 'react';
+import {Search,Sparkles,ArrowRight,BookOpen,FileText,Check,Copy,Download,Target,Columns3,ClipboardList,ClipboardCheck,Circle,CircleDot,ChevronDown,ChevronRight,Lock,Lightbulb,Workflow,Wrench,Layers,ZoomIn,X} from 'lucide-react';
 import {api} from './api';
 import {useT,useI18n} from './i18n';
 import {LabEmbed,LabSlotEmpty} from './LabEmbed';
@@ -178,11 +178,55 @@ function QuickCheck({room,action,busy,practice,shownDay,chosen,questions,quizErr
   </section>;
 }
 
-export function Lesson({room,action,busy,day,page:controlledPage,onNavigate,framed=false}){
+const CONCEPT_ICONS=[Lightbulb,Workflow,Wrench,Layers];
+
+function conceptTextParts(text){
+  const match=String(text||'').match(/^([\s\S]*?[.!?])(?:\s+([\s\S]*))?$/);
+  return match?{keyLine:match[1],remainder:match[2]||''}:{keyLine:text,remainder:''};
+}
+
+function DiagramGallery({diagrams,t}){
+  const [active,setActive]=useState(null);
+  const dialogRef=useRef(null);
+  const triggerRef=useRef(null);
+  useEffect(()=>{
+    if(active&&dialogRef.current&&!dialogRef.current.open)dialogRef.current.showModal();
+  },[active]);
+  const restoreFocus=()=>{
+    triggerRef.current?.focus();
+    setActive(null);
+  };
+  return <>
+    <section className="lesson-diagrams" aria-label={t('lesson.diagrams')} data-testid="lesson-diagrams">
+      {diagrams.map(diagram=><figure key={diagram.src} className="lesson-diagram">
+        <button type="button" className="lesson-diagram-trigger" aria-label={t('lessonPages.zoomDiagram',{title:diagram.title})}
+          onClick={event=>{triggerRef.current=event.currentTarget;setActive(diagram);}}>
+          <img src={diagram.src} alt={diagram.alt||diagram.title} loading="lazy"/>
+          <span className="lesson-diagram-zoom-hint"><ZoomIn size={16} aria-hidden="true"/>{t('lessonPages.zoomHint')}</span>
+        </button>
+        <figcaption>{diagram.title}</figcaption>
+      </figure>)}
+    </section>
+    <dialog ref={dialogRef} className="lesson-diagram-lightbox" aria-labelledby="lesson-diagram-lightbox-title" onClose={restoreFocus}>
+      {active&&<div className="lesson-diagram-lightbox-content">
+        <header><h2 id="lesson-diagram-lightbox-title">{t('lessonPages.diagramDialogTitle')}</h2>
+          <button type="button" aria-label={t('lessonPages.closeDiagram')} onClick={()=>dialogRef.current?.close()}><X size={20} aria-hidden="true"/></button>
+        </header>
+        <figure><img src={active.src} alt={active.alt||active.title}/><figcaption>{active.title}</figcaption></figure>
+      </div>}
+    </dialog>
+  </>;
+}
+
+const EMPTY_LESSON={};
+
+export function Lesson({room,action,busy,day,page:controlledPage,onNavigate,onStepsChange,framed=false}){
   const t=useT();
   const {locale}=useI18n();
   const [pack,setPack]=useState(null);
   const [error,setError]=useState('');
+  const [stepIndex,setStepIndex]=useState(0);
+  const [visitedSteps,setVisitedSteps]=useState(()=>new Set([0]));
   const shownDay=day??room.day,practice=shownDay!==room.day;
   const [internalPage,setInternalPage]=useState('lesson');
   const page=controlledPage??internalPage;
@@ -191,29 +235,116 @@ export function Lesson({room,action,busy,day,page:controlledPage,onNavigate,fram
     else setInternalPage(next);
   };
   useEffect(()=>{if(controlledPage===undefined)setInternalPage('lesson');},[room.day,day,controlledPage]);
+  useEffect(()=>{setStepIndex(0);setVisitedSteps(new Set([0]));},[shownDay]);
   useEffect(()=>{let active=true;setPack(null);setError('');const q=new URLSearchParams({locale});if(day!==undefined)q.set('day',String(day));api(`day-pack?${q}`).then(d=>{if(active)setPack(d);}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[room.day,day,locale]);
+  const lesson=pack?.lesson||EMPTY_LESSON,questions=pack?.quiz?.questions;
+  const chosen=practice?{day:shownDay}:{};
+  const lessonPages=useMemo(()=>{
+    if(!pack)return [];
+    const diagrams=pack.diagrams||[],steps=pack.steps||[],sims=pack.sims||[],labs=pack.labs||[],examples=pack.codeExamples||[];
+    const definitions=[
+      {id:'overview',label:t('lessonPages.overview'),visible:Boolean(lesson.kicker||lesson.title||lesson.motto||lesson.lede||diagrams[0]||lesson.loop?.length||steps.length)},
+      {id:'idea',label:t('lessonPages.idea'),visible:Boolean(lesson.narrative?.length||diagrams.length>1||lesson.workedExample)},
+      {id:'sim',label:t('lessonPages.tryIt'),visible:Boolean(sims.length||labs.length||room.me.role==='Facilitator'||room.lab)},
+      {id:'code',label:t('lessonPages.code'),visible:examples.length>0},
+      {id:'sources',label:t('lessonPages.sources'),visible:true}
+    ];
+    return definitions.filter(item=>item.visible);
+  },[lesson,pack,t,room.me.role,room.lab]);
+  const currentStepIndex=Math.min(stepIndex,Math.max(0,lessonPages.length-1));
+  const stepLabels=useMemo(()=>lessonPages.map(item=>item.label),[lessonPages]);
+  const changeStep=useCallback(index=>{
+    setStepIndex(Math.max(0,Math.min(index,lessonPages.length-1)));
+    setVisitedSteps(current=>new Set(current).add(index));
+  },[lessonPages.length]);
+  const framedSteps=useMemo(()=>page==='lesson'&&lessonPages.length?{
+    index:currentStepIndex,count:lessonPages.length,labels:stepLabels,onChange:changeStep
+  }:null,[page,currentStepIndex,lessonPages.length,stepLabels,changeStep]);
+  useEffect(()=>{
+    if(framed&&onStepsChange)onStepsChange(framedSteps);
+  },[framed,framedSteps,onStepsChange]);
+  useEffect(()=>{
+    if(!framed||!onStepsChange)return;
+    return()=>onStepsChange(null);
+  },[framed,onStepsChange]);
   const pageNav=!framed&&<nav className="course-page-nav" aria-label={t('coursePages.nav')}>{['lesson','assignments','quiz'].map(id=><button key={id} type="button" aria-current={page===id?'page':undefined} onClick={()=>updatePage(id)}>{id==='lesson'?<BookOpen size={17}/>:id==='assignments'?<ClipboardList size={17}/>:<Check size={17}/>}<span>{t(`coursePages.${id}`)}</span></button>)}</nav>;
   if(error)return <section className="panel content-panel" data-testid="course-pages" data-course-day={shownDay}>{pageNav}<p className="cyan">{t('lesson.eyebrow')}</p><h2>{t('lesson.noneTitle')}</h2><StatusState kind="error" title={t('status.errorTitle')}>{error}<p>{t('lesson.noneHint')}</p></StatusState></section>;
   if(!pack)return <section className="panel content-panel" data-testid="course-pages" data-course-day={shownDay}>{pageNav}<StatusState kind="loading" title={t('lesson.loading')}/></section>;
-  const lesson=pack.lesson,questions=pack.quiz?.questions;
-  const chosen=practice?{day:shownDay}:{};
-  const lessonPage=<>
-    <p className="cyan">{lesson.kicker}</p><h2>{lesson.title}</h2>{lesson.motto&&<p className="lesson-motto" data-testid="lesson-motto"><em>{lesson.motto}</em></p>}<p className="lede">{lesson.lede}</p>
-    {lesson.narrative?.length>0&&<div className="lesson-narrative" data-testid="lesson-narrative">{lesson.narrative.map((para,i)=><p key={i}>{para}</p>)}</div>}
-    <p className="cyan" data-testid="path-pedagogy-label">{t('path.pedagogyLabel')}</p>
-    <div className="learning-loop" data-testid="path-pedagogy">{lesson.loop.map((s,i)=><div key={s.label}><span>0{i+1}</span><strong>{s.label}</strong><small>{s.prompt}</small></div>)}</div>
-    {pack.steps?.length>0&&<div className="path-assignments-link" data-testid="path-assignments-crosslink"><p className="muted">{t('path.assignmentsCrosslink')}</p><button type="button" className="text-button" onClick={()=>updatePage('assignments')}>{t('path.openAssignments')}</button><ProgressivePath steps={pack.steps} compact/></div>}
-    <div className="worked"><BookOpen size={20}/><div><h3>{t('lesson.explained')}</h3><p>{lesson.workedExample}</p></div></div>
-    {pack.codeExamples?.length>0&&<div className="lesson-code-examples" data-testid="lesson-code-examples">{pack.codeExamples.map(ex=><PairedCodeExample key={ex.id} id={ex.id} title={ex.title} examples={{typescript:ex.typescript,python:ex.python}}/>)}</div>}
-    {pack.diagrams?.length>0&&<section className="lesson-diagrams" aria-label={t('lesson.diagrams')} data-testid="lesson-diagrams">{pack.diagrams.map(d=><figure key={d.src} className="lesson-diagram"><img src={d.src} alt={d.alt||d.title} loading="lazy"/><figcaption>{d.title}</figcaption></figure>)}</section>}
-    {pack.materials?.length>0&&<><h3>{t('lesson.materials')}</h3><ul className="materials">{pack.materials.map(m=><li key={m.label}>{m.href?<a href={m.href} target={m.href.startsWith('http')?'_blank':undefined} rel="noreferrer">{m.label}</a>:<span>{m.label}: <strong>OPEN</strong> · {m.open}</span>}{m.note&&<small className="muted"> · {m.note}</small>}</li>)}</ul></>}
-    {pack.sims?.length>0&&<ConceptSimSlot sims={pack.sims}/>}
-    {pack.attribution&&<p className="muted lesson-attribution" data-testid="lesson-attribution">{pack.attribution}</p>}
-    {pack.labs?.length>0?<section className="lab-slot" aria-label={t('lab.heading')}><h3>{t('lab.heading')}</h3>{pack.labs.map(lab=><LabEmbed key={lab.id} lab={lab} preview={room.me.role==='Facilitator'} saved={room.me.progressByDay?.[String(shownDay)]?.labs?.[lab.id]}/>)}</section>:(room.me.role==='Facilitator'||room.lab)?<LabSlotEmpty facilitator={room.me.role==='Facilitator'}/>:null}
+  const currentStep=lessonPages[currentStepIndex];
+  const lessonPage=page==='lesson'&&currentStep&&<>
+    <nav className="lesson-stepper-scroll" aria-label={t('lessonPages.stepper')} data-testid="lesson-stepper">
+      {lessonPages.map((item,index)=>{
+        const active=index===currentStepIndex,visited=visitedSteps.has(index)&&!active;
+        return <button key={item.id} type="button" aria-label={item.label} aria-current={active?'step':undefined}
+          onClick={()=>changeStep(index)}>
+          <span className="lesson-step-number">{index+1}</span>
+          {visited&&<Check className="lesson-step-check" size={14} aria-hidden="true"/>}
+          <span className="lesson-step-label">{item.label}</span>
+        </button>;
+      })}
+    </nav>
+    <div className="lesson-page" data-testid="lesson-page" data-lesson-page={currentStep.id}>
+      {currentStep.id==='overview'&&<div className="lesson-page-copy lesson-overview">
+        <p className="cyan">{lesson.kicker}</p><h2>{lesson.title}</h2>
+        {lesson.motto&&<p className="lesson-motto" data-testid="lesson-motto"><em>{lesson.motto}</em></p>}
+        {lesson.lede&&<p className="lede">{lesson.lede}</p>}
+          {pack.diagrams?.[0]&&<DiagramGallery diagrams={[pack.diagrams[0]]} t={t}/>}
+        {lesson.loop?.length>0&&<section className="lesson-flow-section">
+          <p className="cyan" data-testid="path-pedagogy-label">{t('lessonPages.flowLabel')}</p>
+          <div className="lesson-flow" data-testid="path-pedagogy">
+            {lesson.loop.map((item,index)=><React.Fragment key={item.label||index}>
+              <article className="lesson-flow-step"><span>{String(index+1).padStart(2,'0')}</span><strong>{item.label}</strong><small>{item.prompt}</small></article>
+              {index<lesson.loop.length-1&&<span className="lesson-flow-arrow" aria-hidden="true">→</span>}
+            </React.Fragment>)}
+          </div>
+        </section>}
+        {pack.steps?.length>0&&<p className="lesson-task-cta" data-testid="path-assignments-crosslink">
+          <span>{t('lessonPages.taskSummary',{count:pack.steps.length})}</span>
+          <button type="button" className="text-button" onClick={()=>updatePage('assignments')}>{t('lessonPages.openAssignment')}</button>
+        </p>}
+      </div>}
+      {currentStep.id==='idea'&&<div className="lesson-page-copy lesson-idea">
+        {lesson.narrative?.length>0&&<div className="lesson-concept-grid" data-testid="lesson-narrative">
+          {lesson.narrative.map((text,index)=>{
+            const Icon=CONCEPT_ICONS[index%CONCEPT_ICONS.length],parts=conceptTextParts(text);
+            return <article className="lesson-concept-card" key={index} data-testid="lesson-concept-card">
+              <div className="lesson-concept-card-heading"><span className="lesson-concept-number">{String(index+1).padStart(2,'0')}</span><Icon className="lesson-concept-icon" size={21} aria-hidden="true"/></div>
+              <p><strong className="lesson-concept-key">{parts.keyLine}</strong>{parts.remainder&&<span className="lesson-concept-remainder">{parts.remainder}</span>}</p>
+            </article>;
+          })}
+        </div>}
+        {pack.diagrams?.length>1&&<DiagramGallery diagrams={pack.diagrams.slice(1)} t={t}/>}
+        {lesson.workedExample&&<article className="lesson-worked-example" data-testid="lesson-worked-example">
+          <h3>{t('lesson.explained')}</h3><p>{lesson.workedExample}</p>
+        </article>}
+      </div>}
+      {currentStep.id==='sim'&&<div className="lesson-sim-page">
+        {pack.sims?.length>0&&<ConceptSimSlot sims={pack.sims} watchLabel={t('lessonPages.watchFor')}/>}
+        {pack.labs?.length>0?<section className="lab-slot" aria-label={t('lab.heading')}><h3>{t('lab.heading')}</h3>{pack.labs.map(lab=><LabEmbed key={lab.id} lab={lab} preview={room.me.role==='Facilitator'} saved={room.me.progressByDay?.[String(shownDay)]?.labs?.[lab.id]}/>)}</section>:(room.me.role==='Facilitator'||room.lab)?<LabSlotEmpty facilitator={room.me.role==='Facilitator'}/>:null}
+      </div>}
+      {currentStep.id==='code'&&<div className="lesson-page-copy lesson-code-examples" data-testid="lesson-code-examples">
+        {pack.codeExamples.map(ex=><PairedCodeExample key={ex.id} id={ex.id} title={ex.title} examples={{typescript:ex.typescript,python:ex.python}}/>)}
+      </div>}
+      {currentStep.id==='sources'&&<div className="lesson-page-copy lesson-sources">
+        {pack.materials?.length>0&&<><h3>{t('lesson.materials')}</h3><ul className="materials">{pack.materials.map(m=><li key={m.label}>{m.href?<a href={m.href} target={m.href.startsWith('http')?'_blank':undefined} rel="noreferrer">{m.label}</a>:<span>{m.label}: <strong>OPEN</strong> · {m.open}</span>}{m.note&&<small className="muted"> · {m.note}</small>}</li>)}</ul></>}
+        <OfficialDocs day={shownDay}/>
+        {pack.attribution&&<p className="muted lesson-attribution" data-testid="lesson-attribution">{pack.attribution}</p>}
+        <p className="naslag-links"><a href="/?learn=s01">Developer deep dive: Learn Claude Code →</a></p>
+      </div>}
+    </div>
+    {!framed&&<div className="lesson-local-pagination">
+      <button type="button" disabled={currentStepIndex===0} onClick={()=>changeStep(currentStepIndex-1)}>
+        {t('activity.previousTo',{target:lessonPages[currentStepIndex-1]?.label||t('nav.courseOverview')})}
+      </button>
+      <span>{t('lessonPages.pagePosition',{current:currentStepIndex+1,total:lessonPages.length})}</span>
+      <button type="button" onClick={()=>currentStepIndex===lessonPages.length-1?updatePage('assignments'):changeStep(currentStepIndex+1)}>
+        {t('activity.nextTo',{target:lessonPages[currentStepIndex+1]?.label||t('coursePages.assignments')})}
+      </button>
+    </div>}
   </>;
   return <section className="panel content-panel" data-testid="course-pages" data-course-day={shownDay}>
     {pageNav}
-    {page==='lesson'&&<div data-testid="lesson-panel">{lessonPage}<OfficialDocs day={shownDay}/><p className="naslag-links"><a href="/?learn=s01">Developer deep dive: Learn Claude Code →</a></p></div>}
+    {page==='lesson'&&<div className="lesson-panel" data-testid="lesson-panel">{lessonPage}</div>}
     {page==='assignments'&&<section data-testid="assignments-page"><p className="cyan">{t('coursePages.day',{day:coursePosition({...room,day:shownDay})})}</p><h2>{t('coursePages.assignments')}</h2>{shownDay===1||shownDay===2?<><p className="muted" data-testid="assignments-sot-hint">{t('path.assignmentsSoT')}</p>{pack.steps?.length>0&&<><p className="cyan">{t('path.checklistLabel')}</p><ProgressivePath steps={pack.steps}/></>}<ClassroomExercises day={shownDay}/></>:pack.mission?<div className="notice"><h3>{pack.mission.title}</h3><p>{pack.mission.goal}</p>{pack.steps?.length>0&&<ProgressivePath steps={pack.steps} compact/>}{!practice&&onNavigate&&<button type="button" onClick={()=>onNavigate('solo')}>{t('coursePages.openSolo')}<ArrowRight size={16}/></button>}</div>:<StatusState kind="empty" title={t('coursePages.noAssignments')}/>}</section>}
     <section className="course-quiz-page" hidden={page!=='quiz'} aria-label={t('coursePages.quiz')} data-testid="quiz-page"><p className="cyan">{t('coursePages.day',{day:coursePosition({...room,day:shownDay})})}</p><h2>{t('coursePages.quiz')}</h2><QuickCheck room={room} action={action} busy={busy} practice={practice} shownDay={shownDay} chosen={chosen} questions={questions} quizError={pack.quizError}/></section>
   </section>;
