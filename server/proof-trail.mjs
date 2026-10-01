@@ -59,7 +59,7 @@ export function submitAutograde(room,person,task,body,at){
  return {recorded,taskId:task.id,day:room.day,status:taskStatus(room,person.id,task.id,room.day),autograde:autogradeView(task.grader,record)};
 }
 
-const submissionView=e=>({evidenceId:e.id,at:e.at,status:e.status,review:e.review?{note:e.review.note,at:e.review.at,reviewer:e.review.reviewer||null}:null});
+const submissionView=e=>({evidenceId:e.id,at:e.at,status:e.status,finding:e.finding,command:e.command,observed:e.observed,limitation:e.limitation,review:e.review?{note:e.review.note,at:e.review.at,reviewer:e.review.reviewer||null}:null});
 export function taskTrail(room,personId,day,locale='en'){
  return dayTasks(day,locale).map(({grader,...task})=>{
   const submissions=submissionsFor(room,personId,task.id,day),record=autogradeRecord(room,personId,task.id,day);
@@ -81,10 +81,16 @@ export function authorizeTaskReview({s,p}){
 const queueItem=(room,e,locale)=>({evidenceId:e.id,taskId:e.taskId,taskTitle:dayTasks(e.day,locale).find(t=>t.id===e.taskId)?.title||e.taskId,day:e.day,personId:e.personId,name:e.name,at:e.at,attempt:submissionsFor(room,e.personId,e.taskId,e.day).indexOf(e)+1,finding:e.finding,command:e.command,observed:e.observed,limitation:e.limitation});
 
 export function reviewQueue(room,locale='en'){
+ const pack=getDayPack(room.day);
+ const requiredTaskIds=new Set(pack?.steps?.length
+  ?pack.steps.filter(step=>step.level!=='stretch').map(step=>step.id)
+  :pack?.mission?.id?[pack.mission.id]:[]);
  return {
   day:room.day,
   queue:awaitingReview(room).map(e=>queueItem(room,e,locale)),
-  members:room.members.map(m=>({id:m.id,name:m.name,tasks:taskTrail(room,m.id,room.day,locale).map(({id,title,status})=>({id,title,status}))}))
+  members:room.members.map(m=>({id:m.id,name:m.name,tasks:taskTrail(room,m.id,room.day,locale).map(({id,title,status,submissions})=>({
+   id,title,status,required:requiredTaskIds.has(id),latestEvidenceId:submissions.at(-1)?.evidenceId||null
+  }))}))
  };
 }
 

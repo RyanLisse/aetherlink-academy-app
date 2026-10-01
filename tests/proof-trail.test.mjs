@@ -74,7 +74,11 @@ test('task → submit → changes requested → resubmit → approved, visible t
  const first=await submit(learner.token,'t-1','c1-setup');
  assert.equal(first.statusCode,200);
  assert.equal(first.body.taskId,'c1-setup');
- assert.equal((await tasks(learner.token)).body.tasks[0].status,'submitted');
+ const submittedTask=(await tasks(learner.token)).body.tasks[0];
+ assert.equal(submittedTask.status,'submitted');
+ const submittedEvidence=instance.store.auth(learner.token).r.evidence.find(e=>e.id===first.body.id);
+ for(const field of ['finding','command','observed','limitation'])assert.equal(submittedTask.submissions[0][field],submittedEvidence[field]);
+ assert.deepEqual((await invoke(instance.app,'/game/day-route',{cookies:as(learner.token)})).body.days[0].tasks,{total:5,approved:0,awaiting:1,changesRequested:0});
  assert.equal((await tasks(ada.token)).body.tasks[0].status,'open','another participant sees only their own trail');
 
  const again=await submit(learner.token,'t-2','c1-setup');
@@ -85,6 +89,8 @@ test('task → submit → changes requested → resubmit → approved, visible t
  assert.equal(waiting.statusCode,200);
  assert.deepEqual(waiting.body.queue.map(({name,taskId,taskTitle,attempt,day})=>({name,taskId,taskTitle,attempt,day})),[{name:'Bo',taskId:'c1-setup',taskTitle:'Set up the practice repository',attempt:1,day:1}]);
  assert.deepEqual(waiting.body.members.map(m=>[m.name,m.tasks[0].status]),[['Ada','open'],['Bo','submitted'],['Cy','open']]);
+ assert.deepEqual(waiting.body.members.map(m=>[m.name,m.tasks[0].required,m.tasks[0].latestEvidenceId]),[['Ada',true,null],['Bo',true,first.body.id],['Cy',true,null]]);
+ assert.ok(waiting.body.members.every(member=>member.tasks.every(task=>!Object.hasOwn(task,'finding'))),'review queue member summaries do not expose submission finding text');
 
  const self=await review(as(learner.token),first.body.id,'accepted','Mijn eigen werk','r-self');
  assert.equal(self.statusCode,403);
@@ -97,6 +103,7 @@ test('task → submit → changes requested → resubmit → approved, visible t
  const afterChanges=(await tasks(learner.token)).body.tasks[0];
  assert.equal(afterChanges.status,'changes_requested');
  assert.equal(afterChanges.submissions[0].review.note,'Voeg de letterlijke foutmelding toe.');
+ assert.deepEqual((await invoke(instance.app,'/game/day-route',{cookies:as(learner.token)})).body.days[0].tasks,{total:5,approved:0,awaiting:0,changesRequested:1});
  assert.equal((await queue(facilitator)).body.queue.length,0);
 
  const twice=await review(facilitator,first.body.id,'accepted','Toch goed','r-2');
@@ -109,8 +116,11 @@ test('task → submit → changes requested → resubmit → approved, visible t
  assert.equal(approved.statusCode,200);
  const final=(await tasks(learner.token)).body.tasks[0];
  assert.equal(final.status,'approved');
+ assert.deepEqual((await invoke(instance.app,'/game/day-route',{cookies:as(learner.token)})).body.days[0].tasks,{total:5,approved:1,awaiting:0,changesRequested:0});
  assert.deepEqual(final.submissions.map(s=>[s.status,s.review.note]),[['needs-work','Voeg de letterlijke foutmelding toe.'],['accepted','Reproduceerbaar.']]);
- assert.deepEqual((await queue(facilitator)).body.members.map(m=>[m.name,m.tasks[0].status]),[['Ada','open'],['Bo','approved'],['Cy','open']]);
+ const finalQueue=await queue(facilitator);
+ assert.deepEqual(finalQueue.body.members.map(m=>[m.name,m.tasks[0].status]),[['Ada','open'],['Bo','approved'],['Cy','open']]);
+ assert.equal(finalQueue.body.members.find(m=>m.name==='Bo').tasks[0].latestEvidenceId,second.body.id);
  assert.equal((await submit(learner.token,'t-4','c1-setup')).statusCode,409);
 
  const overview=await invoke(instance.app,'/game/facilitator/overview',{body:{hostKey:'test-host'}});
@@ -196,6 +206,30 @@ test('untasked evidence keeps the peer review path; unknown task ids are rejecte
  assert.equal(unknown.body.error,'Unknown assignment for support day 1.');
  const overview=await invoke(instance.app,'/game/facilitator/overview',{body:{hostKey:'test-host'}});
  assert.equal(overview.body[0].awaitingReview,0);
+});
+
+test('evidence for a removed s05 task remains available to review and debrief',async()=>{
+ const {instance,host,learner,ada,facilitator,as,submit,review,queue,peerList}=fixture();
+ const room=instance.store.auth(learner.token).r;
+ room.day=12;
+ instance.store.save();
+ const sent=await submit(learner.token,'legacy-s05-1','s05-see');
+ assert.equal(sent.statusCode,200);
+ room.evidence.at(-1).taskId='s05-motto';
+
+ const facilitatorQueue=await queue(facilitator);
+ assert.deepEqual(facilitatorQueue.body.queue.map(item=>[item.evidenceId,item.taskTitle]),[[sent.body.id,'s05-motto']]);
+ const peerQueueResult=await peerList(as(ada.token));
+ assert.deepEqual(peerQueueResult.body.queue.map(item=>[item.evidenceId,item.taskTitle]),[[sent.body.id,'s05-motto']]);
+
+ const decided=await review(facilitator,sent.body.id,'accepted','The old evidence is still reviewable.','legacy-s05-review');
+ assert.equal(decided.statusCode,200);
+ assert.equal((await peerList(as(ada.token))).body.queue.length,0);
+ const debrief=await invoke(instance.app,'/game/debrief',{cookies:facilitator,method:'get'});
+ assert.equal(debrief.statusCode,200);
+ const participant=debrief.body.members.find(member=>member.name==='Bo');
+ assert.equal(participant.progress.evidenceCount,1);
+ assert.equal(participant.progress.reviewedCount,1);
 });
 
 test('MCP: get_mission lists own tasks and submit_evidence maps to a task',async()=>{

@@ -1,4 +1,5 @@
 import { dayProgress } from '../progress.mjs';
+import { taskTrail } from '../proof-trail.mjs';
 import { PARTICIPANT_FIXTURES } from '../../content/triage/grade.mjs';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -230,6 +231,11 @@ export function registerContentRoutes(app, deps) {
         days: listRouteDays(r.course).map((d) => {
           const pack = getDayPack(d.day);
           const projected = pack ? projectPackLocale(pack, locale) : d;
+          const tasks = p ? taskTrail(r, p.id, d.day, locale) : null;
+          const stepById = new Map((projected.steps || []).map((step) => [step.id, step]));
+          const requiredTasks = tasks?.filter((task) => stepById.get(task.id)?.level !== 'stretch') || [];
+          const approved = task =>
+            ['approved', 'auto_approved'].includes(task.status) || Boolean(task.autograde?.passed);
           const entryTitle = r.course?.days?.find(
             (entry) => entry.day === d.day,
           )?.title;
@@ -241,6 +247,28 @@ export function registerContentRoutes(app, deps) {
             released: released.includes(d.day),
             labsTotal: dayLabs(d.day, r).length,
             progress: dayProgress(r, p, d.day),
+            activities: {
+              lessonTitle: projected.lesson?.title || projected.lessonTitle || d.title,
+              missionTitle: projected.mission?.title || d.title,
+              taskCount: projected.steps?.length
+                ? projected.steps.filter((step) => step.level !== 'stretch').length
+                : tasks?.length || 0,
+              stretchCount: projected.steps?.filter((step) => step.level === 'stretch').length || 0,
+              quizCount: projected.quiz?.questions?.length || 0,
+            },
+            ...(p
+              ? {
+                  tasks: {
+                    total: requiredTasks.length,
+                    approved: requiredTasks.filter(approved).length,
+                    awaiting: requiredTasks.filter((task) => {
+                      const latest = task.submissions.at(-1);
+                      return !approved(task) && Boolean(latest && !latest.review);
+                    }).length,
+                    changesRequested: requiredTasks.filter((task) => task.status === 'changes_requested').length,
+                  },
+                }
+              : {}),
           };
         }),
       });

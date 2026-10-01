@@ -9,6 +9,7 @@ import {Chat} from './chat';
 import {AgentChatPanel} from './agent-chat';
 import {Naslag} from './naslag';
 import {Today} from './today';
+import {ActivityFrame} from './activity-frame';
 import {reportScreen,startScreenReporting} from './screen';
 import {I18nProvider,LanguageToggle,useT,useI18n} from './i18n';
 import {classroomEmbedUrl,CLASSROOM_SANDBOX,pinnedDeckIdForRoom,isClassroomNavKey,forwardClassroomNavKey} from './classroom';
@@ -54,10 +55,13 @@ function App(){
   const t=useT();
   const {locale}=useI18n();
   const {busy,setBusy,error,setError,action}=useAsyncAction({initialError:()=>initialLoginError(t)});
-  const [theme,setTheme]=useState(()=>localStorage.getItem('academy-theme')||'dark');
+  const [theme,setTheme]=useState(()=>localStorage.getItem('academy-theme')||'light');
   const [session,setSession]=useState(!!getToken());
   const [room,setRoom]=useState(null);
   const [view,setView]=useState('today');
+  const [lessonPage,setLessonPage]=useState('lesson');
+  const [lessonDay,setLessonDay]=useState(null);
+  const [lessonSteps,setLessonSteps]=useState(null);
   const [connected,setConnected]=useState(false);
   const [copied,setCopied]=useState(null);
   const [classroomOpen,setClassroomOpen]=useState(false);
@@ -68,6 +72,24 @@ function App(){
   const [accessFromUrl]=useState(()=>new URLSearchParams(location.hash.slice(1)).get('access'));
   const [participantAccess,setParticipantAccess]=useState(()=>accessFromUrl||getParticipantAccess());
   const copiedTimer=useRef(null);
+  const navigate=useCallback((next,{page='lesson',day}={})=>{
+    setView(next);
+    if(next==='lesson'){
+      setLessonPage(page);
+      setLessonDay(day??room?.day);
+    }
+  },[room?.day]);
+  const goActivity=useCallback((activity,day)=>{
+    if(activity==='course'){navigate('route');return;}
+    if(activity==='assignments'&&day===room?.day){navigate('solo');return;}
+    if(activity==='review'){navigate('review');return;}
+    navigate('lesson',{page:activity==='assignments'?'assignments':activity,day});
+  },[navigate,room?.day]);
+  useEffect(()=>{
+    if(room?.day){setLessonPage('lesson');setLessonDay(room.day);}
+  },[room?.day]);
+  useEffect(()=>{setLessonSteps(null);},[lessonDay,room?.day]);
+  useEffect(()=>{setLessonSteps(null);},[lessonDay,room?.day]);
   useEffect(()=>()=>clearTimeout(copiedTimer.current),[]);
   useEffect(()=>{document.documentElement.dataset.theme=theme;localStorage.setItem('academy-theme',theme);},[theme]);
   useEffect(()=>{if(!accessFromUrl)return;const url=new URL(location.href);url.hash='';history.replaceState(null,'',url.pathname+url.search);},[accessFromUrl]);
@@ -91,28 +113,85 @@ function App(){
   const roundStatus=room.running?t('room.practice'):room.remaining===0?t('room.timeUp'):t('room.paused');
   const modeLabel=({lesson:t('roster.mode.lesson'),solo:t('roster.mode.solo'),squad:t('roster.mode.squad'),review:t('roster.mode.review')})[room.mode]||room.mode;
   const contribution=facilitator?t('roster.contributionFacilitator'):t('roster.contributionParticipant');
-  const participantPrimary=[['today','nav.today',House],['lesson','nav.lesson',BookOpen],['squad','nav.squad',Users]];
-  const participantMore=[['route','nav.route',Compass],['solo','nav.solo',Target],['coach','nav.coach',Sparkles],['review','nav.review',ClipboardCheck],['debrief','nav.debrief',ClipboardCheck],['naslag','nav.naslag',Library],['decks','nav.decks',Presentation],...(agentChatAvailable&&!room.readOnly?[['agentChat','nav.agentChat',MessageSquare]]:[]),...(room.board?[['board','nav.board',Columns3]]:[]),...(room.me.cohortMemberId?[['certificate','nav.certificate',Award]]:[])];
+  const participantPrimary=[['today','nav.today',House],['route','nav.courseOverview',Compass],['lesson','nav.lesson',BookOpen],['squad','nav.squad',Users]];
+  const participantMore=[['solo','nav.solo',Target],['coach','nav.coach',Sparkles],['review','nav.review',ClipboardCheck],['debrief','nav.debrief',ClipboardCheck],['naslag','nav.naslag',Library],['decks','nav.decks',Presentation],...(agentChatAvailable&&!room.readOnly?[['agentChat','nav.agentChat',MessageSquare]]:[]),...(room.board?[['board','nav.board',Columns3]]:[]),...(room.me.cohortMemberId?[['certificate','nav.certificate',Award]]:[])];
   const participantSquadMode=view==='squad';
-  if(facilitator)return <FacilitatorWorkspace room={room} view={view} onNavigate={setView} connected={connected} error={error} control={control} busy={busy}
+  if(facilitator)return <FacilitatorWorkspace room={room} view={view} onNavigate={navigate} connected={connected} error={error} control={control} busy={busy}
     account={<>{localeToggle}{themeButton}<button type="button" onClick={leaveSession}><LogOut size={16}/>{t('account.leave')}</button></>}
     onPresent={()=>setClassroomOpen(true)}
-    controls={<FacilitatorControls room={room} control={control} busy={busy} connected={connected} onOpenClassroom={()=>setClassroomOpen(true)} onOpenBoard={()=>action(async()=>{setView('board');if(!room.board||room.board.status==='closed'){const board=await api('board',{action:'open'});if(board)setRoom(current=>({...current,board}));}})}/>}
+    controls={<FacilitatorControls room={room} control={control} busy={busy} connected={connected} onOpenClassroom={()=>setClassroomOpen(true)} onOpenBoard={()=>action(async()=>{navigate('board');if(!room.board||room.board.status==='closed'){const board=await api('board',{action:'open'});if(board)setRoom(current=>({...current,board}));}})}/>}
     classroom={classroomOpen?<ClassroomOverlay room={room} onClose={closeClassroom}/>:null}
-    renderContent={onContext=><>{view==='document'&&<Document room={room} action={action} busy={busy} onIntent={intentUrl=>setRoom(current=>({...current,intentUrl}))}/>}{view==='route'&&<Route room={room} onNavigate={setView}/>}{view==='lesson'&&<Lesson room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='solo'&&<Solo room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='coach'&&<Coach room={room} action={action}/>}{view==='naslag'&&<Naslag room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='review'&&<Review room={room} action={action} busy={busy}/>}{view==='decks'&&<Decks room={room} action={action} busy={busy} onRoom={setRoom} onContext={onContext}/>}{view==='apps'&&<AppsLauncher action={action} busy={busy} facilitator={facilitator} hostKey={''}/>}{view==='agentChat'&&agentChatAvailable&&!facilitator&&!room.readOnly&&<AgentChatPanel/>}{view==='debrief'&&facilitator&&<Debrief room={room} onOpenBoard={()=>action(async()=>{setView('board');if(!room.board||room.board.status==='closed'){const board=await api('board',{action:'open'});if(board)setRoom(current=>({...current,board}));}})}/>}{view==='debrief'&&!facilitator&&<section className="panel content-panel" data-testid="debrief-learner"><StatusState kind="empty" title={t('debrief.learnerTitle')}>{t('debrief.learnerHelp')}</StatusState></section>}{view==='course'&&facilitator&&<CourseComposer room={room} control={control} busy={busy}/>}{view==='board'&&<Board room={room} action={action} busy={busy} onBoard={board=>setRoom(current=>({...current,board}))}/>}{view==='certificate'&&!facilitator&&<MyCertificate room={room}/>}</>}/>;
+    renderContent={onContext=><>{view==='document'&&<Document room={room} action={action} busy={busy} onIntent={intentUrl=>setRoom(current=>({...current,intentUrl}))}/>}{view==='route'&&<Route room={room} onNavigate={navigate}/>}{view==='lesson'&&<Lesson room={room} action={action} busy={busy} day={lessonDay??room.day} page={lessonPage} onNavigate={navigate}/>}{view==='solo'&&<Solo room={room} action={action} busy={busy} onNavigate={navigate}/>}{view==='coach'&&<Coach room={room} action={action}/>}{view==='naslag'&&<Naslag room={room} action={action} busy={busy} onNavigate={navigate}/>}{view==='review'&&<Review room={room} action={action} busy={busy}/>}{view==='decks'&&<Decks room={room} action={action} busy={busy} onRoom={setRoom} onContext={onContext}/>}{view==='apps'&&<AppsLauncher action={action} busy={busy} facilitator={facilitator} hostKey={''}/>}{view==='agentChat'&&agentChatAvailable&&!facilitator&&!room.readOnly&&<AgentChatPanel/>}{view==='debrief'&&facilitator&&<Debrief room={room} onOpenBoard={()=>action(async()=>{navigate('board');if(!room.board||room.board.status==='closed'){const board=await api('board',{action:'open'});if(board)setRoom(current=>({...current,board}));}})}/>}{view==='debrief'&&!facilitator&&<section className="panel content-panel" data-testid="debrief-learner"><StatusState kind="empty" title={t('debrief.learnerTitle')}>{t('debrief.learnerHelp')}</StatusState></section>}{view==='course'&&facilitator&&<CourseComposer room={room} control={control} busy={busy}/>}{view==='board'&&<Board room={room} action={action} busy={busy} onBoard={board=>setRoom(current=>({...current,board}))}/>}{view==='certificate'&&!facilitator&&<MyCertificate room={room}/>}</>}/>;
   return <div className={'app'+(!facilitator?' participant-app':'')} key={locale}>
     <header className="topbar"><Brand/><div className="account"><span className={'connection '+(connected?'online':'offline')} role="status" aria-live="polite"><i/>{connected?t('account.connected'):t('account.disconnected')}</span>{localeToggle}{themeButton}<span className="avatar small">{room.me.name.slice(0,2).toUpperCase()}</span><span>{room.me.name}</span><button className="icon-button" aria-label={t('account.leave')} onClick={leaveSession}><LogOut size={17}/></button></div></header>
-    <aside className={'sidebar'+(!facilitator?' participant-sidebar':'')}><nav aria-label={t('nav.main')} className="sidebar-nav">{!facilitator?<><div className="participant-primary-nav" role="group" aria-label={t('nav.main')} data-testid="participant-primary-nav">{participantPrimary.map(([id,labelKey,Icon])=><button key={id} type="button" data-nav={id} aria-current={view===id?'page':undefined} className={view===id?'selected':''} onClick={()=>setView(id)}><Icon size={17}/>{t(labelKey)}</button>)}</div><div className="participant-more"><button type="button" className={moreOpen?'selected':''} aria-expanded={moreOpen} aria-controls="participant-more-menu" onClick={()=>setMoreOpen(open=>!open)}><MoreHorizontal size={17}/>{t('participant.more')}</button><div id="participant-more-menu" className="participant-more-menu" role="group" aria-label={t('participant.more')} hidden={!moreOpen}>{participantMore.map(([id,labelKey,Icon])=><button key={id} type="button" data-nav={id} aria-current={view===id?'page':undefined} className={view===id?'selected':''} onClick={()=>{setView(id);setMoreOpen(false);}}><Icon size={16}/>{t(labelKey)}</button>)}</div></div></>:<><div className="nav-primary" role="group" aria-label={t('nav.teach')} data-testid="nav-primary">{teachNavIds.map(([id,labelKey,Icon])=><button key={id} type="button" data-nav={id} data-nav-tier="teach" className={view===id?'selected':''} onClick={()=>setView(id)}><Icon size={19}/>{t(labelKey)}</button>)}</div><div className="nav-tools" role="group" aria-label={t('nav.tools')} data-testid="nav-tools"><p className="nav-tools-label"><Wrench size={12} aria-hidden="true"/>{t('nav.tools')}</p>{toolNavIds.map(([id,labelKey,Icon])=><button key={id} type="button" data-nav={id} data-nav-tier="tools" className={view===id?'selected':''} onClick={()=>setView(id)}><Icon size={16}/>{t(labelKey)}</button>)}{facilitator&&<button type="button" data-nav="apps" data-nav-tier="tools" data-testid="nav-tools-apps" className={view==='apps'?'selected':''} onClick={()=>setView('apps')}><LayoutGrid size={16}/>{t('nav.apps')}</button>}{(facilitator||room.board)&&<button type="button" data-nav="board" data-nav-tier="tools" className={view==='board'?'selected':''} onClick={()=>setView('board')}><Columns3 size={16}/>{t('nav.board')}</button>}{facilitator&&<button type="button" data-nav="course" data-nav-tier="tools" className={view==='course'?'selected':''} onClick={()=>setView('course')}><ListOrdered size={16}/>{t('nav.course')}</button>}{agentChatAvailable&&!facilitator&&!room.readOnly&&<button type="button" data-nav="agentChat" data-nav-tier="tools" className={view==='agentChat'?'selected':''} onClick={()=>setView('agentChat')}><MessageSquare size={16}/>{t('nav.agentChat')}</button>}{!facilitator&&room.me.cohortMemberId&&<button type="button" data-nav="certificate" data-nav-tier="tools" className={view==='certificate'?'selected':''} onClick={()=>setView('certificate')}><Award size={16}/>{t('nav.certificate')}</button>}</div></>}</nav><div className="sidebar-bottom"><span>{t('nav.tagline1')}</span><span>{t('nav.tagline2')}</span><strong>{t('nav.tagline3')}</strong><hr/><small>{t('nav.schedule')}</small></div></aside>
+    <aside className={'sidebar'+(!facilitator?' participant-sidebar':'')}>
+      <nav aria-label={t('nav.main')} className="sidebar-nav">
+        {!facilitator?<>
+          <div className="participant-primary-nav" role="group" aria-label={t('nav.main')} data-testid="participant-primary-nav">
+            {participantPrimary.map(([id,labelKey,Icon])=><button key={id} type="button" data-nav={id} aria-current={view===id?'page':undefined} className={view===id?'selected':''} onClick={()=>navigate(id)}><Icon size={17}/>{t(labelKey)}</button>)}
+          </div>
+          <div className="participant-more">
+            <button type="button" className={moreOpen?'selected':''} aria-expanded={moreOpen} aria-controls="participant-more-menu" onClick={()=>setMoreOpen(open=>!open)}><MoreHorizontal size={17}/>{t('participant.more')}</button>
+            <div id="participant-more-menu" className="participant-more-menu" role="group" aria-label={t('participant.more')} hidden={!moreOpen}>
+              {participantMore.map(([id,labelKey,Icon])=><button key={id} type="button" data-nav={id} aria-current={view===id?'page':undefined} className={view===id?'selected':''} onClick={()=>{navigate(id);setMoreOpen(false);}}><Icon size={16}/>{t(labelKey)}</button>)}
+            </div>
+          </div>
+        </>:<>
+          <div className="nav-primary" role="group" aria-label={t('nav.teach')} data-testid="nav-primary">
+            {teachNavIds.map(([id,labelKey,Icon])=><button key={id} type="button" data-nav={id} data-nav-tier="teach" className={view===id?'selected':''} onClick={()=>navigate(id)}><Icon size={19}/>{t(labelKey)}</button>)}
+          </div>
+          <div className="nav-tools" role="group" aria-label={t('nav.tools')} data-testid="nav-tools">
+            <p className="nav-tools-label"><Wrench size={12} aria-hidden="true"/>{t('nav.tools')}</p>
+            {toolNavIds.map(([id,labelKey,Icon])=><button key={id} type="button" data-nav={id} data-nav-tier="tools" className={view===id?'selected':''} onClick={()=>navigate(id)}><Icon size={16}/>{t(labelKey)}</button>)}
+            {facilitator&&<button type="button" data-nav="apps" data-nav-tier="tools" data-testid="nav-tools-apps" className={view==='apps'?'selected':''} onClick={()=>navigate('apps')}><LayoutGrid size={16}/>{t('nav.apps')}</button>}
+            {(facilitator||room.board)&&<button type="button" data-nav="board" data-nav-tier="tools" className={view==='board'?'selected':''} onClick={()=>navigate('board')}><Columns3 size={16}/>{t('nav.board')}</button>}
+            {facilitator&&<button type="button" data-nav="course" data-nav-tier="tools" className={view==='course'?'selected':''} onClick={()=>navigate('course')}><ListOrdered size={16}/>{t('nav.course')}</button>}
+            {agentChatAvailable&&!facilitator&&!room.readOnly&&<button type="button" data-nav="agentChat" data-nav-tier="tools" className={view==='agentChat'?'selected':''} onClick={()=>navigate('agentChat')}><MessageSquare size={16}/>{t('nav.agentChat')}</button>}
+            {!facilitator&&room.me.cohortMemberId&&<button type="button" data-nav="certificate" data-nav-tier="tools" className={view==='certificate'?'selected':''} onClick={()=>navigate('certificate')}><Award size={16}/>{t('nav.certificate')}</button>}
+          </div>
+        </>}
+      </nav>
+      <div className="sidebar-bottom"><span>{t('nav.tagline1')}</span><span>{t('nav.tagline2')}</span><strong>{t('nav.tagline3')}</strong><hr/><small>{t('nav.schedule')}</small></div>
+    </aside>
     <main>
       <div className={'room-heading'+(!facilitator?' participant-room-heading':'')}><div><p className="muted" data-testid="room-session-label">{t('room.sessionLabel')} · {t('room.supportDay',{day:coursePosition(room)})}{(facilitator||participantSquadMode)&&` · ${dayLabel}`}</p><h1>{room.name}</h1>{room.wave?.name&&<p className="wave-cohort-badge" data-testid="wave-cohort-badge">{t('room.waveOf',{name:room.wave.name})}</p>}</div>{(!facilitator)&&<button type="button" className="participant-squad-toggle" aria-expanded={squadHelpOpen} onClick={()=>setSquadHelpOpen(open=>!open)}><Users size={16}/>{t('participant.squadHelp')}</button>}{(facilitator||participantSquadMode)&&<div className="round"><span>{t('room.round',{round:room.round})} · {roundStatus}</span><strong><Clock size={22}/><Timer room={room}/></strong></div>}</div>
       {(facilitator||participantSquadMode)&&<div className="sdlc" aria-label={t('room.sdlc')}>{phases.map((p,i)=><React.Fragment key={p}><div className={p===room.phase?'active':''}><span>{p}</span></div>{i<5&&<span className="phase-line"/>}</React.Fragment>)}</div>}
       {!connected&&<StatusState kind="offline" title={t('status.offline')} action={<button type="button" onClick={()=>location.reload()}>{t('status.reload')}</button>}>{t('status.offlineHelp')}</StatusState>}
       {room.readOnly&&<StatusState kind="readonly" title={t('readOnly.title')} action={room.intentUrl?<a className="button" href={room.intentUrl} target="_blank" rel="noopener noreferrer"><ExternalLink size={15} aria-hidden="true"/>{t('doc.open')}</a>:null}>{t('readOnly.help')}</StatusState>}
       {error&&<div className="error" role="alert">{error}<button onClick={()=>setError('')} aria-label={t('common.closeAlert')}>×</button></div>}
-      {facilitator&&<FacilitatorControls room={room} control={control} busy={busy} connected={connected} onOpenClassroom={()=>setClassroomOpen(true)} onOpenBoard={()=>action(async()=>{setView('board');if(!room.board||room.board.status==='closed'){const board=await api('board',{action:'open'});if(board)setRoom(current=>({...current,board}));}})}/>}
+      {facilitator&&<FacilitatorControls room={room} control={control} busy={busy} connected={connected} onOpenClassroom={()=>setClassroomOpen(true)} onOpenBoard={()=>action(async()=>{navigate('board');if(!room.board||room.board.status==='closed'){const board=await api('board',{action:'open'});if(board)setRoom(current=>({...current,board}));}})}/>}
       {facilitator&&classroomOpen&&<ClassroomOverlay room={room} onClose={closeClassroom}/>}
       <div className={'workspace'+(!facilitator&&squadHelpOpen?' participant-workspace-open':'')}>
-        <section className="primary">{view==='today'&&<Today room={room} onNavigate={setView}/>}{view==='squad'&&<Document room={room} action={action} busy={busy} onIntent={intentUrl=>setRoom(current=>({...current,intentUrl}))}/>}{view==='route'&&<Route room={room} onNavigate={setView}/>}{view==='lesson'&&<Lesson room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='solo'&&<Solo room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='coach'&&<Coach room={room} action={action}/>}{view==='naslag'&&<Naslag room={room} action={action} busy={busy} onNavigate={setView}/>}{view==='review'&&<Review room={room} action={action} busy={busy}/>}{view==='decks'&&<Decks room={room} action={action} busy={busy} onRoom={setRoom}/>}{view==='apps'&&<AppsLauncher action={action} busy={busy} facilitator={facilitator} hostKey={''}/>}{view==='agentChat'&&agentChatAvailable&&!facilitator&&!room.readOnly&&<AgentChatPanel/>}{view==='debrief'&&facilitator&&<Debrief room={room} onOpenBoard={()=>action(async()=>{setView('board');if(!room.board||room.board.status==='closed'){const board=await api('board',{action:'open'});if(board)setRoom(current=>({...current,board}));}})}/>}{view==='debrief'&&!facilitator&&<section className="panel content-panel" data-testid="debrief-learner"><StatusState kind="empty" title={t('debrief.learnerTitle')}>{t('debrief.learnerHelp')}</StatusState></section>}{view==='course'&&facilitator&&<CourseComposer room={room} control={control} busy={busy}/>}{view==='board'&&<Board room={room} action={action} busy={busy} onBoard={board=>setRoom(current=>({...current,board}))}/>}{view==='certificate'&&!facilitator&&<MyCertificate room={room}/>}</section>
+        <section className="primary">
+          {view==='today'&&<Today room={room} onNavigate={navigate}/>}
+          {view==='squad'&&<Document room={room} action={action} busy={busy} onIntent={intentUrl=>setRoom(current=>({...current,intentUrl}))}/>}
+          {view==='route'&&<Route room={room} onNavigate={navigate}/>}
+          {view==='lesson'&&(participant
+            ?<ActivityFrame room={room} day={lessonDay??room.day} activity={lessonPage} onGo={goActivity} steps={lessonSteps}>
+              <Lesson room={room} action={action} busy={busy} day={lessonDay??room.day} page={lessonPage} onNavigate={navigate} onStepsChange={setLessonSteps} framed/>
+            </ActivityFrame>
+            :<Lesson room={room} action={action} busy={busy} day={lessonDay??room.day} page={lessonPage} onNavigate={navigate}/>)}
+          {view==='solo'&&(participant
+            ?<ActivityFrame room={room} day={room.day} activity="assignments" onGo={goActivity}>
+              <Solo room={room} action={action} busy={busy} onNavigate={navigate}/>
+            </ActivityFrame>
+            :<Solo room={room} action={action} busy={busy} onNavigate={navigate}/>)}
+          {view==='coach'&&<Coach room={room} action={action}/>}
+          {view==='naslag'&&<Naslag room={room} action={action} busy={busy} onNavigate={navigate}/>}
+          {view==='review'&&(participant
+            ?<ActivityFrame room={room} day={room.day} activity="review" onGo={goActivity}>
+              <Review room={room} action={action} busy={busy}/>
+            </ActivityFrame>
+            :<Review room={room} action={action} busy={busy}/>)}
+          {view==='decks'&&<Decks room={room} action={action} busy={busy} onRoom={setRoom}/>}
+          {view==='apps'&&<AppsLauncher action={action} busy={busy} facilitator={facilitator} hostKey={''}/>}
+          {view==='agentChat'&&agentChatAvailable&&!facilitator&&!room.readOnly&&<AgentChatPanel/>}
+          {view==='debrief'&&facilitator&&<Debrief room={room} onOpenBoard={()=>action(async()=>{navigate('board');if(!room.board||room.board.status==='closed'){const board=await api('board',{action:'open'});if(board)setRoom(current=>({...current,board}));}})}/>}
+          {view==='debrief'&&!facilitator&&<section className="panel content-panel" data-testid="debrief-learner"><StatusState kind="empty" title={t('debrief.learnerTitle')}>{t('debrief.learnerHelp')}</StatusState></section>}
+          {view==='course'&&facilitator&&<CourseComposer room={room} control={control} busy={busy}/>}
+          {view==='board'&&<Board room={room} action={action} busy={busy} onBoard={board=>setRoom(current=>({...current,board}))}/>}
+          {view==='certificate'&&!facilitator&&<MyCertificate room={room}/>}
+        </section>
         {(facilitator||squadHelpOpen)&&<aside className="right-rail" id={!facilitator?'participant-squad-help':undefined} aria-label={!facilitator?t('participant.squadHelp'):undefined}>
           <section className="panel roster">
             <div className="panel-heading"><h2>{t('roster.title')} <span>({room.members.length}/{t('roster.softMax')})</span></h2><Users size={17}/></div>
@@ -125,8 +204,8 @@ function App(){
             {room.members.length<4&&<small className="muted">{t('roster.minMembers')}</small>}
           </section>
           <section className="panel contribution"><FileText size={20}/><h2>{t('roster.contribution')}</h2><p>{contribution}</p><small className="muted">{t('roster.modeLabel',{mode:modeLabel})}</small></section>
-          <button type="button" className="gradient coach-cta" onClick={()=>setView('coach')}><Sparkles size={18}/>{t('roster.askCoach')}<ArrowRight size={17}/></button>
-          {(facilitator||room.chat)&&<Chat room={room} onNavigate={setView}/>}
+          <button type="button" className="gradient coach-cta" onClick={()=>navigate('coach')}><Sparkles size={18}/>{t('roster.askCoach')}<ArrowRight size={17}/></button>
+          {(facilitator||room.chat)&&<Chat room={room} onNavigate={navigate}/>}
           {!facilitator&&<button type="button" className="help-button" onClick={()=>action(()=>api('help',{}))}><HelpCircle size={16}/>{room.me.help?t('roster.helpOn'):t('roster.helpOff')}</button>}
         </aside>}
       </div>

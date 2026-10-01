@@ -48,6 +48,15 @@ test('day 1 lesson pack and route days stay available',async()=>{
  assert.equal(route.body.days[0].hasLesson,true);
  assert.equal(route.body.days[0].blurb,enPack(1).blurb);
  assert.equal(route.body.days[2].hasLesson,true);
+ assert.deepEqual(route.body.days[0].activities,{
+  lessonTitle:enPack(1).lesson.title,
+  missionTitle:enPack(1).mission.title,
+  taskCount:enPack(1).steps.filter(step=>step.level!=='stretch').length,
+  stretchCount:enPack(1).steps.filter(step=>step.level==='stretch').length,
+  quizCount:enPack(1).quiz.questions.length,
+ });
+ assert.deepEqual(route.body.days[0].tasks,{total:5,approved:0,awaiting:0,changesRequested:0});
+ assert.equal(route.body.days[0].progress.lessonDone,false);
 });
 
 test('facilitator day control switches lesson pack and highlights day 2 on route',async()=>{
@@ -68,6 +77,8 @@ test('facilitator day control switches lesson pack and highlights day 2 on route
  assert.equal(route.body.days[1].title,enPack(2).title);
  assert.equal(route.body.days[1].blurb,enPack(2).blurb);
  assert.equal(route.body.days[1].hasLesson,true);
+ assert.equal(route.body.days[1].activities.lessonTitle,enPack(2).lesson.title);
+ assert.equal(route.body.days[1].activities.quizCount,3);
 });
 
 test('day three exposes the n8n L1–L3 ticket pack and keeps route cards consistent',async()=>{

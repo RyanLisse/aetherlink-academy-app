@@ -8,6 +8,8 @@ import {JSDOM} from 'jsdom';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const en = JSON.parse(readFileSync(join(root, 'src/i18n/en.json'), 'utf8'));
 const nl = JSON.parse(readFileSync(join(root, 'src/i18n/nl.json'), 'utf8'));
+const packageEn = JSON.parse(readFileSync(join(root, 'packages/i18n/src/en.json'), 'utf8'));
+const packageNl = JSON.parse(readFileSync(join(root, 'packages/i18n/src/nl.json'), 'utf8'));
 
 const {
   DEFAULT_LOCALE,
@@ -67,6 +69,21 @@ test('missing keys fall back to English (never blank)', () => {
 test('interpolation works', () => {
   assert.equal(translate('en', 'room.supportDay', {day: 3}), 'Day 3');
   assert.equal(translate('nl', 'room.supportDay', {day: 3}), 'Dag 3');
+});
+
+test('Course, activity and assignment labels are localized in both catalogs', () => {
+  assert.deepEqual(packageEn, en);
+  assert.deepEqual(packageNl, nl);
+  assert.equal(translate('en', 'route.eyebrow'), 'Course');
+  assert.equal(translate('nl', 'route.eyebrow'), 'Cursus');
+  assert.equal(translate('en', 'activity.previousTo', {target: 'Lesson'}), 'Previous: Lesson');
+  assert.equal(translate('nl', 'activity.previousTo', {target: 'Les'}), 'Vorige: Les');
+  assert.equal(translate('en', 'activity.nextTo', {target: 'Quiz'}), 'Next: Quiz');
+  assert.equal(translate('nl', 'activity.nextTo', {target: 'Quiz'}), 'Volgende: Quiz');
+  assert.equal(translate('en', 'assignment.copy'), 'Copy');
+  assert.equal(translate('nl', 'assignment.copy'), 'Kopieer');
+  assert.equal(translate('en', 'assignment.copied'), 'Copied');
+  assert.equal(translate('nl', 'assignment.copied'), 'Gekopieerd');
 });
 
 test('html lang follows locale', () => {

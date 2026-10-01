@@ -184,8 +184,38 @@ export function registerLiveRoutes(app, deps) {
     fetchImpl,
     chatConfig,
     presence,
+    readableDays,
     wrap,
   } = deps;
+
+  app.post(
+    '/game/lesson-complete',
+    wrap(async (req, res) =>
+      res.json(
+        await store.withSession(token(req), 'browser', ({ r, s, p }) => {
+          if (!p) fail(403, 'Only participants mark lessons complete.');
+          if (typeof req.body.done !== 'boolean')
+            fail(400, 'Lesson completion requires a boolean done value.');
+          const day = req.body.day === undefined ? r.day : Number(req.body.day);
+          if (!Number.isInteger(day) || !getDayPack(day))
+            fail(400, 'Invalid lesson day.');
+          if (!readableDays({ r, s }).includes(day))
+            fail(403, `Day ${day} has not been released yet.`);
+          const key = String(day);
+          p.progressByDay ??= {};
+          const progress = { ...(p.progressByDay[key] || {}) };
+          if (req.body.done) progress.lessonDoneAt = new Date().toISOString();
+          else delete progress.lessonDoneAt;
+          p.progressByDay[key] = progress;
+          return {
+            day,
+            done: Boolean(progress.lessonDoneAt),
+            lessonDoneAt: progress.lessonDoneAt || null,
+          };
+        }),
+      ),
+    ),
+  );
 
   app.post(
     '/game/reflection',

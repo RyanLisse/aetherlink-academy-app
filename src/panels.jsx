@@ -1,5 +1,5 @@
-import React,{useCallback,useEffect,useState,useRef} from 'react';
-import {Search,Sparkles,ArrowRight,BookOpen,FileText,Check,Copy,Download,Target,Columns3,ClipboardList} from 'lucide-react';
+import React,{useCallback,useEffect,useState,useRef,useMemo} from 'react';
+import {Search,Sparkles,ArrowRight,BookOpen,FileText,Check,Copy,Download,Target,Columns3,ClipboardList,ClipboardCheck,Circle,CircleDot,ChevronDown,ChevronRight,Lock,Lightbulb,Workflow,Wrench,Layers,ZoomIn,X} from 'lucide-react';
 import {api} from './api';
 import {useT,useI18n} from './i18n';
 import {LabEmbed,LabSlotEmpty} from './LabEmbed';
@@ -7,6 +7,7 @@ import {ConceptSimSlot} from './ConceptSim';
 import {StatusState,RemoteStatus,useRemote} from './status';
 import {ClassroomExercises,PairedCodeExample} from './exercises';
 import {OfficialDocs} from './official-docs';
+import './learning-activities.css';
 // AET-120: Coach Connect status chrome runs on shadcn/ui primitives; the testids,
 // data-status contract and verified-after-tool-call behaviour (AET-126) are unchanged.
 import {Alert,AlertDescription,AlertTitle} from '@/components/ui/alert';
@@ -177,38 +178,173 @@ function QuickCheck({room,action,busy,practice,shownDay,chosen,questions,quizErr
   </section>;
 }
 
-export function Lesson({room,action,busy,day,onNavigate}){
+const CONCEPT_ICONS=[Lightbulb,Workflow,Wrench,Layers];
+
+function conceptTextParts(text){
+  const match=String(text||'').match(/^([\s\S]*?[.!?])(?:\s+([\s\S]*))?$/);
+  return match?{keyLine:match[1],remainder:match[2]||''}:{keyLine:text,remainder:''};
+}
+
+function DiagramGallery({diagrams,t}){
+  const [active,setActive]=useState(null);
+  const dialogRef=useRef(null);
+  const triggerRef=useRef(null);
+  useEffect(()=>{
+    if(active&&dialogRef.current&&!dialogRef.current.open)dialogRef.current.showModal();
+  },[active]);
+  const restoreFocus=()=>{
+    triggerRef.current?.focus();
+    setActive(null);
+  };
+  return <>
+    <section className="lesson-diagrams" aria-label={t('lesson.diagrams')} data-testid="lesson-diagrams">
+      {diagrams.map(diagram=><figure key={diagram.src} className="lesson-diagram">
+        <button type="button" className="lesson-diagram-trigger" aria-label={t('lessonPages.zoomDiagram',{title:diagram.title})}
+          onClick={event=>{triggerRef.current=event.currentTarget;setActive(diagram);}}>
+          <img src={diagram.src} alt={diagram.alt||diagram.title} loading="lazy"/>
+          <span className="lesson-diagram-zoom-hint"><ZoomIn size={16} aria-hidden="true"/>{t('lessonPages.zoomHint')}</span>
+        </button>
+        <figcaption>{diagram.title}</figcaption>
+      </figure>)}
+    </section>
+    <dialog ref={dialogRef} className="lesson-diagram-lightbox" aria-labelledby="lesson-diagram-lightbox-title" onClose={restoreFocus}>
+      {active&&<div className="lesson-diagram-lightbox-content">
+        <header><h2 id="lesson-diagram-lightbox-title">{t('lessonPages.diagramDialogTitle')}</h2>
+          <button type="button" aria-label={t('lessonPages.closeDiagram')} onClick={()=>dialogRef.current?.close()}><X size={20} aria-hidden="true"/></button>
+        </header>
+        <figure><img src={active.src} alt={active.alt||active.title}/><figcaption>{active.title}</figcaption></figure>
+      </div>}
+    </dialog>
+  </>;
+}
+
+const EMPTY_LESSON={};
+
+export function Lesson({room,action,busy,day,page:controlledPage,onNavigate,onStepsChange,framed=false}){
   const t=useT();
   const {locale}=useI18n();
   const [pack,setPack]=useState(null);
   const [error,setError]=useState('');
-  const [page,setPage]=useState('lesson');
-  const chosen=day===undefined?{}:{day};
+  const [stepIndex,setStepIndex]=useState(0);
+  const [visitedSteps,setVisitedSteps]=useState(()=>new Set([0]));
   const shownDay=day??room.day,practice=shownDay!==room.day;
-  useEffect(()=>{setPage('lesson');},[room.day,day]);
+  const [internalPage,setInternalPage]=useState('lesson');
+  const page=controlledPage??internalPage;
+  const updatePage=next=>{
+    if(controlledPage!==undefined&&onNavigate)onNavigate('lesson',{page:next,day:shownDay});
+    else setInternalPage(next);
+  };
+  useEffect(()=>{if(controlledPage===undefined)setInternalPage('lesson');},[room.day,day,controlledPage]);
+  useEffect(()=>{setStepIndex(0);setVisitedSteps(new Set([0]));},[shownDay]);
   useEffect(()=>{let active=true;setPack(null);setError('');const q=new URLSearchParams({locale});if(day!==undefined)q.set('day',String(day));api(`day-pack?${q}`).then(d=>{if(active)setPack(d);}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[room.day,day,locale]);
-  if(error)return <section className="panel content-panel" data-testid="course-pages" data-course-day={shownDay}><nav className="course-page-nav" aria-label={t('coursePages.nav')}>{['lesson','assignments','quiz'].map(id=><button key={id} type="button" aria-current={page===id?'page':undefined} onClick={()=>setPage(id)}>{id==='lesson'?<BookOpen size={17}/>:id==='assignments'?<ClipboardList size={17}/>:<Check size={17}/>}<span>{t(`coursePages.${id}`)}</span></button>)}</nav><p className="cyan">{t('lesson.eyebrow')}</p><h2>{t('lesson.noneTitle')}</h2><StatusState kind="error" title={t('status.errorTitle')}>{error}<p>{t('lesson.noneHint')}</p></StatusState></section>;
-  if(!pack)return <section className="panel content-panel" data-testid="course-pages" data-course-day={shownDay}><nav className="course-page-nav" aria-label={t('coursePages.nav')}>{['lesson','assignments','quiz'].map(id=><button key={id} type="button" aria-current={page===id?'page':undefined} onClick={()=>setPage(id)}>{id==='lesson'?<BookOpen size={17}/>:id==='assignments'?<ClipboardList size={17}/>:<Check size={17}/>}<span>{t(`coursePages.${id}`)}</span></button>)}</nav><StatusState kind="loading" title={t('lesson.loading')}/></section>;
-  const lesson=pack.lesson,questions=pack.quiz?.questions;
-  const lessonPage=<>
-    <p className="cyan">{lesson.kicker}</p><h2>{lesson.title}</h2>{lesson.motto&&<p className="lesson-motto" data-testid="lesson-motto"><em>{lesson.motto}</em></p>}<p className="lede">{lesson.lede}</p>
-    {lesson.narrative?.length>0&&<div className="lesson-narrative" data-testid="lesson-narrative">{lesson.narrative.map((para,i)=><p key={i}>{para}</p>)}</div>}
-    <p className="cyan" data-testid="path-pedagogy-label">{t('path.pedagogyLabel')}</p>
-    <div className="learning-loop" data-testid="path-pedagogy">{lesson.loop.map((s,i)=><div key={s.label}><span>0{i+1}</span><strong>{s.label}</strong><small>{s.prompt}</small></div>)}</div>
-    {pack.steps?.length>0&&<div className="path-assignments-link" data-testid="path-assignments-crosslink"><p className="muted">{t('path.assignmentsCrosslink')}</p><button type="button" className="text-button" onClick={()=>setPage('assignments')}>{t('path.openAssignments')}</button><ProgressivePath steps={pack.steps} compact/></div>}
-    <div className="worked"><BookOpen size={20}/><div><h3>{t('lesson.explained')}</h3><p>{lesson.workedExample}</p></div></div>
-    {pack.codeExamples?.length>0&&<div className="lesson-code-examples" data-testid="lesson-code-examples">{pack.codeExamples.map(ex=><PairedCodeExample key={ex.id} id={ex.id} title={ex.title} examples={{typescript:ex.typescript,python:ex.python}}/>)}</div>}
-    {pack.diagrams?.length>0&&<section className="lesson-diagrams" aria-label={t('lesson.diagrams')} data-testid="lesson-diagrams">{pack.diagrams.map(d=><figure key={d.src} className="lesson-diagram"><img src={d.src} alt={d.alt||d.title} loading="lazy"/><figcaption>{d.title}</figcaption></figure>)}</section>}
-    {pack.materials?.length>0&&<><h3>{t('lesson.materials')}</h3><ul className="materials">{pack.materials.map(m=><li key={m.label}>{m.href?<a href={m.href} target={m.href.startsWith('http')?'_blank':undefined} rel="noreferrer">{m.label}</a>:<span>{m.label}: <strong>OPEN</strong> · {m.open}</span>}{m.note&&<small className="muted"> · {m.note}</small>}</li>)}</ul></>}
-    {pack.sims?.length>0&&<ConceptSimSlot sims={pack.sims}/>}
-    {pack.attribution&&<p className="muted lesson-attribution" data-testid="lesson-attribution">{pack.attribution}</p>}
-    {pack.labs?.length>0?<section className="lab-slot" aria-label={t('lab.heading')}><h3>{t('lab.heading')}</h3>{pack.labs.map(lab=><LabEmbed key={lab.id} lab={lab} preview={room.me.role==='Facilitator'} saved={room.me.progressByDay?.[String(shownDay)]?.labs?.[lab.id]}/>)}</section>:(room.me.role==='Facilitator'||room.lab)?<LabSlotEmpty facilitator={room.me.role==='Facilitator'}/>:null}
+  const lesson=pack?.lesson||EMPTY_LESSON,questions=pack?.quiz?.questions;
+  const chosen=practice?{day:shownDay}:{};
+  const lessonPages=useMemo(()=>{
+    if(!pack)return [];
+    const diagrams=pack.diagrams||[],steps=pack.steps||[],sims=pack.sims||[],labs=pack.labs||[],examples=pack.codeExamples||[];
+    const definitions=[
+      {id:'overview',label:t('lessonPages.overview'),visible:Boolean(lesson.kicker||lesson.title||lesson.motto||lesson.lede||diagrams[0]||lesson.loop?.length||steps.length)},
+      {id:'idea',label:t('lessonPages.idea'),visible:Boolean(lesson.narrative?.length||diagrams.length>1||lesson.workedExample)},
+      {id:'sim',label:t('lessonPages.tryIt'),visible:Boolean(sims.length||labs.length||room.me.role==='Facilitator'||room.lab)},
+      {id:'code',label:t('lessonPages.code'),visible:examples.length>0},
+      {id:'sources',label:t('lessonPages.sources'),visible:true}
+    ];
+    return definitions.filter(item=>item.visible);
+  },[lesson,pack,t,room.me.role,room.lab]);
+  const currentStepIndex=Math.min(stepIndex,Math.max(0,lessonPages.length-1));
+  const stepLabels=useMemo(()=>lessonPages.map(item=>item.label),[lessonPages]);
+  const changeStep=useCallback(index=>{
+    setStepIndex(Math.max(0,Math.min(index,lessonPages.length-1)));
+    setVisitedSteps(current=>new Set(current).add(index));
+  },[lessonPages.length]);
+  const framedSteps=useMemo(()=>page==='lesson'&&lessonPages.length?{
+    index:currentStepIndex,count:lessonPages.length,labels:stepLabels,onChange:changeStep
+  }:null,[page,currentStepIndex,lessonPages.length,stepLabels,changeStep]);
+  useEffect(()=>{
+    if(framed&&onStepsChange)onStepsChange(framedSteps);
+  },[framed,framedSteps,onStepsChange]);
+  useEffect(()=>{
+    if(!framed||!onStepsChange)return;
+    return()=>onStepsChange(null);
+  },[framed,onStepsChange]);
+  const pageNav=!framed&&<nav className="course-page-nav" aria-label={t('coursePages.nav')}>{['lesson','assignments','quiz'].map(id=><button key={id} type="button" aria-current={page===id?'page':undefined} onClick={()=>updatePage(id)}>{id==='lesson'?<BookOpen size={17}/>:id==='assignments'?<ClipboardList size={17}/>:<Check size={17}/>}<span>{t(`coursePages.${id}`)}</span></button>)}</nav>;
+  if(error)return <section className="panel content-panel" data-testid="course-pages" data-course-day={shownDay}>{pageNav}<p className="cyan">{t('lesson.eyebrow')}</p><h2>{t('lesson.noneTitle')}</h2><StatusState kind="error" title={t('status.errorTitle')}>{error}<p>{t('lesson.noneHint')}</p></StatusState></section>;
+  if(!pack)return <section className="panel content-panel" data-testid="course-pages" data-course-day={shownDay}>{pageNav}<StatusState kind="loading" title={t('lesson.loading')}/></section>;
+  const currentStep=lessonPages[currentStepIndex];
+  const lessonPage=page==='lesson'&&currentStep&&<>
+    <nav className="lesson-stepper-scroll" aria-label={t('lessonPages.stepper')} data-testid="lesson-stepper">
+      {lessonPages.map((item,index)=>{
+        const active=index===currentStepIndex,visited=visitedSteps.has(index)&&!active;
+        return <button key={item.id} type="button" aria-label={item.label} aria-current={active?'step':undefined}
+          onClick={()=>changeStep(index)}>
+          <span className="lesson-step-number">{index+1}</span>
+          {visited&&<Check className="lesson-step-check" size={14} aria-hidden="true"/>}
+          <span className="lesson-step-label">{item.label}</span>
+        </button>;
+      })}
+    </nav>
+    <div className="lesson-page" data-testid="lesson-page" data-lesson-page={currentStep.id}>
+      {currentStep.id==='overview'&&<div className="lesson-page-copy lesson-overview">
+        <p className="cyan">{lesson.kicker}</p><h2>{lesson.title}</h2>
+        {lesson.motto&&<p className="lesson-motto" data-testid="lesson-motto"><em>{lesson.motto}</em></p>}
+        {lesson.lede&&<p className="lede">{lesson.lede}</p>}
+          {pack.diagrams?.[0]&&<DiagramGallery diagrams={[pack.diagrams[0]]} t={t}/>}
+        {lesson.loop?.length>0&&<section className="lesson-flow-section">
+          <p className="cyan" data-testid="path-pedagogy-label">{t('lessonPages.flowLabel')}</p>
+          <div className="lesson-flow" data-testid="path-pedagogy">
+            {lesson.loop.map((item,index)=><React.Fragment key={item.label||index}>
+              <article className="lesson-flow-step"><span>{String(index+1).padStart(2,'0')}</span><strong>{item.label}</strong><small>{item.prompt}</small></article>
+              {index<lesson.loop.length-1&&<span className="lesson-flow-arrow" aria-hidden="true">→</span>}
+            </React.Fragment>)}
+          </div>
+        </section>}
+        {pack.steps?.length>0&&<p className="lesson-task-cta" data-testid="path-assignments-crosslink">
+          <span>{t('lessonPages.taskSummary',{count:pack.steps.length})}</span>
+          <button type="button" className="text-button" onClick={()=>updatePage('assignments')}>{t('lessonPages.openAssignment')}</button>
+        </p>}
+      </div>}
+      {currentStep.id==='idea'&&<div className="lesson-page-copy lesson-idea">
+        {lesson.narrative?.length>0&&<div className="lesson-concept-grid" data-testid="lesson-narrative">
+          {lesson.narrative.map((text,index)=>{
+            const Icon=CONCEPT_ICONS[index%CONCEPT_ICONS.length],parts=conceptTextParts(text);
+            return <article className="lesson-concept-card" key={index} data-testid="lesson-concept-card">
+              <div className="lesson-concept-card-heading"><span className="lesson-concept-number">{String(index+1).padStart(2,'0')}</span><Icon className="lesson-concept-icon" size={21} aria-hidden="true"/></div>
+              <p><strong className="lesson-concept-key">{parts.keyLine}</strong>{parts.remainder&&<span className="lesson-concept-remainder">{parts.remainder}</span>}</p>
+            </article>;
+          })}
+        </div>}
+        {pack.diagrams?.length>1&&<DiagramGallery diagrams={pack.diagrams.slice(1)} t={t}/>}
+        {lesson.workedExample&&<article className="lesson-worked-example" data-testid="lesson-worked-example">
+          <h3>{t('lesson.explained')}</h3><p>{lesson.workedExample}</p>
+        </article>}
+      </div>}
+      {currentStep.id==='sim'&&<div className="lesson-sim-page">
+        {pack.sims?.length>0&&<ConceptSimSlot sims={pack.sims} watchLabel={t('lessonPages.watchFor')}/>}
+        {pack.labs?.length>0?<section className="lab-slot" aria-label={t('lab.heading')}><h3>{t('lab.heading')}</h3>{pack.labs.map(lab=><LabEmbed key={lab.id} lab={lab} preview={room.me.role==='Facilitator'} saved={room.me.progressByDay?.[String(shownDay)]?.labs?.[lab.id]}/>)}</section>:(room.me.role==='Facilitator'||room.lab)?<LabSlotEmpty facilitator={room.me.role==='Facilitator'}/>:null}
+      </div>}
+      {currentStep.id==='code'&&<div className="lesson-page-copy lesson-code-examples" data-testid="lesson-code-examples">
+        {pack.codeExamples.map(ex=><PairedCodeExample key={ex.id} id={ex.id} title={ex.title} examples={{typescript:ex.typescript,python:ex.python}}/>)}
+      </div>}
+      {currentStep.id==='sources'&&<div className="lesson-page-copy lesson-sources">
+        {pack.materials?.length>0&&<><h3>{t('lesson.materials')}</h3><ul className="materials">{pack.materials.map(m=><li key={m.label}>{m.href?<a href={m.href} target={m.href.startsWith('http')?'_blank':undefined} rel="noreferrer">{m.label}</a>:<span>{m.label}: <strong>OPEN</strong> · {m.open}</span>}{m.note&&<small className="muted"> · {m.note}</small>}</li>)}</ul></>}
+        <OfficialDocs day={shownDay}/>
+        {pack.attribution&&<p className="muted lesson-attribution" data-testid="lesson-attribution">{pack.attribution}</p>}
+        <p className="naslag-links"><a href="/?learn=s01">Developer deep dive: Learn Claude Code →</a></p>
+      </div>}
+    </div>
+    {!framed&&<div className="lesson-local-pagination">
+      <button type="button" disabled={currentStepIndex===0} onClick={()=>changeStep(currentStepIndex-1)}>
+        {t('activity.previousTo',{target:lessonPages[currentStepIndex-1]?.label||t('nav.courseOverview')})}
+      </button>
+      <span>{t('lessonPages.pagePosition',{current:currentStepIndex+1,total:lessonPages.length})}</span>
+      <button type="button" onClick={()=>currentStepIndex===lessonPages.length-1?updatePage('assignments'):changeStep(currentStepIndex+1)}>
+        {t('activity.nextTo',{target:lessonPages[currentStepIndex+1]?.label||t('coursePages.assignments')})}
+      </button>
+    </div>}
   </>;
   return <section className="panel content-panel" data-testid="course-pages" data-course-day={shownDay}>
-    <nav className="course-page-nav" aria-label={t('coursePages.nav')}>
-      {['lesson','assignments','quiz'].map(id=><button key={id} type="button" aria-current={page===id?'page':undefined} onClick={()=>setPage(id)}>{id==='lesson'?<BookOpen size={17}/>:id==='assignments'?<ClipboardList size={17}/>:<Check size={17}/>}<span>{t(`coursePages.${id}`)}</span></button>)}
-    </nav>
-    {page==='lesson'&&<div data-testid="lesson-panel">{lessonPage}<OfficialDocs day={shownDay}/><p className="naslag-links"><a href="/?learn=s01">Developer deep dive: Learn Claude Code →</a></p></div>}
+    {pageNav}
+    {page==='lesson'&&<div className="lesson-panel" data-testid="lesson-panel">{lessonPage}</div>}
     {page==='assignments'&&<section data-testid="assignments-page"><p className="cyan">{t('coursePages.day',{day:coursePosition({...room,day:shownDay})})}</p><h2>{t('coursePages.assignments')}</h2>{shownDay===1||shownDay===2?<><p className="muted" data-testid="assignments-sot-hint">{t('path.assignmentsSoT')}</p>{pack.steps?.length>0&&<><p className="cyan">{t('path.checklistLabel')}</p><ProgressivePath steps={pack.steps}/></>}<ClassroomExercises day={shownDay}/></>:pack.mission?<div className="notice"><h3>{pack.mission.title}</h3><p>{pack.mission.goal}</p>{pack.steps?.length>0&&<ProgressivePath steps={pack.steps} compact/>}{!practice&&onNavigate&&<button type="button" onClick={()=>onNavigate('solo')}>{t('coursePages.openSolo')}<ArrowRight size={16}/></button>}</div>:<StatusState kind="empty" title={t('coursePages.noAssignments')}/>}</section>}
     <section className="course-quiz-page" hidden={page!=='quiz'} aria-label={t('coursePages.quiz')} data-testid="quiz-page"><p className="cyan">{t('coursePages.day',{day:coursePosition({...room,day:shownDay})})}</p><h2>{t('coursePages.quiz')}</h2><QuickCheck room={room} action={action} busy={busy} practice={practice} shownDay={shownDay} chosen={chosen} questions={questions} quizError={pack.quizError}/></section>
   </section>;
@@ -218,59 +354,64 @@ export function Solo({room,action,busy,onNavigate}){
   const t=useT();
   const [pack,setPack]=useState(null);
   const [error,setError]=useState('');
-  const [sent,setSent]=useState(false);
-  const [evidenceTask,setEvidenceTask]=useState('');
-  const [evidenceTaskKey,setEvidenceTaskKey]=useState('');
-  const formRef=useRef(null);
   const participant=room.me.role!=='Facilitator';
   const {locale}=useI18n();
   const trail=useRemote(participant?`tasks?locale=${locale}`:null,[room.day,trailKey(room)]),tasks=trail.data?.tasks;
-  const submittable=(tasks||[]).filter(task=>task.status==='open'||task.status==='changes_requested');
-  const submittableKey=submittable.map(task=>task.id).join();
-  const defaultEvidenceTask=submittable[0]?.id||'';
-  const selectedEvidenceTask=evidenceTaskKey===submittableKey&&submittable.some(task=>task.id===evidenceTask)?evidenceTask:defaultEvidenceTask;
-  useEffect(()=>{let active=true;setPack(null);setError('');setSent(false);api(`day-pack?locale=${locale}`).then(d=>{if(active)setPack(d);}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[room.day,locale]);
+  useEffect(()=>{let active=true;setPack(null);setError('');api(`day-pack?locale=${locale}`).then(d=>{if(active)setPack(d);}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[room.day,locale]);
   if(error)return <section className="panel content-panel"><p className="cyan">{t('solo.eyebrow')}</p><h2>{t('solo.noneTitle')}</h2><StatusState kind="error" title={t('status.errorTitle')}>{error}<p>{t('solo.noneHint')}</p></StatusState></section>;
   if(!pack)return <section className="panel content-panel"><StatusState kind="loading" title={t('solo.loading')}/></section>;
   const mission=pack.mission;
   const files=mission.starterFiles||['README.md','CLAUDE.md','package.json','status.mjs','status.test.mjs'];
   const hintText=(mission.hints||[]).join(' ');
   const allowedText=(mission.allowed||[]).join(' ');
-  const onSubmitEvidence=id=>{
-    setEvidenceTask(id);
-    setEvidenceTaskKey(submittableKey);
-    formRef.current?.scrollIntoView({behavior:'smooth',block:'start'});
-    formRef.current?.querySelector('textarea')?.focus();
-  };
   const hasSteps=pack.steps?.length>0;
-  return <section className="panel content-panel">
+  const requiredIds=new Set((pack.steps||[]).filter(step=>step.level!=='stretch').map(step=>step.id));
+  const requiredTasks=(tasks||[]).filter(task=>requiredIds.has(task.id));
+  const statusCounts={
+    approved:requiredTasks.filter(task=>task.status==='approved'||task.autograde?.passed).length,
+    submitted:requiredTasks.filter(task=>task.status==='submitted').length,
+    changes:requiredTasks.filter(task=>task.status==='changes_requested').length,
+    open:requiredTasks.filter(task=>task.status==='open').length
+  };
+  const onEvidenceSubmitted=()=>trail.reload();
+  return <section className="panel content-panel assignment-page">
     <p className="cyan">{t('solo.meta',{minutes:mission.minutes||25,id:mission.id})}</p>
     <h2>{mission.title}</h2>
     <p className="lede">{mission.goal}</p>
     {mission.starterNote&&<p className="muted">{mission.starterNote}</p>}
+    {hasSteps&&participant&&tasks&&<div className="assignment-status-counts" data-testid="assignment-status-counts">
+      <strong>{t('assignment.statusHeading')}</strong>
+      <span className="assignment-status-chips">
+        <span className="task-chip approved">{t('tasks.status.approved')}: {statusCounts.approved}</span>
+        <span className="task-chip submitted">{t('tasks.status.submitted')}: {statusCounts.submitted}</span>
+        <span className="task-chip changes_requested">{t('tasks.status.changes_requested')}: {statusCounts.changes}</span>
+        <span className="task-chip">{t('tasks.status.open')}: {statusCounts.open}</span>
+      </span>
+    </div>}
     {!hasSteps&&<div className="mission-goal"><Target size={22}/><div><h3>{t('solo.goal')}</h3><p>{mission.goal}</p></div></div>}
     {hasSteps?
       <>
         {participant&&!tasks&&<RemoteStatus remote={trail} loading={t('tasks.loading')}/>}
-        <StepTaskList steps={pack.steps} tasks={tasks} action={action} busy={busy} onGraded={trail.reload} onSubmitEvidence={onSubmitEvidence}/>
+        <StepTaskList steps={pack.steps} tasks={tasks} action={action} busy={busy} onGraded={trail.reload} onSubmitted={onEvidenceSubmitted} readOnly={room.readOnly||!participant}/>
       </>:
       participant&&(tasks?<TaskList tasks={tasks} action={action} busy={busy} onGraded={trail.reload}/>:<RemoteStatus remote={trail} loading={t('tasks.loading')}/>)}
-    <label className="route-select">{t('solo.helpAmount')}<select value={room.me.route||'standard'} disabled={room.me.role==='Facilitator'} onChange={e=>action(()=>api('route',{route:e.target.value}))}>{['guided','standard','stretch'].map(v=><option value={v} key={v}>{routeName(t,v)}</option>)}</select></label>
-    <details className="hint" open={room.me.route==='guided'}><summary>{t('solo.hintSummary')}</summary><p>{hintText||t('solo.hintFallback')}</p></details>
     {room.me.route==='stretch'&&<div className="notice"><strong>{t('solo.stretch')}</strong><p>{mission.stretch||t('solo.stretchFallback')}</p></div>}
-    <h3>{t('solo.workspace')}</h3>
-    <p className="muted">{t('solo.workspaceHint')}</p>
-    <div className="files">{files.map(f=><a key={f} href={'/game/starter/'+f} download={f}><FileText size={16}/>{f}<Download size={15}/></a>)}</div>
-    <details className="hint"><summary>{t('solo.allowedSummary')}</summary><p>{allowedText} {mission.stop} {t('solo.noPush')}</p></details>
-    <button type="button" className="text-button" onClick={()=>onNavigate('coach')}><Sparkles size={17}/>{t('solo.openCoach')}</button>
-    <h3>{t('solo.submitHeading')}</h3>
-    <p className="muted">{t('solo.submitHint')}</p>
-    <form ref={formRef} onSubmit={e=>{e.preventDefault();const form=e.currentTarget;const values=Object.fromEntries(new FormData(form));action(async()=>{await api('evidence',{...values,requestId:form.dataset.requestId||(form.dataset.requestId=crypto.randomUUID())});setSent(true);form.reset();setEvidenceTask(defaultEvidenceTask);setEvidenceTaskKey(submittableKey);delete form.dataset.requestId;});}}>
-      {tasks&&<label>{t('tasks.field')}<select name="taskId" key={submittableKey} value={selectedEvidenceTask} onChange={e=>{setEvidenceTask(e.target.value);setEvidenceTaskKey(submittableKey);}}>{submittable.map(task=><option value={task.id} key={task.id}>{task.title}</option>)}<option value="">{t('tasks.none')}</option></select></label>}
-      {[['finding',t('solo.finding')],['command',t('solo.command')],['observed',t('solo.observed')],['limitation',t('solo.limitation')]].map(([n,l])=><label key={n}>{l}<textarea required name={n} maxLength={n==='command'?1000:4000}/></label>)}
-      <button type="submit" className="gradient" disabled={busy||room.me.role==='Facilitator'}>{t('solo.submit')}<ArrowRight size={17}/></button>
-      {sent&&<p className="success" role="status"><Check size={16}/>{t('solo.sent')}</p>}
-    </form>
+    <section className="assignment-workspace">
+      <h3>{t('solo.workspace')}</h3>
+      <p className="muted">{t('solo.workspaceHint')}</p>
+      <div className="assignment-workspace-controls">
+        <label className="route-select">{t('solo.helpAmount')}<select value={room.me.route||'standard'} disabled={room.me.role==='Facilitator'} onChange={e=>action(()=>api('route',{route:e.target.value}))}>{['guided','standard','stretch'].map(v=><option value={v} key={v}>{routeName(t,v)}</option>)}</select></label>
+        <details className="hint" open={room.me.route==='guided'}><summary>{t('solo.hintSummary')}</summary><p>{hintText||t('solo.hintFallback')}</p></details>
+        <details className="hint"><summary>{t('solo.allowedSummary')}</summary><p>{allowedText} {mission.stop} {t('solo.noPush')}</p></details>
+      </div>
+      <div className="files">{files.map(file=><a key={file} href={'/game/starter/'+file} download={file}><FileText size={16}/>{file}<Download size={15}/></a>)}</div>
+      <button type="button" className="text-button" onClick={()=>onNavigate('coach')}><Sparkles size={17}/>{t('solo.openCoach')}</button>
+    </section>
+    {participant&&<details className="other-evidence-box">
+      <summary><ClipboardCheck size={17}/><span>{t('assignment.otherEvidence')}</span><ChevronDown size={16}/></summary>
+      <p className="muted">{t('assignment.otherEvidenceHelp')}</p>
+      <TaskEvidenceForm taskId="" action={action} busy={busy} disabled={room.readOnly} onSubmitted={onEvidenceSubmitted} showTitle={false}/>
+    </details>}
   </section>;
 }
 
@@ -298,9 +439,96 @@ function Reflection({room,onSaved}){
 export function Route({room,onNavigate}){
   const t=useT();
   const {locale}=useI18n();
-  const remote=useRemote(`day-route?locale=${locale}`,[room.day,room.version,room.me?.quiz?.at,room.evidence?.length,room.me?.progressByDay]),days=remote.data?.days||[];
-  const chip=(label,on)=><span className={on?'progress-chip on':'progress-chip'} key={label}>{label}</span>;
-  return <section className="panel content-panel"><p className="cyan">{t('route.eyebrow')}</p><h2>{t('route.title')}</h2><p className="lede">{t('route.lede')}</p><p className="muted">{t('route.preface')}</p><RemoteStatus remote={remote} loading={t('route.loading')}/>{remote.status==='ready'&&!days.length&&<StatusState kind="empty" title={t('route.empty')}/>}<div className="day-list">{days.map(d=>{const prog=d.progress||{};return <div className={room.day===d.day?'current':''} key={d.day}><span className="day-number">{String(d.position).padStart(2,'0')}</span><div><small>{t('route.supportDay',{day:d.position})} · {d.tag}{d.date&&<> · <time dateTime={d.date}>{d.date}</time></>}</small><h3>{d.title}</h3><p>{d.blurb}</p><div className="progress-chips" aria-label={t('route.progressAria',{day:d.position})}>{chip(prog.hasQuiz?t('route.quizScore',{score:prog.quizScore}):t('route.quiz'),prog.hasQuiz)}{chip(prog.route?routeName(t,prog.route):t('route.helpChoice'),prog.hasRoute)}{chip(prog.hasEvidence?t('route.evidenceCount',{count:prog.evidenceCount}):t('route.evidence'),prog.hasEvidence)}{chip(prog.hasReview?t('route.reviewCount',{count:prog.reviewedCount}):t('route.review'),prog.hasReview)}{chip(t('route.handoff'),prog.hasHandoff)}{chip(t('route.reflection'),prog.hasReflection)}{d.labsTotal>0&&chip(t('route.labs',{done:prog.labsCompleted||0,total:d.labsTotal}),prog.labsCompleted>0)}</div></div></div>;})}</div>{room.me.role!=='Facilitator'&&<Reflection key={room.day} room={room} onSaved={remote.reload}/>}<button type="button" className="gradient" onClick={()=>onNavigate('lesson')}>{t('route.toLesson')}<ArrowRight size={17}/></button></section>;
+  const progressKey=JSON.stringify(room.me?.progressByDay||{});
+  const evidenceKey=(room.evidence||[]).map(e=>`${e.id}:${e.status}`).join(',');
+  const remote=useRemote(`day-route?locale=${locale}`,[room.day,room.version,room.me?.quiz?.at,evidenceKey,progressKey]);
+  const days=remote.data?.days||[];
+  const [openDays,setOpenDays]=useState(()=>new Set([room.day]));
+  useEffect(()=>setOpenDays(current=>new Set([...current,room.day])),[room.day]);
+  const activitiesFor=day=>{
+    const progress=day.progress||{},tasks=day.tasks;
+    const taskStatus=tasks
+      ?t('course.assignmentStatus',{approved:tasks.approved,total:tasks.total,awaiting:tasks.awaiting,changes:tasks.changesRequested})
+      :t('course.taskCount',{count:day.activities?.taskCount||0});
+    return [
+      {id:'lesson',type:'lesson',title:day.activities?.lessonTitle||day.title,done:Boolean(progress.lessonDone),meta:progress.lessonDone?t('course.lessonDone'):t('course.lessonNotDone')},
+      {id:'assignments',type:'assignment',title:day.activities?.missionTitle||day.title,done:Boolean(tasks?.total>0&&tasks.approved===tasks.total),meta:taskStatus},
+      {id:'quiz',type:'quiz',title:t('course.quizTitle'),done:Boolean(progress.hasQuiz),meta:progress.hasQuiz?t('course.quizScore',{score:progress.quizScore??'—'}):t('course.quizQuestions',{count:day.activities?.quizCount||0})},
+      ...(day.day===room.day?[{id:'review',type:'review',title:t('course.reviewTitle'),done:Boolean(progress.hasHandoff),meta:progress.hasHandoff?t('course.handoffDone'):progress.hasEvidence?t('course.evidenceCount',{count:progress.evidenceCount}):t('course.handoffNeeded')}]:[])
+    ];
+  };
+  const releasedDays=days.filter(day=>day.released);
+  const overallRows=releasedDays.flatMap(activitiesFor);
+  const completed=overallRows.filter(row=>row.done).length;
+  const currentDay=days.find(day=>day.day===room.day);
+  const currentRows=currentDay?activitiesFor(currentDay):[];
+  const nextActivity=currentRows.find(row=>!row.done);
+  const toggleDay=day=>setOpenDays(current=>{const next=new Set(current);if(next.has(day))next.delete(day);else next.add(day);return next;});
+  const openActivity=(day,activity)=>{
+    if(!day.released)return;
+    if(activity==='assignments'){
+      onNavigate?.(day.day===room.day?'solo':'lesson',day.day===room.day?{}:{page:'assignments',day:day.day});
+      return;
+    }
+    if(activity==='review'){onNavigate?.('review');return;}
+    onNavigate?.('lesson',{page:activity,day:day.day});
+  };
+  const courseName=remote.data?.course?.name||t('route.title');
+  const stateIcon=(row,isCurrent,locked)=>{
+    if(locked)return <Lock size={16} aria-hidden="true"/>;
+    if(row.done)return <Check size={16} aria-hidden="true"/>;
+    return isCurrent?<CircleDot size={16} aria-hidden="true"/>:<Circle size={16} aria-hidden="true"/>;
+  };
+  const statusLabel=(row,isCurrent,locked)=>locked?t('course.locked'):row.done?t('course.state.done'):isCurrent?t('course.state.current'):t('course.state.todo');
+  return <section className="panel content-panel course-overview" data-testid="course-overview">
+    <header className="course-overview-heading"><p className="cyan">{t('route.eyebrow')}</p><h2>{courseName}</h2><p className="lede">{t('course.overviewLede')}</p></header>
+    <RemoteStatus remote={remote} loading={t('route.loading')}/>
+    {remote.status==='ready'&&!days.length&&<StatusState kind="empty" title={t('route.empty')}/>}
+    {remote.status==='ready'&&days.length>0&&<div className="course-overview-grid">
+      <div className="course-overview-main">
+        <div className="course-chapter-list">
+          {days.map(day=>{
+            const expanded=openDays.has(day.day);
+            const rows=activitiesFor(day);
+            const currentNext=currentDay?.day===day.day?nextActivity?.id:null;
+            return <article className={'course-chapter'+(day.day===room.day?' current':'')+(!day.released?' locked':'')} key={day.day} data-day={day.day}>
+              <button type="button" className="course-chapter-toggle" aria-expanded={expanded} onClick={()=>toggleDay(day.day)}>
+                <span className="course-day-number">{String(day.position).padStart(2,'0')}</span>
+                <span className="course-chapter-title"><small>{t('route.supportDay',{day:day.position})} · {day.tag}{day.date&&<> · <time dateTime={day.date}>{day.date}</time></>}</small><strong>{day.title}</strong><span>{day.blurb}</span></span>
+                <span className="course-chapter-lock">{day.released?t('course.unlocked'):t('course.locked')}</span>
+                {expanded?<ChevronDown size={18} aria-hidden="true"/>:<ChevronRight size={18} aria-hidden="true"/>}
+              </button>
+              {expanded&&<div className="course-activity-list">
+                {rows.map(row=>{
+                  const locked=!day.released,isCurrent=day.day===room.day&&row.id===currentNext;
+                  return <button type="button" className="course-activity-row" key={row.id} disabled={locked}
+                    data-state={locked?'locked':row.done?'done':isCurrent?'current':'todo'}
+                    aria-label={`${row.type}: ${row.title} · ${statusLabel(row,isCurrent,locked)}`}
+                    onClick={()=>openActivity(day,row.id)}>
+                    <span className="course-activity-marker">{stateIcon(row,isCurrent,locked)}</span>
+                    <span className="course-activity-type">{t(`course.activity.${row.type}`)}</span>
+                    <span className="course-activity-name">{row.title}</span>
+                    <small className="course-activity-meta">{row.meta}</small>
+                    <ArrowRight size={15} aria-hidden="true"/>
+                  </button>;
+                })}
+              </div>}
+            </article>;
+          })}
+        </div>
+        {room.me.role!=='Facilitator'&&<Reflection key={room.day} room={room} onSaved={remote.reload}/>}
+      </div>
+      <aside className="course-progress-sidebar">
+        <p className="cyan">{t('course.progressHeading')}</p>
+        <strong>{t('course.progressValue',{done:completed,total:overallRows.length})}</strong>
+        <progress value={completed} max={Math.max(1,overallRows.length)} aria-label={t('course.progressHeading')}/>
+        <p className="muted">{t('course.progressHelp')}</p>
+        {nextActivity
+          ?<button type="button" className="gradient" onClick={()=>openActivity(currentDay,nextActivity.id)}>{t('course.continueActivity',{activity:nextActivity.title})}<ArrowRight size={17}/></button>
+          :<button type="button" className="gradient" onClick={()=>onNavigate?.('today')}>{t('course.backToToday')}<ArrowRight size={17}/></button>}
+      </aside>
+    </div>}
+  </section>;
 }
 
 export function Debrief({room,onOpenBoard}){
@@ -373,41 +601,88 @@ function TaskList({tasks,action,busy,onGraded}){
   return <><h3>{t('tasks.title')}</h3><p className="muted">{t('tasks.lede')}</p>{!tasks.length&&<StatusState kind="empty" title={t('tasks.empty')}/>}<div className="task-list">{tasks.map(task=>{const last=task.submissions.at(-1),auto=task.autograde?.passed;return <article className="task" key={task.id}><div><strong>{task.title}</strong><span className={'task-chip '+task.status}>{t(auto?'tasks.status.auto_approved':'tasks.status.'+task.status)}</span></div><small>{task.id}{task.submissions.length?` · ${t('tasks.attempts',{count:task.submissions.length})}`:''}</small>{last?.review&&<p><strong>{t('tasks.feedback',{name:last.review.reviewer?.name||'Facilitator'})}</strong> {last.review.note}</p>}{task.autograde&&(auto||task.status!=='approved')&&<AutogradeForm task={task} action={action} busy={busy} onGraded={onGraded}/>}</article>;})}</div></>;
 }
 
-function StepTaskList({steps,tasks,action,busy,onGraded,onSubmitEvidence}){
+function CopyTextButton({value}){
+  const t=useT();
+  const [copied,setCopied]=useState(false);
+  const copy=async()=>{
+    try{
+      if(!navigator.clipboard?.writeText)throw Error('clipboard unavailable');
+      await navigator.clipboard.writeText(value);
+      setCopied(true);
+      setTimeout(()=>setCopied(false),1400);
+    }catch{setCopied(false);}
+  };
+  return <button type="button" className="text-button assignment-copy" onClick={copy}><Copy size={14}/>{t(copied?'assignment.copied':'assignment.copy')}</button>;
+}
+
+function TaskEvidenceForm({taskId,action,busy,disabled,onSubmitted,showTitle=true}){
+  const t=useT();
+  const [sent,setSent]=useState(false);
+  const submit=event=>{
+    event.preventDefault();
+    const form=event.currentTarget,values=Object.fromEntries(new FormData(form));
+    action(async()=>{
+      await api('evidence',{...values,taskId,requestId:form.dataset.requestId||(form.dataset.requestId=crypto.randomUUID())});
+      delete form.dataset.requestId;
+      form.reset();
+      setSent(true);
+      onSubmitted?.();
+    });
+  };
+  return <form className="assignment-evidence-form" onSubmit={submit}>
+    <input type="hidden" name="taskId" value={taskId}/>
+    {showTitle&&<strong>{t(taskId?'assignment.taskEvidence':'assignment.otherEvidence')}</strong>}
+    {[['finding',t('solo.finding')],['command',t('solo.command')],['observed',t('solo.observed')],['limitation',t('solo.limitation')]].map(([name,label])=><label key={name}>{label}<textarea required name={name} maxLength={name==='command'?1000:4000}/></label>)}
+    <button type="submit" className="gradient" disabled={busy||disabled}>{t('solo.submit')}<ArrowRight size={17}/></button>
+    {sent&&<p className="success" role="status"><Check size={16}/>{t('solo.sent')}</p>}
+  </form>;
+}
+
+function AssignmentTaskBox({step,task,action,busy,onGraded,onSubmitted,readOnly,open}){
+  const t=useT();
+  const auto=Boolean(task?.autograde?.passed);
+  const approved=task?.status==='approved'||auto;
+  const canSubmit=task&&(task.status==='open'||task.status==='changes_requested')&&!step.autograde;
+  const status=auto?'auto_approved':task?.status;
+  const prompts=step.prompts||[];
+  const run=step.run||[];
+  return <details className="step-card assignment-task-box" data-testid="step-card" data-assignment-task-box open={open} key={step.id}>
+    <summary>
+      <span className="agent-badge">{step.badge}</span>
+      <strong>{step.title}{step.level==='stretch'&&<small className="muted"> · {t('path.stretch')}</small>}</strong>
+      {step.timerMinutes&&<small className="muted">{t('steps.minutes',{minutes:step.timerMinutes})}</small>}
+      {status&&<span className={'task-chip '+status}>{t('tasks.status.'+status)}</span>}
+      {approved&&<Check size={16} aria-hidden="true"/>}
+    </summary>
+    <div className="step-card-body assignment-task-body">
+      <section className="assignment-task-goal"><h4>{t('assignment.goal')}</h4><p>{step.goal}</p></section>
+      {step.instructions?.length>0&&<section><h4>{t('assignment.steps')}</h4><ol className="step-instructions">{step.instructions.map((line,index)=><li key={index}><InlineCode text={line}/></li>)}</ol></section>}
+      {run.length>0&&<section className="assignment-code"><header><h4>{t('assignment.runThis')}</h4><CopyTextButton value={run.join('\n')}/></header><pre><code>{run.join('\n')}</code></pre></section>}
+      {prompts.length>0&&<section className="assignment-prompts"><header><h4>{t('assignment.prompts')}</h4></header><ol>{prompts.map((prompt,index)=><li key={index}><span>{prompt}</span><CopyTextButton value={prompt}/></li>)}</ol></section>}
+      {step.watchFor&&<section className="assignment-watch"><h4>{t('assignment.watchFor')}</h4><p>{step.watchFor}</p></section>}
+      {step.doneWhen&&<p className="assignment-done-when"><strong>{t('path.doneWhen')}</strong> {step.doneWhen}</p>}
+      {step.hint&&<details className="hint assignment-hint"><summary>{t('solo.hintSummary')}</summary><p>{step.hint}</p></details>}
+      {task?.submissions?.length>0&&<details className="assignment-history"><summary>{t('assignment.submissionHistory',{count:task.submissions.length})}</summary>{task.submissions.map((submission,index)=><article key={submission.id||index}><strong>{t('assignment.submissionNumber',{number:index+1})} · {t('review.status.'+submission.status)}</strong>{submission.finding&&<p>{submission.finding}</p>}{submission.command&&<small>{submission.command}</small>}{submission.observed&&<p>{submission.observed}</p>}{submission.limitation&&<small>{submission.limitation}</small>}{submission.review&&<p><strong>{t('tasks.feedback',{name:submission.review.reviewer?.name||'Facilitator'})}</strong> {submission.review.note}</p>}</article>)}</details>}
+      {task?.autograde&&(auto||task.status!=='approved')&&<AutogradeForm task={task} action={action} busy={busy} onGraded={onGraded}/>}
+      {approved&&<button type="button" className="assignment-approved-control" disabled><Check size={15}/>{t('tasks.status.approved')}</button>}
+      {canSubmit&&<TaskEvidenceForm taskId={step.id} action={action} busy={busy} disabled={readOnly} onSubmitted={onSubmitted}/>}
+    </div>
+  </details>;
+}
+
+function StepTaskList({steps,tasks,action,busy,onGraded,onSubmitted,readOnly}){
   const t=useT();
   const taskById=new Map((tasks||[]).map(task=>[task.id,task]));
   const requiredSteps=steps.filter(step=>step.level!=='stretch');
-  const done=requiredSteps.filter(step=>taskById.get(step.id)?.status==='approved').length;
-  const openIndex=tasks?steps.findIndex(step=>taskById.get(step.id)?.status!=='approved'):steps.length?0:-1;
+  const approved=task=>task?.status==='approved'||Boolean(task?.autograde?.passed);
+  const done=requiredSteps.filter(step=>approved(taskById.get(step.id))).length;
+  const openIndex=tasks?steps.findIndex(step=>!approved(taskById.get(step.id))):steps.length?0:-1;
   if(!steps.length)return null;
   return <>
     <h3>{t('tasks.title')}</h3>
     <p className="muted">{t('tasks.lede')}</p>
-    {tasks&&<div className="step-progress-row"><span>{t('steps.progress',{done,total:requiredSteps.length})}</span><progress className="step-progress" value={done} max={requiredSteps.length}/></div>}
-    <div className="step-card-list">{steps.map((step,index)=>{
-      const task=taskById.get(step.id);
-      const last=task?.submissions?.at(-1);
-      const auto=task?.autograde?.passed;
-      return <details className="step-card" data-testid="step-card" open={index===openIndex} key={step.id||index}>
-        <summary>
-          <span className="agent-badge">{step.badge}</span>
-          <strong>{step.title}{step.level==='stretch'&&<small className="muted"> · {t('path.stretch')}</small>}</strong>
-          {step.timerMinutes&&<small className="muted">{t('steps.minutes',{minutes:step.timerMinutes})}</small>}
-          {task&&<span className={'task-chip '+task.status}>{t(auto?'tasks.status.auto_approved':'tasks.status.'+task.status)}</span>}
-          {task?.status==='approved'&&<Check size={16} aria-hidden="true"/>}
-        </summary>
-        <div className="step-card-body">
-          <p>{step.goal}</p>
-          {step.instructions?.length>0&&<ol className="step-instructions">{step.instructions.map((line,lineIndex)=><li key={lineIndex}><InlineCode text={line}/></li>)}</ol>}
-          {step.doneWhen&&<small><span className="muted">{t('path.doneWhen')}</span> {step.doneWhen}</small>}
-          {step.hint&&<small className="muted">{step.hint}</small>}
-          {last?.review&&<p><strong>{t('tasks.feedback',{name:last.review.reviewer?.name||'Facilitator'})}</strong> {last.review.note}</p>}
-          {task?.submissions.length>0&&<small className="muted">{t('tasks.attempts',{count:task.submissions.length})}</small>}
-          {task?.autograde&&(auto||task.status!=='approved')&&<AutogradeForm task={task} action={action} busy={busy} onGraded={onGraded}/>}
-          {task&&(task.status==='open'||task.status==='changes_requested')&&!step.autograde&&<button type="button" className="text-button" onClick={()=>onSubmitEvidence(step.id)}>{t('steps.submitEvidence')}</button>}
-        </div>
-      </details>;
-    })}</div>
+    {tasks&&<div className="step-progress-row"><span>{t('steps.progress',{done,total:requiredSteps.length})}</span><progress className="step-progress" value={done} max={Math.max(1,requiredSteps.length)}/></div>}
+    <div className="step-card-list">{steps.map((step,index)=><AssignmentTaskBox key={step.id||index} step={step} task={taskById.get(step.id)} action={action} busy={busy} onGraded={onGraded} onSubmitted={onSubmitted} readOnly={readOnly} open={index===openIndex}/>)}</div>
   </>;
 }
 
@@ -422,6 +697,47 @@ function AutogradeForm({task,action,busy,onGraded}){
   return <details className="autograde" open={grade.attempts>0}><summary>{t('autograde.summary')}</summary><form onSubmit={submit}><p className="muted">{t('autograde.lede')}</p>{grade.tickets.map(ticket=>{const result=resultFor(ticket.ticketId);return <label className="autograde-ticket" key={ticket.ticketId}><span><strong>{ticket.ticketId}</strong> {ticket.message}</span><select name={ticket.ticketId} required defaultValue={result?.label||''}><option value="" disabled>{t('autograde.choose')}</option>{PRIORITIES.map(p=><option value={p} key={p}>{t('autograde.priority.'+p)}</option>)}</select>{result&&<small className={result.correct?'correct':'incorrect'}>{t(result.correct?'autograde.correct':'autograde.incorrect')}</small>}</label>;})}{summary}<button type="submit" className="gradient" disabled={busy}>{t('autograde.submit')}<ArrowRight size={17}/></button></form></details>;
 }
 
+function SubmissionsGrid({members}){
+  const t=useT();
+  const columns=members[0]?.tasks||[];
+  const approved=task=>task.status==='approved';
+  const statusCountsFor=taskId=>{
+    const statuses=members.map(member=>member.tasks.find(task=>task.id===taskId)?.status||'open');
+    return {
+      approved:statuses.filter(status=>status==='approved').length,
+      awaiting:statuses.filter(status=>status==='submitted').length,
+      changes:statuses.filter(status=>status==='changes_requested').length,
+      open:statuses.filter(status=>status==='open').length
+    };
+  };
+  return <section className="submissions-grid-section" aria-labelledby="submissions-grid-heading">
+    <h3 id="submissions-grid-heading">{t('submissionsGrid.title')}</h3>
+    <div className="submissions-grid-scroll" role="region" aria-label={t('submissionsGrid.title')} tabIndex="0">
+      <table className="submissions-grid" data-testid="submissions-grid">
+        <thead><tr><th scope="col">{t('submissionsGrid.member')}</th>{columns.map(task=><th scope="col" key={task.id}><span className="submission-grid-task-title">{task.title}</span>{!task.required&&<small className="submission-grid-stretch">{t('submissionsGrid.stretch')}</small>}</th>)}</tr></thead>
+        <tbody>{members.map(member=>{
+          const requiredTasks=member.tasks.filter(task=>task.required);
+          const approvedRequired=requiredTasks.filter(approved).length;
+          const taskById=new Map(member.tasks.map(task=>[task.id,task]));
+          return <tr key={member.id}>
+            <th scope="row"><strong>{member.name}</strong><small>{t('submissionsGrid.memberProgress',{approved:approvedRequired,total:requiredTasks.length})}</small></th>
+            {columns.map(column=>{
+              const task=taskById.get(column.id)||{status:'open'};
+              const label=t(`tasks.status.${task.status}`);
+              return <td key={column.id} data-status={task.status}>
+                {task.status==='submitted'&&task.latestEvidenceId
+                  ?<a className="submission-status-link" href={`#queue-${task.latestEvidenceId}`} aria-label={t('submissionsGrid.openSubmission',{name:member.name,task:column.title})}>{label}<ArrowRight size={13}/></a>
+                  :<span className={'task-chip '+task.status}>{label}</span>}
+              </td>;
+            })}
+          </tr>;
+        })}</tbody>
+        <tfoot><tr><th scope="row">{t('submissionsGrid.taskSummary')}</th>{columns.map(task=><td key={task.id}>{t('submissionsGrid.statusCounts',statusCountsFor(task.id))}</td>)}</tr></tfoot>
+      </table>
+    </div>
+  </section>;
+}
+
 function TaskQueue({room,action,busy,path,heading}){
   const t=useT();
   const {locale}=useI18n();
@@ -429,5 +745,24 @@ function TaskQueue({room,action,busy,path,heading}){
   if(!remote.data)return <RemoteStatus remote={remote} loading={t('queue.loading')}/>;
   const data={...remote.data,reload:remote.reload};
   const decide=(item,event)=>{event.preventDefault();const form=event.currentTarget;const values=Object.fromEntries(new FormData(form,event.nativeEvent.submitter));action(async()=>{await api('review',{id:item.evidenceId,...values,requestId:form.dataset.requestId||(form.dataset.requestId=crypto.randomUUID())});delete form.dataset.requestId;data.reload();});};
-  return <><h3>{t(heading+'.title',{count:data.queue.length})}</h3><p className="muted">{t(heading+'.lede')}</p>{!data.queue.length&&<StatusState kind="empty" title={t('queue.empty')}/>}{data.queue.map(item=><article className="evidence" key={item.evidenceId}><div><strong>{item.name} · {item.taskTitle}</strong><span>{t('queue.attempt',{attempt:item.attempt})}</span></div><small>{t('review.day',{day:item.day})} · {new Date(item.at).toLocaleString(locale==='nl'?'nl-NL':'en-GB')}</small><p>{item.finding}</p><pre>{item.command}{'\n'}{item.observed}</pre><p><strong>{t('review.limitation')}</strong> {item.limitation}</p><form onSubmit={event=>decide(item,event)}><label>{t('queue.note')}<textarea name="note" required maxLength={4000}/></label><div className="form-row"><button type="submit" name="status" value="accepted" disabled={busy}>{t('queue.approve')}</button><button type="submit" name="status" value="needs-work" disabled={busy}>{t('queue.requestChanges')}</button></div></form></article>)}{data.members&&<><h3>{t('queue.statusTitle',{day:data.day})}</h3><div className="task-status">{data.members.map(member=><div key={member.id}><strong>{member.name}</strong><div className="progress-chips">{member.tasks.map(task=><span className={'task-chip '+task.status} key={task.id}>{task.title} · {t('tasks.status.'+task.status)}</span>)}</div></div>)}</div></>}</>;
+  return <>
+    <h3>{t(heading+'.title',{count:data.queue.length})}</h3>
+    <p className="muted">{t(heading+'.lede')}</p>
+    {!data.queue.length&&<StatusState kind="empty" title={t('queue.empty')}/>}
+    {data.queue.map(item=><article className="evidence" id={`queue-${item.evidenceId}`} key={item.evidenceId}>
+      <div><strong>{item.name} · {item.taskTitle}</strong><span>{t('queue.attempt',{attempt:item.attempt})}</span></div>
+      <small>{t('review.day',{day:item.day})} · {new Date(item.at).toLocaleString(locale==='nl'?'nl-NL':'en-GB')}</small>
+      <p>{item.finding}</p>
+      <pre>{item.command}{'\n'}{item.observed}</pre>
+      <p><strong>{t('review.limitation')}</strong> {item.limitation}</p>
+      <form onSubmit={event=>decide(item,event)}>
+        <label>{t('queue.note')}<textarea name="note" required maxLength={4000}/></label>
+        <div className="form-row">
+          <button type="submit" name="status" value="accepted" disabled={busy}>{t('queue.approve')}</button>
+          <button type="submit" name="status" value="needs-work" disabled={busy}>{t('queue.requestChanges')}</button>
+        </div>
+      </form>
+    </article>)}
+    {data.members&&<SubmissionsGrid members={data.members}/>}
+  </>;
 }

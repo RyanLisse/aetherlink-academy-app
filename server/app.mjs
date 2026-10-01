@@ -244,6 +244,7 @@ export function createApp({
     publicUrl,
     presence,
     chosenDay,
+    readableDays,
     fetchImpl,
     chatConfig,
   });

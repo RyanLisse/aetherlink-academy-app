@@ -45,6 +45,13 @@ export function dayQuiz(day,authored){
 
 const quizSlides=(day,authored)=>Object.fromEntries(authored.flatMap(({slide},i)=>slide?[[questionId(day,i),slide]]:[]));
 
+const projectSoloSteps=steps=>steps.map(({run,prompts,watchFor,...step})=>({
+ ...step,
+ ...(run!==undefined?{run:Array.isArray(run)?[...run]:run}:{}),
+ ...(prompts!==undefined?{prompts:Array.isArray(prompts)?[...prompts]:prompts}:{}),
+ ...(watchFor!==undefined?{watchFor}:{})
+}));
+
 function bakeCopy(day,copy){
  if(!copy?.en||!copy?.nl)return copy;
  const bake=lang=>{
@@ -53,6 +60,7 @@ function bakeCopy(day,copy){
   const script=c.demo?.script||[];
   return {
    ...c,
+   ...(c.solo?{solo:projectSoloSteps(c.solo)}:{}),
    quiz:Array.isArray(c.quiz)?dayQuiz(day,c.quiz):c.quiz,
    source:c.source??SOURCE_COPY[lang],
    deepHelp:c.deepHelp??DEEP_HELP_COPY[lang],
@@ -86,7 +94,7 @@ export function projectDayPack(src){
   deck:{route:deck.route},
   leerdoel:src.leerdoel,
   demo:src.demo,
-  steps:src.solo,
+  steps:projectSoloSteps(src.solo),
   materials,
   reviewCriteria:src.proof,
   openItems:src.openItems,
