@@ -307,13 +307,31 @@ test('facilitator overview and read-only cohort room pass axe and show their sta
   await withBrowser(async({fixture,open})=>{
     const page=await open({width:1024,height:768});
     await page.goto(fixture.base+'/');
-    await page.getByRole('button',{name:'Facilitator-overzicht'}).click();
+    await page.getByRole('radio',{name:'Ik ben facilitator'}).check();
     await page.getByLabel('Facilitator-startsleutel').fill(HOST_KEY);
-    await page.getByRole('button',{name:'Toon overzicht'}).click();
+    await page.getByRole('button',{name:'Inloggen'}).click();
     await page.getByRole('heading',{name:'Wave oktober (synthetisch)'}).waitFor();
+    assert.ok(await page.getByRole('heading',{name:'Je squads en cohorten'}).isVisible(),'the workspace heading follows the session');
     assert.ok(await page.getByText(ROOM_CODE,{exact:true}).first().isVisible());
-    assert.deepEqual(await blockingViolations(page),[],'facilitator overview');
+    assert.ok(await page.getByRole('heading',{name:'Start een squad'}).isVisible(),'the workspace opens squad creation');
+    assert.ok(await page.getByRole('button',{name:'Maak squad'}).isVisible(),'the create submit is visible');
+    assert.deepEqual(await blockingViolations(page),[],'facilitator workspace');
     await shot(page,'facilitator-overview-1024.png');
+
+    await page.getByLabel('Squadnaam').fill('Squad Nieuw');
+    await page.getByRole('button',{name:'Maak squad'}).click();
+    await page.getByRole('heading',{name:'Squad Nieuw'}).waitFor();
+    assert.match(await page.locator('.simple-eyebrow').innerText(),/Facilitatorwerkplek/,'created squad lands on the facilitator workspace');
+
+    const reopen=await open({width:1024,height:768});
+    await reopen.goto(fixture.base+'/');
+    await reopen.getByRole('radio',{name:'Ik ben facilitator'}).check();
+    await reopen.getByLabel('Facilitator-startsleutel').fill(HOST_KEY);
+    await reopen.getByRole('button',{name:'Inloggen'}).click();
+    await reopen.getByRole('heading',{name:'Wave oktober (synthetisch)'}).waitFor();
+    await reopen.getByRole('article').filter({has:reopen.getByRole('heading',{name:'Squad Noord'})}).getByRole('button',{name:'Open als facilitator'}).click();
+    await reopen.getByRole('heading',{name:'Squad Noord'}).waitFor();
+    await reopen.close();
     await page.close();
 
     fixture.enterReadOnlyWindow();
