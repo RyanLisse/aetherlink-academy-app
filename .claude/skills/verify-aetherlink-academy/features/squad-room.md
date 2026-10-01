@@ -8,7 +8,7 @@ A facilitator creates a squad and shares its room code; participants join by nam
 - `squad-join` participant joins with name and room code.
 - `squad-roles` roster shows Driver and Navigators; facilitator controls rotate roles and advance rounds.
 - `squad-rejoin` the personal access link (`/#access=<token>`) restores the same seat in a fresh session; the same name and code is rejected with 409.
-- `squad-overview` facilitator overview lists all squads (`/?facilitator=1`, then overview).
+- `squad-overview` facilitator workspace lists all squads (`/?facilitator=1`, then sign in).
 - `squad-errors` wrong code, wrong start key and a full squad show distinct messages.
 
 ## How to get to it (user POV)
@@ -23,7 +23,7 @@ Preconditions:
 - Doctor passes. Host key read from `.verification/runs/<run-id>/academy-data/host-key` into a variable.
 - One browser context per person.
 
-- **Create.** Facilitator context: `goto('/?facilitator=1')`, fill `getByLabel('Squad name')` with `Squad Verify`, `getByLabel('Your name')` with `Facilitator`, `getByLabel('Facilitator start key')` with the key, click `getByRole('button', {name: 'Create squad'})`. The squad room opens with `getByRole('navigation', {name: 'Main navigation'})` and a room code in the header; record the code.
+- **Create.** Facilitator context: `goto('/?facilitator=1')`, fill `getByLabel('Facilitator start key')` with the key, click `getByRole('button', {name: 'Sign in'})`. In the facilitator workspace, fill `getByLabel('Squad name')` with `Squad Verify`, click `getByRole('button', {name: 'Create squad'})`. The squad room opens with `getByRole('navigation', {name: 'Main navigation'})` and a room code in the header; record the code.
 - **Join.** Participant context: `goto('/')`, fill `getByLabel('Your name')` with `Participant A` and `getByLabel('Room code')` with the code, click `getByRole('button', {name: 'Join'})`. The squad room opens.
 - **Roster read-back.** In the facilitator context, the roster lists `Participant A` with a role. Reload; it is still listed.
 - **Duplicate name.** Open a new participant context, join again as `Participant A` with the same code. The join returns 409, the page shows `That name already exists in this room.` and no room opens.

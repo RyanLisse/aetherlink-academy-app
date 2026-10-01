@@ -26,9 +26,9 @@ Preconditions:
 
 - **Open start.** Navigate to the origin. Run `node .cursor/skills/verify-academy/scripts/control.mjs drive facilitator-home`. The page shows button `Ik ben facilitator` and button `Deelnemen`.
 - **Prefer NL chrome.** Click language button `NL` so labels match the product default.
-- **Unlock facilitator.** Select radio `Ik ben facilitator`. Browser: `getByRole('radio', { name: /Ik ben facilitator|I am a facilitator/ }).check()`. The `Squadnaam` / `Squad name` and `Facilitator-startsleutel` / `Facilitator start key` fields appear.
-- **Fill create form.** Fill squad name `Verify Orion` and the start key. Browser: `getByLabel(/^(Squadnaam|Squad name)$/).fill(...)` and `getByLabel(/^(Facilitator-startsleutel|Facilitator start key)$/).fill(...)`.
-- **Create squad.** Choose `Maak squad` / `Create squad`. Browser: `getByRole('button', { name: /^(Maak squad|Create squad)$/ }).click()`. Wait for heading `/^(Jouw squad|Your squad) \(/` and `h1` text `Verify Orion`.
+- **Unlock facilitator.** Select radio `Ik ben facilitator`. Browser: `getByRole('radio', { name: /Ik ben facilitator|I am a facilitator/ }).check()`. The `Facilitator-startsleutel` / `Facilitator start key` field appears.
+- **Sign in.** Fill the start key and choose `Inloggen` / `Sign in`. Browser: `getByLabel(/^(Facilitator-startsleutel|Facilitator start key)$/).fill(...)` and `getByRole('button', { name: /^(Inloggen|Sign in)$/ }).click()`. The facilitator workspace opens.
+- **Create squad.** Fill squad name `Verify Orion` in the `Start een squad` / `Start a squad` card and choose `Maak squad` / `Create squad`. Browser: `getByLabel(/^(Squadnaam|Squad name)$/).fill(...)` and `getByRole('button', { name: /^(Maak squad|Create squad)$/ }).click()`. Wait for heading `/^(Jouw squad|Your squad) \(/` and `h1` text `Verify Orion`.
 - **Confirm landing.** After create, the facilitator lands on **Facilitatorwerkplek** / **Facilitator workspace** with `h1` `Verify Orion` (not the legacy `Jouw squad (n/n)` chrome alone).
 - **Confirm code.** Capture `code` from the `POST /game/create` JSON response. Optionally open Participants (`Deelnemers`) and use `Kopieer uitnodigingslink` / `Copy invite link`.
 - **Proof.** Save screenshot + ARIA under `artifacts/facilitator-home/` (`room.png`, `room.aria.txt`, `meta.json`). Artifacts show `Verify Orion` and facilitator workspace eyebrow; meta records squad code length (redacted).

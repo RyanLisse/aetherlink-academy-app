@@ -265,9 +265,10 @@ async function main() {
       'facilitator-created.png',
       async () => {
         await facilitatorPage.goto(academyUrl, { waitUntil: 'domcontentloaded' });
-        await facilitatorPage.getByRole('button', { name: 'Ik ben facilitator', exact: true }).click();
-        await facilitatorPage.getByLabel('Squadnaam', { exact: true }).fill('Squad Orion');
+        await facilitatorPage.getByRole('radio', { name: 'Ik ben facilitator', exact: true }).check();
         await facilitatorPage.getByLabel('Facilitator-startsleutel', { exact: true }).fill(hostKey);
+        await facilitatorPage.getByRole('button', { name: 'Inloggen', exact: true }).click();
+        await facilitatorPage.getByLabel('Squadnaam', { exact: true }).fill('Squad Orion');
         const result = await waitForCreateResponse(facilitatorPage);
         squadCode = result.code;
         await waitForRoom(facilitatorPage, 'Squad Orion');

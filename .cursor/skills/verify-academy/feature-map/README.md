@@ -17,7 +17,7 @@ Academy is an NL-first learning environment: facilitator-led squads, classroom/H
 ## Driving conventions
 
 - Start every recipe from the baseline unless its preconditions say otherwise.
-- Facilitator path: `Ik ben facilitator` → fill `Squadnaam` + `Facilitator-startsleutel` → `Maak squad`.
+- Facilitator path: `Ik ben facilitator` → fill `Facilitator-startsleutel` → `Inloggen` → workspace `Squadnaam` + `Maak squad`.
 - Participant path: fill `Je naam` + `Kamercode` → `Deelnemen`.
 - Locale: use the language toggle (`NL` / `EN`) before asserting content language.
 - ConceptSim attribution under `nl` must be Dutch (or Academy NL copy); EN strings in attribution under `nl` fail the locale lock.

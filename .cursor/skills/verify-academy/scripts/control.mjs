@@ -385,8 +385,9 @@ const cmdDrive = async (featureId) => {
     const nlToggle = page.getByRole("button", { name: "NL", exact: true });
     if (await nlToggle.count()) await nlToggle.click();
     await page.getByRole("radio", { name: /Ik ben facilitator|I am a facilitator/ }).check();
-    await page.getByLabel(/^(Squadnaam|Squad name)$/).fill("Verify Orion");
     await page.getByLabel(/^(Facilitator-startsleutel|Facilitator start key)$/).fill(hostKey);
+    await page.getByRole("button", { name: /^(Inloggen|Sign in)$/ }).click();
+    await page.getByLabel(/^(Squadnaam|Squad name)$/).fill("Verify Orion");
 
     const createResponsePromise = page.waitForResponse(
       (r) => {
