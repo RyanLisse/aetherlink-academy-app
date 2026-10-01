@@ -130,6 +130,9 @@ jobs:
       - name: Run legacy UI states and axe browser test
         id: legacy-ui
         run: node --import tsx --test tests/legacy-ui-browser.test.mjs
+      - name: Run legacy layout sweep browser test
+        id: legacy-layout
+        run: node --import tsx --test tests/legacy-layout-sweep.test.mjs
       - name: Run Postgres and Redis contract tests
         id: database
         run: >-
@@ -188,7 +191,7 @@ jobs:
           import {writeFileSync} from 'node:fs';
           import {execFileSync} from 'node:child_process';
           const results = JSON.parse(process.env.CHECK_RESULTS);
-          const checks = ['unit','storage','lab-embed','legacy-ui','marks','database','anchors','live','distributed'].map(id => ({name:id,outcome:results[id]?.outcome || 'not-run'}));
+          const checks = ['unit','storage','lab-embed','legacy-ui','legacy-layout','marks','database','anchors','live','distributed'].map(id => ({name:id,outcome:results[id]?.outcome || 'not-run'}));
           writeFileSync('test-results/ci-checks.json', JSON.stringify({revision:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),run:process.env.GITHUB_RUN_ID,attempt:process.env.GITHUB_RUN_ATTEMPT,checks},null,2));
           JS
       - name: Upload check outcomes
