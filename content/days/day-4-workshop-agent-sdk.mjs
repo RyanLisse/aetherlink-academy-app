@@ -1,218 +1,176 @@
-import {TRIAGE_ACCEPTANCE} from '../triage/grade.mjs';
 import {diagram,link,question,slide,starter} from './model.mjs';
 
 const d='workshop-4';
 
 const DIAGRAM_EN=diagram(
  '/diagrams/workshop/w4-ticket-tool-priority.svg',
- 'Ticket → tool_use → priority',
- 'Ticket enters messages → tool_use (TOOL_HANDLERS) → tool_result → priority label → human gate'
+ 'Customer message → tool_use → priority',
+ 'Customer message → tool_use → tool_result → priority label → human gate'
 );
 const DIAGRAM_NL=diagram(
  '/diagrams/workshop/w4-ticket-tool-priority.svg',
- 'Ticket → tool_use → prioriteit',
- 'Ticket komt in messages → tool_use (TOOL_HANDLERS) → tool_result → prioriteitslabel → menselijke gate'
+ 'Klantbericht → tool_use → prioriteit',
+ 'Klantbericht → tool_use → tool_result → prioriteitslabel → menselijke gate'
 );
 
 const DEMO_SLIDES=[
- slide(d,3,'Watch: clone, install, open the export.'),
- slide(d,6,'Watch: fixture tickets, predict L/M/H.'),
- slide(d,9,'Watch: first agent, ticket to priority.'),
- slide(d,12,'Watch: one specialist split.'),
+ slide(d,2,'Map n8n to the Agent SDK.'),
+ slide(d,5,'Watch one agent classify a message.'),
+ slide(d,9,'Watch the orchestrator save a draft.'),
+ slide(d,12,'Watch an MCP transaction lookup.'),
 ];
 
 const en = {
- title:'Workshop 4 · Claude Agent SDK',
+ title:'Workshop 4 · Support agents with the Claude Agent SDK',
  tag:'Workshop',
- blurb:'Rebuild the same ticket triage with the Claude Agent SDK — same tickets and labels as the n8n path.',
+ blurb:'Build a support workflow with one agent, specialist subagents, and a transaction lookup through MCP.',
  kicker:'Workshop 4 · SOLO 0 → 4',
- lessonTitle:'Same triage, Claude Agent SDK',
- motto:'Ticket → tool_use → priority — labels stay fixed',
- leerdoel:'You rebuild Workshop 3 ticket triage with the Claude Agent SDK and hit the same priority labels on the shared fixture as the n8n path. Solo bar is SOLO 2; SOLO 3 is stretch. Eve is not a required path.',
+ lessonTitle:'Support agents with the Claude Agent SDK',
+ motto:'CLAUDE.md → subagents → MCP — one query() at a time',
+ leerdoel:'Build and inspect three support-agent lessons with the Claude Agent SDK. Keep Workshop 3’s LOW, MEDIUM, and HIGH labels, specialist split, and human review gate. Use new customer messages and transaction data through MCP.',
  narrative:[
-  'Workshop 4 is s01–s02 territory on a familiar vehicle: a support ticket enters the agent loop as messages, the model emits tool_use, TOOL_HANDLERS dispatch, and a tool_result becomes a priority label — low, medium, or high.',
-  'The acceptance set does not move. Claude must match the n8n labels on the shared fixture. A mismatch means fix prompt or tools — never invent a new label. An offline dry-run proves the chain; it is not model proof.',
-  'Every block follows the same rhythm: explanation, demonstration, then you do it yourself. The diagram and ConceptSim walk through ticket→tool_use→priority; you practise in SOLO 0–4 with aetherlink-day5-n8n-to-agent.',
+  'Workshop 3 uses n8n. Workshop 4 carries its LOW, MEDIUM, and HIGH labels, specialist split, and human review gate into a new support workflow. The customer messages and transaction workbook are different.',
+  'Work through one agent with CLAUDE.md, an orchestrator with two subagents, and a transaction lookup through MCP. Customer text is data, not instructions. Review each draft before it reaches a customer.',
+  'Use the same rhythm in every lesson: explain, demonstrate, let participants try, then discuss. The diagram and ConceptSim show a tool call becoming a priority. The day-5 n8n-to-agent HTML lesson is an optional parity bonus, not the Workshop 4 vehicle.',
  ],
- workedExample:'Mechanism: ticket→tool_use→priority on aetherlink-day5-n8n-to-agent. Motto: labels stay fixed to the shared fixture. Step the ConceptSim without API keys, walk the HTML Solos under /courses/ (weather L1 · day5 bridge · council L2 stretch), then run SOLO 0–4 on your branch if you clone the vehicle.',
+ workedExample:'Trace one support message through the Agent SDK: project instructions load from CLAUDE.md, specialists split analysis from reply writing, and the transaction lesson sends external data through get_transaction. Step the ConceptSim without an API key, then complete SOLO 0–4 in the Agent SDK package.',
  loop:[
-  {label:'SOLO 0',prompt:'Have you cloned the repo and can you point to Ticket Input, AI Agent, Reply, Risk, and Switch?'},
-  {label:'SOLO 1',prompt:'Which label do you predict per fixture ticket, and what does the automatic check say?'},
-  {label:'SOLO 2',prompt:'Which priority does your first agent return, and who reviews it?'},
-  {label:'SOLO 3',prompt:'Which specialist do you split off, and where is the gate?'},
-  {label:'SOLO 4',prompt:'Does every Claude label match the expected n8n label?'}
+  {label:'SOLO 0',prompt:'Can you install the package and inspect its resolved options without making a model call?'},
+  {label:'SOLO 1',prompt:'What does the main agent know from CLAUDE.md and the customer message?'},
+  {label:'SOLO 2',prompt:'What does ticket-analyst decide, and what does email-responder write?'},
+  {label:'SOLO 3',prompt:'When does the analyst need get_transaction, and what facts came from it?'},
+  {label:'SOLO 4',prompt:'Can a human review the drafts and the source of each external fact?'}
  ],
  demo:{
   slides:DEMO_SLIDES,
   script:[
-   'Show the ticket→tool_use→priority diagram: messages loop, TOOL_HANDLERS dispatch, fixed labels, human gate before accept.',
-   'Step the ConceptSim (WL-1026 → keyword_priority → high) — no API key required.',
-   'SOLO 0 (slide 3): git clone, npm install, open n8n/support-triage.json and name Ticket Input, AI Agent, Reply, and Risk.',
-   'SOLO 1 (slide 6): show fixture tickets; the room predicts a label per ticket; the Academy automatic check confirms.',
-   'SOLO 2 (slide 9): run npm run triage -- fixtures/ticket.json --dry-run, show priority and the human gate before accept. This is the solo bar.',
-   'SOLO 3 (slide 12, stretch): demonstrate one specialist (customer-reply or risk) with joint output and gate.',
+   'Open Map n8n to the Agent SDK. Point to query(), CLAUDE.md, agents, MCP get_transaction, and the human review gate.',
+   'Open Watch one agent classify a message. Show how settingSources loads the project instructions and how impact matters more than tone.',
+   'Open Watch the orchestrator save a draft. Follow the Agent trace and inspect the file in 02-subagents/claude-project/output/.',
+   'Open Watch an MCP transaction lookup. Show the stdio trace, the external-data line, and the workbook outside claude-project.',
+   'Return to the four questions on the mapping slide after participants try each lesson.'
   ]
  },
  solo:[
-  {id:'w4-solo0',badge:'S0',level:'required',timerMinutes:10,title:'SOLO 0 · Clone and open the export',goal:'Clone aetherlink-day5-n8n-to-agent, run npm install, open n8n/support-triage.json, and work on your own work/<name> branch.',instructions:['Check `node --version` (20 or newer).','Run `git clone https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent.git` and `cd aetherlink-day5-n8n-to-agent`.','Create your branch: `git switch -c work/<your-name>`.','Run `npm install`, then `npm test`. All tests must pass.','Open n8n/support-triage.json and find Ticket Input, AI Agent, Customer Reply Agent, Risk Agent and the Switch.'],doneWhen:'Install works and you can point to Ticket Input, AI Agent, Customer Reply Agent, Risk Agent, and the Switch.',slide:slide(d,4,'Clone and open the n8n export.')},
-  {id:'w4-solo1',autograde:'triage',badge:'S1',level:'required',timerMinutes:10,title:'SOLO 1 · Predict and check the labels',goal:'Predict the label (low, medium, or high) per fixture ticket and check your prediction with the automatic check. Keep your Workshop 3 Proof beside you if you have it.',instructions:['Read the four ticket messages in the automatic check below.','Apply the Workshop 3 rule without looking up answers: charged twice, complaint, fraud or today → high; refund, error, wrong or broken → medium; otherwise low.','Choose one label per ticket and submit. Compare with your Workshop 3 Proof if you have it.','A mismatch? Reread the rule and the ticket text. Labels do not move between n8n and Claude.'],doneWhen:'Your prediction for every fixture ticket is submitted to the automatic check and every label matches; the check then passes the task.',slide:slide(d,7,'Confirm the fixture on your machine.')},
-  {id:'w4-solo2',badge:'S2',level:'required',timerMinutes:20,title:'SOLO 2 · First agent',goal:'Have your agent assign a priority on at least one fixture ticket with systemPrompt and prompt. An offline dry-run is allowed; it is not model proof.',instructions:['Open src/prompts.ts: COORDINATOR_SYSTEM is the systemPrompt (the n8n System Message), buildTriagePrompt builds the prompt for one ticket.','Open src/agent.ts and find the query() call with systemPrompt, prompt and maxTurns.','Run offline, without a key (no AGENT_MODEL means the scripted runtime; `--dry-run` skips writing memory): `npm run triage -- fixtures/ticket.json --dry-run`.','Read the output: the priority, draft_only: true and human_approval_required: true. Offline output is scripted and is not model evidence.','Optional real run: put ANTHROPIC_API_KEY in your shell only, then run `AGENT_MODEL=sonnet npm run triage -- fixtures/ticket.json --dry-run`. AGENT_MODEL switches to the real SDK; `--dry-run` only keeps memory unchanged.','Have a human review the draft, and check with `git status` that no key or .env file is staged.'],doneWhen:'Agent runs on a fixture, a priority comes out, a human has reviewed, and no secrets were committed. This is the solo bar.',hint:'Optionally edit src/prompts.ts and re-run offline.',slide:slide(d,10,'Run your first agent on a fixture.')},
-  {id:'w4-solo3',badge:'S3',level:'stretch',timerMinutes:15,title:'SOLO 3 · Add a specialist',goal:'Look at how Reply and Risk are split off as subagents (already wired in the vehicle, like L3 in n8n), check the trace, and optionally sharpen one specialist.',instructions:['Open src/tools.ts and .claude/agents/customer-reply.md and .claude/agents/risk.md: these are the Customer Reply and Risk specialists from n8n L3.','Run `npm run triage -- fixtures/ticket.json --dry-run` and `npm run triage -- fixtures/ticket-followup.json --dry-run`.','In the trace, check that customer-reply and risk are each called exactly once.','Compare customer_reply and risk_note in the routed draft with the trace, and check the gate: draft_only and human_approval_required are true.','Optional: sharpen one specialist prompt, rerun, and run `npm test`.'],doneWhen:'Two roles, joint output, and a gate with draft_only and human_approval_required. Optional.',slide:slide(d,13,'Stretch — add a specialist role.')},
-  {id:'w4-solo4',autograde:'triage',badge:'S4',level:'required',timerMinutes:15,title:'SOLO 4 · Acceptance table and Proof',goal:'Fill the table ticket → expected n8n label → actual Claude label. Resolve a mismatch in prompt or tools, not with new labels.',instructions:['Run `npm run verify` (typecheck, tests and self-check).','Save the two repo tickets: `npm run triage -- fixtures/ticket.json --dry-run --out participant-output/WL-1026.json` and the same for fixtures/ticket-followup.json with --out participant-output/WL-1027.json.','For WL-9001 and WL-9002, create participant-output/WL-9001-ticket.json and participant-output/WL-9002-ticket.json with ticket_id, customer and message copied from triage-fixtures.json in Materials, then run triage on each with --out.','Check a saved decision: `npm run check -- --ticket fixtures/ticket.json --decision participant-output/WL-1026.json`.','Fill the table ticket → n8n label (Workshop 3) → Claude label → match. Offline runs only prove the harness; a real model run is needed for model evidence.','Enter the Claude labels in the automatic check below. Fix a mismatch in the prompt or tools, never by adding labels.','Have a human review the drafts and note your level (2, 3 or 4) in your Proof.'],doneWhen:'Acceptance table, dry-run or trace, human gate, and achieved level (2, 3, or 4).',slide:slide(d,15,'Fill the acceptance table. Ship Proof.')}
+  {id:'w4-solo0',badge:'S0',level:'required',timerMinutes:10,title:'SOLO 0 · Get the package',goal:'Clone the sparse workshop package, install its dependencies, and print a dry-run prompt and options without making a model call.',instructions:['Check `node --version`; use Node.js 20 or newer.','Run `git clone --depth 1 --filter=blob:none --sparse https://github.com/RyanLisse/aetherlink-academy-app.git w4-support`.','Run `cd w4-support && git sparse-checkout set training-lab/w4-support-agent-sdk`.','Run `cd training-lab/w4-support-agent-sdk && npm install`.','Run `npm run lesson1 -- MSG-01 --dry-run` and inspect the prompt and options.','Set `ANTHROPIC_API_KEY` in your shell only before a real run; a dry run is not model evidence.'],doneWhen:'The package installs and the dry run prints the resolved prompt and options without a model call.',slide:slide(d,3,'Get the workshop package.')},
+  {id:'w4-solo1',autograde:'support',badge:'S1',level:'required',timerMinutes:15,title:'SOLO 1 · Lesson 1: one agent and CLAUDE.md',goal:'Run Lesson 1 on the first six messages, test how the project definitions affect tone, and enter your labels in the support check.',instructions:['With `ANTHROPIC_API_KEY` set in your shell, run `npm run lesson1 -- MSG-01` through `npm run lesson1 -- MSG-06`.',"Read `01-single-agent/claude-project/CLAUDE.md` and note how `settingSources: ['project']` loads the project instructions.",'Temporarily remove `## Priority definitions`, then rerun the loud-tone and tone-trap messages, `MSG-01` and `MSG-06`.','Restore the original file with `git restore 01-single-agent/claude-project/CLAUDE.md`.','Enter one label per message in the `support` check.'],doneWhen:'You ran all six messages, compared the tone-trap runs, restored CLAUDE.md, and submitted labels for the support check.',slide:slide(d,6,'Run Lesson 1 and test the tone trap.')},
+  {id:'w4-solo2',badge:'S2',level:'required',timerMinutes:20,title:'SOLO 2 · Orchestrator and subagents',goal:'Trace how the orchestrator delegates analysis and reply writing, saves the draft, and reports missing information.',instructions:['Run `npm run lesson2 -- MSG-05` and watch for `Agent → ticket-analyst`, then `Agent → email-responder`.','Open `02-subagents/claude-project/output/MSG-05.md` and inspect the combined result.','Confirm that the orchestrator delegated both specialist jobs instead of classifying or writing the reply itself.','Run `npm run lesson2 -- MSG-10` and inspect the request for missing information.','Keep each saved draft behind the human review gate.'],doneWhen:'You can identify both specialist calls, open the saved draft, and explain how the orchestrator handles missing information.',slide:slide(d,10,'Run the orchestrator and inspect the draft.')},
+  {id:'w4-solo3',badge:'S3',level:'required',timerMinutes:20,title:'SOLO 3 · MCP and transaction data',goal:'Install the transaction server dependencies and inspect how the analyst receives transaction facts through the MCP tool.',instructions:['Run `cd 03-mcp/transaction-mcp && npm install`; this installs dependencies but does not start the server.','Run `npm run lesson3 -- MSG-08`, then run it with `MSG-07` and `MSG-09`.','Follow the `mcp → mcp__transactions__get_transaction` trace for each transaction lookup.','Find the `External data:` line in each result and note which facts came from the tool.','Confirm that `transactions.xlsx` and `server.js` are outside `03-mcp/claude-project`; the SDK starts the server over stdio when needed.'],doneWhen:'You can trace each lookup through MCP and explain why the workbook stays outside claude-project.',slide:slide(d,13,'Run Lesson 3 with transaction messages.')},
+  {id:'w4-solo4',autograde:'support-mcp',badge:'S4',level:'required',timerMinutes:15,title:'SOLO 4 · Acceptance table and Proof',goal:'Record the message, your agent label, and facts from external data, then submit labels and leave drafts for human review.',instructions:['Build an acceptance table with columns for message, agent label, and facts from external data.','Enter labels for the transaction messages in the `support-mcp` check.','Review the drafts in `02-subagents/claude-project/output/` and `03-mcp/claude-project/output/` before any customer-facing use.','Attach your table and a run trace to your Proof. Mark dry-run output as setup evidence, not model evidence.','Name the human review gate and record the Workshop 4 lessons you completed.'],doneWhen:'Your acceptance table, label check, run trace, and human review gate are recorded in Proof.',slide:slide(d,15,'Complete the acceptance table and Proof.')},
  ],
  materials:[
-  link('solo','HTML Solo · weather-agent-sdk (L1)','/courses/weather-agent-sdk/index.html','instruction-quest in instructions.md · Arcade companion'),
-  link('solo','HTML Solo · day5 n8n→agent (core W3→W4)','/courses/aetherlink-day5-n8n-to-agent/index.html','SOLO.md + fixtures offline lane'),
-  link('solo','HTML Solo · council-agent-sdk (L2 stretch)','/courses/council-agent-sdk/index.html','judge rule in instructions.md'),
-  link('vehicle','Rebuild repo aetherlink-day5-n8n-to-agent','https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent','Slide 2; SOLO.md in the repo'),
-  starter('triage-fixtures.json','Shared fixture tickets (the server checks your labels)'),
-  link('naslag','Agent SDK overview','https://code.claude.com/docs/en/agent-sdk/overview','NASLAG.md Support Day 4 · code.claude.com'),
-  link('naslag','Agents docs','https://code.claude.com/docs/en/agents','NASLAG.md Support Day 4 · code.claude.com'),
-  link('naslag','Introduction to Subagents','https://academy.claude.com/courses/introduction-to-subagents','NASLAG.md Support Day 4 · Anthropic Academy'),
-  link('diagram','Ticket → tool_use → priority diagram','/diagrams/workshop/w4-ticket-tool-priority.svg','Workshop 4')
+  link('solo','Weather Agent SDK · HTML companion','/courses/weather-agent-sdk/index.html','Instruction quest in instructions.md · Arcade companion'),
+  link('solo','Optional parity bonus · day5 n8n→agent','/courses/aetherlink-day5-n8n-to-agent/index.html','Optional comparison with Workshop 3; not the Workshop 4 vehicle'),
+  link('solo','Council Agent SDK · HTML companion','/courses/council-agent-sdk/index.html','Judge rule in instructions.md'),
+  link('vehicle','Workshop 4 Agent SDK package','https://github.com/RyanLisse/aetherlink-academy-app/tree/main/training-lab/w4-support-agent-sdk','Three lessons · query(), subagents, and MCP'),
+  starter('customer-messages.md','Customer messages for the three lessons'),
+  link('naslag','Agent SDK overview','https://code.claude.com/docs/en/agent-sdk/overview','Agent SDK reference'),
+  link('naslag','Agents documentation','https://code.claude.com/docs/en/agents','Subagent reference'),
+  link('naslag','Introduction to Subagents','https://academy.claude.com/courses/introduction-to-subagents','Anthropic Academy'),
+  link('diagram','Customer message → tool_use → priority diagram','/diagrams/workshop/w4-ticket-tool-priority.svg','Workshop 4')
  ],
  diagrams:[DIAGRAM_EN],
  simTitles:{'w4-ticket-priority':'Concept sim · Ticket → priority'},
  proof:[
-  'Acceptance table ticket → expected n8n label → actual Claude label on the same fixture as Workshop 3 (slides 14 and 15).',
-  'All labels match (gradeTriage PASS); a mismatch is fixed in prompt or tools, not with a new label (slide 14).',
-  'Dry-run or trace attached; an offline run is not model proof (slides 8 and 15).',
-  'Human gate recorded before accept (slides 10 and 15).',
-  'Achieved level recorded; minimum SOLO 2 (slide 10).',
-  'Ticket→tool_use→priority diagram viewed; ConceptSim stepped without API keys.'
+  'Acceptance table with the message, agent label, and any facts from external data (slides 14 and 15).',
+  'Labels submitted to the support-mcp check without copying labels from Workshop 3.',
+  'Run trace attached; dry-run output is not model evidence (slides 3 and 15).',
+  'Drafts reviewed by a human before any customer-facing use (slides 8, 10, and 15).',
+  'External facts trace back to get_transaction and the `External data:` line (slides 11, 12, and 14).',
  ],
  quiz:[
-  question('Claude returns a different label than n8n. What do you do?',['Improve prompt or tools; the labels do not move','Change the expected label in the fixture','Add a new label'],0,slide(d,14,'Acceptance is the same labels.')),
-  question('What is the solo bar today?',['SOLO 0','SOLO 4 with subagents','At least SOLO 2'],2,slide(d,10,'Run your first agent on a fixture.')),
-  question('What does an offline dry-run prove?',['That the model triages well','That the chain runs; it is not model proof','That your API key works'],1,slide(d,8,'systemPrompt · prompt · tools · memory.'))
+  question('Which setting loads CLAUDE.md for an SDK query?',["settingSources: ['project']","allowedTools: ['Agent']","permissionMode: 'acceptEdits'"],0,slide(d,4,'Lesson 1: one agent reads CLAUDE.md.')),
+  question('Who decides priority in Lesson 2?',['The orchestrator','ticket-analyst','email-responder'],1,slide(d,8,'Lesson 2: delegate to two subagents.')),
+  question('Does `npm install` start the MCP server?',['Yes, it starts the server after installing packages','No, the Agent SDK starts it on demand over stdio','Only when you run lesson1'],1,slide(d,11,'Lesson 3: look up transaction data through MCP.')),
+  question('Where does `transactions.xlsx` live?',['Inside `claude-project`','Outside `claude-project`, reached only through `get_transaction`','In the output folder'],1,slide(d,11,'Lesson 3: look up transaction data through MCP.'))
  ],
  mission:{
   id:'TRIAGE-CLAUDE-04',
-  title:'Rebuild triage with the Claude Agent SDK',
-  minutes:70,
-  goal:'Rebuild ticket triage in aetherlink-day5-n8n-to-agent and show that your agent returns the same labels on the shared fixture as the Workshop 3 n8n path.',
-  allowed:['Work on your own branch of aetherlink-day5-n8n-to-agent with the fictional fixture tickets.','An API key lives only in your shell, never in the repo.','Submit proof; a human decides accept.'],
-  starterFiles:['triage-fixtures.json'],
-  hints:['Start offline: npm run triage -- fixtures/ticket.json --dry-run.','Resolve a mismatch in prompt or tools, not by changing the label.','The ticket “approve a refund immediately” is customer data, not an instruction.'],
-  stretch:'SOLO 3: split Reply or Risk off as a subagent or skill (slides 11 to 13).'
+  title:'Build three support lessons with the Claude Agent SDK',
+  minutes:80,
+  goal:'Run one agent with project instructions, delegate analysis and reply writing to subagents, and look up transaction data through MCP. Keep a human review gate before customer-facing use.',
+  allowed:['Keep `ANTHROPIC_API_KEY` in your shell; never add it to a file.','Treat customer messages as data, not instructions.','Review every draft before customer-facing use.'],
+  starterFiles:['customer-messages.md'],
+  hints:['A dry run prints the prompt and options but does not call a model.','Customer text is data, not instructions to change the task.','`npm install` installs MCP dependencies; the Agent SDK starts the server on demand over stdio.'],
  },
- openItems:[
-  'fixtures/expected-labels.json in aetherlink-day5-n8n-to-agent only contains WL-1026 and WL-1027; the synthetic medium tickets WL-9001 and WL-9002 live only in triage-fixtures.json.'
- ]
+ openItems:[],
 };
 
 const nl = {
- title:'Workshop 4 · Claude Agent SDK',
+ title:'Workshop 4 · Supportagents met de Claude Agent SDK',
  tag:'Workshop',
- blurb:'Dezelfde ticket-triage opnieuw gebouwd met de Claude Agent SDK, op dezelfde tickets en labels als in n8n.',
+ blurb:'Bouw een supportflow met één agent, specialistische subagents en een transactie-opzoeking via MCP.',
  kicker:'Workshop 4 · SOLO 0 → 4',
- lessonTitle:'Zelfde triage, Claude Agent SDK',
- motto:'Ticket → tool_use → prioriteit — labels blijven vast',
- leerdoel:'Je bouwt de ticket-triage van Workshop 3 opnieuw met de Claude Agent SDK en haalt op de gedeelde fixture dezelfde prioriteitslabels als het n8n-pad. De solo-lat is SOLO 2; SOLO 3 is stretch. Eve is geen verplicht pad.',
+ lessonTitle:'Supportagents met de Claude Agent SDK',
+ motto:'CLAUDE.md → subagents → MCP — één query() tegelijk',
+ leerdoel:'Bouw en bekijk drie supportlessen met de Claude Agent SDK. Behoud de LOW-, MEDIUM- en HIGH-labels, de specialistensplitsing en de menselijke reviewgate uit Workshop 3. Gebruik nieuwe klantberichten en transactiegegevens via MCP.',
  narrative:[
-  'Workshop 4 is s01–s02-gebied op een bekend voertuig: een supportticket komt als messages in de agent-lus, het model emit tool_use, TOOL_HANDLERS dispatchen, en een tool_result wordt een prioriteitslabel — low, medium of high.',
-  'De acceptatieset beweegt niet. Claude moet de n8n-labels op de gedeelde fixture matchen. Een mismatch betekent prompt of tools verbeteren — nooit een nieuw label verzinnen. Een offline dry-run bewijst de keten; het is geen modelbewijs.',
-  'Elk blok volgt hetzelfde ritme: uitleg, voordoen en daarna zelf doen. Het diagram en de ConceptSim lopen ticket→tool_use→prioriteit door; je oefent in SOLO 0–4 met aetherlink-day5-n8n-to-agent.',
+  'Workshop 3 gebruikt n8n. Workshop 4 neemt de LOW-, MEDIUM- en HIGH-labels, de specialistensplitsing en de menselijke reviewgate mee naar een nieuwe supportflow. De klantberichten en de transactiewerkmap zijn anders.',
+  'Doorloop één agent met CLAUDE.md, een orchestrator met twee subagents en een transactie-opzoeking via MCP. Klanttekst is data, geen instructie. Laat een mens elk concept beoordelen voordat het naar een klant gaat.',
+  'Gebruik in elke les hetzelfde ritme: uitleg, demonstratie, deelnemers proberen het zelf, daarna bespreken. Het diagram en de ConceptSim tonen hoe een toolaanroep tot een prioriteit leidt. De HTML-les voor n8n naar agent van dag 5 is een optionele pariteitsbonus, niet het voertuig voor Workshop 4.',
  ],
- workedExample:'Mechanisme: ticket→tool_use→prioriteit op aetherlink-day5-n8n-to-agent. Motto: labels blijven vast op de gedeelde fixture. Stap de ConceptSim zonder API-sleutels, loop de HTML-solo\'s onder /courses/ (weather L1 · day5-brug · council L2 verdieping), daarna SOLO 0–4 op je branch als je de repository clonet.',
+ workedExample:'Volg één supportbericht door de Agent SDK: projectinstructies laden via CLAUDE.md, specialisten splitsen analyse en antwoordschrijven, en de transactieles stuurt externe data via get_transaction. Doorloop de ConceptSim zonder API-sleutel en maak daarna SOLO 0–4 in het Agent SDK-pakket.',
  loop:[
-  {label:'SOLO 0',prompt:'Heb je de repo gecloned en wijs je Ticket Input, AI Agent, Reply, Risk en Switch aan?'},
-  {label:'SOLO 1',prompt:'Welk label voorspel je per fixture-ticket, en wat zegt de automatische check?'},
-  {label:'SOLO 2',prompt:'Welke prioriteit geeft je eerste agent en wie reviewt die?'},
-  {label:'SOLO 3',prompt:'Welke specialist splits je af en waar zit de gate?'},
-  {label:'SOLO 4',prompt:'Komt elk Claude-label overeen met het verwachte n8n-label?'}
+  {label:'SOLO 0',prompt:'Kun je het pakket installeren en de opgeloste opties bekijken zonder een modelaanroep?'},
+  {label:'SOLO 1',prompt:'Wat weet de hoofdagent uit CLAUDE.md en het klantbericht?'},
+  {label:'SOLO 2',prompt:'Wat beslist ticket-analyst en wat schrijft email-responder?'},
+  {label:'SOLO 3',prompt:'Wanneer heeft de analist get_transaction nodig en welke feiten komen daaruit?'},
+  {label:'SOLO 4',prompt:'Kan een mens de concepten en de bron van elke externe bewering controleren?'}
  ],
  demo:{
   slides:DEMO_SLIDES,
   script:[
-   'Toon het ticket→tool_use→prioriteit-diagram: messages-lus, TOOL_HANDLERS-dispatch, vaste labels, menselijke gate vóór acceptatie.',
-   'Stap de ConceptSim (WL-1026 → keyword_priority → high) — geen API-sleutel nodig.',
-   'SOLO 0 (dia 3): git clone, npm install, open n8n/support-triage.json en benoem Ticket Input, AI Agent, Reply en Risk.',
-   'SOLO 1 (dia 6): toon de fixture-tickets en laat de zaal per ticket een label voorspellen; de automatische check in de Academy bevestigt of het klopt.',
-   'SOLO 2 (dia 9): run npm run triage -- fixtures/ticket.json --dry-run, toon de prioriteit en de menselijke gate vóór acceptatie. Dit is de solo-lat.',
-   'SOLO 3 (dia 12, stretch): demonstreer één specialist (customer-reply of risk) met gezamenlijke output en gate.',
+   'Open Map n8n to the Agent SDK. Wijs query(), CLAUDE.md, agents, MCP get_transaction en de menselijke reviewgate aan.',
+   'Open Watch one agent classify a message. Toon hoe settingSources de projectinstructies laadt en waarom impact belangrijker is dan toon.',
+   'Open Watch the orchestrator save a draft. Volg de Agent-trace en bekijk het bestand in 02-subagents/claude-project/output/.',
+   'Open Watch an MCP transaction lookup. Toon de stdio-trace, de regel voor externe data en de werkmap buiten claude-project.',
+   'Stel na elke les opnieuw de vier vragen van de overzichtsdia.'
   ]
  },
  solo:[
-  {id:'w4-solo0',badge:'S0',level:'required',timerMinutes:10,title:'SOLO 0 · Clone en open de export',goal:'Clone aetherlink-day5-n8n-to-agent, draai npm install, open n8n/support-triage.json en werk op je eigen work/<naam>-branch.',instructions:['Controleer `node --version` (20 of hoger).','Draai `git clone https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent.git` en `cd aetherlink-day5-n8n-to-agent`.','Maak je branch: `git switch -c work/<jouw-naam>`.','Draai `npm install` en daarna `npm test`. Alle tests moeten slagen.','Open n8n/support-triage.json en zoek Ticket Input, AI Agent, Customer Reply Agent, Risk Agent en de Switch.'],doneWhen:'Installatie werkt en je wijst Ticket Input, AI Agent, Customer Reply Agent, Risk Agent en de Switch aan.',slide:slide(d,4,'Clone and open the n8n export.')},
-  {id:'w4-solo1',autograde:'triage',badge:'S1',level:'required',timerMinutes:10,title:'SOLO 1 · Voorspel en check de labels',goal:'Voorspel per fixture-ticket het label (low, medium of high) en check je voorspelling met de automatische check. Houd je Proof van Workshop 3 ernaast als je die hebt.',instructions:['Lees de vier ticketberichten in de automatische check hieronder.','Pas de regel uit Workshop 3 toe zonder antwoorden op te zoeken: charged twice, complaint, fraud of today → high; refund, error, wrong of broken → medium; anders low.','Kies per ticket één label en lever in. Vergelijk met je Proof van Workshop 3 als je die hebt.','Klopt het niet? Lees de regel en de tickettekst opnieuw. Labels verschuiven niet tussen n8n en Claude.'],doneWhen:'Je voorspelling voor elk fixture-ticket is ingeleverd bij de automatische check en elk label klopt; de check keurt de opdracht dan goed.',slide:slide(d,7,'Confirm the fixture on your machine.')},
-  {id:'w4-solo2',badge:'S2',level:'required',timerMinutes:20,title:'SOLO 2 · Eerste agent',goal:'Laat je agent op minstens één fixture-ticket een prioriteit geven met systemPrompt en prompt. Een offline dry-run mag; die is geen modelbewijs.',instructions:['Open src/prompts.ts: COORDINATOR_SYSTEM is de systemPrompt (de System Message uit n8n), buildTriagePrompt bouwt de prompt voor één ticket.','Open src/agent.ts en zoek de query()-aanroep met systemPrompt, prompt en maxTurns.','Draai offline, zonder sleutel (zonder AGENT_MODEL draait de gescripte runtime; `--dry-run` schrijft geen memory weg): `npm run triage -- fixtures/ticket.json --dry-run`.','Lees de output: de prioriteit, draft_only: true en human_approval_required: true. Offline output is gescript en geen modelbewijs.','Optionele echte run: zet ANTHROPIC_API_KEY alleen in je shell en draai `AGENT_MODEL=sonnet npm run triage -- fixtures/ticket.json --dry-run`. AGENT_MODEL schakelt naar de echte SDK; `--dry-run` laat alleen memory ongewijzigd.','Laat een mens het concept reviewen en controleer met `git status` dat er geen sleutel of .env-bestand klaarstaat.'],doneWhen:'Agent draait op een fixture, prioriteit komt eruit, een mens heeft gereviewd en er zijn geen secrets gecommit. Dit is de solo-lat.',hint:'Pas desgewenst src/prompts.ts aan en run opnieuw offline.',slide:slide(d,10,'Run your first agent on a fixture.')},
-  {id:'w4-solo3',badge:'S3',level:'stretch',timerMinutes:15,title:'SOLO 3 · Voeg een specialist toe',goal:'Bekijk hoe Reply en Risk als subagents zijn afgesplitst (al aangesloten in het vehicle, net als L3 in n8n), controleer de trace en scherp eventueel één specialist aan.',instructions:['Open src/tools.ts en .claude/agents/customer-reply.md en .claude/agents/risk.md: dit zijn de specialisten Customer Reply en Risk uit n8n L3.','Draai `npm run triage -- fixtures/ticket.json --dry-run` en `npm run triage -- fixtures/ticket-followup.json --dry-run`.','Controleer in de trace dat customer-reply en risk elk precies één keer worden aangeroepen.','Vergelijk customer_reply en risk_note in het gerouteerde concept met de trace, en controleer de gate: draft_only en human_approval_required zijn true.','Optioneel: scherp één specialist-prompt aan, draai opnieuw en draai `npm test`.'],doneWhen:'Twee rollen, gezamenlijke output en een gate met draft_only en human_approval_required. Optioneel.',slide:slide(d,13,'Stretch — add a specialist role.')},
-  {id:'w4-solo4',autograde:'triage',badge:'S4',level:'required',timerMinutes:15,title:'SOLO 4 · Acceptatietabel en Proof',goal:'Vul de tabel ticket → verwacht n8n-label → werkelijk Claude-label. Een verschil los je op in prompt of tools, niet met nieuwe labels.',instructions:['Draai `npm run verify` (typecheck, tests en self-check).','Bewaar de twee repo-tickets: `npm run triage -- fixtures/ticket.json --dry-run --out participant-output/WL-1026.json` en hetzelfde voor fixtures/ticket-followup.json met --out participant-output/WL-1027.json.','Maak voor WL-9001 en WL-9002 participant-output/WL-9001-ticket.json en participant-output/WL-9002-ticket.json met ticket_id, customer en message uit triage-fixtures.json in Materialen, en draai triage op elk met --out.','Controleer een bewaarde beslissing: `npm run check -- --ticket fixtures/ticket.json --decision participant-output/WL-1026.json`.','Vul de tabel ticket → n8n-label (Workshop 3) → Claude-label → klopt. Offline runs bewijzen alleen de harness; voor modelbewijs is een echte modelrun nodig.','Vul de Claude-labels in bij de automatische check hieronder. Los een verschil op in prompt of tools, nooit door labels toe te voegen.','Laat een mens de concepten reviewen en noteer je niveau (2, 3 of 4) in je Proof.'],doneWhen:'Acceptatietabel, dry-run of trace, menselijke gate en behaald niveau (2, 3 of 4).',slide:slide(d,15,'Fill the acceptance table. Ship Proof.')}
+  {id:'w4-solo0',badge:'S0',level:'required',timerMinutes:10,title:'SOLO 0 · Haal het pakket op',goal:'Clone het sparse workshop-pakket, installeer de afhankelijkheden en toon een dry-runprompt met opties zonder een modelaanroep.',instructions:['Controleer `node --version`; gebruik Node.js 20 of hoger.','Voer `git clone --depth 1 --filter=blob:none --sparse https://github.com/RyanLisse/aetherlink-academy-app.git w4-support` uit.','Voer `cd w4-support && git sparse-checkout set training-lab/w4-support-agent-sdk` uit.','Voer `cd training-lab/w4-support-agent-sdk && npm install` uit.','Voer `npm run lesson1 -- MSG-01 --dry-run` uit en bekijk de prompt en opties.','Zet `ANTHROPIC_API_KEY` alleen in je shell voor een echte run; een dry-run is geen modelbewijs.'],doneWhen:'Het pakket installeert en de dry-run toont de opgeloste prompt en opties zonder een modelaanroep.',slide:slide(d,3,'Get the workshop package.')},
+  {id:'w4-solo1',autograde:'support',badge:'S1',level:'required',timerMinutes:15,title:'SOLO 1 · Les 1: één agent en CLAUDE.md',goal:'Voer les 1 uit op de eerste zes berichten, test hoe de projectdefinities toon beïnvloeden en voer je labels in bij de supportcheck.',instructions:['Zet `ANTHROPIC_API_KEY` in je shell en voer `npm run lesson1 -- MSG-01` tot en met `npm run lesson1 -- MSG-06` uit.',"Lees `01-single-agent/claude-project/CLAUDE.md` en bekijk hoe `settingSources: ['project']` de projectinstructies laadt.",'Verwijder tijdelijk `## Priority definitions` en voer daarna de luidruchtige berichten `MSG-01` en `MSG-06` opnieuw uit.','Herstel het oorspronkelijke bestand met `git restore 01-single-agent/claude-project/CLAUDE.md`.','Voer één label per bericht in bij de `support`-check.'],doneWhen:'Je hebt alle zes berichten uitgevoerd, de toontrapruns vergeleken, CLAUDE.md hersteld en de labels voor de supportcheck ingediend.',slide:slide(d,6,'Run Lesson 1 and test the tone trap.')},
+  {id:'w4-solo2',badge:'S2',level:'required',timerMinutes:20,title:'SOLO 2 · Orchestrator en subagents',goal:'Volg hoe de orchestrator analyse en antwoordschrijven delegeert, het concept opslaat en ontbrekende informatie meldt.',instructions:['Voer `npm run lesson2 -- MSG-05` uit en let op `Agent → ticket-analyst`, daarna `Agent → email-responder`.','Open `02-subagents/claude-project/output/MSG-05.md` en bekijk het gecombineerde resultaat.','Controleer dat de orchestrator beide specialisttaken delegeerde in plaats van zelf de prioriteit te bepalen of het antwoord te schrijven.','Voer `npm run lesson2 -- MSG-10` uit en bekijk welke ontbrekende informatie wordt opgevraagd.','Houd elk opgeslagen concept achter de menselijke reviewgate.'],doneWhen:'Je kunt beide specialistaanroepen aanwijzen, het opgeslagen concept openen en uitleggen hoe de orchestrator ontbrekende informatie behandelt.',slide:slide(d,10,'Run the orchestrator and inspect the draft.')},
+  {id:'w4-solo3',badge:'S3',level:'required',timerMinutes:20,title:'SOLO 3 · MCP en transactiegegevens',goal:'Installeer de afhankelijkheden van de transactieserver en bekijk hoe de analist transactiefeiten via de MCP-tool ontvangt.',instructions:['Voer `cd 03-mcp/transaction-mcp && npm install` uit; dit installeert afhankelijkheden maar start de server niet.','Voer `npm run lesson3 -- MSG-08` uit en daarna met `MSG-07` en `MSG-09`.','Volg voor elke transactie-opzoeking de trace `mcp → mcp__transactions__get_transaction`.','Zoek in elk resultaat de regel `External data:` en noteer welke feiten uit de tool komen.','Controleer dat `transactions.xlsx` en `server.js` buiten `03-mcp/claude-project` staan; de SDK start de server via stdio wanneer die nodig is.'],doneWhen:'Je kunt elke opzoeking via MCP volgen en uitleggen waarom de werkmap buiten claude-project blijft.',slide:slide(d,13,'Run Lesson 3 with transaction messages.')},
+  {id:'w4-solo4',autograde:'support-mcp',badge:'S4',level:'required',timerMinutes:15,title:'SOLO 4 · Acceptatietabel en Proof',goal:'Leg het bericht, je agentlabel en feiten uit externe data vast, dien labels in en laat concepten klaarstaan voor menselijke review.',instructions:['Maak een acceptatietabel met kolommen voor bericht, agentlabel en feiten uit externe data.','Voer labels voor de transactieberichten in bij de `support-mcp`-check.','Beoordeel de concepten in `02-subagents/claude-project/output/` en `03-mcp/claude-project/output/` voordat ze naar een klant gaan.','Voeg de tabel en een runtrace toe aan je Proof. Markeer dry-runuitvoer als setupbewijs, niet als modelbewijs.','Noem de menselijke reviewgate en noteer welke Workshop 4-lessen je hebt afgerond.'],doneWhen:'Je acceptatietabel, labelcheck, runtrace en menselijke reviewgate staan in je Proof.',slide:slide(d,15,'Complete the acceptance table and Proof.')},
  ],
  materials:[
-  link('solo','HTML-solo · weather-agent-sdk (L1)','/courses/weather-agent-sdk/index.html','instructie-opdracht in instructions.md · Arcade-companion'),
-  link('solo','HTML-solo · day5 n8n→agent (kern · W3→W4)','/courses/aetherlink-day5-n8n-to-agent/index.html','SOLO.md + fixtures · offline-pad'),
-  link('solo','HTML-solo · council-agent-sdk (L2 verdieping)','/courses/council-agent-sdk/index.html','juryregel in instructions.md'),
-  link('vehicle','Rebuild-repository aetherlink-day5-n8n-to-agent','https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent','Dia 2; SOLO.md in de repo'),
-  starter('triage-fixtures.json','Gedeelde fixture-tickets (de server controleert je labels)'),
-  link('naslag','Agent SDK overview','https://code.claude.com/docs/en/agent-sdk/overview','NASLAG.md Support Day 4 · code.claude.com'),
-  link('naslag','Agents-docs','https://code.claude.com/docs/en/agents','NASLAG.md Support Day 4 · code.claude.com'),
-  link('naslag','Introduction to Subagents','https://academy.claude.com/courses/introduction-to-subagents','NASLAG.md Support Day 4 · Anthropic Academy'),
-  link('diagram','Ticket → tool_use → prioriteit-diagram','/diagrams/workshop/w4-ticket-tool-priority.svg','Workshop 4')
+  link('solo','Weather Agent SDK · HTML-companion','/courses/weather-agent-sdk/index.html','Instructieopdracht in instructions.md · Arcade-companion'),
+  link('solo','Optionele pariteitsbonus · day5 n8n→agent','/courses/aetherlink-day5-n8n-to-agent/index.html','Optionele vergelijking met Workshop 3; niet het voertuig voor Workshop 4'),
+  link('solo','Council Agent SDK · HTML-companion','/courses/council-agent-sdk/index.html','Juryregel in instructions.md'),
+  link('vehicle','Workshop 4 Agent SDK-pakket','https://github.com/RyanLisse/aetherlink-academy-app/tree/main/training-lab/w4-support-agent-sdk','Drie lessen · query(), subagents en MCP'),
+  starter('customer-messages.md','Klantberichten voor de drie lessen'),
+  link('naslag','Agent SDK-overzicht','https://code.claude.com/docs/en/agent-sdk/overview','Agent SDK-referentie'),
+  link('naslag','Agentdocumentatie','https://code.claude.com/docs/en/agents','Subagentreferentie'),
+  link('naslag','Introduction to Subagents','https://academy.claude.com/courses/introduction-to-subagents','Anthropic Academy'),
+  link('diagram','Klantbericht → tool_use → prioriteit-diagram','/diagrams/workshop/w4-ticket-tool-priority.svg','Workshop 4')
  ],
  diagrams:[DIAGRAM_NL],
  simTitles:{'w4-ticket-priority':'Concept-sim · Ticket → prioriteit'},
  proof:[
-  'Acceptatietabel ticket → verwacht n8n-label → werkelijk Claude-label op dezelfde fixture als Workshop 3 (dia 14 en 15).',
-  'Alle labels gelijk (gradeTriage PASS); een verschil wordt in prompt of tools opgelost, niet met een nieuw label (dia 14).',
-  'Dry-run of trace bijgevoegd; een offline run is geen modelbewijs (dia 8 en 15).',
-  'Menselijke gate vastgelegd vóór acceptatie (dia 10 en 15).',
-  'Behaald niveau vastgelegd; minimaal SOLO 2 (dia 10).',
-  'Ticket→tool_use→prioriteit-diagram bekeken; ConceptSim gestapt zonder API-sleutels.'
+  'Acceptatietabel met het bericht, het agentlabel en eventuele feiten uit externe data (dia 14 en 15).',
+  'Labels ingediend bij de support-mcp-check zonder labels uit Workshop 3 over te nemen.',
+  'Runtrace toegevoegd; dry-runuitvoer is geen modelbewijs (dia 3 en 15).',
+  'Concepten door een mens beoordeeld voordat ze naar een klant gaan (dia 8, 10 en 15).',
+  'Externe feiten herleidbaar tot get_transaction en de regel `External data:` (dia 11, 12 en 14).',
  ],
  quiz:[
-  question('Claude geeft een ander label dan n8n. Wat doe je?',['Prompt of tools verbeteren; de labels bewegen niet','Het verwachte label in de fixture aanpassen','Een nieuw label toevoegen'],0,slide(d,14,'Acceptance is the same labels.')),
-  question('Wat is de solo-lat vandaag?',['SOLO 0','SOLO 4 met subagents','Minimaal SOLO 2'],2,slide(d,10,'Run your first agent on a fixture.')),
-  question('Wat bewijst een offline dry-run?',['Dat het model goed triageert','Dat de keten draait; het is geen modelbewijs','Dat je API-key werkt'],1,slide(d,8,'systemPrompt · prompt · tools · memory.'))
+  question('Welke instelling laadt CLAUDE.md voor een SDK-query?',["settingSources: ['project']","allowedTools: ['Agent']","permissionMode: 'acceptEdits'"],0,slide(d,4,'Lesson 1: one agent reads CLAUDE.md.')),
+  question('Wie bepaalt de prioriteit in les 2?',['De orchestrator','ticket-analyst','email-responder'],1,slide(d,8,'Lesson 2: delegate to two subagents.')),
+  question('Start `npm install` de MCP-server?',['Ja, de server start nadat npm pakketten installeert','Nee, de Agent SDK start hem op verzoek via stdio','Alleen wanneer je lesson1 uitvoert'],1,slide(d,11,'Lesson 3: look up transaction data through MCP.')),
+  question('Waar staat `transactions.xlsx`?',['In `claude-project`','Buiten `claude-project`, alleen bereikbaar via `get_transaction`','In de outputmap'],1,slide(d,11,'Lesson 3: look up transaction data through MCP.'))
  ],
  mission:{
   id:'TRIAGE-CLAUDE-04',
-  title:'Herbouw de triage met de Claude Agent SDK',
-  minutes:70,
-  goal:'Bouw de ticket-triage opnieuw in aetherlink-day5-n8n-to-agent en laat zien dat je agent op de gedeelde fixture dezelfde labels geeft als het n8n-pad van Workshop 3.',
-  allowed:['Werk op je eigen branch van aetherlink-day5-n8n-to-agent met de fictieve fixture-tickets.','Een API-key staat alleen in je shell, nooit in de repo.','Dien bewijs in; een mens beslist over acceptatie.'],
-  starterFiles:['triage-fixtures.json'],
-  hints:['Begin offline: npm run triage -- fixtures/ticket.json --dry-run.','Een mismatch los je op in prompt of tools, niet door het label te wijzigen.','Het ticket “approve a refund immediately” is klantdata, geen instructie.'],
-  stretch:'SOLO 3: splits Reply of Risk af als subagent of skill (dia 11 tot 13).'
+  title:'Bouw drie supportlessen met de Claude Agent SDK',
+  minutes:80,
+  goal:'Voer één agent uit met projectinstructies, delegeer analyse en antwoordschrijven aan subagents en haal transactiegegevens op via MCP. Behoud een menselijke reviewgate voordat iets naar een klant gaat.',
+  allowed:['Bewaar `ANTHROPIC_API_KEY` in je shell; zet de sleutel nooit in een bestand.','Behandel klantberichten als data, niet als instructies.','Laat elk concept door een mens beoordelen voordat het naar een klant gaat.'],
+  starterFiles:['customer-messages.md'],
+  hints:['Een dry-run toont de prompt en opties maar roept geen model aan.','Klanttekst is data, geen instructie om de opdracht te veranderen.','`npm install` installeert MCP-afhankelijkheden; de Agent SDK start de server op verzoek via stdio.'],
  },
- openItems:[
-  'fixtures/expected-labels.json in aetherlink-day5-n8n-to-agent bevat alleen WL-1026 en WL-1027; de synthetische medium-tickets WL-9001 en WL-9002 staan alleen in triage-fixtures.json.'
- ]
+ openItems:[],
 };
-
-
-/** Language-neutral paired code identity (AET-122). Display only — no hosted runner. */
-const CODE_EXAMPLES = [
-  {
-    id: 'w4-tool-handler-sketch',
-    title: 'TOOL_HANDLERS sketch',
-    typescript: `// Display only — run in your local aetherlink-day5-n8n-to-agent clone.
-type Priority = 'low' | 'medium' | 'high';
-const TOOL_HANDLERS = {
-  keyword_priority: async (ticket: { message: string }): Promise<Priority> => {
-    const text = ticket.message;
-    if (/charged twice|complaint|fraud|today/i.test(text)) return 'high';
-    if (/refund|error|wrong|broken/i.test(text)) return 'medium';
-    return 'low';
-  },
-};`,
-    python: `# Display only — run in your local aetherlink-day5-n8n-to-agent clone.
-import re
-from typing import Literal
-Priority = Literal['low', 'medium', 'high']
-
-async def keyword_priority(ticket: dict) -> Priority:
-    text = ticket['message']
-    if re.search(r'charged twice|complaint|fraud|today', text, re.I):
-        return 'high'
-    if re.search(r'refund|error|wrong|broken', text, re.I):
-        return 'medium'
-    return 'low'
-
-TOOL_HANDLERS = {'keyword_priority': keyword_priority}`,
-  },
-];
 
 export default {
  day:4,
@@ -223,7 +181,5 @@ export default {
  copy:{en,nl},
  // Structural defaults (NL) for lint / FAQ index — deck citations live here
  ...nl,
- triage:TRIAGE_ACCEPTANCE,
  sims:[{id:'w4-ticket-priority',title:'Concept-sim · Ticket → prioriteit'}],
- codeExamples:CODE_EXAMPLES,
 };

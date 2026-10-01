@@ -1,6 +1,6 @@
 {
   "id": "support-triage-v1",
-  "purpose": "Shared acceptance fixture for Workshop 3 (n8n L1-L3) and Workshop 4 (Claude Agent SDK). Both paths are graded against the same expected priorities.",
+  "purpose": "Shared acceptance fixture for Workshop 3 (n8n L1-L3). Workshop 4 uses separate support messages and a transaction workbook.",
   "dataNotice": "Fictional support tickets. No real customers, payments or personal data. Entries with synthetic=true were written for AET-84 and are not part of the SoT vehicle repo.",
   "l1Rule": {
     "high": "charged twice|complaint|fraud|today",

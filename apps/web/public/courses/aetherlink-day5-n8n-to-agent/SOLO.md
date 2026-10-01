@@ -1,7 +1,11 @@
-# SOLO map — Workshop 4 · n8n → Claude Agent SDK
+# SOLO map — Optional n8n → Claude Agent SDK parity bonus
 
 Pedagogy for every beat: **Uitleg → Voordoen → Zelf doen** (on your own machine).
-Deck: Academy `/workshop/4`. Shared acceptance fixture with Workshop 3.
+This standalone exercise is an optional Workshop 4 companion, not part of the
+required Workshop 4 lessons. It compares Workshop 3's n8n flow with this
+course's own fixtures; Workshop 4's required package uses new customer messages
+and a transaction workbook.
+Deck: Academy `/workshop/4`.
 
 | SOLO | You do | Maps to |
 | --- | --- | --- |

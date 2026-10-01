@@ -35,5 +35,13 @@ test('W4 HTML Solo courses land under apps/web/public/courses (AET-130)', () => 
   assert.match(councilInstr, /Judge rule|rechter/i);
   const solo = readFileSync(path.join(courses, 'aetherlink-day5-n8n-to-agent/SOLO.md'), 'utf8');
   assert.match(solo, /SOLO 0/);
-  assert.match(solo, /Workshop 4/);
+  assert.match(solo, /optional.*parity bonus/i);
+  assert.match(solo, /not part of the\s+required Workshop 4 lessons/i);
+  assert.match(solo, /new customer messages\s+and a transaction workbook/i);
+  const parityReadme = readFileSync(path.join(courses, 'aetherlink-day5-n8n-to-agent/README.md'), 'utf8');
+  assert.match(parityReadme, /optional parity bonus/i);
+  assert.match(parityReadme, /fixtures are separate\s+from Workshop 4's required customer messages/i);
+  const parityHtml = readFileSync(path.join(courses, 'aetherlink-day5-n8n-to-agent/index.html'), 'utf8');
+  assert.match(parityHtml, /optional parity bonus/i);
+  assert.match(parityHtml, /separate from Workshop 4's support messages/i);
 });
