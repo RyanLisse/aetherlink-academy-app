@@ -268,6 +268,8 @@ test('SOLO 1 checks the six new support messages without exposing their answer k
  assert.doesNotMatch(pack.raw,/expected_priority|"expected"/);
  const card=await task(bo.token,'w4-solo1');
  assert.deepEqual([card.status,card.autograde.tickets.map(ticket=>ticket.ticketId)],['open',['MSG-01','MSG-02','MSG-03','MSG-04','MSG-05','MSG-06']]);
+ const solo4=pack.body.steps.find(step=>step.id==='w4-solo4');
+ assert.match(solo4.instructions.join('\n'),/MSG-01 through MSG-09/);
  const miss=await grade(bo.token,'w4-solo1',{...SUPPORT_L1,'MSG-06':'high'});
  assert.deepEqual([miss.status,miss.body.status,miss.body.autograde.score],[200,'open',5]);
  assert.deepEqual(proseLeaks(miss.raw),[]);

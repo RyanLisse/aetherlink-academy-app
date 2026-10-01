@@ -30,7 +30,7 @@ test('every pack passes the day-pack lint and every slide citation matches its d
  assert.deepEqual(validateDayPacks(DAY_PACKS,{root,decks}),[]);
  assert.deepEqual(getDayPack(3).quiz.questions.map(q=>q.id),['d3-q1','d3-q2','d3-q3']);
  assert.deepEqual(getDayPack(3).quiz.key,{'d3-q1':'b','d3-q2':'a','d3-q3':'c'});
- assert.equal(getDayPack(4).quiz.questions.length,4);
+ assert.equal(getDayPack(4).quiz.questions.length,3);
  assert.equal(decks['classroom-2'][10].title,'Assignment 6: Design AetherBOT');
  assert.deepEqual(getDayPack(2).steps[0].slide,{deck:'classroom-2',slide:78,title:'Assignment 6: Design AetherBOT',href:'/classroom/2?index=10'});
  assert.deepEqual(getDayPack(3).demo.slides.map(s=>s.href),['/workshop/3?index=5','/workshop/3?index=8','/workshop/3?index=11']);
@@ -63,18 +63,17 @@ test('Workshop 3 keeps triage fixtures; Workshop 4 grades new support messages',
  assert.equal(SUPPORT_FIXTURES.tickets.at(-1).expected_priority,undefined);
 });
 
-test('Workshop 4 quiz covers project settings, delegation, stdio MCP, and workbook boundary',()=>{
+test('Workshop 4 quiz covers project settings, delegation, and stdio MCP',()=>{
  const pack=getDayPack(4);
  for(const lang of ['en','nl']){
   const quiz=pack.copy[lang].quiz;
-  assert.equal(quiz.questions.length,4,lang);
+  assert.equal(quiz.questions.length,3,lang);
   const quizText=JSON.stringify(quiz.questions);
   assert.match(quizText,/settingSources: \['project'\]/,lang);
   assert.match(quizText,/ticket-analyst/,lang);
   assert.match(quizText,/npm install/,lang);
   assert.match(quizText,lang==='en'?/on demand over stdio/i:/op verzoek via stdio/i,lang);
-  assert.match(quizText,/transactions\.xlsx/,lang);
-  assert.match(quizText,lang==='en'?/outside `claude-project`, reached only through `get_transaction`/i:/buiten `claude-project`, alleen bereikbaar via `get_transaction`/i,lang);
+  assert.doesNotMatch(quizText,/transactions\.xlsx/i,lang);
  }
 });
 

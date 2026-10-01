@@ -78,16 +78,18 @@ test('lesson options use project instructions and keep tools scoped to each less
     assert.deepEqual(option.settingSources, projectRules.settingSources);
     assert.deepEqual(option.systemPrompt, projectRules.systemPrompt);
     assert.deepEqual(option.disallowedTools, projectRules.disallowedTools);
-    assert.ok(option.maxTurns <= 4);
   }
 
   const [single, subagent, mcp] = options;
   assert.equal(single.agents, undefined);
   assert.equal(single.mcpServers, undefined);
-  assert.equal(single.tools, undefined);
+  assert.deepEqual(single.tools, []);
+  assert.equal(single.maxTurns, 2);
   assert.deepEqual(Object.keys(subagent.agents).sort(), ['email-responder', 'ticket-analyst']);
   assert.deepEqual(subagent.agents, subagents);
   assert.deepEqual(subagent.tools, ['Agent', 'Write']);
+  assert.equal(subagent.maxTurns, 10);
+  assert.equal(mcp.maxTurns, 10);
   assert.deepEqual(subagent.allowedTools, ['Agent', 'Write']);
   assert.equal(subagent.permissionMode, 'acceptEdits');
   assert.equal(subagent.mcpServers, undefined);

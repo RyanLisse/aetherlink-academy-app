@@ -8,6 +8,7 @@ export function buildOptions() {
     cwd: path.join(lessonDirectory, 'claude-project'),
     settingSources: ['project'],
     systemPrompt: { type: 'preset', preset: 'claude_code' },
+    tools: [],
     disallowedTools: ['WebSearch', 'WebFetch', 'Bash'],
     maxTurns: 2,
   };

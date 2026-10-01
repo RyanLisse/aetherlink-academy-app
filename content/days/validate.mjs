@@ -35,7 +35,7 @@ export function validateDayPacks(packs,{root,decks}){
   if(!pack.steps.length)err(pack,'no solo steps');
   if(!pack.reviewCriteria.length)err(pack,'no Proof acceptance');
   if(!pack.demo.open&&!pack.demo.slides.length)err(pack,'demo has neither slides nor an OPEN note');
-  const expectedQuizCount=pack.code==='workshop-4'?4:3;
+  const expectedQuizCount=3;
   if(pack.quiz.questions.length!==expectedQuizCount)err(pack,`quiz needs exactly ${expectedQuizCount} questions`);
   for(const file of pack.mission.starterFiles)if(!existsSync(path.join(root,'starter',file)))err(pack,`starter file missing: starter/${file}`);
   for(const material of pack.materials)if(!material.href&&!material.open)err(pack,`material "${material.label}" has no href and no OPEN reason`);

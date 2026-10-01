@@ -16,7 +16,7 @@ export function buildOptions() {
     allowedTools: ['Agent', 'Write', 'mcp__transactions__get_transaction'],
     disallowedTools: ['WebSearch', 'WebFetch', 'Bash'],
     permissionMode: 'acceptEdits',
-    maxTurns: 4,
+    maxTurns: 10,
     mcpServers: {
       transactions: {
         type: 'stdio',

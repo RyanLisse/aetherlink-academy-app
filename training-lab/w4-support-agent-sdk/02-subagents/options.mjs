@@ -14,6 +14,6 @@ export function buildOptions() {
     allowedTools: ['Agent', 'Write'],
     disallowedTools: ['WebSearch', 'WebFetch', 'Bash'],
     permissionMode: 'acceptEdits',
-    maxTurns: 4,
+    maxTurns: 10,
   };
 }
