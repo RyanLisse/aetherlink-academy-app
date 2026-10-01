@@ -176,7 +176,7 @@
 .lesson-concept-card-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .lesson-concept-number{color:var(--cyan);font-size:11px;font-weight:750;letter-spacing:.06em}
 .lesson-concept-icon{color:var(--cyan)}
-.lesson-concept-card p{margin:0;font-size:13px;line-height:1.55}
+.lesson-concept-card p{margin:0;font-size:13px;line-height:1.55;overflow-wrap:anywhere}
 .lesson-concept-key,.lesson-concept-remainder{display:block}
 .lesson-concept-key{color:var(--text);font-weight:750}
 .lesson-concept-remainder{margin-top:7px;color:var(--muted)}
