@@ -54,9 +54,9 @@ test('participant messages parse to the server support fixtures and match the st
 });
 
 test('lesson project instructions preserve the supplied rules and append the MCP boundary', () => {
-  const singleRules = readFileSync(path.join(projectDirs[0], 'CLAUDE.md'), 'utf8');
-  const orchestratorRules = readFileSync(path.join(projectDirs[1], 'CLAUDE.md'), 'utf8');
-  const mcpRules = readFileSync(path.join(projectDirs[2], 'CLAUDE.md'), 'utf8');
+  const singleRules = readFileSync(path.join(projectDirs[0], 'CLAUDE.md'), 'utf8').replaceAll('\r\n', '\n');
+  const orchestratorRules = readFileSync(path.join(projectDirs[1], 'CLAUDE.md'), 'utf8').replaceAll('\r\n', '\n');
+  const mcpRules = readFileSync(path.join(projectDirs[2], 'CLAUDE.md'), 'utf8').replaceAll('\r\n', '\n');
 
   assert.match(singleRules, /^# Customer Support Triage$/m);
   assert.match(singleRules, /^## Priority definitions$/m);
