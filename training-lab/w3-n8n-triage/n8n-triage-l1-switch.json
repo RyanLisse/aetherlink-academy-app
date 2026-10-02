@@ -1,0 +1,201 @@
+{
+  "name": "AetherLink W3 · L1 Switch (no LLM)",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        -48
+      ],
+      "id": "4e41b690-fd7f-5a3e-ae15-5f382ee103b6",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Fictional tickets from starter/triage-fixtures.json. Keep them in sync; tests/n8n-triage-starters.test.mjs checks it.\nconst tickets = [\n  {\n    \"ticket_id\": \"WL-1026\",\n    \"customer\": \"Maarten\",\n    \"message\": \"I was charged twice. I need this fixed today or I will file a complaint.\"\n  },\n  {\n    \"ticket_id\": \"WL-1027\",\n    \"customer\": \"Lotte\",\n    \"message\": \"Please send me a copy of my invoice. I cannot find it in the account area.\"\n  },\n  {\n    \"ticket_id\": \"WL-9001\",\n    \"customer\": \"Demo-klant A\",\n    \"message\": \"The amount on my latest invoice looks wrong. Can someone check it?\"\n  },\n  {\n    \"ticket_id\": \"WL-9002\",\n    \"customer\": \"Demo-klant B\",\n    \"message\": \"My card reader arrived broken. I would like a refund or a replacement.\"\n  }\n];\n\nreturn tickets.map(ticket => ({ json: ticket }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        -48
+      ],
+      "id": "43484d84-d94b-5a84-a436-319a3074f3f8",
+      "name": "Fixture Tickets"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "a1d3a54b-5011-59e2-a2ec-2e5623a1b395",
+                    "leftValue": "={{ $json.message }}",
+                    "rightValue": "/charged twice|complaint|fraud|today/i",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "High"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "072c2e3e-2361-54e8-affc-f3d2181a73c1",
+                    "leftValue": "={{ $json.message }}",
+                    "rightValue": "/refund|error|wrong|broken/i",
+                    "operator": {
+                      "type": "string",
+                      "operation": "regex"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Medium"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "Low",
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        240,
+        -48
+      ],
+      "id": "9557d0e1-26e2-51e8-ae3e-6e637b0052ab",
+      "name": "Priority Switch"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"ticket_id\": {{ JSON.stringify($json.ticket_id) }},\n  \"priority\": \"high\",\n  \"action\": \"ESCALATE\",\n  \"team\": \"Payments escalation team\",\n  \"sla\": \"Respond within 30 minutes\",\n  \"message\": \"🚨 High priority ticket. Escalate immediately.\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        -240
+      ],
+      "id": "453f8d45-cc24-59ee-aedd-a042af488cf2",
+      "name": "High Priority Action"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"ticket_id\": {{ JSON.stringify($json.ticket_id) }},\n  \"priority\": \"medium\",\n  \"action\": \"INVESTIGATE\",\n  \"team\": \"Support team\",\n  \"message\": \"🔎 Medium priority ticket. Needs human review.\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        -48
+      ],
+      "id": "e0885b7b-e4f7-5903-abcb-eb8aab305990",
+      "name": "Medium Priority Action"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"ticket_id\": {{ JSON.stringify($json.ticket_id) }},\n  \"priority\": \"low\",\n  \"action\": \"AUTO_REPLY\",\n  \"team\": \"Self-service support\",\n  \"message\": \"✅ Low priority ticket. Send automatic reply.\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        176
+      ],
+      "id": "6fcd0b77-4f6d-58ae-ac22-cd88c3137b2d",
+      "name": "Low Priority Action"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Fixture Tickets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fixture Tickets": {
+      "main": [
+        [
+          {
+            "node": "Priority Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Priority Switch": {
+      "main": [
+        [
+          {
+            "node": "High Priority Action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Medium Priority Action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Low Priority Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

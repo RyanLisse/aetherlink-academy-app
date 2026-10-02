@@ -1,0 +1,12 @@
+{
+  "name": "w3-n8n-triage",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "n8n": "npx --yes n8n@2.41.1",
+    "check": "node check.mjs"
+  }
+}

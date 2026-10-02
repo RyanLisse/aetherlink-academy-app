@@ -3,12 +3,15 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "scripts": {
+    "postinstall": "npm install --prefix 03-mcp/transaction-mcp --no-audit --no-fund",
     "lesson1": "node 01-single-agent/agent.mjs",
     "lesson2": "node 02-subagents/agent.mjs",
-    "lesson3": "node 03-mcp/agent.mjs"
+    "lesson3": "node 03-mcp/agent.mjs",
+    "smoke:mcp": "node 03-mcp/transaction-mcp/smoke.mjs",
+    "check": "node check.mjs"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "0.3.281"

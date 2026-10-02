@@ -3,9 +3,12 @@
 Mirrored from the existing Academy course sources:
 
 ## W4 Solos (AET-130)
-- `RyanLisse/weather-agent-sdk@e4834b48ed2a7e6763d0e6d11052bb6c97a03143`
-- `RyanLisse/aetherlink-day5-n8n-to-agent@064d2e5188abdc30db253c0881a41d519fa77538`
-- `RyanLisse/council-agent-sdk@45e1cc29e60b5d5899c0d7e144c2837f7e835f38`
+
+Pinned to the open companion PR heads; re-pin after they merge.
+
+- `RyanLisse/weather-agent-sdk@2be920bf5f9f7b256044d7f2b76c661e4ef5921a`
+- `RyanLisse/aetherlink-day5-n8n-to-agent@601279384db7c0afdad511fd3b42d2aba7b6c60d`
+- `RyanLisse/council-agent-sdk@0a078c2786f356591b506a5036321748cfae01aa`
 
 ## W5 daily-brief (AET-131)
 - `RyanLisse/aetherlink-daily-brief-lab-s1@3dea7c15cb10147cc28ebdc1c305edb34a8e8f96` (HTML course modules 01–06 + Assignments templates + SOLO.md + rulebook companions)
