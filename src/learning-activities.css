@@ -164,12 +164,11 @@
 .lesson-overview>.lede{max-width:68ch}
 .lesson-flow-section{margin:22px 0}
 .lesson-flow-section>.cyan{margin:0 0 9px;font-size:11px;font-weight:700;letter-spacing:.04em}
-.lesson-flow{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr);align-items:stretch;gap:8px}
+.lesson-flow{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
 .lesson-flow-step{display:flex;flex-direction:column;gap:7px;min-width:0;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--surface2)}
 .lesson-flow-step>span{color:var(--cyan);font-size:10px;font-weight:700}
 .lesson-flow-step>strong{font-size:12px;line-height:1.35;overflow-wrap:anywhere}
-.lesson-flow-step>small{color:var(--muted);font-size:10px;line-height:1.45}
-.lesson-flow-arrow{display:grid;place-items:center;color:var(--cyan);font-size:17px}
+.lesson-flow-step>small{color:var(--muted);font-size:10px;line-height:1.45;overflow-wrap:anywhere}
 .lesson-task-cta{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:18px 0 0;color:var(--muted);font-size:12px}
 .lesson-task-cta .text-button{display:inline-flex;align-items:center;padding:0;color:var(--cyan);font-size:12px;font-weight:700;text-decoration:underline;text-underline-offset:3px}
 .lesson-concept-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
@@ -177,7 +176,7 @@
 .lesson-concept-card-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .lesson-concept-number{color:var(--cyan);font-size:11px;font-weight:750;letter-spacing:.06em}
 .lesson-concept-icon{color:var(--cyan)}
-.lesson-concept-card p{margin:0;font-size:13px;line-height:1.55}
+.lesson-concept-card p{margin:0;font-size:13px;line-height:1.55;overflow-wrap:anywhere}
 .lesson-concept-key,.lesson-concept-remainder{display:block}
 .lesson-concept-key{color:var(--text);font-weight:750}
 .lesson-concept-remainder{margin-top:7px;color:var(--muted)}
@@ -211,8 +210,7 @@
 .lesson-local-pagination>span{color:var(--muted);font-size:11px;white-space:nowrap}
 
 @media(max-width:800px){
-  .lesson-flow{grid-template-columns:minmax(0,1fr);gap:5px}
-  .lesson-flow-arrow{min-height:16px;transform:rotate(90deg)}
+  .lesson-flow{grid-template-columns:minmax(0,1fr);gap:8px}
   .lesson-flow-step{padding:11px}
 }
 @media(max-width:600px){
