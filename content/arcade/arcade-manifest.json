@@ -193,5 +193,18 @@
       "demoOnly": true
     }
   ],
-  "facilitatorSoloNote": "facilitator-solo-note.md"
+  "facilitatorSoloNote": "facilitator-solo-note.md",
+  "companions": [
+    {
+      "id": "w4-ste100-solos-agents",
+      "title": "Workshop 4 — Solos and agents (STE100 companion)",
+      "workshop": 4,
+      "linear": "AET-130",
+      "lessonPath": "w4-solos-agents-ste100.md",
+      "videoPath": "/academy-assets/w4-agents-council-explainer.mp4",
+      "soloLessonId": "ws-2-eve-council",
+      "hubRoute": "/arcade/council",
+      "notes": "Companion only — no dedicated Arcade route. Linked from l2-council.md."
+    }
+  ]
 }

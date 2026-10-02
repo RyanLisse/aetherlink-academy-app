@@ -78,3 +78,9 @@ Tech SDK badge apart — pas na LIS-65 starters.
 ## BYO Claude (MCP)
 
 Connect your Claude — coach already knows where you are. Platform chat stays FAQ/nav only.
+
+## Workshop 4 companion (STE100 + explainer)
+
+- Lesson rewrite: `content/arcade/w4-solos-agents-ste100.md` (≈80% ASD-STE100).
+- Explainer video: `/academy-assets/w4-agents-council-explainer.mp4` (~77s). Play before Solo `ws-2-eve-council` or L2 council run.
+- Linked from L2 module; **no new `/arcade` route**.

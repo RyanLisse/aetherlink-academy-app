@@ -141,6 +141,17 @@ test('walkthrough mp4 ships in public academy-assets', () => {
   assert.ok(existsSync(path.join(root, 'public/academy-assets/arcade-walkthrough-en.mp4')));
 });
 
+test('W4 STE100 companion lesson + explainer mp4 ship', () => {
+  assert.ok(existsSync(path.join(root, 'content/arcade/w4-solos-agents-ste100.md')));
+  assert.ok(existsSync(path.join(root, 'public/academy-assets/w4-agents-council-explainer.mp4')));
+  const l2 = readFileSync(path.join(root, 'content/arcade/l2-council.md'), 'utf8');
+  assert.match(l2, /w4-solos-agents-ste100\.md/);
+  assert.match(l2, /w4-agents-council-explainer\.mp4/);
+  const manifest = JSON.parse(readFileSync(path.join(root, 'content/arcade/arcade-manifest.json'), 'utf8'));
+  assert.ok(Array.isArray(manifest.companions));
+  assert.ok(manifest.companions.some((c) => c.id === 'w4-ste100-solos-agents'));
+});
+
 test('main.jsx wires ArcadeApp on /arcade paths', () => {
   const main = readFileSync(path.join(root, 'src/main.jsx'), 'utf8');
   assert.match(main, /ArcadeApp/);
