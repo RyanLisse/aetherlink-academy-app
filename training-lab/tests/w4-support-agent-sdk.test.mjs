@@ -145,7 +145,7 @@ const checkLabels = (labels) => {
 
 test('one npm install covers the MCP server and the package exposes offline checks', () => {
   const pkg = readPackageJson('package.json');
-  assert.equal(pkg.scripts.postinstall, 'npm install --prefix 03-mcp/transaction-mcp --no-audit --no-fund');
+  assert.equal(pkg.scripts.postinstall, 'node 03-mcp/transaction-mcp/install.mjs');
   assert.equal(pkg.scripts['smoke:mcp'], 'node 03-mcp/transaction-mcp/smoke.mjs');
   assert.equal(pkg.scripts.check, 'node check.mjs');
   assert.equal(pkg.engines.node, '>=22');

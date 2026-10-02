@@ -68,14 +68,21 @@ jobs:
           node-version: ${{ matrix.node }}
       - name: Package tests
         run: node --test training-lab/tests/w4-support-agent-sdk.test.mjs training-lab/tests/w3-n8n-triage.test.mjs
-      - name: W4 install and offline lesson runs
+      - name: W4 install
         working-directory: training-lab/w4-support-agent-sdk
-        run: |
-          npm install --no-audit --no-fund
-          npm run lesson1 -- MSG-01 --dry-run
-          npm run lesson2 -- MSG-05 --dry-run
-          npm run lesson3 -- MSG-08 --dry-run
-          npm run smoke:mcp
+        run: npm install --no-audit --no-fund
+      - name: W4 lesson 1 dry run
+        working-directory: training-lab/w4-support-agent-sdk
+        run: npm run lesson1 -- MSG-01 --dry-run
+      - name: W4 lesson 2 dry run
+        working-directory: training-lab/w4-support-agent-sdk
+        run: npm run lesson2 -- MSG-05 --dry-run
+      - name: W4 lesson 3 dry run
+        working-directory: training-lab/w4-support-agent-sdk
+        run: npm run lesson3 -- MSG-08 --dry-run
+      - name: W4 MCP smoke test
+        working-directory: training-lab/w4-support-agent-sdk
+        run: npm run smoke:mcp
       - name: W3 local n8n starts
         if: matrix.node == '24'
         working-directory: training-lab/w3-n8n-triage

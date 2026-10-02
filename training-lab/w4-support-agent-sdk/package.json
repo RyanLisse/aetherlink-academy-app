@@ -6,7 +6,7 @@
     "node": ">=22"
   },
   "scripts": {
-    "postinstall": "npm install --prefix 03-mcp/transaction-mcp --no-audit --no-fund",
+    "postinstall": "node 03-mcp/transaction-mcp/install.mjs",
     "lesson1": "node 01-single-agent/agent.mjs",
     "lesson2": "node 02-subagents/agent.mjs",
     "lesson3": "node 03-mcp/agent.mjs",
