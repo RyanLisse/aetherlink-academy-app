@@ -26,6 +26,14 @@ Toggle captions: **Mensentaal** | **Tech**
 
 ---
 
+## Companion (Workshop 4)
+
+- **STE100 rewrite (English SoT):** [`w4-solos-agents-ste100.md`](./w4-solos-agents-ste100.md) — Solo vs live · agent loop · weather + council packs · safety.
+- **Explainer video (~77s):** [`/academy-assets/w4-agents-council-explainer.mp4`](/academy-assets/w4-agents-council-explainer.mp4) — play before Solo `ws-2-eve-council` or as Arcade companion.
+
+
+---
+
 ## Stap 0 — Waarom meerdere models (5 min)
 
 ### coach_mensentaal
