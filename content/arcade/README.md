@@ -21,6 +21,16 @@ Markdown modules loaded by `src/arcade/ArcadeApp.jsx` and listed in `arcade-mani
 
 Linked from `l2-council.md` and from `apps/arcade-lab/workshop/05-w4-solos-agents-ste100.md`.
 
+
+## C1–C2 companions (no new route)
+
+| File | Role |
+|---|---|
+| `c1-c2-solo-in-claude-ste100.md` | ≈80% ASD-STE100 English companion for Solo-in-Claude C1–C2 (AET-132) |
+| `/academy-assets/c1-c2-solo-in-claude-explainer.mp4` | Explainer video (cut A); file lives in `public/academy-assets/` |
+
+Linked from `sdk-bridge.md` and from `apps/arcade-lab/workshop/06-c1-c2-solo-in-claude-ste100.md`.
+
 ## Media pattern
 
 Put learner-facing videos in `public/academy-assets/`. The hub walkthrough uses `/academy-assets/arcade-walkthrough-en.mp4`. Companions may deep-link the same way without adding `LESSON_MARKDOWN` entries until a product route is ready.

@@ -84,3 +84,9 @@ Connect your Claude — coach already knows where you are. Platform chat stays F
 - Lesson rewrite: `content/arcade/w4-solos-agents-ste100.md` (≈80% ASD-STE100).
 - Explainer video: `/academy-assets/w4-agents-council-explainer.mp4` (~77s). Play before Solo `ws-2-eve-council` or L2 council run.
 - Linked from L2 module; **no new `/arcade` route**.
+
+## C1–C2 companion (STE100 + explainer)
+
+- Lesson rewrite: `content/arcade/c1-c2-solo-in-claude-ste100.md` (≈80% ASD-STE100).
+- Explainer video: `/academy-assets/c1-c2-solo-in-claude-explainer.mp4` (~75s). Play before SDK bridge / Solo-in-Claude C1–C2.
+- Linked from SDK bridge module; **no new `/arcade` route**.

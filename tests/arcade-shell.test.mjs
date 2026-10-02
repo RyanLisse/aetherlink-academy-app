@@ -152,6 +152,18 @@ test('W4 STE100 companion lesson + explainer mp4 ship', () => {
   assert.ok(manifest.companions.some((c) => c.id === 'w4-ste100-solos-agents'));
 });
 
+
+test('C1–C2 STE100 companion lesson + explainer mp4 ship', () => {
+  assert.ok(existsSync(path.join(root, 'content/arcade/c1-c2-solo-in-claude-ste100.md')));
+  assert.ok(existsSync(path.join(root, 'public/academy-assets/c1-c2-solo-in-claude-explainer.mp4')));
+  const sdk = readFileSync(path.join(root, 'content/arcade/sdk-bridge.md'), 'utf8');
+  assert.match(sdk, /c1-c2-solo-in-claude-ste100\.md/);
+  assert.match(sdk, /c1-c2-solo-in-claude-explainer\.mp4/);
+  const manifest = JSON.parse(readFileSync(path.join(root, 'content/arcade/arcade-manifest.json'), 'utf8'));
+  assert.ok(Array.isArray(manifest.companions));
+  assert.ok(manifest.companions.some((c) => c.id === 'c1-c2-ste100-solo-in-claude'));
+});
+
 test('main.jsx wires ArcadeApp on /arcade paths', () => {
   const main = readFileSync(path.join(root, 'src/main.jsx'), 'utf8');
   assert.match(main, /ArcadeApp/);
