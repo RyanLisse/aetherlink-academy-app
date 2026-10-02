@@ -79,7 +79,7 @@ Harness:
 - Browser via Playwright (repo already depends on `@playwright/test`) or Cursor browser / Chrome DevTools tools
 - HTTP via `control.mjs http <url>` for health and static checks
 - Stable handles (NL chrome; switch locale with the language toggle):
-  - Start: radio `Ik ben facilitator` / `I am a facilitator` (Segmented role), radio `Ik ben deelnemer` / `I am a participant`, textbox `Squadnaam`/`Squad name`, textbox `Facilitator-startsleutel`/`Facilitator start key`, button `Maak squad`/`Create squad`, button `Deelnemen`/`Join`, textbox `Kamercode`/`Room code`, textbox `Je naam`/`Your name`
+  - Start: radio `Ik ben facilitator` / `I am a facilitator` (Segmented role), radio `Ik ben deelnemer` / `I am a participant`, textbox `Facilitator-startsleutel`/`Facilitator start key`, button `Inloggen`/`Sign in`, then in the workspace textbox `Squadnaam`/`Squad name`, button `Maak squad`/`Create squad`, button `Deelnemen`/`Join`, textbox `Kamercode`/`Room code`, textbox `Je naam`/`Your name`
   - Room: heading `/^(Jouw squad|Your squad) \(/`, navigation `Hoofdnavigatie`/`Main navigation`, button `Squad en hulp`, title `Kopieer kamercode`/`Copy room code`
   - Locale: group `Taal` / `Language` (`locale.label`), buttons `NL` / `EN` (`aria-pressed`)
   - ConceptSim: section/slot `Conceptsimulatie` / `Concept simulation`, group `Simulatorbediening` / `Simulator controls`, buttons `Afspelen`/`Play`, `Stap vooruit`/`Step forward`, `Opnieuw`/`Reset`; attribution in `.sim-attribution`

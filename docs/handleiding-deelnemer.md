@@ -13,7 +13,7 @@ Stap voor stap door AetherLink Academy als squadlid. Alle labels komen letterlij
 ## Aanmelden bij je squad
 
 1. Laat de standaardweergave op deelnemer staan.
-   Je ziet de knop "Ik ben facilitator".
+   Je ziet de optie "Ik ben facilitator" (alleen voor facilitators, om in te loggen).
 2. Vul je naam in bij "Je naam".
    Het veld toont de placeholder "Bijv. Sam".
 3. Vul de code van de facilitator in bij "Kamercode".

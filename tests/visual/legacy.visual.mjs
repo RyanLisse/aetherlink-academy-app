@@ -55,11 +55,10 @@ test('facilitator workshop landing 1024', async ({page}) => {
 test('facilitator overview 1024', async ({page}) => {
   await open(page, {width: 1024, height: 768});
   await page.goto(fixture.base + '/');
-  await page.getByRole('button', {name: 'Facilitator-overzicht'}).click();
+  await page.getByRole('radio', {name: 'Ik ben facilitator'}).check();
   await page.getByLabel('Facilitator-startsleutel').fill(HOST_KEY);
-  await page.getByRole('button', {name: 'Toon overzicht'}).click();
+  await page.getByRole('button', {name: 'Inloggen'}).click();
   await page.getByRole('heading', {name: 'Wave oktober (synthetisch)'}).waitFor();
-  await page.getByLabel('Facilitator-startsleutel').blur();
   await settle(page);
   await expect(page).toHaveScreenshot('facilitator-overview-1024.png', {fullPage: true});
 });

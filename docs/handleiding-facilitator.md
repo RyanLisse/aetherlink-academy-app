@@ -4,7 +4,7 @@ Stap voor stap door AetherLink Academy als facilitator. Alle labels komen letter
 
 ## Inloggen met Google
 
-Als "Inloggen met Google" op het aanmeldscherm staat, meld je aan met je Google Workspace-account. Een account van een toegestaan domein opent automatisch "Start een squad" en toont "Ingelogd als" met je naam en e-mailadres. Gebruik "Uitloggen" om alleen de facilitator-login te beëindigen. De facilitator-startsleutel hieronder blijft beschikbaar als break-glass fallback als Google-login niet is geconfigureerd of tijdelijk niet werkt.
+Als "Inloggen met Google" op het aanmeldscherm staat, meld je aan met je Google Workspace-account. Een account van een toegestaan domein opent automatisch je facilitatorwerkplek en toont "Ingelogd als" met je naam en e-mailadres. Gebruik "Uitloggen" om alleen de facilitator-login te beëindigen. De facilitator-startsleutel hieronder blijft beschikbaar als break-glass fallback als Google-login niet is geconfigureerd of tijdelijk niet werkt.
 
 ## Voorbereiding
 
@@ -19,29 +19,31 @@ Als "Inloggen met Google" op het aanmeldscherm staat, meld je aan met je Google 
 ## Squad aanmaken en de code delen
 
 1. Kies op het aanmeldscherm "Ik ben facilitator".
-   De knop opent de weergave "Start een squad".
-2. Vul de squadnaam in bij "Squadnaam".
+   De knop opent de weergave "Inloggen als facilitator".
+2. Ben je niet met Google ingelogd, vul dan de fallback in bij "Facilitator-startsleutel".
+   De placeholder is "Lokale startsleutel".
+3. Klik op "Inloggen".
+   Je komt in je facilitatorwerkplek met je squads en cohorten.
+4. Vul de squadnaam in bij "Squadnaam" in de kaart "Start een squad".
    De placeholder is "Squad Orion".
-3. Ben je niet met Google ingelogd, vul dan de fallback in bij "Facilitator-startsleutel".
-   De placeholder is "Lokale startsleutel". Voor een ingelogde facilitator is dit veld verborgen.
-4. Klik op "Maak squad".
+5. Klik op "Maak squad".
    Je komt in "Squad-room" terecht.
-5. Controleer de lege roster.
+6. Controleer de lege roster.
    Je ziet "Jouw squad (0/12)" en "Wacht op je squad. Deel de kamercode om te beginnen.".
-6. Deel de code met je squad.
+7. Deel de code met je squad.
    In het blok "Kamercode" staat de code met de knop "Kopieer kamercode".
    Gebruik daarnaast "Kopieer uitnodigingslink" om een link te delen die de code alvast invult.
-7. Bewaak de groepsgrootte.
+8. Bewaak de groepsgrootte.
    Een squad heeft vier of vijf mensen.
    Bij twaalf leden verschijnt "Squad is vol (maximaal 12).". Soft default blijft ~4–5; de praktijk start vanaf 4.
-8. Controleer de roster.
+9. Controleer de roster.
    Alle squadleden zijn gelijkwaardige deelnemers.
 
 ## Meerdere squads en facilitatoren
 
-1. Kies op het aanmeldscherm "Facilitator-overzicht".
+1. Kies op het aanmeldscherm "Ik ben facilitator" en log in.
    Deze weergave gebruikt je Google-login of vraagt om de facilitator-startsleutel als fallback.
-2. Vul zo nodig de startsleutel in en klik op "Toon overzicht".
+2. Klik op "Inloggen".
    Je ziet alle aangemaakte squads, hun kamercode, ronde, timer, roster en bewijsstatus.
 3. Kies bij de gewenste squad "Open als facilitator".
    Je komt in die "Squad-room" terecht zonder de bestaande facilitator-sessie te vervangen.
