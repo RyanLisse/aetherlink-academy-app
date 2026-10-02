@@ -292,10 +292,7 @@ export function Lesson({room,action,busy,day,page:controlledPage,onNavigate,onSt
         {lesson.loop?.length>0&&<section className="lesson-flow-section">
           <p className="cyan" data-testid="path-pedagogy-label">{t('lessonPages.flowLabel')}</p>
           <div className="lesson-flow" data-testid="path-pedagogy">
-            {lesson.loop.map((item,index)=><React.Fragment key={item.label||index}>
-              <article className="lesson-flow-step"><span>{String(index+1).padStart(2,'0')}</span><strong>{item.label}</strong><small>{item.prompt}</small></article>
-              {index<lesson.loop.length-1&&<span className="lesson-flow-arrow" aria-hidden="true">→</span>}
-            </React.Fragment>)}
+            {lesson.loop.map((item,index)=><article className="lesson-flow-step" key={item.label||index}><span>{String(index+1).padStart(2,'0')}</span><strong>{item.label}</strong><small>{item.prompt}</small></article>)}
           </div>
         </section>}
         {pack.steps?.length>0&&<p className="lesson-task-cta" data-testid="path-assignments-crosslink">
