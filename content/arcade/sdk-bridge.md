@@ -14,6 +14,14 @@ Toggle captions: **Mensentaal** | **Tech**
 
 ---
 
+## Companion (C1–C2 Solo-in-Claude)
+
+- **STE100 rewrite (English SoT):** [`c1-c2-solo-in-claude-ste100.md`](./c1-c2-solo-in-claude-ste100.md) — Solo → starter · CLAUDE.md · skill ≠ agent · MCP · hooks.
+- **Explainer video (~75s):** [`/academy-assets/c1-c2-solo-in-claude-explainer.mp4`](/academy-assets/c1-c2-solo-in-claude-explainer.mp4) — play before SDK bridge / Solo-in-Claude concepts (AET-132).
+
+
+---
+
 ## Audience split
 
 | Rol | Pad |

@@ -205,6 +205,17 @@
       "soloLessonId": "ws-2-eve-council",
       "hubRoute": "/arcade/council",
       "notes": "Companion only — no dedicated Arcade route. Linked from l2-council.md."
+    },
+    {
+      "id": "c1-c2-ste100-solo-in-claude",
+      "title": "C1–C2 — Solo-in-Claude concepts (STE100 companion)",
+      "classroom": "C1–C2",
+      "linear": "AET-132",
+      "lessonPath": "c1-c2-solo-in-claude-ste100.md",
+      "videoPath": "/academy-assets/c1-c2-solo-in-claude-explainer.mp4",
+      "soloLessonId": "ws-5-sdk-quickstart",
+      "hubRoute": "/arcade/sdk-bridge",
+      "notes": "Companion only — no dedicated Arcade route. Linked from sdk-bridge.md."
     }
   ]
 }
