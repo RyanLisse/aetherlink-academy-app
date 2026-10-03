@@ -50,6 +50,61 @@ jobs:
       - name: Check every legacy test file runs in a workflow or is excluded with a reason
         run: node scripts/check-test-coverage.mjs
 
+  participant-packages:
+    name: Participant packages (Node ${{ matrix.node }} on ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: ['22', '24']
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: ${{ matrix.node }}
+      - name: Package tests
+        run: node --test training-lab/tests/w4-support-agent-sdk.test.mjs training-lab/tests/w3-n8n-triage.test.mjs
+      - name: W4 install
+        working-directory: training-lab/w4-support-agent-sdk
+        run: npm install --no-audit --no-fund
+      - name: W4 lesson 1 dry run
+        working-directory: training-lab/w4-support-agent-sdk
+        run: npm run lesson1 -- MSG-01 --dry-run
+      - name: W4 lesson 2 dry run
+        working-directory: training-lab/w4-support-agent-sdk
+        run: npm run lesson2 -- MSG-05 --dry-run
+      - name: W4 lesson 3 dry run
+        working-directory: training-lab/w4-support-agent-sdk
+        run: npm run lesson3 -- MSG-08 --dry-run
+      - name: W4 MCP smoke test
+        working-directory: training-lab/w4-support-agent-sdk
+        run: npm run smoke:mcp
+
+  w3-local-n8n:
+    name: W3 local n8n (Node 24 on ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - name: npm run n8n -- --version
+        working-directory: training-lab/w3-n8n-triage
+        env:
+          npm_config_foreground_scripts: 'true'
+        run: npm run n8n -- --version
+
   tests:
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -78,7 +133,7 @@ jobs:
           tests/storage-actions.test.ts tests/storage-routes.test.mjs
           tests/google-sso.test.mjs tests/facilitator-sso-routes.test.mjs tests/native-apps-providers.test.mjs tests/openship-kit.test.mjs
           tests/participant-access.test.mjs tests/participant-access-routes.test.mjs tests/participant-access-ui.test.mjs tests/chat-embed.test.mjs
-          tests/agent-setup.test.mjs tests/web-public-assets.test.mjs tests/seven-day-content.test.mjs tests/participant-copy.test.mjs tests/w4-solo-courses-static.test.mjs tests/w5-daily-brief-static.test.mjs tests/c1-c2-concepts-solo-static.test.mjs tests/n8n-triage-starters.test.mjs tests/day-packs-routes.test.mjs tests/lesson-route-day.test.mjs tests/solo-progress-day.test.mjs tests/learning-progress.test.mjs tests/migrate-v2.test.mjs tests/deployed-smoke.test.mjs tests/lab-embed-routes.test.mjs tests/day-pack-quiz.test.mjs tests/day3-progressive-n8n.test.mjs tests/w3-w4-instructions.test.mjs training-lab/tests/w4-support-agent-sdk.test.mjs tests/proof-trail.test.mjs tests/lab-grading-routes.test.mjs tests/faq-chat.test.mjs tests/leercoach.test.mjs tests/naslag-release.test.mjs tests/cohort-access.test.mjs tests/cohort-routes.test.mjs tests/wave-cohort-chrome.test.mjs tests/debrief-board-chrome.test.mjs tests/autograde.test.mjs tests/certificate.test.mjs tests/course-order.test.mjs tests/legacy-redirect.test.mjs tests/email-otp.test.mjs tests/join-errors.test.mjs tests/verify-scripts.test.mjs tests/aet-122-en-default-paired-code.test.mjs tests/aet-82-access-codes-remaining.test.mjs tests/aet-83-wave1-chat-faq.test.mjs tests/i18n.test.mjs tests/aet-134-thin-ui.test.mjs tests/authoring-chrome.test.mjs
+          tests/agent-setup.test.mjs tests/web-public-assets.test.mjs tests/seven-day-content.test.mjs tests/participant-copy.test.mjs tests/w4-solo-courses-static.test.mjs tests/w5-daily-brief-static.test.mjs tests/c1-c2-concepts-solo-static.test.mjs tests/n8n-triage-starters.test.mjs tests/day-packs-routes.test.mjs tests/lesson-route-day.test.mjs tests/solo-progress-day.test.mjs tests/learning-progress.test.mjs tests/migrate-v2.test.mjs tests/deployed-smoke.test.mjs tests/lab-embed-routes.test.mjs tests/day-pack-quiz.test.mjs tests/day3-progressive-n8n.test.mjs tests/w3-w4-instructions.test.mjs training-lab/tests/w4-support-agent-sdk.test.mjs training-lab/tests/w3-n8n-triage.test.mjs tests/proof-trail.test.mjs tests/lab-grading-routes.test.mjs tests/faq-chat.test.mjs tests/leercoach.test.mjs tests/naslag-release.test.mjs tests/cohort-access.test.mjs tests/cohort-routes.test.mjs tests/wave-cohort-chrome.test.mjs tests/debrief-board-chrome.test.mjs tests/autograde.test.mjs tests/certificate.test.mjs tests/course-order.test.mjs tests/legacy-redirect.test.mjs tests/email-otp.test.mjs tests/join-errors.test.mjs tests/verify-scripts.test.mjs tests/aet-122-en-default-paired-code.test.mjs tests/aet-82-access-codes-remaining.test.mjs tests/aet-83-wave1-chat-faq.test.mjs tests/i18n.test.mjs tests/aet-134-thin-ui.test.mjs tests/authoring-chrome.test.mjs
           tests/arcade-shell.test.mjs tests/badges.test.mjs tests/branding-chrome.test.mjs tests/classroom-mode.test.mjs tests/classroom-overlay-nav.test.mjs tests/classroom-overlay-pin.test.mjs tests/concept-sim.test.mjs tests/facilitator-chrome.test.mjs tests/lab-config-chrome.test.mjs tests/portal-identity.test.mjs tests/quiz-chrome.test.mjs tests/room-lab-control.test.mjs tests/teach-path-nav.test.mjs tests/web-spa-fallback.test.mjs
           tests/slides-actions.test.ts tests/slides-edits.test.ts tests/slides-routes.test.mjs tests/slides-classroom.test.ts tests/deck-assistant.test.mjs
           tests/solo-step-cards.test.mjs

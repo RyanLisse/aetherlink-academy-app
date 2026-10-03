@@ -56,7 +56,7 @@
   </nav>
 
   <main id="main">
-    <!-- modules/*.html content is assembled here by build.sh -->
+    <!-- modules/*.html content is assembled here by build.mjs -->
 <section class="module" id="module-1" style="background: var(--color-bg-warm)">
   <div class="module-content">
     <header class="module-header animate-in">
@@ -126,10 +126,10 @@
 
       <section class="screen animate-in">
         <h2 class="screen-heading">Follow the letter</h2>
-        <p>You run <code>pnpm start</code> in a <span class="term" data-definition="The terminal is the text window where you type commands to your computer instead of clicking buttons.">terminal</span>. Click through to watch your question travel.</p>
+        <p>You run <code>npm start</code> in a <span class="term" data-definition="The terminal is the text window where you type commands to your computer instead of clicking buttons.">terminal</span>. Click through to watch your question travel.</p>
 
         <div class="flow-animation" data-steps='[
-          {"highlight":"flow-m1-you","label":"You run pnpm start with a question (or none, and a default umbrella question is used)"},
+          {"highlight":"flow-m1-you","label":"You run npm start with a question (or none, and a default umbrella question is used)"},
           {"highlight":"flow-m1-agent","label":"agent.ts notices it is the file being run directly and grabs your words from the command line","packet":true,"from":"m1-you","to":"m1-agent"},
           {"highlight":"flow-m1-council","label":"runCouncil hands the prompt plus the path to instructions.md over to council.ts","packet":true,"from":"m1-agent","to":"m1-council"},
           {"highlight":"flow-m1-council","label":"fanOutFixture produces four member answers (alpha, bravo, charlie, delta)"},
@@ -172,12 +172,15 @@
         <div class="translation-block animate-in">
           <div class="translation-code">
             <span class="translation-label">src/agent.ts</span>
-            <pre><code><span class="code-line"><span class="code-keyword">const</span> isMain = process.argv[<span class="code-number">1</span>] <span class="code-operator">&amp;&amp;</span> <span class="code-function">fileURLToPath</span>(<span class="code-keyword">import</span>.meta.url) <span class="code-operator">===</span> process.argv[<span class="code-number">1</span>];</span>
+            <pre><code><span class="code-line"><span class="code-keyword">const</span> isMain = <span class="code-function">isMainModule</span>(<span class="code-keyword">import</span>.meta.url, process.argv[<span class="code-number">1</span>]);</span>
 <span class="code-line"><span class="code-keyword">if</span> (isMain) {</span>
 <span class="code-line">  <span class="code-keyword">const</span> prompt = process.argv.<span class="code-function">slice</span>(<span class="code-number">2</span>).<span class="code-function">join</span>(<span class="code-string">' '</span>) <span class="code-operator">||</span> <span class="code-string">'Moeten we een paraplu meenemen in Amsterdam?'</span>;</span>
-<span class="code-line">  <span class="code-keyword">const</span> result = <span class="code-function">runCouncil</span>(prompt);</span>
-<span class="code-line">  console.<span class="code-function">log</span>(JSON.<span class="code-function">stringify</span>(result, <span class="code-keyword">null</span>, <span class="code-number">2</span>));</span>
-<span class="code-line">  <span class="code-keyword">if</span> (<span class="code-operator">!</span>process.env.ANTHROPIC_API_KEY) {</span>
+<span class="code-line">  <span class="code-keyword">if</span> (process.env.ANTHROPIC_API_KEY) {</span>
+<span class="code-line">    <span class="code-keyword">const</span> messages = <span class="code-keyword">await</span> <span class="code-function">runCouncilAgentLive</span>(prompt);</span>
+<span class="code-line">    console.<span class="code-function">log</span>(JSON.<span class="code-function">stringify</span>(messages, <span class="code-keyword">null</span>, <span class="code-number">2</span>));</span>
+<span class="code-line">  } <span class="code-keyword">else</span> {</span>
+<span class="code-line">    <span class="code-keyword">const</span> result = <span class="code-function">runCouncil</span>(prompt);</span>
+<span class="code-line">    console.<span class="code-function">log</span>(JSON.<span class="code-function">stringify</span>(result, <span class="code-keyword">null</span>, <span class="code-number">2</span>));</span>
 <span class="code-line">    console.<span class="code-function">log</span>(<span class="code-string">'\n(Tip) Set ANTHROPIC_API_KEY to exercise the live Claude Agent SDK path.'</span>);</span>
 <span class="code-line">  }</span>
 <span class="code-line">}</span></code></pre>
@@ -188,11 +191,11 @@
               <p class="tl">Am I the file you actually launched, or did another file just borrow my functions? Only continue if I was launched.</p>
               <p class="tl">If so, run the block below.</p>
               <p class="tl">Glue together every word you typed after the command into one question. Typed nothing? Use the umbrella question.</p>
-              <p class="tl">Ask the council.</p>
-              <p class="tl">Print the whole result as neatly indented <span class="term" data-definition="JSON is a plain-text format for structured data: curly braces, labels in quotes, and values. Almost every program can read and write it.">JSON</span>.</p>
-              <p class="tl">If no <span class="term" data-definition="An API key is a secret password that proves to a paid service (here, Anthropic) who you are, so it can bill you.">API key</span> is set in the <span class="term" data-definition="Environment variables are settings stored outside the code, in the terminal session. Secrets like API keys live here so they never end up in the code itself.">environment</span>...</p>
-              <p class="tl">...print a friendly hint about the optional live path.</p>
-              <p class="tl">End of the check.</p>
+              <p class="tl">If the API key is set, run the live SDK path.</p>
+              <p class="tl">Print the live messages as neatly indented <span class="term" data-definition="JSON is a plain-text format for structured data: curly braces, labels in quotes, and values. Almost every program can read and write it.">JSON</span>.</p>
+              <p class="tl">Otherwise, use the fixture council.</p>
+              <p class="tl">Print the fixture result as JSON.</p>
+              <p class="tl">Print a hint about the live path.</p>
               <p class="tl">End of the startup block.</p>
             </div>
           </div>
@@ -243,7 +246,7 @@
                data-correct="b"
                data-explanation-right="Right. The prompt comes from the words after the command. With none, agent.ts falls back to the built-in umbrella question, so the output looks familiar."
                data-explanation-wrong="Look at the line with <code>||</code>: when you type nothing, the code quietly swaps in the umbrella question. Nothing crashes and nothing waits.">
-            <h3 class="quiz-question">A classmate runs <code>pnpm start</code> without typing any question and is surprised the council talks about umbrellas. What happened?</h3>
+            <h3 class="quiz-question">A classmate runs <code>npm start</code> without typing any question and is surprised the council talks about umbrellas. What happened?</h3>
             <div class="quiz-options">
               <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The council remembered their previous question</span></button>
               <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>No words were given, so agent.ts used its default question</span></button>
@@ -841,8 +844,8 @@
 
         <div class="step-cards">
           <div class="step-card"><div class="step-num">1</div><div class="step-body"><strong>Edit the judge rule</strong><p>In <code>instructions.md</code>, under "Judge rule (edit for mini-quest)".</p></div></div>
-          <div class="step-card"><div class="step-num">2</div><div class="step-body"><strong>Run <code>pnpm quest:judge</code></strong><p>Prints the notes label, the agreement scores and the answer for a remote-first startup question.</p></div></div>
-          <div class="step-card"><div class="step-num">3</div><div class="step-body"><strong>Run <code>pnpm test</code></strong><p>Confirms the council still behaves. Arcade checkpoint: <code>mini-quest-judge</code>.</p></div></div>
+          <div class="step-card"><div class="step-num">2</div><div class="step-body"><strong>Run <code>npm run quest:judge</code></strong><p>Prints the notes label, the agreement scores and the answer for a remote-first startup question.</p></div></div>
+          <div class="step-card"><div class="step-num">3</div><div class="step-body"><strong>Run <code>npm test</code></strong><p>Confirms the council still behaves.</p></div></div>
         </div>
 
         <div class="translation-block animate-in">
@@ -959,7 +962,7 @@
           <div class="pattern-card" style="border-top: 3px solid var(--color-actor-5)">
             <div class="pattern-icon" style="background: var(--color-actor-5)">🕹️</div>
             <h4 class="pattern-title">Fixture path: runCouncil</h4>
-            <p class="pattern-desc">Scripted members, rule-based judge. Free, instant, identical every run. Used by <code>pnpm start</code> and every test.</p>
+            <p class="pattern-desc">Scripted members, rule-based judge. Free, instant, identical every run. Used by <code>npm start</code> without a key and by every test.</p>
           </div>
           <div class="pattern-card" style="border-top: 3px solid var(--color-actor-1)">
             <div class="pattern-icon" style="background: var(--color-actor-1)">✈️</div>
@@ -979,7 +982,7 @@
             <pre><code><span class="code-line"><span class="code-comment">/** Optional live SDK path — single model asking to apply judge instructions (env key required). */</span></span>
 <span class="code-line"><span class="code-keyword">export async function</span> <span class="code-function">runCouncilAgentLive</span>(prompt: <span class="code-keyword">string</span>) {</span>
 <span class="code-line">  <span class="code-keyword">if</span> (<span class="code-operator">!</span>process.env.ANTHROPIC_API_KEY) {</span>
-<span class="code-line">    <span class="code-keyword">throw new</span> <span class="code-function">Error</span>(<span class="code-string">'Set ANTHROPIC_API_KEY in the environment (see .env.example). No secrets in git.'</span>);</span>
+<span class="code-line">    <span class="code-keyword">throw new</span> <span class="code-function">Error</span>(<span class="code-string">'Set ANTHROPIC_API_KEY in the environment. No secrets in git.'</span>);</span>
 <span class="code-line">  }</span>
 <span class="code-line">  <span class="code-keyword">const</span> instructions = <span class="code-function">loadInstructions</span>();</span>
 <span class="code-line">  <span class="code-keyword">const</span> messages: <span class="code-keyword">unknown</span>[] = [];</span>
@@ -1024,59 +1027,48 @@
           <div class="callout-icon">⚠️</div>
           <div class="callout-content">
             <strong class="callout-title">Read the label, not the function name</strong>
-            <p>"runCouncilAgentLive" sounds like four live members. The comment admits it is one model told to act as the judge, and nothing in the starter calls it yet. When an AI writes code for you, check the comments and what actually gets called, not just the names. Also note <code>bypassPermissions</code>: fine for a sandboxed lab, risky for an agent with real tools.</p>
+            <p><code>runCouncilAgentLive</code> uses one model as the judge, not four council members. <code>npm start</code> calls it only when <code>ANTHROPIC_API_KEY</code> is set. Count the SDK calls instead of trusting a function name. The <code>bypassPermissions</code> setting skips tool approval, so do not use it with access to real files or data.</p>
           </div>
         </div>
       </section>
 
       <section class="screen animate-in">
-        <h2 class="screen-heading">Tests that edit the rulebook, then put it back</h2>
-        <p>The project's <span class="term" data-definition="Tests are small programs that run your code with known inputs and check the outputs. If a test fails, something changed that you did not intend.">tests</span> run with Node's built-in <span class="term" data-definition="A test runner is the tool that finds your test files, runs them, and reports which passed and failed. Here it is node --test, started with pnpm test.">test runner</span>. The cleverest one temporarily rewrites <code>instructions.md</code> to prove the quest hook really works.</p>
+        <h2 class="screen-heading">Tests that keep your quest edit in place</h2>
+        <p>The project's <span class="term" data-definition="Tests are small programs that run your code with known inputs and check the outputs. If a test fails, something changed that you did not intend.">tests</span> run with Node's built-in <span class="term" data-definition="A test runner is the tool that finds your test files, runs them, and reports which passed and failed. Here it is node --test, started with npm test.">test runner</span>. The judge test uses short rule samples in memory. It does not change <code>instructions.md</code>, so you can run it after your quest.</p>
 
         <div class="translation-block animate-in">
           <div class="translation-code">
             <span class="translation-label">tests/council-reduce.test.ts</span>
-            <pre><code><span class="code-line"><span class="code-function">test</span>(<span class="code-string">'judge instruction delta changes reduce notes (mini-quest parity)'</span>, () <span class="code-operator">=&gt;</span> {</span>
-<span class="code-line">  <span class="code-keyword">const</span> original = <span class="code-function">readFileSync</span>(instructionsFile, <span class="code-string">'utf8'</span>);</span>
-<span class="code-line">  <span class="code-keyword">try</span> {</span>
-<span class="code-line">    <span class="code-keyword">const</span> loose = original.<span class="code-function">replace</span>(<span class="code-string">/Wees strenger bij vage claims\./i</span>, <span class="code-string">'Wees mild; vague wording is fine.'</span>);</span>
-<span class="code-line">    <span class="code-function">writeFileSync</span>(instructionsFile, loose);</span>
-<span class="code-line">    <span class="code-keyword">const</span> a = <span class="code-function">loadJudgeRule</span>(original);</span>
-<span class="code-line">    <span class="code-keyword">const</span> b = <span class="code-function">loadJudgeRule</span>(loose);</span>
-<span class="code-line">    assert.<span class="code-function">equal</span>(a.strict, <span class="code-keyword">true</span>);</span>
-<span class="code-line">    assert.<span class="code-function">equal</span>(b.strict, <span class="code-keyword">false</span>);</span>
-<span class="code-line">    <span class="code-keyword">const</span> members = <span class="code-function">fanOutFixture</span>(<span class="code-string">'Vague topic'</span>);</span>
-<span class="code-line">    <span class="code-keyword">const</span> strictJudge = <span class="code-function">reduceCouncil</span>({ <span class="code-property">prompt</span>: <span class="code-string">'x'</span>, members, <span class="code-property">instructions</span>: original });</span>
-<span class="code-line">    <span class="code-keyword">const</span> mildJudge = <span class="code-function">reduceCouncil</span>({ <span class="code-property">prompt</span>: <span class="code-string">'x'</span>, members, <span class="code-property">instructions</span>: loose });</span>
-<span class="code-line">    assert.<span class="code-function">equal</span>(strictJudge.notes, <span class="code-string">'judge-rule:strict-vague'</span>);</span>
-<span class="code-line">    assert.<span class="code-function">equal</span>(mildJudge.notes, <span class="code-string">'judge-rule:default'</span>);</span>
-<span class="code-line">    assert.<span class="code-function">ok</span>(strictJudge.agreement.bravo <span class="code-operator">&lt;=</span> mildJudge.agreement.bravo);</span>
-<span class="code-line">  } <span class="code-keyword">finally</span> {</span>
-<span class="code-line">    <span class="code-function">writeFileSync</span>(instructionsFile, original);</span>
-<span class="code-line">  }</span>
+            <pre><code><span class="code-line"><span class="code-function">test</span>(<span class="code-string">'judge instruction delta changes reduce notes'</span>, () <span class="code-operator">=&gt;</span> {</span>
+<span class="code-line">  <span class="code-keyword">const</span> strictRule = <span class="code-string">'Wees strenger bij vage claims.'</span>;</span>
+<span class="code-line">  <span class="code-keyword">const</span> mildRule = <span class="code-string">'Wees mild; vague wording is fine.'</span>;</span>
+<span class="code-line">  <span class="code-keyword">const</span> a = <span class="code-function">loadJudgeRule</span>(strictRule);</span>
+<span class="code-line">  <span class="code-keyword">const</span> b = <span class="code-function">loadJudgeRule</span>(mildRule);</span>
+<span class="code-line">  assert.<span class="code-function">equal</span>(a.strict, <span class="code-keyword">true</span>);</span>
+<span class="code-line">  assert.<span class="code-function">equal</span>(b.strict, <span class="code-keyword">false</span>);</span>
+<span class="code-line">  <span class="code-keyword">const</span> members = <span class="code-function">fanOutFixture</span>(<span class="code-string">'Vague topic'</span>);</span>
+<span class="code-line">  <span class="code-keyword">const</span> strictJudge = <span class="code-function">reduceCouncil</span>({ <span class="code-property">prompt</span>: <span class="code-string">'x'</span>, members, <span class="code-property">instructions</span>: strictRule });</span>
+<span class="code-line">  <span class="code-keyword">const</span> mildJudge = <span class="code-function">reduceCouncil</span>({ <span class="code-property">prompt</span>: <span class="code-string">'x'</span>, members, <span class="code-property">instructions</span>: mildRule });</span>
+<span class="code-line">  assert.<span class="code-function">equal</span>(strictJudge.notes, <span class="code-string">'judge-rule:strict-vague'</span>);</span>
+<span class="code-line">  assert.<span class="code-function">equal</span>(mildJudge.notes, <span class="code-string">'judge-rule:default'</span>);</span>
+<span class="code-line">  assert.<span class="code-function">ok</span>(strictJudge.agreement.bravo <span class="code-operator">&lt;=</span> mildJudge.agreement.bravo);</span>
 <span class="code-line">});</span></code></pre>
           </div>
           <div class="translation-english">
             <span class="translation-label">PLAIN ENGLISH</span>
             <div class="translation-lines">
-              <p class="tl">A test named after what it proves: changing the judge rule changes the verdict.</p>
-              <p class="tl">Photocopy the current rulebook first.</p>
-              <p class="tl">Try the following...</p>
-              <p class="tl">Make a mild version by swapping the strict sentence for a relaxed one.</p>
-              <p class="tl">Actually write the mild version to disk.</p>
-              <p class="tl">Read the settings from the original...</p>
-              <p class="tl">...and from the mild copy.</p>
-              <p class="tl"><span class="term" data-definition="An assertion is a line in a test that says 'this must be true'. If it is not, the test fails and tells you where.">Assert</span> the original is strict...</p>
-              <p class="tl">...and the mild copy is not.</p>
+              <p class="tl">The test checks how changing the rule changes the result.</p>
+              <p class="tl">Set one short sample rule to strict.</p>
+              <p class="tl">Set another sample rule to mild.</p>
+              <p class="tl">Read the settings from each sample.</p>
+              <p class="tl"><span class="term" data-definition="An assertion is a line in a test that says 'this must be true'. If it is not, the test fails and tells you where.">Assert</span> the first is strict...</p>
+              <p class="tl">...and the second is not.</p>
               <p class="tl">Get the four scripted members.</p>
               <p class="tl">Judge them with the strict rules...</p>
               <p class="tl">...and with the mild rules.</p>
               <p class="tl">The strict verdict must carry the strict label...</p>
               <p class="tl">...and the mild one the default label.</p>
               <p class="tl">Bravo must never score higher under strict rules than mild ones.</p>
-              <p class="tl">No matter what happened above, even a crash...</p>
-              <p class="tl">...restore the original rulebook.</p>
-              <p class="tl"></p>
               <p class="tl">End of test.</p>
             </div>
           </div>
@@ -1085,8 +1077,8 @@
         <div class="callout callout-accent">
           <div class="callout-icon">💡</div>
           <div class="callout-content">
-            <strong class="callout-title">try / finally is a safety net</strong>
-            <p>Code in a <span class="term" data-definition="try/finally is a code structure that guarantees the 'finally' part runs even if the 'try' part fails. Use it for cleanup: closing files, restoring settings.">finally</span> block always runs, even if an assertion fails halfway. Without it, one failed test would leave a mangled <code>instructions.md</code> behind and quietly break the next run. When an AI writes a test that touches real files, ask: "does it restore them in a finally block?"</p>
+            <strong class="callout-title">Tests leave your file alone</strong>
+            <p>The judge test passes sample text to <code>loadJudgeRule</code>. It does not write to <code>instructions.md</code>, so the test cannot undo your quest edit.</p>
           </div>
         </div>
       </section>
@@ -1096,7 +1088,7 @@
         <div class="icon-rows">
           <div class="icon-row">
             <div class="icon-circle" style="background: var(--color-actor-1)">🔑</div>
-            <div><strong>"Set ANTHROPIC_API_KEY" error</strong><p>Only the live path needs it. Export the key in your terminal; never commit a <code>.env</code> file.</p></div>
+            <div><strong>"Set ANTHROPIC_API_KEY" error</strong><p>Only the live path needs it. Set the key in your terminal; the SDK reads it from the environment, not a file.</p></div>
           </div>
           <div class="icon-row">
             <div class="icon-circle" style="background: var(--color-actor-2)">🎚️</div>
@@ -1104,7 +1096,7 @@
           </div>
           <div class="icon-row">
             <div class="icon-circle" style="background: var(--color-actor-3)">📝</div>
-            <div><strong><code>instructions.md</code> changed and you did not touch it</strong><p>A test was interrupted mid-run (for example, force-quit). Check <code>git diff instructions.md</code>.</p></div>
+            <div><strong>Your quest edit disappeared</strong><p>The tests do not change <code>instructions.md</code>. Check that your editor saved the file.</p></div>
           </div>
           <div class="icon-row">
             <div class="icon-circle" style="background: var(--color-actor-5)">🧪</div>
@@ -1144,13 +1136,13 @@
 
           <div class="quiz-question-block"
                data-correct="a"
-               data-explanation-right="Yes. Without finally, the restore line is skipped whenever an assertion throws, leaving the mild rulebook on disk for the next run."
-               data-explanation-wrong="What happens to the line that restores the original file if an assertion above it fails and the test stops early?">
-            <h3 class="quiz-question">An AI "simplifies" the test by removing try/finally and putting the restore line at the end. What breaks?</h3>
+               data-explanation-right="Correct. The test uses separate sample strings, so it can check both rules without changing your file."
+               data-explanation-wrong="The test reads its own two samples. It does not need to write to instructions.md.">
+            <h3 class="quiz-question">Why does the judge test use two sample strings instead of editing instructions.md?</h3>
             <div class="quiz-options">
-              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>If any assertion fails, instructions.md stays in its mild version</span></button>
-              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Nothing; the restore line still runs every time</span></button>
-              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The test can no longer read the file</span></button>
+              <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>It lets you run tests after the quest without changing your edit</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>It makes the tests call the live Claude model</span></button>
+              <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>It skips checking strict and mild rules</span></button>
             </div>
             <div class="quiz-feedback"></div>
           </div>

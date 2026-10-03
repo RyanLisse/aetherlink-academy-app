@@ -56,7 +56,7 @@
   </nav>
 
   <main id="main">
-    <!-- modules/*.html content is assembled here by build.sh -->
+    <!-- modules/*.html content is assembled here by build.mjs -->
 <section class="module" id="module-1" style="background: var(--color-bg)">
   <div class="module-content">
     <header class="module-header animate-in">
@@ -106,7 +106,7 @@
             <div class="step-num">2</div>
             <div class="step-body">
               <strong>Live lane (only with a key)</strong>
-              <p>If <code>ANTHROPIC_API_KEY</code> is set as an <span class="term" data-definition="An environment variable is a named setting that lives outside your code, in the terminal session or a .env file. Secrets like API keys go here so they never end up in git.">environment variable</span>, Claude itself gets the question and calls the tool.</p>
+              <p>If <code>ANTHROPIC_API_KEY</code> is set in your terminal session, Claude gets the question and calls the tool.</p>
             </div>
           </div>
         </div>
@@ -114,7 +114,7 @@
 
       <section class="screen animate-in">
         <h2 class="screen-heading">The fork in the road, in code</h2>
-        <p>This is the bottom of <code>src/agent.ts</code>, the <span class="term" data-definition="The entry point is the file that runs first when you start a program. Here, 'pnpm start' runs src/agent.ts.">entry point</span>. Every run starts here.</p>
+        <p>This is the bottom of <code>src/agent.ts</code>, the <span class="term" data-definition="The entry point is the file that runs first when you start a program. Here, 'npm start' runs src/agent.ts.">entry point</span>. Every run starts here.</p>
         <div class="translation-block animate-in">
           <div class="translation-code">
             <span class="translation-label">src/agent.ts</span>
@@ -210,7 +210,7 @@
                data-correct="b"
                data-explanation-right="Exactly. Without ANTHROPIC_API_KEY the program only runs the simulator lane and prints a tip. The fixture output is still correct and useful."
                data-explanation-wrong="Not quite. Look at the fork: the live lane only runs when the API key exists. Without it, you get fixture JSON plus a tip. Nothing is broken.">
-            <h3 class="quiz-question">A teammate runs <code>pnpm start</code> and sees only the Amsterdam JSON plus a "(Tip)" line. No Claude answer. What happened?</h3>
+            <h3 class="quiz-question">A teammate runs <code>npm start</code> and sees only the Amsterdam JSON plus a "(Tip)" line. No Claude answer. What happened?</h3>
             <div class="quiz-options">
               <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>The weather tool crashed</span></button>
               <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>No API key is set, so only the simulator lane ran</span></button>
@@ -352,7 +352,7 @@
               <div class="chat-avatar" style="background: var(--color-actor-5)">T</div>
               <div class="chat-bubble">
                 <span class="chat-sender" style="color: var(--color-actor-5)">tests</span>
-                <p>And I check that every time someone runs pnpm test. No key, no network, still green.</p>
+                <p>And I check that every time someone runs npm test. No key, no network, still green.</p>
               </div>
             </div>
           </div>
@@ -683,7 +683,7 @@
 
       <section class="screen animate-in">
         <h2 class="screen-heading">Three doors inside fetchWeather</h2>
-        <p>Every lookup walks through <code>fetchWeather</code> and exits through one of three doors. Which one depends on two <span class="term" data-definition="Environment variables are named settings outside your code (in your shell or a .env file). You change behaviour without editing code: WEATHER_BASE_URL=https://... pnpm start.">environment variables</span>.</p>
+        <p>Every lookup walks through <code>fetchWeather</code> and exits through one of three doors. Which one depends on two <span class="term" data-definition="Environment variables are named settings outside your code. Set them in your terminal, then run npm start.">environment variables</span>.</p>
         <div class="step-cards">
           <div class="step-card">
             <div class="step-num">1</div>
@@ -740,7 +740,7 @@
             <span class="translation-label">src/agent.ts</span>
             <pre><code><span class="code-line"><span class="code-keyword">export</span> <span class="code-keyword">async</span> <span class="code-keyword">function</span> <span class="code-function">runWeatherAgent</span>(prompt: string) {</span>
 <span class="code-line">  <span class="code-keyword">if</span> (!process.env.ANTHROPIC_API_KEY) {</span>
-<span class="code-line">    <span class="code-keyword">throw new</span> <span class="code-function">Error</span>(<span class="code-string">'Set ANTHROPIC_API_KEY in the environment (see .env.example). No secrets in git.'</span>);</span>
+<span class="code-line">    <span class="code-keyword">throw new</span> <span class="code-function">Error</span>(<span class="code-string">'Set ANTHROPIC_API_KEY in the environment. No secrets in git.'</span>);</span>
 <span class="code-line">  }</span></code></pre>
           </div>
           <div class="translation-english">
@@ -748,19 +748,19 @@
             <div class="translation-lines">
               <p class="tl">The live-lane function, which takes your question as text.</p>
               <p class="tl">First, check: is there an API key in the environment?</p>
-              <p class="tl">If not, stop immediately with a helpful message pointing at .env.example.</p>
+              <p class="tl">If not, stop and ask for a key in the terminal before running the live path.</p>
               <p class="tl">(Only past this gate does any money get spent.)</p>
             </div>
           </div>
         </div>
         <div class="badge-list">
           <div class="badge-item">
-            <code class="badge-code">.env.example</code>
-            <span class="badge-desc">Committed template with an empty <code>ANTHROPIC_API_KEY=</code> line</span>
+            <code class="badge-code">ANTHROPIC_API_KEY</code>
+            <span class="badge-desc">Set it in the terminal for a live run. Do not save it to a file.</span>
           </div>
           <div class="badge-item">
-            <code class="badge-code">.env</code>
-            <span class="badge-desc">Your real copy with the key. Listed in <span class="term" data-definition="A .gitignore file lists files git should never track or upload. Secrets and build output go here.">.gitignore</span>, so git never uploads it</span>
+            <code class="badge-code">.gitignore</code>
+            <span class="badge-desc">A list of files git should not track. The API key stays in your terminal, not in a file.</span>
           </div>
         </div>
       </section>
@@ -888,7 +888,7 @@
 
       <section class="screen animate-in">
         <h2 class="screen-heading">Tests: the smoke-alarm button</h2>
-        <p>You press the test button on a smoke alarm without setting the house on fire. <span class="term" data-definition="Unit tests are small automatic checks that run a piece of code with known inputs and compare the output to what you expect. Run them with 'pnpm test'.">Unit tests</span> do the same: known weather in, expected advice out, no API key, no network.</p>
+        <p>You press the test button on a smoke alarm without setting the house on fire. <span class="term" data-definition="Unit tests are small automatic checks that run a piece of code with known inputs and compare the output to what you expect. Run them with 'npm test'.">Unit tests</span> do the same: known weather in, expected advice out, no API key, no network.</p>
         <div class="translation-block animate-in">
           <div class="translation-code">
             <span class="translation-label">tests/weather-tool.test.ts</span>
@@ -953,7 +953,7 @@
                data-correct="c"
                data-explanation-right="Right. The quest is an instruction-only change. A new tool is exactly what the README says not to do, and the checker only looks at instructions.md."
                data-explanation-wrong="Not quite. The mini-quest is deliberately instruction-only. The fix belongs in instructions.md; adding code or tools misses the point of the exercise.">
-            <h3 class="quiz-question"><code>pnpm quest:clothing</code> prints "Mini-quest incomplete". Your AI offers to write a new <code>get_clothing</code> tool. What should you do instead?</h3>
+            <h3 class="quiz-question"><code>npm run quest:clothing</code> prints "Mini-quest incomplete". Your AI offers to write a new <code>get_clothing</code> tool. What should you do instead?</h3>
             <div class="quiz-options">
               <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Accept: more tools means better answers</span></button>
               <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Delete quest-clothing.ts so the error goes away</span></button>

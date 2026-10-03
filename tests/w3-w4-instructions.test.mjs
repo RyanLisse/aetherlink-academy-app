@@ -35,15 +35,16 @@ test('day 4 English instructions include the Agent SDK package and lesson comman
   for (const literal of [
     'git clone --depth 1 --filter=blob:none --sparse https://github.com/RyanLisse/aetherlink-academy-app.git w4-support',
     'git sparse-checkout set training-lab/w4-support-agent-sdk',
-    'cd training-lab/w4-support-agent-sdk && npm install',
+    'npm run smoke:mcp',
+    'npm run check',
     'npm run lesson1 -- MSG-01 --dry-run',
     'npm run lesson2 -- MSG-05',
     'npm run lesson3 -- MSG-08',
-    'cd 03-mcp/transaction-mcp && npm install',
     'npm install',
   ]) {
     assert.ok(instructions.includes(literal), `day 4 instructions include ${literal}`);
   }
+  assert.ok(!instructions.includes('cd 03-mcp/transaction-mcp'), 'npm install covers the MCP server; no separate install step');
 });
 
 test('day 3 English instructions name the L1 starter and credential placeholder', () => {

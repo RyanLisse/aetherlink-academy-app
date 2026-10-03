@@ -36,7 +36,7 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     { title: "Input", body: "Start with the shared ticket fixture." },
     { title: "Output", body: "Return a Low, Med, or High label." },
   ],
-  notes: "The vehicle. Ticket in → Low/Med/High out (+ optional reply at L3). Point at the workshop n8n instance + screenshot pack under /workshop-3/. No vehicle = fail the through-line. Soft: AET-84 starter JSON when ready — does not block today."
+  notes: "The vehicle. Ticket in → Low/Med/High out (+ optional reply at L3). Point at local n8n (npm run n8n in training-lab/w3-n8n-triage) or the optional workshop instance + screenshot pack under /workshop-3/. No vehicle = fail the through-line. Soft: AET-84 starter JSON when ready — does not block today."
 },
 
 { // 3
@@ -253,12 +253,12 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
 
 { // 17
   lessonId: "workshop-3",
-  title: "Workshop instance. No prod.",
+  title: "Your own n8n. No prod.",
   kicker: "Guardrails",
   type: "concept",
   visual: { bot: 'head', place: 'beside' },
-  subtitle: "Keep the exercise on the workshop instance and show evidence for model runs.",
-  keyPoints: ["Use the workshop instance.","Never show secrets.","An import alone is not model-run proof."],
+  subtitle: "Keep the exercise on local n8n or the workshop instance and show evidence for model runs.",
+  keyPoints: ["Use local n8n or the workshop instance.","Never show secrets.","An import alone is not model-run proof."],
   cards: [
     { title: "No production writes", body: "Do not connect real Jira or payments." },
     { title: "Protect secrets", body: "Keep credentials off screen." },

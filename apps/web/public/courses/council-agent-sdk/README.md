@@ -1,78 +1,201 @@
-# council-agent-sdk
+# Council agent example
 
-Thin **Claude Agent SDK** starter for AetherLink Academy Agent Arcade (L2 LLM Council parity).
+This project runs four sample answers, then uses a judge rule to combine them.
+You will edit that rule and see how the scores change.
 
-Fan-out → structured judge/reduce. Quest hook: edit the **judge rule** in `instructions.md` only.
+## Prerequisites
 
-Linear: **AET-63** (historically LIS-65).
+- Node.js 24 LTS, which includes npm.
+- Git.
+- A terminal. Use Terminal on macOS or Linux, or PowerShell on Windows.
 
-## Requirements
+## 1. Get the project and install its packages
 
-- Node.js 18+
-- pnpm
-
-## Setup
-
-```bash
+```text
 git clone https://github.com/RyanLisse/council-agent-sdk.git
 cd council-agent-sdk
-pnpm i
+npm install
 ```
 
-### API key (env only — never commit)
+Expected output includes:
 
-```bash
-cp .env.example .env
-export ANTHROPIC_API_KEY=sk-ant-...
+```text
+found 0 vulnerabilities
 ```
 
-Live multi-model spend is **not** required for the lab path — tests use fixture members + local reduce.
+### Check your work
 
-## Run
+`npm install` finishes without an error. The project does not use a `.env`
+file. The SDK reads `ANTHROPIC_API_KEY` from the terminal environment.
 
-```bash
-pnpm start
-# or
-pnpm exec node --import tsx src/agent.ts "Moeten we een paraplu meenemen?"
+## 2. Run the tests
+
+```text
+npm test
 ```
 
-## Mini-quest (L2 judge)
+Expected output:
 
-1. Open **`instructions.md`**.
-2. Edit **only** the judge rule (e.g. strenger bij vage claims / Nederlands / max woorden).
-3. Re-run:
-
-```bash
-pnpm quest:judge
-pnpm test
+```text
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
 ```
 
-Arcade checkpoint: `mini-quest-judge`.
+### Check your work
 
-## Tests (no live multi-model spend)
+All seven tests pass. They use fixed sample text and do not call a model.
 
-```bash
-pnpm test
+## 3. Run the sample
+
+```text
+npm start
 ```
 
-## Layout
+Expected output includes:
 
-| Path | Role |
-|------|------|
-| `instructions.md` | Fan-out + **judge** quest hook |
-| `src/council.ts` | Fixture fan-out + structured reduce |
-| `src/schemas.ts` | Judge/agreement types |
-| `src/agent.ts` | Runner + optional live `query()` |
+```text
+  "judge": {
+    "answer": "Samenvatting: Moeten we een paraplu meenemen in Amsterdam? — concrete stappen: 1) check bron 2) beslis.",
+    "agreement": {
+      "alpha": 0.85,
+      "bravo": 0.3,
+      "charlie": 0.85,
+      "delta": 0.85
+    },
+    "notes": "judge-rule:strict-vague"
+  }
+}
 
-## Interactive course
+(Tip) Set ANTHROPIC_API_KEY to exercise the live Claude Agent SDK path.
+```
 
-`course/` holds a self-contained HTML course that walks through this repo in plain language: fan-out, the judge's scoring, the `instructions.md` quest hook, and fixture vs live SDK. Includes animations, code↔English translations and quizzes. No install needed:
+### Check your work
 
-```bash
+The command prints four member answers and a summary. It does not need
+an API key.
+
+## 4. Change the judge rule
+
+Open `instructions.md`. In the `Judge rule` section, replace
+`Wees strenger bij vage claims.` with `Wees mild; vague wording is fine.`.
+Do not edit the member instructions above it.
+
+Run the quest and tests:
+
+```text
+npm run quest:judge
+npm test
+```
+
+Expected output includes:
+
+```text
+judge notes: judge-rule:default
+agreement: { alpha: 0.85, bravo: 0.5, charlie: 0.85, delta: 0.85 }
+answer: Samenvatting: Is remote-first altijd beter voor startups? — concrete stappen: 1) check bron 2) beslis.
+quest ok — edit only the judge rule in instructions.md and re-run.
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+```
+
+### Check your work
+
+The quest reports `judge-rule:default`. All seven tests pass. The test uses
+sample rules and does not overwrite your edit.
+
+## 5. Try the live SDK path (optional)
+
+The live path needs an Anthropic API key. Set it in the terminal where you
+will run the command. The key stays in that terminal session and never goes in
+a file.
+
+macOS or Linux:
+
+```text
+export ANTHROPIC_API_KEY=...
+npm start
+```
+
+Windows PowerShell:
+
+```text
+$env:ANTHROPIC_API_KEY = "..."
+npm start
+```
+
+Windows Command Prompt:
+
+```text
+set ANTHROPIC_API_KEY=...
+npm start
+```
+
+### Check your work
+
+With a valid key, the command starts the Claude Agent SDK query. The live
+response changes between runs. No live output is shown because this
+walkthrough did not use an API key.
+
+## 6. Open or rebuild the course
+
+Double-click `course/index.html` in your file explorer.
+
+macOS:
+
+```text
 open course/index.html
 ```
 
-Rebuild after editing a module: `cd course && bash build.sh`.
+Linux:
+
+```text
+xdg-open course/index.html
+```
+
+Windows PowerShell:
+
+```text
+Start-Process .\course\index.html
+```
+
+Windows Command Prompt:
+
+```text
+start "" course\index.html
+```
+
+After you edit a course module, rebuild and check the saved page:
+
+```text
+npm run course:build
+npm run course:check
+```
+
+Expected output:
+
+```text
+Built course/index.html — open it in your browser.
+course/index.html is up to date.
+```
+
+### Check your work
+
+The build command writes `course/index.html`. The check command confirms that
+the saved page matches its source files.
+
+## Files
+
+| Path | What it contains |
+| --- | --- |
+| `instructions.md` | The member directions and editable judge rule. |
+| `src/council.ts` | Sample answers, scoring, and the judge. |
+| `src/schemas.ts` | Member and judge data types. |
+| `src/agent.ts` | The sample runner and optional SDK query. |
+| `course/` | The interactive HTML lessons. |
 
 ## License
 
