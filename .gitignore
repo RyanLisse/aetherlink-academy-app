@@ -20,6 +20,7 @@ vendor/proof-sdk/.git/
 .DS_Store
 **/dist-server/
 .crabbox/
+.e2e/
 
 # verify-academy local state + proof (never commit screenshots)
 .cursor/skills/verify-academy/.run/
