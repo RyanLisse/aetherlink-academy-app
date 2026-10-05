@@ -1,5 +1,5 @@
 import React,{useEffect,useRef,useState} from 'react';
-import {ArrowRight,BookOpen,Check,ChevronDown,ClipboardCheck,Code2,Copy,ExternalLink,HelpCircle,MoreHorizontal,Pause,Play,Presentation,RotateCw,Settings2,Sparkles,Users,X} from 'lucide-react';
+import {ArrowRight,BookOpen,Check,ChevronDown,ClipboardCheck,Code2,Copy,ExternalLink,HelpCircle,LayoutGrid,MoreHorizontal,Pause,Play,Presentation,RotateCw,Settings2,Sparkles,Users,X} from 'lucide-react';
 import {Chat} from './chat';
 import {Coach} from './panels';
 import {useT} from './i18n';
@@ -73,7 +73,7 @@ function SessionChecklist({room,onNavigate}){
  </div>;
 }
 
-export function FacilitatorWorkspace({room,view,onNavigate,renderContent,controls,classroom,onPresent,account,error,connected,control,busy}){
+export function FacilitatorWorkspace({room,view,onNavigate,renderContent,controls,classroom,onPresent,account,error,connected,control,busy,onAdmin}){
  const t=useT();
  const [assistant,setAssistant]=useState(false);
  const [connection,setConnection]=useState(false);
@@ -93,6 +93,7 @@ export function FacilitatorWorkspace({room,view,onNavigate,renderContent,control
     {[['workshop','simple.workshop',workshop],['decks','simple.deck',view==='decks'],['lesson','simple.dayPack',view==='lesson'],['naslag','simple.resources',view==='naslag']].map(([id,label,selected])=><button type="button" key={id} className={selected?'simple-nav-active':undefined} aria-current={selected?'page':undefined} data-surface={id} onClick={()=>navigate(id)}>{t(label)}</button>)}
    </nav>
    <div className="simple-utilities">
+    {onAdmin&&<button type="button" data-testid="nav-admin" onClick={onAdmin}><LayoutGrid size={17} aria-hidden="true"/><span>{t('nav.admin')}</span></button>}
     <button ref={assistantButton} type="button" aria-label={t('simple.assistant')} aria-expanded={assistant} aria-controls="academy-assistant" onClick={()=>setAssistant(value=>!value)}><Sparkles size={17}/><span>{t('simple.assistant')}</span></button>
     <details className="simple-more"><summary aria-label={t('simple.more')}><MoreHorizontal size={20}/></summary><div className="simple-menu">
      <button type="button" onClick={e=>{setSettings(value=>!value);e.currentTarget.closest('details').open=false;}}><Settings2 size={16}/>{t('simple.settings')}</button>
