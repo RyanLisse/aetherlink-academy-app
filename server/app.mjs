@@ -31,6 +31,7 @@ import {
 } from './routes/content.mjs';
 import { registerSlidesRoutes } from './routes/slides.mjs';
 import { registerFileRoutes } from './routes/files.mjs';
+import { registerFacilitatorAdminRoutes } from './routes/facilitator-admin.mjs';
 import { registerMcpRoutes } from './routes/mcp.mjs';
 import { registerPortalRoutes } from './routes/portal.mjs';
 import { registerHealthRoute } from './routes/health.mjs';
@@ -258,6 +259,7 @@ export function createApp({
     deckAssistantConfig,
   });
   registerFileRoutes(app, { files, deckActor, browser, wrap });
+  registerFacilitatorAdminRoutes(app, { store, files, requireFacilitator, wrap });
   registerMcpRoutes(app, {
     store,
     slides,

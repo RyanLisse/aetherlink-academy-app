@@ -132,6 +132,28 @@ export class LocalStore extends Store {
    return {token:this.session(room.id,p.id,'browser',p.name),roomId:room.id,resumed:true};
   });
  }
+ roomExists(roomId){if(!this.data.rooms[roomId])fail(404,'Room does not exist.');}
+ deleteRoom(roomId){return this.locked(()=>{
+  const room=this.data.rooms[roomId];
+  if(!room)fail(404,'Room does not exist.');
+  for(const [key,session] of Object.entries(this.data.sessions))if(session.roomId===roomId)delete this.data.sessions[key];
+  for(const [personId,binding] of Object.entries(this.data.emails))if(binding.roomId===roomId)delete this.data.emails[personId];
+  for(const cohort of Object.values(this.data.cohorts))if(cohort.currentRoomId===roomId)cohort.currentRoomId=null;
+  for(const id of room.members.map(member=>member.id))this.live.delete(id);
+  delete this.data.rooms[roomId];
+  return {deleted:true,roomId,members:room.members.length};
+ });}
+ deleteCohort(cohortId){return this.locked(()=>{
+  const cohort=this.cohortOr404(cohortId),ids=cohort.members.map(member=>member.id),idSet=new Set(ids);
+  const rooms=this.cohortRooms(cohortId),certificates=this.cohortCertificates(cohortId);
+  for(const room of rooms){anonymizeRoom(room,ids);if(room.requests)for(const key of Object.keys(room.requests))if(idSet.has(JSON.parse(key)[0]))delete room.requests[key];}
+  for(const [key,session] of Object.entries(this.data.sessions))if(idSet.has(session.personId))delete this.data.sessions[key];
+  for(const id of ids)delete this.data.emails[id];
+  for(const [key,code] of Object.entries(this.data.accessCodes))if(code.cohortId===cohortId)delete this.data.accessCodes[key];
+  for(const certificate of certificates)delete this.data.certificates[certificate.id];
+  delete this.data.cohorts[cohortId];
+  return {deleted:true,cohortId,members:ids.length,rooms:rooms.map(room=>room.id),certificates:certificates.length};
+ });}
  purgeExpiredCohorts({dryRun=true}={}){return this.locked(()=>{
   const now=this.now(),due=Object.values(this.data.cohorts).filter(cohort=>isDueForPurge(cohort,now));
   const report=due.map(cohort=>({cohortId:cohort.id,members:cohort.members.length,rooms:this.cohortRooms(cohort.id).map(room=>room.id),certificates:this.cohortCertificates(cohort.id).length}));
