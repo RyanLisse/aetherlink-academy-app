@@ -493,6 +493,39 @@ export class PostgresStore {
    return {token:await this.session(client,r.id,p.id,'browser',p.name),roomId:r.id,resumed:true};
   });
  }
+ async roomExists(roomId) {
+  const found=await this.transaction(client=>client.query('SELECT 1 FROM rooms WHERE id=$1',[roomId]));
+  if(!found.rowCount)fail(404,'Room does not exist.');
+ }
+ // Facilitator delete of one squad. Sessions, participant links, requests, decks, room files
+ // and room-bound email bindings cascade on the rooms FK; a cohort that pointed at the room
+ // loses it as current room (ON DELETE SET NULL). Cohort seats stay with their cohort.
+ async deleteRoom(roomId) {
+  return this.transaction(async client=>{
+   const found=await client.query('SELECT data FROM rooms WHERE id=$1 FOR UPDATE',[roomId]);
+   const r=found.rows[0]?.data;
+   if(!r)fail(404,'Room does not exist.');
+   await client.query('DELETE FROM rooms WHERE id=$1',[roomId]);
+   return {deleted:true,roomId,members:r.members.length};
+  });
+ }
+ // Facilitator delete of one Wave cohort: attached rooms are detached and the cohort seats in
+ // them anonymized (same bar as retention purge); seat sessions and requests go; the cohort row
+ // cascades members, access codes, certificates and seat email bindings.
+ async deleteCohort(cohortId) {
+  return this.transaction(async client=>{
+   await this.cohortRow(client,cohortId,true);
+   const members=(await client.query('SELECT id FROM cohort_members WHERE cohort_id=$1',[cohortId])).rows.map(row=>row.id);
+   const rooms=await this.cohortRooms(client,cohortId,true);
+   const certificates=await client.query('SELECT count(*)::int AS count FROM cohort_certificates WHERE cohort_id=$1',[cohortId]);
+   for(const room of rooms)await this.save(client,anonymizeRoom(room,members));
+   await client.query('DELETE FROM sessions WHERE person_id=ANY($1)',[members]);
+   await client.query('DELETE FROM requests WHERE person_id=ANY($1)',[members]);
+   await client.query(`UPDATE decks SET data=jsonb_set(data,'{createdBy,name}',to_jsonb($2::text)) WHERE data->'createdBy'->>'id'=ANY($1)`,[members,'Geanonimiseerd']);
+   await client.query('DELETE FROM cohorts WHERE id=$1',[cohortId]);
+   return {deleted:true,cohortId,members:members.length,rooms:rooms.map(room=>room.id),certificates:certificates.rows[0].count};
+  });
+ }
  async purgeExpiredCohorts({dryRun=true}={}) {
   return this.transaction(async client=>{
    const now=this.now();
