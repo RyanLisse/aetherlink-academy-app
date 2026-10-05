@@ -40,6 +40,7 @@ const layoutDefects=page=>page.evaluate(()=>{
 const VIEWPORTS=[[1440,900],[390,844]];
 const WAVE_DAYS=[1,2,3,4,5,6,7];
 const HARNESS_DAYS=[8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24];
+const SRE_SOLO_DAYS=[25];
 
 const scan=async(page,defects,where)=>{
   for(const [width,height] of VIEWPORTS){
@@ -55,11 +56,12 @@ test('every lesson day, page and viewport is free of layout defects',async()=>{
   assert.ok(existsSync(path.join(root,'dist/index.html')),'dist/index.html missing: run pnpm run build first');
   const wave=await startLegacyFixture();
   const harness=await startLegacyFixture({harness:true});
+  const sreSolo=await startLegacyFixture({sreSolo:true});
   const browser=await chromium.launch();
   const defects=[];
   try{
-    for(const day of [...WAVE_DAYS,...HARNESS_DAYS]){
-      const fixture=WAVE_DAYS.includes(day)?wave:harness;
+    for(const day of [...WAVE_DAYS,...HARNESS_DAYS,...SRE_SOLO_DAYS]){
+      const fixture=WAVE_DAYS.includes(day)?wave:HARNESS_DAYS.includes(day)?harness:sreSolo;
       fixture.setDay(day);
       const context=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:'reduce'});
       await context.addInitScript(()=>localStorage.setItem('academy-locale','en'));
@@ -102,6 +104,7 @@ test('every lesson day, page and viewport is free of layout defects',async()=>{
     await browser.close();
     await wave.close();
     await harness.close();
+    await sreSolo.close();
   }
   assert.deepEqual(defects,[],`layout defects found:\n${defects.join('\n')}`);
 });

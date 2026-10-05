@@ -226,6 +226,34 @@ test('AET-118 P0 W5 retrofit: diagram + ConceptSim + locale-complete; Apple bar 
   assert.equal(getSim('w5-sdlc-loop', 'nl')?.title, simNl.title);
 });
 
+test('SRE on-call ConceptSim uses the fixture evidence and is locale-complete',async()=>{
+ const {parseLocalizedScenario,projectScenario,assertScenarioLocaleComplete}=await import('../packages/concept-sim/src/index.ts');
+ const {DAY_PACKS}=await import('../content/days/index.mjs');
+ const raw=JSON.parse(readFileSync(join(root,'content/sims/sre-oncall-loop.json'),'utf8'));
+ const localized=parseLocalizedScenario(raw,'sre-oncall-loop');
+ assertScenarioLocaleComplete(localized,'sre-oncall-loop');
+ const en=projectScenario(localized,'en');
+ const nl=projectScenario(localized,'nl');
+ assert.ok(en.steps.length>=14);
+ assert.equal(nl.steps.length,en.steps.length);
+ assert.notEqual(
+  JSON.stringify(en.steps.map(step=>step.content+step.annotation)),
+  JSON.stringify(nl.steps.map(step=>step.content+step.annotation))
+ );
+ assert.match(en.steps[0].content,/Error rate 12% for 5 min on checkout \(threshold 2%\)/);
+ assert.match(en.steps.find(step=>step.type==='tool_result'&&step.toolName==='summarize_metrics').content,/"from":0.003,"to":0.12/);
+ assert.match(en.steps.find(step=>step.type==='tool_result'&&step.toolName==='list_deploys').content,/d-4821.*v2\.15\.0.*2026-10-05T03:43:00\.000Z/);
+ assert.match(en.steps.find(step=>step.type==='tool_result'&&step.toolName==='get_diff').content,/PAYMENT_PROVIDER_SECRET_\$\{region\.toUpperCase\(\)\}/);
+ assert.match(en.steps.find(step=>step.type==='tool_result'&&step.toolName==='search_logs').content,/PaymentConfigError: missing key PAYMENT_PROVIDER_SECRET_EU/);
+ assert.ok(en.steps.some(step=>step.type==='system_event'&&/decided_by: a named human is required/.test(step.content)));
+ assert.ok(en.steps.some(step=>step.toolName==='watch'&&/LANDED/.test(step.content)));
+ assert.match(en.steps.at(-1).annotation,/fixed pipeline.*real model uses lessons as context/i);
+ assert.equal(getSim('sre-oncall-loop','en')?.title,en.title);
+ assert.equal(getSim('sre-oncall-loop','nl')?.title,nl.title);
+ const pack=DAY_PACKS.find(day=>day.day===25);
+ assert.ok(pack?.sims.some(sim=>sim.id==='sre-oncall-loop'));
+});
+
 test('AET-118 P1 W4 retrofit: diagram + ConceptSim + locale-complete; SOLO 0–4 kept', async () => {
   const {DAY_PACKS} = await import('../content/days/index.mjs');
   const {projectPackLocale} = await import('../content/days/locale.mjs');

@@ -8,8 +8,8 @@ import {getDayPack,listDaySummaries,listRouteDays,starterFileNames} from '../ser
 const root=process.cwd();
 const decks=await loadDeckSlides(root);
 
-test('Wave 1–7 stay locked; Harness packs 8–24 are opt-in',()=>{
- assert.deepEqual(listDaySummaries().map(d=>d.day),Array.from({length:24},(_,i)=>i+1));
+test('Wave 1–7 stay locked; Harness and SRE solo packs are opt-in',()=>{
+ assert.deepEqual(listDaySummaries().map(d=>d.day),Array.from({length:25},(_,i)=>i+1));
  assert.deepEqual([1,2,3,4,5,6,7].map(day=>getDayPack(day).code),['classroom-1','classroom-2','workshop-3','workshop-4','workshop-5','workshop-6','workshop-7']);
  assert.deepEqual([1,2,3,4,5,6,7].map(day=>getDayPack(day).mission.id),['CLASSROOM-01','CLASSROOM-02','TRIAGE-N8N-03','TRIAGE-CLAUDE-04','SDLC-BRIEF-05','EIGEN-SLICE-06','EIGEN-SHIP-07']);
  assert.equal(getDayPack(8)?.code,'harness');
@@ -21,6 +21,8 @@ test('Wave 1–7 stay locked; Harness packs 8–24 are opt-in',()=>{
  assert.equal(getDayPack(22)?.mission.id,'HARNESS-S15');
  assert.equal(getDayPack(24)?.mission.id,'HARNESS-S17');
  assert.equal(getDayPack(24)?.code,'harness');
+ assert.equal(getDayPack(25)?.kind,'solo');
+ assert.equal(getDayPack(25)?.mission.id,'SRE-ONCALL-25');
  assert.equal(listRouteDays()[6].title,'Workshop 7 · Own assignment: ship it');
  assert.equal(getDayPack(7).copy.nl.title,'Workshop 7 · Eigen opdracht: afronden');
  assert.equal(listRouteDays().length,7,'default route stays Wave 1–7');
@@ -211,6 +213,7 @@ test('Workshop 5 cites daily-brief HTML course + Assignments + SOLO (AET-131)',(
  const d5=getDayPack(5);
  const solos=d5.materials.filter(m=>m.kind==='solo');
  assert.deepEqual(solos.map(m=>m.href),[
+  '/courses/sre-oncall-agent/course/index.html',
   '/courses/aetherlink-daily-brief-lab-s1/index.html',
   '/courses/aetherlink-daily-brief-lab-s1/SOLO.md'
  ]);
@@ -223,6 +226,7 @@ test('Workshop 5 cites daily-brief HTML course + Assignments + SOLO (AET-131)',(
  for(const lang of ['en','nl']){
   const mats=d5.copy[lang].materials;
   assert.deepEqual(mats.filter(m=>m.kind==='solo').map(m=>m.href),[
+   '/courses/sre-oncall-agent/course/index.html',
    '/courses/aetherlink-daily-brief-lab-s1/index.html',
    '/courses/aetherlink-daily-brief-lab-s1/SOLO.md'
   ],lang);
