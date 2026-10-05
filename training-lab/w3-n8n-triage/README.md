@@ -53,13 +53,13 @@ Command Prompt does not have this restriction, so `npm` works there.
 npm run n8n
 ```
 
-Wait for `Editor is now accessible via: http://localhost:5678`, then open http://localhost:5678 in your browser. On the first start n8n asks you to create an owner account. It is a local account stored on your machine, in the `.n8n` folder in your home folder (`%USERPROFILE%\.n8n` on Windows). Use any name and password you will remember. Stop n8n with `Ctrl+C`. In Command Prompt, answer `Y` to `Terminate batch job (Y/N)?`.
+Wait for `Editor is now accessible via: http://localhost:5678`, then open http://localhost:5678 in your browser. On the first start n8n asks you to create an owner account. It is a local account stored on your machine, in the `.n8n` folder in your home folder (`%USERPROFILE%\.n8n` on Windows). Enter a name, an email address, and a password you will remember. The password needs at least 8 characters, 1 number, and 1 capital letter. Stop n8n with `Ctrl+C`. If Command Prompt asks `Terminate batch job (Y/N)?`, answer `Y`.
 
 If your facilitator gives you a shared workshop instance, you can use it instead. The steps are the same. Never use a production n8n.
 
 ## L1: Switch without an LLM
 
-1. In n8n, create a workflow. In the workflow menu (`...`), choose **Import from File** and pick `n8n-triage-l1-switch.json` from this folder.
+1. In n8n, create a workflow. In the workflow menu (`...`), choose **Import** → **From file** and pick `n8n-triage-l1-switch.json` from this folder.
 2. Open **Priority Switch** and read its rules: which words send a ticket to High, which to Medium, and what falls through to Low.
 3. Click **Execute workflow**. **Fixture Tickets** sends four tickets through the Switch.
 4. Open **High Priority Action**, **Medium Priority Action**, and **Low Priority Action**, and note which `ticket_id` landed in each branch.
