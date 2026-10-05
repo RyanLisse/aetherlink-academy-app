@@ -67,6 +67,7 @@ const en = {
   {id:'w5-solo7',badge:'7',level:'required',timerMinutes:15,title:'SOLO 7 · gate and PR',goal:'Fill docs/gate.md with PASS, FAIL, or OPEN and citations; refuse PASS on unread checks; keep credentials out of the repo; open the PR.',doneWhen:'Gate filled, no secrets in the repo, and the PR is open.',slide:slide(d,46,'Fill the gate. Open the PR.')}
  ],
  materials:[
+  link('solo','Solo mission · AI SRE first responder','/courses/sre-oncall-agent/course/index.html','same loop applied to operations · day 25'),
   link('solo','HTML course · daily-brief modules 01–06','/courses/aetherlink-daily-brief-lab-s1/index.html','modules 01–06 · empty-main pedagogy'),
   link('assignment','Assignment · intent','/courses/aetherlink-daily-brief-lab-s1/intent.md','intent.md template'),
   link('assignment','Assignment · spec (flight plan)','/courses/aetherlink-daily-brief-lab-s1/docs/spec.md','docs/spec.md (+ design/plan)'),
@@ -153,6 +154,7 @@ const nl = {
   {id:'w5-solo7',badge:'7',level:'required',timerMinutes:15,title:'SOLO 7 · gate en PR',goal:'Vul docs/gate.md met PASS, FAIL of OPEN en citaten, weiger PASS op ongelezen checks, houd credentials buiten de repo en open de PR.',doneWhen:'Gate ingevuld, geen secrets in de repo en de PR staat open.',slide:slide(d,46,'Fill the gate. Open the PR.')}
  ],
  materials:[
+  link('solo','Solo-missie · AI-SRE first responder','/courses/sre-oncall-agent/course/index.html','zelfde lus toegepast op operations · dag 25'),
   link('solo','HTML-cursus · daily-brief modules 01–06','/courses/aetherlink-daily-brief-lab-s1/index.html','modules 01–06 · lege-main-pedagogiek'),
   link('assignment','Opdracht · intent','/courses/aetherlink-daily-brief-lab-s1/intent.md','intent.md-sjabloon'),
   link('assignment','Opdracht · spec (vluchtplan)','/courses/aetherlink-daily-brief-lab-s1/docs/spec.md','docs/spec.md (+ design/plan)'),

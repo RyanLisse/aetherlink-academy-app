@@ -1,0 +1,220 @@
+{
+  "version": "sre-oncall-loop",
+  "attribution": "Academy-authored ConceptSim for the SRE solo mission. Scenario from RyanLisse/sre-oncall-agent fixtures (MIT). Not a port of an upstream chapter.",
+  "locales": {
+    "en": {
+      "title": "AI SRE first responder — alert to ratchet",
+      "description": "Follow the bad-deploy evidence from alert to a human decision, watch, lesson and bench ratchet.",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Error rate 12% for 5 min on checkout (threshold 2%)",
+          "annotation": "INC-1001 enters the investigation as data, not policy."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Read the #bad-deploy lessons for context, then start with summarize_metrics.",
+          "annotation": "The lesson preview can show INC-0931 and a learner-authored INC-1001 fix/gotcha; only a real model uses lessons as context."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "summarize_metrics",
+          "content": "{\"since\":\"2026-10-05T02:50:00.000Z\",\"until\":\"2026-10-05T03:50:00Z\"}",
+          "annotation": "The offline trace starts with metrics."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "summarize_metrics",
+          "content": "{\"points\":51,\"first_ts\":\"2026-10-05T03:00:00.000Z\",\"last_ts\":\"2026-10-05T03:50:00.000Z\",\"error_rate_max\":0.12,\"error_rate_last\":0.12,\"p95_ms_max\":210,\"p95_ms_last\":210,\"versions\":[\"v2.14.0\",\"v2.15.0\"],\"breakpoints\":[{\"ts\":\"2026-10-05T03:45:00.000Z\",\"what\":\"error_rate\",\"from\":0.003,\"to\":0.12,\"version\":\"v2.15.0\"}]}",
+          "annotation": "Breakpoint at 03:45:00; error_rate moved from 0.003 to 0.12."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "list_deploys",
+          "content": "{\"since\":\"2026-10-05T02:50:00.000Z\",\"until\":\"2026-10-05T03:50:00Z\"}",
+          "annotation": "Next, find a deploy that lines up with the breakpoint."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "list_deploys",
+          "content": "[{\"id\":\"d-4821\",\"version\":\"v2.15.0\",\"at\":\"2026-10-05T03:43:00.000Z\",\"author\":\"sven\",\"summary\":\"payments: switch EU traffic to new provider config\",\"has_diff\":true}]",
+          "annotation": "The matching deploy is d-4821, v2.15.0 at 03:43."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "get_diff",
+          "content": "{\"since\":\"2026-10-05T02:50:00.000Z\",\"until\":\"2026-10-05T03:50:00Z\"}",
+          "annotation": "Read the deploy diff before assigning cause."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "get_diff",
+          "content": "{\"id\":\"d-4821\",\"version\":\"v2.15.0\",\"diff\":\"--- a/payments/provider.ts\\n+++ b/payments/provider.ts\\n@@ -12,9 +12,9 @@ export const providerFor = (region: string): Provider => {\\n-  const secret = env(\\\"PAYMENT_PROVIDER_SECRET\\\");\\n-  return region === \\\"eu\\\" ? stripeEU(secret) : stripeUS(secret);\\n+  // EU traffic now goes through the new provider config; secret is read per region\\n+  const secret = env(`PAYMENT_PROVIDER_SECRET_${region.toUpperCase()}`);\\n+  return region === \\\"eu\\\" ? stripeEU(secret) : stripeUS(secret);\\n };\"}",
+          "annotation": "The change reads a region-specific secret."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "search_logs",
+          "content": "{\"since\":\"2026-10-05T02:50:00.000Z\",\"until\":\"2026-10-05T03:50:00Z\"}",
+          "annotation": "Check logs for the error that confirms the impact."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "search_logs",
+          "content": "[{\"ts\":\"2026-10-05T03:45:03.000Z\",\"level\":\"error\",\"msg\":\"PaymentConfigError: missing key PAYMENT_PROVIDER_SECRET_EU for provider=stripe-eu\"}]",
+          "annotation": "The first confirming error is at 03:45:03."
+        },
+        {
+          "type": "assistant_text",
+          "content": "What's happening: error_rate jumped from 0.003 to 0.12 at 2026-10-05T03:45:00.000Z, 2 minutes after deploy d-4821 (v2.15.0). Nothing else changed in the window. Rolling back to v2.14.0 should restore the baseline.\nRoot cause (high):\n  - metrics:2026-10-05T03:45:00.000Z — error_rate 0.003 → 0.12 on v2.15.0\n  - deploys:d-4821 — v2.15.0 at 2026-10-05T03:43:00.000Z: payments: switch EU traffic to new provider config\n  - diff:d-4821 — changed: // EU traffic now goes through the new provider config; secret is read per region | const secret = env(`PAYMENT_PROVIDER_SECRET_${region.toU\n  - logs:2026-10-05T03:45:03.000Z — PaymentConfigError: missing key PAYMENT_PROVIDER_SECRET_EU for provider=stripe-eu\nBlast radius:            all checkout traffic on v2.15.0; error_rate now 0.12\nProposed fix:            rollback → Deploy owner (approves and runs the rollback); watch error_rate afterwards\nRuled out:               load/dependency: p95 did not move independently of the deploy\nWould change my mind:    a breakpoint BEFORE 2026-10-05T03:43:00.000Z, or the same errors on v2.14.0\nSeverity:                page  ← would page the on-call",
+          "annotation": "Diagnosis, evidence, proposal and severity are from the offline investigate output."
+        },
+        {
+          "type": "system_event",
+          "content": "PASS contract · OPEN: a human decides. Nothing was rolled back, scaled or paged.",
+          "annotation": "Four sources are cited, including deploys; the cited tools appear in the trace."
+        },
+        {
+          "type": "system_event",
+          "content": "FAIL approval\ndecided_by: a named human is required\nAPPROVED rollback for INC-1001 by Academy Reviewer\nPASS approval",
+          "annotation": "An empty name is refused; a named person can approve."
+        },
+        {
+          "type": "system_event",
+          "content": "The separate executor checks isApproved(record, incident, proposal). The investigator has four read-only tools and no rollback tool.",
+          "annotation": "The agent proposes; a different program performs an approved action."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "watch",
+          "content": "npm run watch -- fixtures/incidents/bad-deploy.json --metric error_rate --fix-at 2026-10-05T03:52:00Z --after fixtures/telemetry/after-rollback.json",
+          "annotation": "Watch checks recovery telemetry after the human-approved action."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "watch",
+          "content": "LANDED: error_rate back at baseline 0.003 (limit 0.008)\nPASS watch",
+          "annotation": "Watch reports LANDED; a human closes the incident."
+        },
+        {
+          "type": "system_event",
+          "content": "The investigator writes a proposed lesson under lessons/proposed/. A human promotes it to lessons/lessons.md through a PR.",
+          "annotation": "A reviewed lesson may inform a real model; offlineVerdict remains a fixed rule."
+        },
+        {
+          "type": "system_event",
+          "content": "PASS check",
+          "annotation": "The bench floor only goes up and harmful stays 0; npm run check reports 57 passing tests and five bench cases at 100%. The offline run demonstrates a fixed pipeline, while only a real model uses lessons as context."
+        }
+      ],
+      "attribution": "Academy-authored ConceptSim for the SRE solo mission. Scenario from RyanLisse/sre-oncall-agent fixtures (MIT). Not a port of an upstream chapter."
+    },
+    "nl": {
+      "title": "AI-SRE first responder — van alert tot ratchet",
+      "description": "Volg het bewijs van de bad deploy van alert tot menselijk besluit, watch, les en bench-ratchet.",
+      "steps": [
+        {
+          "type": "user_message",
+          "content": "Error rate 12% for 5 min on checkout (threshold 2%)",
+          "annotation": "INC-1001 komt als data binnen, niet als beleid."
+        },
+        {
+          "type": "assistant_text",
+          "content": "Bekijk de #bad-deploy-lessen voor context en begin daarna met summarize_metrics.",
+          "annotation": "De lespreview kan INC-0931 en een door de lerende geschreven fix/gotcha voor INC-1001 tonen; alleen een echt model gebruikt lessen als context."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "summarize_metrics",
+          "content": "{\"since\":\"2026-10-05T02:50:00.000Z\",\"until\":\"2026-10-05T03:50:00Z\"}",
+          "annotation": "De offline trace begint met metrics."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "summarize_metrics",
+          "content": "{\"points\":51,\"first_ts\":\"2026-10-05T03:00:00.000Z\",\"last_ts\":\"2026-10-05T03:50:00.000Z\",\"error_rate_max\":0.12,\"error_rate_last\":0.12,\"p95_ms_max\":210,\"p95_ms_last\":210,\"versions\":[\"v2.14.0\",\"v2.15.0\"],\"breakpoints\":[{\"ts\":\"2026-10-05T03:45:00.000Z\",\"what\":\"error_rate\",\"from\":0.003,\"to\":0.12,\"version\":\"v2.15.0\"}]}",
+          "annotation": "Breakpoint om 03:45:00; error_rate veranderde van 0.003 naar 0.12."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "list_deploys",
+          "content": "{\"since\":\"2026-10-05T02:50:00.000Z\",\"until\":\"2026-10-05T03:50:00Z\"}",
+          "annotation": "Zoek daarna een deploy die bij de breakpoint past."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "list_deploys",
+          "content": "[{\"id\":\"d-4821\",\"version\":\"v2.15.0\",\"at\":\"2026-10-05T03:43:00.000Z\",\"author\":\"sven\",\"summary\":\"payments: switch EU traffic to new provider config\",\"has_diff\":true}]",
+          "annotation": "De passende deploy is d-4821, v2.15.0 om 03:43."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "get_diff",
+          "content": "{\"since\":\"2026-10-05T02:50:00.000Z\",\"until\":\"2026-10-05T03:50:00Z\"}",
+          "annotation": "Lees de deploydiff voordat je de oorzaak aanwijst."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "get_diff",
+          "content": "{\"id\":\"d-4821\",\"version\":\"v2.15.0\",\"diff\":\"--- a/payments/provider.ts\\n+++ b/payments/provider.ts\\n@@ -12,9 +12,9 @@ export const providerFor = (region: string): Provider => {\\n-  const secret = env(\\\"PAYMENT_PROVIDER_SECRET\\\");\\n-  return region === \\\"eu\\\" ? stripeEU(secret) : stripeUS(secret);\\n+  // EU traffic now goes through the new provider config; secret is read per region\\n+  const secret = env(`PAYMENT_PROVIDER_SECRET_${region.toUpperCase()}`);\\n+  return region === \\\"eu\\\" ? stripeEU(secret) : stripeUS(secret);\\n };\"}",
+          "annotation": "De wijziging leest een regionspecifieke secret."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "search_logs",
+          "content": "{\"since\":\"2026-10-05T02:50:00.000Z\",\"until\":\"2026-10-05T03:50:00Z\"}",
+          "annotation": "Zoek in logs naar de fout die de impact bevestigt."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "search_logs",
+          "content": "[{\"ts\":\"2026-10-05T03:45:03.000Z\",\"level\":\"error\",\"msg\":\"PaymentConfigError: missing key PAYMENT_PROVIDER_SECRET_EU for provider=stripe-eu\"}]",
+          "annotation": "De eerste bevestigende fout staat om 03:45:03."
+        },
+        {
+          "type": "assistant_text",
+          "content": "What's happening: error_rate jumped from 0.003 to 0.12 at 2026-10-05T03:45:00.000Z, 2 minutes after deploy d-4821 (v2.15.0). Nothing else changed in the window. Rolling back to v2.14.0 should restore the baseline.\nRoot cause (high):\n  - metrics:2026-10-05T03:45:00.000Z — error_rate 0.003 → 0.12 on v2.15.0\n  - deploys:d-4821 — v2.15.0 at 2026-10-05T03:43:00.000Z: payments: switch EU traffic to new provider config\n  - diff:d-4821 — changed: // EU traffic now goes through the new provider config; secret is read per region | const secret = env(`PAYMENT_PROVIDER_SECRET_${region.toU\n  - logs:2026-10-05T03:45:03.000Z — PaymentConfigError: missing key PAYMENT_PROVIDER_SECRET_EU for provider=stripe-eu\nBlast radius:            all checkout traffic on v2.15.0; error_rate now 0.12\nProposed fix:            rollback → Deploy owner (approves and runs the rollback); watch error_rate afterwards\nRuled out:               load/dependency: p95 did not move independently of the deploy\nWould change my mind:    a breakpoint BEFORE 2026-10-05T03:43:00.000Z, or the same errors on v2.14.0\nSeverity:                page  ← would page the on-call",
+          "annotation": "Diagnose, bewijs, voorstel en severity komen uit de offline investigate-output."
+        },
+        {
+          "type": "system_event",
+          "content": "PASS contract · OPEN: a human decides. Nothing was rolled back, scaled or paged.",
+          "annotation": "Er staan vier bronnen in het bewijs, waaronder deploys; de genoemde tools staan in de trace."
+        },
+        {
+          "type": "system_event",
+          "content": "FAIL approval\ndecided_by: a named human is required\nAPPROVED rollback for INC-1001 by Academy Reviewer\nPASS approval",
+          "annotation": "Een lege naam wordt geweigerd; een persoon op naam kan goedkeuren."
+        },
+        {
+          "type": "system_event",
+          "content": "De aparte executor controleert isApproved(record, incident, proposal). De investigator heeft vier read-only tools en geen rollback-tool.",
+          "annotation": "De agent stelt voor; een ander programma voert een goedgekeurde actie uit."
+        },
+        {
+          "type": "tool_call",
+          "toolName": "watch",
+          "content": "npm run watch -- fixtures/incidents/bad-deploy.json --metric error_rate --fix-at 2026-10-05T03:52:00Z --after fixtures/telemetry/after-rollback.json",
+          "annotation": "Watch controleert de herstelde telemetry na de door een mens goedgekeurde actie."
+        },
+        {
+          "type": "tool_result",
+          "toolName": "watch",
+          "content": "LANDED: error_rate back at baseline 0.003 (limit 0.008)\nPASS watch",
+          "annotation": "Watch meldt LANDED; een mens sluit het incident."
+        },
+        {
+          "type": "system_event",
+          "content": "De investigator schrijft een voorgestelde les onder lessons/proposed/. Een mens promoveert die via een PR naar lessons/lessons.md.",
+          "annotation": "Een beoordeelde les kan een echt model helpen; offlineVerdict blijft een vaste regel."
+        },
+        {
+          "type": "system_event",
+          "content": "PASS check",
+          "annotation": "De benchgrens gaat alleen omhoog en harmful blijft 0; npm run check rapporteert 57 geslaagde tests en vijf benchcases op 100%. De offline run toont een vaste pipeline, terwijl alleen een echt model lessen als context gebruikt."
+        }
+      ],
+      "attribution": "Door Academy geschreven ConceptSim voor de SRE-solo-missie. Scenario uit de fixtures van RyanLisse/sre-oncall-agent (MIT). Geen port van een upstream-hoofdstuk."
+    }
+  }
+}
