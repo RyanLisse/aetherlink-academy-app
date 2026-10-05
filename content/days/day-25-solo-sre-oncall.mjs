@@ -86,10 +86,10 @@ const MATERIALS_NL=[
  link('solo','SOLO.md',`${COURSE}/SOLO.md`,'Stappen 0–9'),
  link('naslag','README.md',`${COURSE}/README.md`,'Repositoryhandleiding'),
  link('naslag','CLAUDE.md',`${COURSE}/CLAUDE.md`,'Projectregels'),
- link('assignment','Menselijke gate · Step 9',`${COURSE}/docs/gate-step-9.md`,'PASS / FAIL / OPEN'),
- link('naslag','Referentieoplossing · Step 9',`${COURSE}/docs/solutions/step-9.md`,'Vergelijk pas nadat je het zelf hebt geprobeerd'),
+ link('assignment','Menselijke gate · Stap 9',`${COURSE}/docs/gate-step-9.md`,'PASS / FAIL / OPEN'),
+ link('naslag','Referentieoplossing · Stap 9',`${COURSE}/docs/solutions/step-9.md`,'Vergelijk pas nadat je het zelf hebt geprobeerd'),
  link('vehicle','SRE-bronrepository',SOURCE,'private repo'),
- link('solo','Workshop 5 · AI-native SDLC','/workshop/5','zelfde lus toegepast op operations · dag 25'),
+ link('solo','Workshop 5 · AI-native SDLC','/workshop/5','zelfde lus, toegepast op operations'),
  ...DIAGRAM_NL.map((item,index)=>link('diagram',item.title,item.src,`Diagram ${index+1}`))
 ];
 
@@ -188,10 +188,10 @@ const nl={
  kicker:'Workshop 5 · operations-lus',
  lessonTitle:'Lees, citeer, stel voor — de mens beslist',
  motto:'De agent leest, citeert en stelt voor; een mens op naam beslist, handelt en sluit af.',
- leerdoel:'Pas de AI-native SDLC-lus van Workshop 5 toe op operations. Gebruik diezelfde lus daarna om in Step 9 de agent te veranderen.',
+ leerdoel:'Pas de AI-native SDLC-lus van Workshop 5 toe op operations. Gebruik diezelfde lus daarna om in Stap 9 de agent te veranderen.',
  narrative:[
   'De first responder leest telemetry, deploys, diffs en logs. De agent citeert bewijs en doet een voorstel; hij voert geen mitigatie uit.',
-  'Een mens op naam beslist, handelt en sluit af. Watch meldt LANDED of NOT LANDED. In Step 9 verander je de offline-regel via intent, een rode bench-case, een plan, een build, een groene check, een menselijke gate en een PR.'
+  'Een mens op naam beslist, handelt en sluit af. Watch meldt LANDED of NOT LANDED. In Stap 9 verander je de offline-regel via intent, een rode bench-case, een plan, een build, een groene check, een menselijke gate en een PR.'
  ],
  workedExample:'Volg het bewijs van de bad deploy van alert tot watch; laat daarna op je eigen fork de recovered-deploy-case slagen.',
  loop:[
@@ -222,10 +222,10 @@ const nl={
   'Watch geeft zowel LANDED als NOT LANDED; een mens sluit het incident.',
   '--show-lessons toont INC-0931 en jouw INC-1001-fix/gotcha onder #bad-deploy.',
   'De schadelijke bad-deploy-wijziging toont 🚫 bad-deploy en FAIL bench; herstel de case voordat je de grens verhoogt.',
-  'Step 9 gaat van rood → groen en docs/gate-step-9.md legt een reviewer op naam vast.'
+  'Stap 9 gaat van rood → groen en docs/gate-step-9.md legt een reviewer op naam vast.'
  ],
  quiz:[
-  question('Wat kunnen de vier investigation-tools veranderen?',['Niets; ze zijn read-only.','Ze kunnen een deploy terugdraaien.','Ze kunnen de on-call pagineren.'],0),
+  question('Wat kunnen de vier investigation-tools veranderen?',['Niets; ze zijn read-only.','Ze kunnen een deploy terugdraaien.','Ze kunnen de on-call oppiepen.'],0),
   question('Wat meldt watch, en wie sluit af?',['LANDED of NOT LANDED; een mens op naam sluit af.','Alleen LANDED; de agent sluit af.','De diagnose; het model sluit af.'],0),
   question('Wat doen lessen in een offline run?',['Ze worden getoond, maar alleen een echt model gebruikt ze als context; het offline verdict is een vaste regel.','Ze veranderen het offline verdict.','Ze keuren de rollback goed.'],0)
  ],
@@ -233,15 +233,15 @@ const nl={
   id:'SRE-ONCALL-25',
   title:'Solo-missie · AI-SRE first responder',
   minutes:110,
-  goal:'Doorloop SOLO 0–9 in je eigen clone tot de wijziging uit Step 9 een menselijke gate op naam en een PR op je fork heeft.',
+  goal:'Doorloop SOLO 0–9 in je eigen clone tot de wijziging uit Stap 9 een menselijke gate op naam en een PR op je fork heeft.',
   allowed:['Gebruik de read-only agent.','Het standaardpad is offline.','Gebruik alleen voor de stretch je eigen API-sleutel.','Bewaar de sleutel nooit in bestanden.'],
   starterFiles:[],
-  hints:['Lees het geciteerde bewijs voordat je de diagnose accepteert.','Noem de approver expliciet; watch sluit niet af.','Maak voor Step 9 eerst de bench-case rood en verander daarna pas de offline-regel.'],
-  stretch:'SOLO Step 7: run het echte model met je eigen API-sleutel, ingesteld als omgevingsvariabele en nooit opgeslagen in een bestand.'
+  hints:['Lees het geciteerde bewijs voordat je de diagnose accepteert.','Noem de approver expliciet; watch sluit niet af.','Maak voor Stap 9 eerst de bench-case rood en verander daarna pas de offline-regel.'],
+  stretch:'SOLO stap 7: run het echte model met je eigen API-sleutel, ingesteld als omgevingsvariabele en nooit opgeslagen in een bestand.'
  },
  openItems:[
-  'RyanLisse/sre-oncall-agent is a private repository; learner access is not arranged yet.',
-  'Windows is verified in CI (windows-latest), not on a learner machine.'
+  'RyanLisse/sre-oncall-agent is een privé-repository; toegang voor deelnemers is nog niet geregeld.',
+  'Windows is geverifieerd in CI (windows-latest), niet op de laptop van een deelnemer.'
  ]
 };
 
