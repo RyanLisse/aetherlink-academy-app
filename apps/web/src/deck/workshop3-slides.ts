@@ -36,7 +36,7 @@ export const workshop3SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     { title: "Input", body: "Start with the shared ticket fixture." },
     { title: "Output", body: "Return a Low, Med, or High label." },
   ],
-  notes: "The vehicle. Ticket in → Low/Med/High out (+ optional reply at L3). Point at local n8n (npm run n8n in training-lab/w3-n8n-triage) or the optional workshop instance + screenshot pack under /workshop-3/. No vehicle = fail the through-line. Soft: AET-84 starter JSON when ready — does not block today."
+  notes: "The vehicle. Ticket in → Low/Med/High out (+ optional reply at L3). Point at local n8n (run npm install once in training-lab/w3-n8n-triage; on Windows this can take 15–25 minutes, so do it before the workshop, then npm run n8n) or the optional workshop instance + screenshot pack under /workshop-3/. No vehicle = fail the through-line. Soft: AET-84 starter JSON when ready — does not block today."
 },
 
 { // 3
