@@ -558,7 +558,7 @@ function CohortPanel({squads,hostKey,action,onSquadsChanged}){
     </div>}
     {!cohorts.length&&<p className="muted" data-testid="cohort-empty">{t('cohort.empty')}</p>}
     {cohorts.map(cohort=><article className="cohort-card" key={cohort.id} data-testid="cohort-card">
-      <header><h4>{cohort.name}</h4><span className={'cohort-phase '+cohort.phase}>{t(`cohort.phase.${cohort.phase}`)}</span><button type="button" data-testid="cohort-delete" onClick={()=>deleteCohort(cohort)}><Trash2 size={14} aria-hidden="true"/>{t('cohort.delete')}</button></header>
+      <header><h4>{cohort.name}</h4><span className={'cohort-phase '+cohort.phase}>{t(`cohort.phase.${cohort.phase}`)}</span><button type="button" className="cohort-delete" data-testid="cohort-delete" title={t('cohort.delete')} aria-label={t('cohort.delete')} onClick={()=>deleteCohort(cohort)}><Trash2 size={14} aria-hidden="true"/></button></header>
       <p className="muted">{t('cohort.window',{start:date(cohort.startsAt),active:date(cohort.activeEndsAt),readOnly:date(cohort.readOnlyEndsAt)})}</p>
       <div className="cohort-rooms" data-testid="cohort-rooms">
         <strong>{t('cohort.linkedRooms')}</strong>
