@@ -56,7 +56,10 @@ export function registerSpaRoutes(app, deps) {
     return res.sendFile(webIndex);
   });
   app.use(express.static(path.join(root, 'dist')));
-  app.get('/', (_req, res) => res.sendFile(path.join(root, 'dist/index.html')));
+  // /facilitator is the legacy SPA's dedicated facilitator admin (squads + Wave cohorts).
+  app.get(['/', '/facilitator'], (_req, res) =>
+    res.sendFile(path.join(root, 'dist/index.html')),
+  );
   app.use((req, res, next) => {
     if (
       req.method === 'GET' &&

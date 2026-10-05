@@ -303,29 +303,48 @@ test('participant, reference, Learn, and deck navigation retain their intended l
   });
 });
 
-test('facilitator overview and read-only cohort room pass axe and show their states',async()=>{
+test('facilitator land-in, /facilitator admin and read-only cohort room pass axe and show their states',async()=>{
   await withBrowser(async({fixture,open})=>{
     const page=await open({width:1024,height:768});
     await page.goto(fixture.base+'/');
     await page.getByRole('radio',{name:'Ik ben facilitator'}).check();
     await page.getByLabel('Facilitator-startsleutel').fill(HOST_KEY);
     await page.getByRole('button',{name:'Inloggen'}).click();
+    await page.locator('.simple-eyebrow').waitFor();
+    assert.match(await page.locator('.simple-eyebrow').innerText(),/Facilitatorwerkplek/,'start-key unlock lands in the facilitator workspace');
+    assert.equal(await page.locator('.join-copy').count(),0,'no participant join hero after unlock');
+    assert.equal(await page.getByRole('heading',{name:'Je squads en cohorten'}).count(),0,'the squads hub is not the landing');
+
+    await page.getByTestId('nav-admin').click();
     await page.getByRole('heading',{name:'Wave oktober (synthetisch)'}).waitFor();
-    assert.ok(await page.getByRole('heading',{name:'Je squads en cohorten'}).isVisible(),'the workspace heading follows the session');
+    assert.equal(new URL(page.url()).pathname,'/facilitator','admin lives on /facilitator');
+    assert.ok(await page.getByRole('heading',{name:'Je squads en cohorten'}).isVisible(),'admin heading');
+    assert.equal(await page.locator('.join-copy').count(),0,'admin has no participant join hero');
+    assert.equal(await page.getByRole('radio',{name:'Ik ben facilitator'}).count(),0,'admin has no role toggle');
     assert.ok(await page.getByText(ROOM_CODE,{exact:true}).first().isVisible());
-    assert.ok(await page.getByRole('heading',{name:'Start een squad'}).isVisible(),'the workspace opens squad creation');
+    assert.ok(await page.getByRole('heading',{name:'Start een squad'}).isVisible(),'admin opens squad creation');
     assert.ok(await page.getByRole('button',{name:'Maak squad'}).isVisible(),'the create submit is visible');
-    assert.deepEqual(await blockingViolations(page),[],'facilitator workspace');
+    assert.ok(await page.getByTestId('squad-delete').first().isVisible(),'squad delete is on the admin');
+    assert.ok(await page.getByTestId('cohort-delete').first().isVisible(),'cohort delete is on the admin');
+    assert.deepEqual(await blockingViolations(page),[],'facilitator admin');
     await shot(page,'facilitator-overview-1024.png');
 
     await page.getByLabel('Squadnaam').fill('Squad Nieuw');
     await page.getByRole('button',{name:'Maak squad'}).click();
     await page.getByRole('heading',{name:'Squad Nieuw'}).waitFor();
     assert.match(await page.locator('.simple-eyebrow').innerText(),/Facilitatorwerkplek/,'created squad lands on the facilitator workspace');
+    await page.getByTestId('nav-admin').click();
+    await page.getByRole('heading',{name:'Je squads en cohorten'}).waitFor();
+    assert.ok(await page.getByRole('heading',{name:'Squad Nieuw'}).isVisible(),'back in admin, the new squad is listed');
+    await page.getByTestId('admin-to-workspace').click();
+    await page.locator('.simple-eyebrow').waitFor();
+    assert.equal(new URL(page.url()).pathname,'/','admin returns to the workspace');
 
     const reopen=await open({width:1024,height:768});
-    await reopen.goto(fixture.base+'/');
-    await reopen.getByRole('radio',{name:'Ik ben facilitator'}).check();
+    await reopen.goto(fixture.base+'/facilitator');
+    await reopen.getByLabel('Facilitator-startsleutel').waitFor();
+    assert.equal(await reopen.locator('.join-copy').count(),0,'admin sign-in has no participant hero');
+    assert.equal(await reopen.getByRole('radio',{name:'Ik ben facilitator'}).count(),0,'admin sign-in has no role toggle');
     await reopen.getByLabel('Facilitator-startsleutel').fill(HOST_KEY);
     await reopen.getByRole('button',{name:'Inloggen'}).click();
     await reopen.getByRole('heading',{name:'Wave oktober (synthetisch)'}).waitFor();
