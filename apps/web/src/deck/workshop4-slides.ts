@@ -24,9 +24,9 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     keyPoints: ["AI Agent node → query().", "System message → CLAUDE.md via settingSources.", "Specialists, tools, and human review keep their roles."],
     cards: [
       { title: "AI Agent node", body: "query() receives the prompt and SDK options." },
-      { title: "System message", body: "CLAUDE.md loads through settingSources: ['project']." },
-      { title: "Specialists", body: "ticket-analyst and email-responder are defined in agents." },
-      { title: "Tool and human gate", body: "MCP get_transaction provides data; a person reviews drafts in output/." },
+      { title: "System message", body: "CLAUDE.md via settingSources: ['project']." },
+      { title: "Specialists", body: "ticket-analyst and email-responder in agents." },
+      { title: "Tool and human gate", body: "MCP get_transaction; a person reviews output/." },
     ],
     notes: "Ask four questions throughout the day: What does the main agent know? What belongs to a subagent? When is a tool needed? What information came from external data? Map the n8n AI Agent node to query(), the system message to CLAUDE.md, Risk and Customer Reply roles to ticket-analyst and email-responder, a tool or HTTP node to MCP get_transaction, and the human gate to a draft in output/.",
   },
