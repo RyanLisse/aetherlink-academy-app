@@ -22,6 +22,7 @@ const CODE_EXAMPLES = [
 
 const analyst_prompt = "Look up transaction IDs with get_transaction, then analyze the record and message.";
 const email_prompt = "Draft a concise reply from the analyst result; do not invent facts.";
+const clerk_prompt = "Change transaction records only on a staff instruction; a person approves every write.";
 const prompt = "Review the supplied customer message.";
 
 const options = {
@@ -40,6 +41,17 @@ const options = {
       prompt: email_prompt,
       tools: [],
     },
+    "transaction-clerk": {
+      description: "Lists, adds, updates and deletes records on a staff instruction.",
+      prompt: clerk_prompt,
+      tools: [
+        "mcp__transactions__list_transactions",
+        "mcp__transactions__get_transaction",
+        "mcp__transactions__add_transaction",
+        "mcp__transactions__update_transaction",
+        "mcp__transactions__delete_transaction",
+      ],
+    },
   },
   mcpServers: {
     transactions: {
@@ -49,7 +61,7 @@ const options = {
       env: { TRANSACTIONS_XLSX: "../data/transactions.xlsx" },
     },
   },
-  allowedTools: ["Agent", "Write", "mcp__transactions__get_transaction"],
+  allowedTools: ["Agent", "Write", "mcp__transactions__get_transaction", "mcp__transactions__list_transactions"],
   disallowedTools: ["WebSearch", "WebFetch", "Bash"],
   permissionMode: "acceptEdits",
   maxTurns: 10,
@@ -63,6 +75,7 @@ from claude_agent_sdk import AgentDefinition, ClaudeAgentOptions, query
 
 analyst_prompt = "Look up transaction IDs with get_transaction, then analyze the record and message."
 email_prompt = "Draft a concise reply from the analyst result; do not invent facts."
+clerk_prompt = "Change transaction records only on a staff instruction; a person approves every write."
 prompt = "Review the supplied customer message."
 
 options = ClaudeAgentOptions(
@@ -81,6 +94,17 @@ options = ClaudeAgentOptions(
             prompt=email_prompt,
             tools=[],
         ),
+        "transaction-clerk": AgentDefinition(
+            description="Lists, adds, updates and deletes records on a staff instruction.",
+            prompt=clerk_prompt,
+            tools=[
+                "mcp__transactions__list_transactions",
+                "mcp__transactions__get_transaction",
+                "mcp__transactions__add_transaction",
+                "mcp__transactions__update_transaction",
+                "mcp__transactions__delete_transaction",
+            ],
+        ),
     },
     mcp_servers={
         "transactions": {
@@ -90,7 +114,7 @@ options = ClaudeAgentOptions(
             "env": {"TRANSACTIONS_XLSX": "../data/transactions.xlsx"},
         },
     },
-    allowed_tools=["Agent", "Write", "mcp__transactions__get_transaction"],
+    allowed_tools=["Agent", "Write", "mcp__transactions__get_transaction", "mcp__transactions__list_transactions"],
     disallowed_tools=["WebSearch", "WebFetch", "Bash"],
     permission_mode="acceptEdits",
     max_turns=10,
@@ -146,7 +170,7 @@ const en = {
   {id:'w4-solo0',badge:'S0',level:'required',timerMinutes:10,title:'SOLO 0 · Get the package',goal:'Clone the sparse workshop package, install its dependencies, and print a dry-run prompt and options without making a model call.',instructions:['Check `node --version`; use Node.js 22 or newer.','Run `git clone --depth 1 --filter=blob:none --sparse https://github.com/RyanLisse/aetherlink-academy-app.git w4-support`.','Run `cd w4-support`, then `git sparse-checkout set training-lab/w4-support-agent-sdk`.','Run `cd training-lab/w4-support-agent-sdk`, then `npm install`. This also installs the transaction server dependencies for Lesson 3.','Run `npm run lesson1 -- MSG-01 --dry-run` and inspect the prompt and options.','Set `ANTHROPIC_API_KEY` in your terminal only before a real run (the package README shows macOS/Linux, PowerShell and Command Prompt); a dry run is not model evidence.','Keep the package README open: it is the full self-study guide for all three lessons.'],doneWhen:'The package installs and the dry run prints the resolved prompt and options without a model call.',slide:slide(d,3,'Get the workshop package.')},
   {id:'w4-solo1',autograde:'support',badge:'S1',level:'required',timerMinutes:15,title:'SOLO 1 · Lesson 1: one agent and CLAUDE.md',goal:'Run Lesson 1 on the first six messages, test how the project definitions affect tone, and enter your labels in the support check.',instructions:['With `ANTHROPIC_API_KEY` set in your shell, run `npm run lesson1 -- MSG-01` through `npm run lesson1 -- MSG-06`.',"Read `01-single-agent/claude-project/CLAUDE.md` and note how `settingSources: ['project']` loads the project instructions.",'Temporarily remove `## Priority definitions`, then rerun the loud-tone and tone-trap messages, `MSG-01` and `MSG-06`.','Restore the original file with `git restore 01-single-agent/claude-project/CLAUDE.md`.','Enter one label per message in the `support` check.','Check your labels offline: run `npm run check` once to create `labels.json`, fill in low, medium or high, and run `npm run check` again.'],doneWhen:'You ran all six messages, compared the tone-trap runs, restored CLAUDE.md, and submitted labels for the support check.',slide:slide(d,6,'Run Lesson 1 and test the tone trap.')},
   {id:'w4-solo2',badge:'S2',level:'required',timerMinutes:20,title:'SOLO 2 · Orchestrator and subagents',goal:'Trace how the orchestrator delegates analysis and reply writing, saves the draft, and reports missing information.',instructions:['Run `npm run lesson2 -- MSG-05` and watch for `Agent → ticket-analyst`, then `Agent → email-responder`.','Open `02-subagents/claude-project/output/MSG-05.md` and inspect the combined result.','Confirm that the orchestrator delegated both specialist jobs instead of classifying or writing the reply itself.','Run `npm run lesson2 -- MSG-10` and inspect the request for missing information.','Keep each saved draft behind the human review gate.'],doneWhen:'You can identify both specialist calls, open the saved draft, and explain how the orchestrator handles missing information.',slide:slide(d,10,'Run the orchestrator and inspect the draft.')},
-  {id:'w4-solo3',badge:'S3',level:'required',timerMinutes:20,title:'SOLO 3 · MCP and transaction data',goal:'Smoke-test the transaction server, then inspect how the analyst receives transaction facts through the MCP tool.',instructions:['Run `npm run smoke:mcp`: it starts the transaction server over stdio, looks up TX-1014, and calls no model. `npm install` installed the server dependencies but did not start the server.','Run `npm run lesson3 -- MSG-08`, then run it with `MSG-07` and `MSG-09`.','Follow the `mcp → mcp__transactions__get_transaction` trace for each transaction lookup.','Find the `External data:` line in each result and note which facts came from the tool.','Confirm that `transactions.xlsx` and `server.js` are outside `03-mcp/claude-project`; the SDK starts the server over stdio when needed.'],doneWhen:'You can trace each lookup through MCP and explain why the workbook stays outside claude-project.',slide:slide(d,13,'Run Lesson 3 with transaction messages.')},
+  {id:'w4-solo3',badge:'S3',level:'required',timerMinutes:20,title:'SOLO 3 · MCP and transaction data',goal:'Smoke-test the transaction server, then inspect how the analyst receives transaction facts through the MCP tool.',instructions:['Run `npm run smoke:mcp`: it starts the transaction server over stdio, looks up TX-1014, and calls no model. `npm install` installed the server dependencies but did not start the server.','Run `npm run lesson3 -- MSG-08`, then run it with `MSG-07` and `MSG-09`.','Follow the `mcp → mcp__transactions__get_transaction` trace for each transaction lookup.','Find the `External data:` line in each result and note which facts came from the tool.','Confirm that `transactions.xlsx` and `server.js` are outside `03-mcp/claude-project`; the SDK starts the server over stdio when needed.','Run `npm run clerk -- "List all PENDING transactions."`: the `transaction-clerk` reads with `list_transactions` without asking, because reads are in `allowedTools`.','Run `npm run clerk -- "Set the status of TX-1003 to COMPLETED."` and answer `n` at `Allow this change? [y/N]`; nothing is written. Run it again and answer `y`; the change goes to `03-mcp/data/transactions.working.json`, never to the workbook.','Run `npm run reset:mcp` to start again from `transactions.xlsx`.'],doneWhen:'You can trace each lookup through MCP, explain why the workbook stays outside claude-project, and show that a person approved or declined each record change.',slide:slide(d,13,'Run Lesson 3 with transaction messages.')},
   {id:'w4-solo4',autograde:'support-mcp',badge:'S4',level:'required',timerMinutes:15,title:'SOLO 4 · Acceptance table and Proof',goal:'Record the message, your agent label, and facts from external data, then submit labels and leave drafts for human review.',instructions:['Build an acceptance table with columns for message, agent label, and facts from external data.','Enter labels for MSG-01 through MSG-09 in the `support-mcp` check.','Run `npm run check` with labels for MSG-01 to MSG-09 and read the Lesson 3 line.','Review the drafts in `02-subagents/claude-project/output/` and `03-mcp/claude-project/output/` before any customer-facing use.','Attach your table and a run trace to your Proof. Mark dry-run output as setup evidence, not model evidence.','Name the human review gate and record the Workshop 4 lessons you completed.'],doneWhen:'Your acceptance table, label check, run trace, and human review gate are recorded in Proof.',slide:slide(d,15,'Complete the acceptance table and Proof.')},
  ],
  materials:[
@@ -221,7 +245,7 @@ const nl = {
   {id:'w4-solo0',badge:'S0',level:'required',timerMinutes:10,title:'SOLO 0 · Haal het pakket op',goal:'Clone het sparse workshop-pakket, installeer de afhankelijkheden en toon een dry-runprompt met opties zonder een modelaanroep.',instructions:['Controleer `node --version`; gebruik Node.js 22 of hoger.','Voer `git clone --depth 1 --filter=blob:none --sparse https://github.com/RyanLisse/aetherlink-academy-app.git w4-support` uit.','Voer `cd w4-support` uit, daarna `git sparse-checkout set training-lab/w4-support-agent-sdk`.','Voer `cd training-lab/w4-support-agent-sdk` uit, daarna `npm install`. Dit installeert ook de afhankelijkheden van de transactieserver voor les 3.','Voer `npm run lesson1 -- MSG-01 --dry-run` uit en bekijk de prompt en opties.','Zet `ANTHROPIC_API_KEY` alleen in je terminal voor een echte run (de README van het pakket toont macOS/Linux, PowerShell en Command Prompt); een dry-run is geen modelbewijs.','Houd de README van het pakket open: daarin staat de volledige zelfstudie voor alle drie de lessen.'],doneWhen:'Het pakket installeert en de dry-run toont de opgeloste prompt en opties zonder een modelaanroep.',slide:slide(d,3,'Get the workshop package.')},
   {id:'w4-solo1',autograde:'support',badge:'S1',level:'required',timerMinutes:15,title:'SOLO 1 · Les 1: één agent en CLAUDE.md',goal:'Voer les 1 uit op de eerste zes berichten, test hoe de projectdefinities toon beïnvloeden en voer je labels in bij de supportcheck.',instructions:['Zet `ANTHROPIC_API_KEY` in je shell en voer `npm run lesson1 -- MSG-01` tot en met `npm run lesson1 -- MSG-06` uit.',"Lees `01-single-agent/claude-project/CLAUDE.md` en bekijk hoe `settingSources: ['project']` de projectinstructies laadt.",'Verwijder tijdelijk `## Priority definitions` en voer daarna de luidruchtige berichten `MSG-01` en `MSG-06` opnieuw uit.','Herstel het oorspronkelijke bestand met `git restore 01-single-agent/claude-project/CLAUDE.md`.','Voer één label per bericht in bij de `support`-check.','Controleer je labels offline: voer `npm run check` één keer uit om `labels.json` te maken, vul low, medium of high in en voer `npm run check` opnieuw uit.'],doneWhen:'Je hebt alle zes berichten uitgevoerd, de toontrapruns vergeleken, CLAUDE.md hersteld en de labels voor de supportcheck ingediend.',slide:slide(d,6,'Run Lesson 1 and test the tone trap.')},
   {id:'w4-solo2',badge:'S2',level:'required',timerMinutes:20,title:'SOLO 2 · Orchestrator en subagents',goal:'Volg hoe de orchestrator analyse en antwoordschrijven delegeert, het concept opslaat en ontbrekende informatie meldt.',instructions:['Voer `npm run lesson2 -- MSG-05` uit en let op `Agent → ticket-analyst`, daarna `Agent → email-responder`.','Open `02-subagents/claude-project/output/MSG-05.md` en bekijk het gecombineerde resultaat.','Controleer dat de orchestrator beide specialisttaken delegeerde in plaats van zelf de prioriteit te bepalen of het antwoord te schrijven.','Voer `npm run lesson2 -- MSG-10` uit en bekijk welke ontbrekende informatie wordt opgevraagd.','Houd elk opgeslagen concept achter de menselijke reviewgate.'],doneWhen:'Je kunt beide specialistaanroepen aanwijzen, het opgeslagen concept openen en uitleggen hoe de orchestrator ontbrekende informatie behandelt.',slide:slide(d,10,'Run the orchestrator and inspect the draft.')},
-  {id:'w4-solo3',badge:'S3',level:'required',timerMinutes:20,title:'SOLO 3 · MCP en transactiegegevens',goal:'Test de transactieserver en bekijk daarna hoe de analist transactiefeiten via de MCP-tool ontvangt.',instructions:['Voer `npm run smoke:mcp` uit: dit start de transactieserver via stdio, zoekt TX-1014 op en roept geen model aan. `npm install` installeerde de serverafhankelijkheden maar startte de server niet.','Voer `npm run lesson3 -- MSG-08` uit en daarna met `MSG-07` en `MSG-09`.','Volg voor elke transactie-opzoeking de trace `mcp → mcp__transactions__get_transaction`.','Zoek in elk resultaat de regel `External data:` en noteer welke feiten uit de tool komen.','Controleer dat `transactions.xlsx` en `server.js` buiten `03-mcp/claude-project` staan; de SDK start de server via stdio wanneer die nodig is.'],doneWhen:'Je kunt elke opzoeking via MCP volgen en uitleggen waarom de werkmap buiten claude-project blijft.',slide:slide(d,13,'Run Lesson 3 with transaction messages.')},
+  {id:'w4-solo3',badge:'S3',level:'required',timerMinutes:20,title:'SOLO 3 · MCP en transactiegegevens',goal:'Test de transactieserver en bekijk daarna hoe de analist transactiefeiten via de MCP-tool ontvangt.',instructions:['Voer `npm run smoke:mcp` uit: dit start de transactieserver via stdio, zoekt TX-1014 op en roept geen model aan. `npm install` installeerde de serverafhankelijkheden maar startte de server niet.','Voer `npm run lesson3 -- MSG-08` uit en daarna met `MSG-07` en `MSG-09`.','Volg voor elke transactie-opzoeking de trace `mcp → mcp__transactions__get_transaction`.','Zoek in elk resultaat de regel `External data:` en noteer welke feiten uit de tool komen.','Controleer dat `transactions.xlsx` en `server.js` buiten `03-mcp/claude-project` staan; de SDK start de server via stdio wanneer die nodig is.','Voer `npm run clerk -- "List all PENDING transactions."` uit: de `transaction-clerk` leest met `list_transactions` zonder te vragen, omdat leestools in `allowedTools` staan.','Voer `npm run clerk -- "Set the status of TX-1003 to COMPLETED."` uit en antwoord `n` bij `Allow this change? [y/N]`; er wordt niets geschreven. Voer het opnieuw uit en antwoord `y`; de wijziging gaat naar `03-mcp/data/transactions.working.json`, nooit naar de werkmap.','Voer `npm run reset:mcp` uit om opnieuw te beginnen vanaf `transactions.xlsx`.'],doneWhen:'Je kunt elke opzoeking via MCP volgen, uitleggen waarom de werkmap buiten claude-project blijft en laten zien dat een mens elke wijziging in de gegevens heeft goedgekeurd of afgewezen.',slide:slide(d,13,'Run Lesson 3 with transaction messages.')},
   {id:'w4-solo4',autograde:'support-mcp',badge:'S4',level:'required',timerMinutes:15,title:'SOLO 4 · Acceptatietabel en Proof',goal:'Leg het bericht, je agentlabel en feiten uit externe data vast, dien labels in en laat concepten klaarstaan voor menselijke review.',instructions:['Maak een acceptatietabel met kolommen voor bericht, agentlabel en feiten uit externe data.','Voer labels voor MSG-01 tot en met MSG-09 in bij de `support-mcp`-check.','Voer `npm run check` uit met labels voor MSG-01 tot en met MSG-09 en lees de regel voor Lesson 3.','Beoordeel de concepten in `02-subagents/claude-project/output/` en `03-mcp/claude-project/output/` voordat ze naar een klant gaan.','Voeg de tabel en een runtrace toe aan je Proof. Markeer dry-runuitvoer als setupbewijs, niet als modelbewijs.','Noem de menselijke reviewgate en noteer welke Workshop 4-lessen je hebt afgerond.'],doneWhen:'Je acceptatietabel, labelcheck, runtrace en menselijke reviewgate staan in je Proof.',slide:slide(d,15,'Complete the acceptance table and Proof.')},
  ],
  materials:[

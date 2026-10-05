@@ -100,6 +100,34 @@ The data flow is:
 
 `Excel data → server.js → MCP tool (get_transaction) → Agent SDK query() → ticket-analyst`
 
+### Part 2: let a subagent change records
+
+The same server also has tools to list, add, update and delete transactions. Only the `transaction-clerk` subagent gets them, and only for a prompt that starts with `Staff instruction:`. The `ticket-analyst` still has `get_transaction` only, so a customer message cannot change a record.
+
+```sh
+npm run clerk -- "List all PENDING transactions."
+npm run clerk -- "Add a transaction for Nova Bikes: 89.90 EUR, PENDING, 2026-10-01, issue details: customer asked for an invoice copy."
+npm run clerk -- "Set the status of TX-1003 to COMPLETED."
+npm run clerk -- "Delete TX-1012."
+npm run reset:mcp
+```
+
+The commands are the same in PowerShell and Command Prompt; use `npm.cmd` in PowerShell if `npm` is blocked.
+
+- Reads (`list_transactions`, `get_transaction`) are in `allowedTools`, so they run without asking.
+- Every add, update and delete stops at `Allow this change? [y/N]`. That prompt comes from the `canUseTool` callback in `03-mcp/approval.mjs`. Answer `n` once to see the clerk report that nothing was written, then run the command again and answer `y`.
+- Changes go to `03-mcp/data/transactions.working.json`. The workbook is never written. `npm run reset:mcp` deletes the working copy, so the next run starts from `transactions.xlsx` again.
+- `npm run smoke:mcp` runs the same list, add, update and delete calls against a temporary copy, without a model.
+
+### What this lesson teaches about MCP
+
+- **The server owns the data.** The agent only sees what a tool returns, and the server assigns new transaction IDs.
+- **The input schema is the contract.** Each tool declares its fields with zod. A wrong ID format or a missing field is rejected before the tool runs, and an `isError` result (for example `No transaction TX-9999 in the data`) lets the agent recover instead of guessing.
+- **Tool names are namespaced.** The Agent SDK calls the tools `mcp__<server>__<tool>`, such as `mcp__transactions__delete_transaction`.
+- **Annotations describe; the host enforces.** `readOnlyHint`, `destructiveHint` and `idempotentHint` tell a client what a tool does. They do not block anything.
+- **Enforcement lives in the Agent SDK options.** Each subagent gets only the tools it needs (least privilege), `allowedTools` lets reads run, and `canUseTool` makes a person approve each write.
+- **Practice data stays safe.** Writes go to a working copy that you can reset.
+
 ## Compare the n8n and SDK workflows
 
 | n8n | Agent SDK workshop |
@@ -107,8 +135,8 @@ The data flow is:
 | AI Agent node | `query()` |
 | System message | `CLAUDE.md` loaded by `settingSources` |
 | Risk and Customer Reply agents | `ticket-analyst` and `email-responder` in `agents` |
-| Tool or HTTP node | MCP `get_transaction` |
-| Human gate | Draft in `output/` for review |
+| Tool or HTTP node | MCP transaction tools (`get_transaction` for the analyst; list, add, update and delete for the clerk) |
+| Human gate | Draft in `output/` for review; a person approves each record change |
 
 The workshop keeps the same priority labels, specialist split, and human review gate as Workshop 3. It uses different customer messages.
 

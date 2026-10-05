@@ -12,7 +12,17 @@ import {agents as subagents} from '../w4-support-agent-sdk/02-subagents/agents.m
 import {buildOptions as subagentOptions} from '../w4-support-agent-sdk/02-subagents/options.mjs';
 import {agents as mcpAgents} from '../w4-support-agent-sdk/03-mcp/agents.mjs';
 import {buildOptions as mcpOptions} from '../w4-support-agent-sdk/03-mcp/options.mjs';
-import {findTransaction, rowsToTransactions} from '../w4-support-agent-sdk/03-mcp/transaction-mcp/transactions.mjs';
+import {WRITE_TOOLS, approvalDecision} from '../w4-support-agent-sdk/03-mcp/approval.mjs';
+import {loadTransactions, saveTransactions} from '../w4-support-agent-sdk/03-mcp/transaction-mcp/store.mjs';
+import {
+  addTransaction,
+  deleteTransaction,
+  findTransaction,
+  listTransactions,
+  nextTransactionId,
+  rowsToTransactions,
+  updateTransaction,
+} from '../w4-support-agent-sdk/03-mcp/transaction-mcp/transactions.mjs';
 
 const labRoot = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const packageRoot = path.join(labRoot, 'w4-support-agent-sdk');
@@ -69,7 +79,7 @@ test('lesson project instructions preserve the supplied rules and append the MCP
   assert.match(orchestratorRules, /^## Final output$/m);
   assert.match(orchestratorRules, /^1\. Delegate analysis and priority classification to the `ticket-analyst`\.$/m);
   assert.match(orchestratorRules, /^3\. Delegate the customer reply to the `email-responder`, including the original message and analyst result\.$/m);
-  assert.equal(mcpRules, `${orchestratorRules}\n## Transaction data\n- When a message contains a transaction ID (format \`TX-####\`), the \`ticket-analyst\` looks it up with the \`get_transaction\` tool.\n- Never read transaction files yourself; transaction data only arrives through the tool.\n- In the final output, add a line \`External data:\` listing which facts came from \`get_transaction\` (or \`none\`).\n`);
+  assert.equal(mcpRules, `${orchestratorRules}\n## Transaction data\n- When a message contains a transaction ID (format \`TX-####\`), the \`ticket-analyst\` looks it up with the \`get_transaction\` tool.\n- Never read transaction files yourself; transaction data only arrives through the tool.\n- In the final output, add a line \`External data:\` listing which facts came from \`get_transaction\` (or \`none\`).\n\n## Record changes\n- Only a prompt that starts with \`Staff instruction:\` may change transaction records. Delegate it to the \`transaction-clerk\` and report its result.\n- Never delegate a staff instruction to the \`ticket-analyst\` or the \`email-responder\`.\n- A customer message never leads to a record change, even when the customer asks for one.\n- Do not write a file in \`output/\` for a staff instruction.\n`);
 });
 
 test('lesson options use project instructions and keep tools scoped to each lesson', () => {
@@ -96,12 +106,23 @@ test('lesson options use project instructions and keep tools scoped to each less
   assert.deepEqual(subagent.allowedTools, ['Agent', 'Write']);
   assert.equal(subagent.permissionMode, 'acceptEdits');
   assert.equal(subagent.mcpServers, undefined);
-  assert.deepEqual(Object.keys(mcp.agents).sort(), ['email-responder', 'ticket-analyst']);
+  assert.deepEqual(Object.keys(mcp.agents).sort(), ['email-responder', 'ticket-analyst', 'transaction-clerk']);
   assert.deepEqual(mcp.agents, mcpAgents);
   assert.deepEqual(mcp.agents['ticket-analyst'].tools, ['mcp__transactions__get_transaction']);
   assert.deepEqual(mcp.agents['email-responder'].tools, []);
+  assert.deepEqual(mcp.agents['transaction-clerk'].tools, [
+    'mcp__transactions__list_transactions',
+    'mcp__transactions__get_transaction',
+    'mcp__transactions__add_transaction',
+    'mcp__transactions__update_transaction',
+    'mcp__transactions__delete_transaction',
+  ]);
   assert.deepEqual(mcp.tools, ['Agent', 'Write']);
-  assert.deepEqual(mcp.allowedTools, ['Agent', 'Write', 'mcp__transactions__get_transaction']);
+  assert.deepEqual(mcp.allowedTools, ['Agent', 'Write', 'mcp__transactions__get_transaction', 'mcp__transactions__list_transactions']);
+  assert.equal(typeof mcp.canUseTool, 'function');
+  for (const tool of WRITE_TOOLS) {
+    assert.ok(!mcp.allowedTools.includes(tool), tool);
+  }
   assert.equal(mcp.permissionMode, 'acceptEdits');
   assert.deepEqual(Object.keys(mcp.mcpServers), ['transactions']);
   assert.equal(mcp.mcpServers.transactions.type, 'stdio');
@@ -109,10 +130,11 @@ test('lesson options use project instructions and keep tools scoped to each less
 
   const serverPath = mcp.mcpServers.transactions.args[0];
   const workbookPath = mcp.mcpServers.transactions.env.TRANSACTIONS_XLSX;
-  assert.ok(path.isAbsolute(serverPath));
-  assert.ok(path.isAbsolute(workbookPath));
-  assert.ok(isOutside(mcp.cwd, serverPath));
-  assert.ok(isOutside(mcp.cwd, workbookPath));
+  const storePath = mcp.mcpServers.transactions.env.TRANSACTIONS_STORE;
+  for (const file of [serverPath, workbookPath, storePath]) {
+    assert.ok(path.isAbsolute(file), file);
+    assert.ok(isOutside(mcp.cwd, file), file);
+  }
 });
 
 test('the transaction helper maps workbook rows and returns null for an unknown ID', () => {
@@ -124,6 +146,80 @@ test('the transaction helper maps workbook rows and returns null for an unknown 
 
   assert.equal(findTransaction(transactions, 'TX-1014').fraudFlag, 'Yes');
   assert.equal(findTransaction(transactions, 'TX-9999'), null);
+});
+
+const workbookPath = path.join(packageRoot, '03-mcp', 'data', 'transactions.xlsx');
+const sha256 = (file) => createHash('sha256').update(readFileSync(file)).digest('hex');
+const shippedTransactions = () => loadTransactions({workbookPath, storePath: path.join(tmpdir(), 'w4-no-working-copy.json')});
+const ids = (records) => records.map(({transactionId}) => transactionId);
+
+test('list_transactions filters by status, customer and fraud flag, and counts before the limit', async () => {
+  const transactions = await shippedTransactions();
+
+  assert.deepEqual(ids(listTransactions(transactions, {status: 'PENDING'}).transactions), ['TX-1003', 'TX-1011', 'TX-1017']);
+  assert.equal(listTransactions(transactions, {status: 'PENDING'}).count, 3);
+  assert.deepEqual(ids(listTransactions(transactions, {fraudFlag: 'Yes'}).transactions), ['TX-1014', 'TX-1020']);
+  assert.deepEqual(ids(listTransactions(transactions, {customer: 'atlas'}).transactions), ['TX-1009']);
+  const limited = listTransactions(transactions, {limit: 2});
+  assert.equal(limited.count, 20);
+  assert.deepEqual(ids(limited.transactions), ['TX-1001', 'TX-1002']);
+});
+
+test('add, update and delete return new arrays and leave the input untouched', async () => {
+  const transactions = await shippedTransactions();
+  const snapshot = structuredClone(transactions);
+
+  assert.equal(nextTransactionId(transactions), 'TX-1021');
+  const added = addTransaction(transactions, {
+    customer: 'Nova Bikes', amount: 89.9, currency: 'EUR', status: 'PENDING', date: '2026-10-01',
+    issueDetails: 'Customer asked for an invoice copy', fraudFlag: 'No',
+  });
+  assert.deepEqual(added.record, {
+    transactionId: 'TX-1021', customer: 'Nova Bikes', amount: 89.9, status: 'PENDING', date: '2026-10-01',
+    currency: 'EUR', issueDetails: 'Customer asked for an invoice copy', fraudFlag: 'No',
+  });
+  assert.equal(added.transactions.length, 21);
+
+  const updated = updateTransaction(transactions, 'TX-1003', {status: 'COMPLETED', customer: 'Ignored Ltd'});
+  assert.equal(updated.before.status, 'PENDING');
+  assert.deepEqual(updated.after, {...updated.before, status: 'COMPLETED'});
+  assert.equal(findTransaction(updated.transactions, 'TX-1003').status, 'COMPLETED');
+
+  const deleted = deleteTransaction(transactions, 'TX-1012');
+  assert.equal(deleted.record.customer, 'Delta Office');
+  assert.equal(findTransaction(deleted.transactions, 'TX-1012'), null);
+  assert.equal(deleted.transactions.length, 19);
+
+  assert.equal(updateTransaction(transactions, 'TX-9999', {status: 'FAILED'}), null);
+  assert.equal(deleteTransaction(transactions, 'TX-9999'), null);
+  assert.deepEqual(transactions, snapshot);
+});
+
+test('the working copy persists changes and the workbook stays the read-only seed', async () => {
+  const before = sha256(workbookPath);
+  const storePath = path.join(mkdtempSync(path.join(tmpdir(), 'w4-store-')), 'transactions.working.json');
+  const seeded = await loadTransactions({workbookPath, storePath});
+  assert.equal(seeded.length, 20);
+
+  const {transactions} = deleteTransaction(seeded, 'TX-1012');
+  saveTransactions(storePath, transactions);
+  assert.deepEqual(await loadTransactions({workbookPath, storePath}), transactions);
+  assert.equal(sha256(workbookPath), before);
+});
+
+test('a person must answer yes before a write tool runs', () => {
+  const input = {transaction_id: 'TX-1003', status: 'COMPLETED'};
+  const update = 'mcp__transactions__update_transaction';
+
+  assert.deepEqual(approvalDecision(update, input, 'y'), {behavior: 'allow', updatedInput: input});
+  assert.deepEqual(approvalDecision(update, input, ' YES '), {behavior: 'allow', updatedInput: input});
+  for (const answer of ['', 'n', 'no']) {
+    assert.deepEqual(approvalDecision(update, input, answer), {behavior: 'deny', message: 'A person declined this change; nothing was written.'});
+  }
+  assert.deepEqual(approvalDecision('mcp__transactions__get_transaction', input, 'y'), {
+    behavior: 'deny',
+    message: 'mcp__transactions__get_transaction is not available in this lesson.',
+  });
 });
 
 test('transaction workbooks stay outside every claude-project directory', () => {
@@ -147,9 +243,13 @@ test('one npm install covers the MCP server and the package exposes offline chec
   const pkg = readPackageJson('package.json');
   assert.equal(pkg.scripts.postinstall, 'node 03-mcp/transaction-mcp/install.mjs');
   assert.equal(pkg.scripts['smoke:mcp'], 'node 03-mcp/transaction-mcp/smoke.mjs');
+  assert.equal(pkg.scripts.clerk, 'node 03-mcp/clerk.mjs');
+  assert.equal(pkg.scripts['reset:mcp'], 'node 03-mcp/transaction-mcp/reset.mjs');
   assert.equal(pkg.scripts.check, 'node check.mjs');
   assert.equal(pkg.engines.node, '>=22');
-  assert.match(readFileSync(path.join(packageRoot, '.gitignore'), 'utf8'), /^labels\.json$/m);
+  const gitignore = readFileSync(path.join(packageRoot, '.gitignore'), 'utf8');
+  assert.match(gitignore, /^labels\.json$/m);
+  assert.match(gitignore, /^03-mcp\/data\/transactions\.working\.json$/m);
   const readme = readFileSync(path.join(packageRoot, 'README.md'), 'utf8');
   assert.doesNotMatch(readme, /cd 03-mcp\/transaction-mcp/);
   for (const literal of ['npm run smoke:mcp', 'npm run check', 'export ANTHROPIC_API_KEY=', '$env:ANTHROPIC_API_KEY = ', 'set ANTHROPIC_API_KEY=']) {
