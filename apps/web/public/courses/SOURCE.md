@@ -14,7 +14,7 @@ Pinned to the companion repositories' `main` after their standalone PRs merged.
 - `RyanLisse/aetherlink-daily-brief-lab-s1@3dea7c15cb10147cc28ebdc1c305edb34a8e8f96` (HTML course modules 01–06 + Assignments templates + SOLO.md + rulebook companions)
 
 ## Solo mission · SRE first responder (day 25)
-- `RyanLisse/sre-oncall-agent@96fb9f17bce5c315e545e1632e38c4df7d9f6a38`
+- `RyanLisse/sre-oncall-agent@0c8358dcfc61ed09c9d54a5175836da0084a3634`
 - pinned to PR #1 head; re-pin to main after it squash-merges
 
 Academy Done path = HTML/lab surfaces linked from Workshop day-packs. Claude Code `/start-solo` is **not required** for these tickets (→ AET-132 concepts). Source EN course body stays EN (SoT); touched Academy chrome remains locale-safe.

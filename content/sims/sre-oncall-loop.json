@@ -43,7 +43,7 @@
         {
           "type": "tool_call",
           "toolName": "get_diff",
-          "content": "{\"since\":\"2026-10-05T02:50:00.000Z\",\"until\":\"2026-10-05T03:50:00Z\"}",
+          "content": "{\"deploy\":\"d-4821\"}",
           "annotation": "Read the deploy diff before assigning cause."
         },
         {
@@ -55,7 +55,7 @@
         {
           "type": "tool_call",
           "toolName": "search_logs",
-          "content": "{\"since\":\"2026-10-05T02:50:00.000Z\",\"until\":\"2026-10-05T03:50:00Z\"}",
+          "content": "{\"level\":\"error\",\"since\":\"2026-10-05T02:50:00.000Z\",\"until\":\"2026-10-05T03:50:00Z\",\"limit\":5}",
           "annotation": "Check logs for the error that confirms the impact."
         },
         {
@@ -76,8 +76,13 @@
         },
         {
           "type": "system_event",
-          "content": "FAIL approval\ndecided_by: a named human is required\nAPPROVED rollback for INC-1001 by Academy Reviewer\nPASS approval",
-          "annotation": "An empty name is refused; a named person can approve."
+          "content": "FAIL approval\ndecided_by: a named human is required",
+          "annotation": "The empty name is refused while approval is pending."
+        },
+        {
+          "type": "system_event",
+          "content": "APPROVED rollback for INC-1001 by Academy Reviewer\nPASS approval",
+          "annotation": "A named human can approve."
         },
         {
           "type": "system_event",
@@ -150,19 +155,19 @@
         {
           "type": "tool_call",
           "toolName": "get_diff",
-          "content": "{\"since\":\"2026-10-05T02:50:00.000Z\",\"until\":\"2026-10-05T03:50:00Z\"}",
+          "content": "{\"deploy\":\"d-4821\"}",
           "annotation": "Lees de deploydiff voordat je de oorzaak aanwijst."
         },
         {
           "type": "tool_result",
           "toolName": "get_diff",
           "content": "{\"id\":\"d-4821\",\"version\":\"v2.15.0\",\"diff\":\"--- a/payments/provider.ts\\n+++ b/payments/provider.ts\\n@@ -12,9 +12,9 @@ export const providerFor = (region: string): Provider => {\\n-  const secret = env(\\\"PAYMENT_PROVIDER_SECRET\\\");\\n-  return region === \\\"eu\\\" ? stripeEU(secret) : stripeUS(secret);\\n+  // EU traffic now goes through the new provider config; secret is read per region\\n+  const secret = env(`PAYMENT_PROVIDER_SECRET_${region.toUpperCase()}`);\\n+  return region === \\\"eu\\\" ? stripeEU(secret) : stripeUS(secret);\\n };\"}",
-          "annotation": "De wijziging leest een regionspecifieke secret."
+          "annotation": "De wijziging leest een regiospecifieke secret."
         },
         {
           "type": "tool_call",
           "toolName": "search_logs",
-          "content": "{\"since\":\"2026-10-05T02:50:00.000Z\",\"until\":\"2026-10-05T03:50:00Z\"}",
+          "content": "{\"level\":\"error\",\"since\":\"2026-10-05T02:50:00.000Z\",\"until\":\"2026-10-05T03:50:00Z\",\"limit\":5}",
           "annotation": "Zoek in logs naar de fout die de impact bevestigt."
         },
         {
@@ -183,8 +188,13 @@
         },
         {
           "type": "system_event",
-          "content": "FAIL approval\ndecided_by: a named human is required\nAPPROVED rollback for INC-1001 by Academy Reviewer\nPASS approval",
-          "annotation": "Een lege naam wordt geweigerd; een persoon op naam kan goedkeuren."
+          "content": "FAIL approval\ndecided_by: a named human is required",
+          "annotation": "Een lege naam wordt geweigerd zolang approval pending is."
+        },
+        {
+          "type": "system_event",
+          "content": "APPROVED rollback for INC-1001 by Academy Reviewer\nPASS approval",
+          "annotation": "Een mens op naam kan goedkeuren."
         },
         {
           "type": "system_event",
