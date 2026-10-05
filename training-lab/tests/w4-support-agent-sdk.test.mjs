@@ -148,63 +148,69 @@ test('the transaction helper maps workbook rows and returns null for an unknown 
   assert.equal(findTransaction(transactions, 'TX-9999'), null);
 });
 
-const workbookPath = path.join(packageRoot, '03-mcp', 'data', 'transactions.xlsx');
-const sha256 = (file) => createHash('sha256').update(readFileSync(file)).digest('hex');
-const shippedTransactions = () => loadTransactions({workbookPath, storePath: path.join(tmpdir(), 'w4-no-working-copy.json')});
+const seedTransactions = () => rowsToTransactions([
+  ['Transaction ID', 'Customer', 'Amount', 'Status', 'Date', 'Currency', 'Issue Details', 'Fraud Flag'],
+  ['TX-1001', 'Atlas Retail', 120, 'COMPLETED', '2026-09-01', 'EUR', 'Customer asks for a receipt', 'No'],
+  ['TX-1002', 'Blue Harbor Ltd', 89.5, 'PENDING', '2026-09-02', 'EUR', 'Payment still pending', 'No'],
+  ['TX-1003', 'Cedar Logistics', 410, 'PENDING', '2026-09-03', 'EUR', 'Customer asks about the delay', 'No'],
+  ['TX-1004', 'Futura Labs', 1290, 'COMPLETED', '2026-09-04', 'EUR', 'Customer reports transaction as unrecognised', 'Yes'],
+  ['TX-1005', 'Atlas Retail', 45, 'REFUNDED', '2026-09-05', 'EUR', 'Refund sent', 'No'],
+]);
 const ids = (records) => records.map(({transactionId}) => transactionId);
 
-test('list_transactions filters by status, customer and fraud flag, and counts before the limit', async () => {
-  const transactions = await shippedTransactions();
+test('list_transactions filters by status, customer and fraud flag, and counts before the limit', () => {
+  const transactions = seedTransactions();
 
-  assert.deepEqual(ids(listTransactions(transactions, {status: 'PENDING'}).transactions), ['TX-1003', 'TX-1011', 'TX-1017']);
-  assert.equal(listTransactions(transactions, {status: 'PENDING'}).count, 3);
-  assert.deepEqual(ids(listTransactions(transactions, {fraudFlag: 'Yes'}).transactions), ['TX-1014', 'TX-1020']);
-  assert.deepEqual(ids(listTransactions(transactions, {customer: 'atlas'}).transactions), ['TX-1009']);
+  assert.deepEqual(listTransactions(transactions, {status: 'PENDING'}), {count: 2, transactions: transactions.slice(1, 3)});
+  assert.deepEqual(ids(listTransactions(transactions, {fraudFlag: 'Yes'}).transactions), ['TX-1004']);
+  assert.deepEqual(ids(listTransactions(transactions, {customer: 'atlas'}).transactions), ['TX-1001', 'TX-1005']);
+  assert.deepEqual(ids(listTransactions(transactions, {customer: 'atlas', status: 'REFUNDED'}).transactions), ['TX-1005']);
   const limited = listTransactions(transactions, {limit: 2});
-  assert.equal(limited.count, 20);
+  assert.equal(limited.count, 5);
   assert.deepEqual(ids(limited.transactions), ['TX-1001', 'TX-1002']);
 });
 
-test('add, update and delete return new arrays and leave the input untouched', async () => {
-  const transactions = await shippedTransactions();
+test('add, update and delete return new arrays and leave the input untouched', () => {
+  const transactions = seedTransactions();
   const snapshot = structuredClone(transactions);
 
-  assert.equal(nextTransactionId(transactions), 'TX-1021');
+  assert.equal(nextTransactionId(transactions), 'TX-1006');
+  assert.equal(nextTransactionId([]), 'TX-0001');
   const added = addTransaction(transactions, {
     customer: 'Nova Bikes', amount: 89.9, currency: 'EUR', status: 'PENDING', date: '2026-10-01',
     issueDetails: 'Customer asked for an invoice copy', fraudFlag: 'No',
   });
   assert.deepEqual(added.record, {
-    transactionId: 'TX-1021', customer: 'Nova Bikes', amount: 89.9, status: 'PENDING', date: '2026-10-01',
+    transactionId: 'TX-1006', customer: 'Nova Bikes', amount: 89.9, status: 'PENDING', date: '2026-10-01',
     currency: 'EUR', issueDetails: 'Customer asked for an invoice copy', fraudFlag: 'No',
   });
-  assert.equal(added.transactions.length, 21);
+  assert.equal(added.transactions.length, 6);
 
   const updated = updateTransaction(transactions, 'TX-1003', {status: 'COMPLETED', customer: 'Ignored Ltd'});
   assert.equal(updated.before.status, 'PENDING');
   assert.deepEqual(updated.after, {...updated.before, status: 'COMPLETED'});
   assert.equal(findTransaction(updated.transactions, 'TX-1003').status, 'COMPLETED');
 
-  const deleted = deleteTransaction(transactions, 'TX-1012');
-  assert.equal(deleted.record.customer, 'Delta Office');
-  assert.equal(findTransaction(deleted.transactions, 'TX-1012'), null);
-  assert.equal(deleted.transactions.length, 19);
+  const deleted = deleteTransaction(transactions, 'TX-1002');
+  assert.equal(deleted.record.customer, 'Blue Harbor Ltd');
+  assert.equal(findTransaction(deleted.transactions, 'TX-1002'), null);
+  assert.equal(deleted.transactions.length, 4);
 
   assert.equal(updateTransaction(transactions, 'TX-9999', {status: 'FAILED'}), null);
   assert.equal(deleteTransaction(transactions, 'TX-9999'), null);
   assert.deepEqual(transactions, snapshot);
 });
 
-test('the working copy persists changes and the workbook stays the read-only seed', async () => {
-  const before = sha256(workbookPath);
+test('the working copy starts from the seed and then keeps saved changes', async () => {
   const storePath = path.join(mkdtempSync(path.join(tmpdir(), 'w4-store-')), 'transactions.working.json');
-  const seeded = await loadTransactions({workbookPath, storePath});
-  assert.equal(seeded.length, 20);
+  const seeded = await loadTransactions({storePath, readSeed: seedTransactions});
+  assert.deepEqual(seeded, seedTransactions());
 
-  const {transactions} = deleteTransaction(seeded, 'TX-1012');
+  const {transactions} = deleteTransaction(seeded, 'TX-1002');
   saveTransactions(storePath, transactions);
-  assert.deepEqual(await loadTransactions({workbookPath, storePath}), transactions);
-  assert.equal(sha256(workbookPath), before);
+  const reloaded = await loadTransactions({storePath, readSeed: () => assert.fail('the seed must not be read once a working copy exists')});
+  assert.deepEqual(reloaded, transactions);
+  assert.deepEqual(readdirSync(path.dirname(storePath)), ['transactions.working.json']);
 });
 
 test('a person must answer yes before a write tool runs', () => {

@@ -1,3 +1,4 @@
+import readXlsxFile from 'read-excel-file/node';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z } from 'zod';
@@ -9,6 +10,7 @@ import {
   deleteTransaction,
   findTransaction,
   listTransactions,
+  rowsToTransactions,
   updateTransaction,
 } from './transactions.mjs';
 
@@ -21,7 +23,11 @@ const status = z.enum(STATUSES);
 const fraudFlag = z.enum(['Yes', 'No']);
 const readOnly = { readOnlyHint: true, openWorldHint: false };
 
-const load = () => loadTransactions({ workbookPath, storePath });
+const readWorkbook = async () => {
+  const sheets = await readXlsxFile(workbookPath);
+  return rowsToTransactions(Array.isArray(sheets) && sheets[0]?.data ? sheets[0].data : sheets);
+};
+const load = () => loadTransactions({ storePath, readSeed: readWorkbook });
 const ok = (value) => ({ content: [{ type: 'text', text: JSON.stringify(value) }] });
 const fail = (text) => ({ isError: true, content: [{ type: 'text', text }] });
 const notFound = (id) => fail(`No transaction ${id} in the data`);
