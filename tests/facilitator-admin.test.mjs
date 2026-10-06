@@ -36,7 +36,7 @@ test('/facilitator admin: squads + cohorts with create/delete/open, no participa
  assert.match(hub,/facilitator\/room\/delete/);assert.match(main,/facilitator\/cohort\/delete/);
 });
 
-test('post-auth land-in opens the Academy workspace, not the hub; empty state points to admin',()=>{
+test('post-auth land-in opens the Academy workspace; empty state is teach-mode without Create gate',()=>{
  assert.match(main,/const landIn=useCallback\(async\(auth,squads\)=>\{setFacilitatorAuth\(auth\);if\(!squads\?\.length\)\{setFacilitatorEmpty\(true\)/);
  assert.match(main,/api\('facilitator\/attach',\{\.\.\.\(auth\.hostKey\?\{hostKey:auth\.hostKey\}:\{\}\),roomId:squads\[0\]\.id\}\)/,'newest squad opens as facilitator');
  const join=between(main,'function Join(','function FacilitatorWorkspace(');
@@ -44,7 +44,12 @@ test('post-auth land-in opens the Academy workspace, not the hub; empty state po
  assert.match(join,/params\.get\('facilitator'\)==='1'&&!params\.get\('code'\)&&!getToken\(\)/,'Google callback (/?facilitator=1) lands in');
  assert.doesNotMatch(join,/<FacilitatorWorkspace /,'the hub is no longer rendered inside the join gate');
  const empty=between(main,'function FacilitatorEmptyShell(','function CohortPanel(');
- assert.match(empty,/ClassroomShell/);assert.match(empty,/data-testid="facilitator-empty"/);assert.doesNotMatch(empty,/join-copy/);
+ assert.match(empty,/ClassroomShell/);
+ assert.match(empty,/teachMode/);
+ assert.match(empty,/classroom-teach-embed/);
+ assert.match(empty,/classroomPathForDay/);
+ assert.doesNotMatch(empty,/facilitator-empty-cta|facilitatorEmpty\.cta/);
+ assert.doesNotMatch(empty,/join-copy/);
 });
 
 test('workspace has an explicit way back to admin; leaving a squad returns to admin',()=>{

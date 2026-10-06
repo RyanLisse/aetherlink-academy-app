@@ -1058,5 +1058,9 @@
   "classroom.learn.open": "Open hoofdstuk",
   "classroom.session": "Sessie {day}",
   "classroom.sessionSubtitle": "{title}",
-  "classroom.sessionsLabel": "7 sessies"
+  "classroom.sessionsLabel": "7 sessies",
+  "classroom.teachNote": "Teach-modus — blader door Wave Workshop-sessies zonder een squad aan te maken. Gebruik Admin wanneer je een live cohort nodig hebt.",
+  "classroom.bottom.teach": "Facilitator teach-modus",
+  "classroom.teachEmbedHelp": "Workshop-dagslides openen hier. Maak alleen een squad via Admin wanneer je een live cohort-sessie nodig hebt.",
+  "classroom.teachOpenSlide": "Open slides in een nieuw tabblad"
 }

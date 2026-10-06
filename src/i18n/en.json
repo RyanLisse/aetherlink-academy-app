@@ -1058,5 +1058,9 @@
   "classroom.learn.open": "Open chapter",
   "classroom.session": "Session {day}",
   "classroom.sessionSubtitle": "{title}",
-  "classroom.sessionsLabel": "7 sessions"
+  "classroom.sessionsLabel": "7 sessions",
+  "classroom.teachNote": "Teach mode — browse Wave Workshop sessions without creating a squad. Use Admin when you need a live cohort.",
+  "classroom.bottom.teach": "Facilitator teach mode",
+  "classroom.teachEmbedHelp": "Workshop day slides open here. Create a squad from Admin only when you need a live cohort session.",
+  "classroom.teachOpenSlide": "Open slides in a new tab"
 }

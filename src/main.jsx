@@ -12,6 +12,7 @@ import {useAsyncAction} from './use-async-action';
 import './tailwind.css';
 import './style.css';
 import {ClassroomShell} from './classroom-shell';
+import {classroomPathForDay} from './classroom.js';
 
 const FACILITATOR_RETURN_KEY='academy-facilitator-return';
 const ADMIN_PATH='/facilitator';
@@ -265,20 +266,38 @@ function FacilitatorAdmin({auth,onAuth,onWorkspace,enterRoom,localeToggle,themeB
   </div>;
 }
 
-// Facilitator signed in but no squad yet: the workspace shell with a way to admin, never the participant join gate.
+// Facilitator signed in with no squad: teach-mode Classroom (Wave 1–7) without Create-squad gate.
+// Live cohorts stay optional on /facilitator. Participant join-gate is unchanged.
 function FacilitatorEmptyShell({onAdmin,account}){
   const t=useT();
-  const emptyCta=<><p className="simple-eyebrow">{t('simple.facilitator')}</p><h1>{t('facilitatorEmpty.title')}</h1><p className="simple-intro">{t('facilitatorEmpty.help')}</p><button type="button" className="simple-primary" data-testid="facilitator-empty-cta" onClick={onAdmin}><Plus size={19} aria-hidden="true"/>{t('facilitatorEmpty.cta')}</button></>;
+  const renderWorkshop=lesson=>{
+    const href=lesson.href||classroomPathForDay(lesson.day);
+    return <div className="classroom-teach-embed" data-testid="classroom-teach-embed" data-day={lesson.day}>
+      <p className="muted">{t('classroom.teachEmbedHelp')}</p>
+      <p><a className="button" href={href} target="_blank" rel="noopener noreferrer">{t('classroom.teachOpenSlide')}</a></p>
+      <iframe title={lesson.title} src={href} loading="lazy"/>
+    </div>;
+  };
+  const renderArcade=lesson=><div className="classroom-arcade-embed" data-testid="classroom-arcade-embed">
+    <p className="muted">{t('classroom.arcade.help')}</p>
+    <p><a className="button" href={lesson.href||'/arcade'} target="_blank" rel="noopener noreferrer">{t('classroom.arcade.open')}</a></p>
+    <iframe title={lesson.title} src={lesson.href||'/arcade'} loading="lazy"/>
+  </div>;
+  const renderLearn=lesson=><div className="classroom-learn-embed" data-testid="classroom-learn-embed">
+    <p className="muted">{lesson.title}</p>
+    <p><a className="button" href={`/?learn=${encodeURIComponent(lesson.id)}`} target="_blank" rel="noopener noreferrer">{t('classroom.learn.open')}</a></p>
+    <iframe title={lesson.title} src={`/?learn=${encodeURIComponent(lesson.id)}`} loading="lazy"/>
+  </div>;
   return <ClassroomShell
     room={null}
     facilitator
+    teachMode
     onAdmin={onAdmin}
     account={account}
     avatarLabel={t('simple.facilitator')}
-    emptyCta={<div data-testid="facilitator-empty">{emptyCta}</div>}
-    renderWorkshop={()=>null}
-    renderArcade={()=>null}
-    renderLearn={()=>null}
+    renderWorkshop={renderWorkshop}
+    renderArcade={renderArcade}
+    renderLearn={renderLearn}
   />;
 }
 
