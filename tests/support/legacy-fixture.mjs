@@ -45,6 +45,23 @@ export async function startLegacyFixture({port=0,harness=false}={}){
     participantAccess:participant.resumeToken,
     // Moves the room pointer so the sweep can render any course day.
     setDay:day=>{store.data.rooms[squad.roomId].day=day;store.save();},
+    approveTasks:(day,taskIds)=>{
+      const room=store.data.rooms[squad.roomId];
+      const member=room.members.find(candidate=>candidate.name==='Tim');
+      room.day=day;
+      const at=new Date(FIXED_NOW).toISOString();
+      room.evidence=taskIds.map((taskId,index)=>({
+        id:`approved-${day}-${index}`,
+        at,
+        personId:member.id,
+        name:member.name,
+        day,
+        taskId,
+        status:'accepted',
+        review:{note:'Approved fixture task',at,reviewer:{role:'facilitator',name:'Fixture facilitator'}},
+      }));
+      store.save();
+    },
     cohortCodes:cohort.codes.map(entry=>entry.code),
     // Moves the server past the 90-day write window so a cohort code opens read-only.
     enterReadOnlyWindow:()=>{clock.now=cohort.cohort.startsAt+91*DAY;},

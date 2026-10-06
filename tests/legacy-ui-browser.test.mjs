@@ -267,6 +267,21 @@ test('facilitator workshop landing keeps settings tucked away and exposes usable
   });
 });
 
+test('Today counts only required W5 tasks when SRE stretch tasks remain open',async()=>{
+  await withBrowser(async({fixture,open})=>{
+    fixture.approveTasks(5,['w5-solo1','w5-solo2','w5-solo3','w5-solo4','w5-solo5','w5-solo6','w5-solo7']);
+    const page=await open({width:1440,height:900,locale:'en'});
+    await page.goto(`${fixture.base}/#access=${fixture.participantAccess}`);
+    const next=page.getByTestId('today-next');
+    await next.getByText('All tasks are done',{exact:true}).waitFor();
+    await next.getByText('7 of 7 tasks done',{exact:true}).waitFor();
+    await next.getByRole('button',{name:'Hand off to your squad',exact:true}).waitFor();
+    assert.equal(await next.getByText('SRE solo 0',{exact:false}).count(),0);
+    assert.equal(await next.getByRole('button',{name:'Continue assignment',exact:true}).count(),0);
+    await page.close();
+  });
+});
+
 test('participant, reference, Learn, and deck navigation retain their intended layouts',async()=>{
   await withBrowser(async({fixture,open})=>{
     const page=await open({width:1440,height:900,locale:'en'});
