@@ -92,3 +92,14 @@ test('teach-catalog maps Wave days 1–7 onto classroom/workshop paths',async()=
   assert.match(teachDayTitle(1,'en'),/Classroom 1/);
   assert.match(teachDayTitle(1,'nl'),/Classroom 1/);
 });
+
+test('Classroom chrome exposes room Decks entry for facilitator teach slides',()=>{
+  assert.match(shell,/renderDecks/);
+  assert.match(shell,/data-testid="nav-decks"/);
+  assert.match(shell,/data-testid="classroom-decks"/);
+  assert.match(shell,/classroom\.nav\.decks/);
+  for(const file of ['src/i18n/en.json','src/i18n/nl.json','packages/i18n/src/en.json','packages/i18n/src/nl.json']){
+    const catalog=JSON.parse(readFileSync(path.join(root,file),'utf8'));
+    assert.equal(typeof catalog['classroom.nav.decks'],'string',`${file} classroom.nav.decks`);
+  }
+});

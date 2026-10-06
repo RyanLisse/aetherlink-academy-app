@@ -12,7 +12,7 @@ import {useAsyncAction} from './use-async-action';
 import './tailwind.css';
 import './style.css';
 import {ClassroomShell} from './classroom-shell';
-import {classroomPathForDay} from './classroom.js';
+import {Decks} from './slides';
 
 const FACILITATOR_RETURN_KEY='academy-facilitator-return';
 const ADMIN_PATH='/facilitator';
@@ -52,7 +52,7 @@ function App(){
   const go=useCallback(next=>{if(location.pathname+location.search!==next)history.pushState(null,'',next);setPath(new URL(next,location.origin).pathname);},[]);
   const enterRoom=useCallback(resumeToken=>{if(resumeToken)setParticipantAccess(resumeToken);setFacilitatorEmpty(false);setRoom(null);setSessionEpoch(epoch=>epoch+1);setSession(true);go('/');},[go]);
   // Facilitator land-in: open the newest squad's workshop; with no squad yet, show the empty workspace shell.
-  const landIn=useCallback(async(auth,squads)=>{setFacilitatorAuth(auth);if(!squads?.length){setFacilitatorEmpty(true);go('/');return;}const result=await api('facilitator/attach',{...(auth.hostKey?{hostKey:auth.hostKey}:{}),roomId:squads[0].id});saveSession(result);enterRoom();},[go,enterRoom]);
+  const landIn=useCallback(async(auth,squads)=>{setFacilitatorAuth(auth);setFacilitatorEmpty(false);if(!squads?.length){const result=await api('facilitator/teach',{...(auth?.hostKey?{hostKey:auth.hostKey}:{})});saveSession(result);enterRoom();return;}const result=await api('facilitator/attach',{...(auth.hostKey?{hostKey:auth.hostKey}:{}),roomId:squads[0].id});saveSession(result);enterRoom();},[go,enterRoom]);
   const openAdmin=useCallback(auth=>{if(auth)setFacilitatorAuth(auth);go(ADMIN_PATH);},[go]);
   const navigate=useCallback((next)=>{
     setView(next);
@@ -73,7 +73,7 @@ function App(){
   if(isArcadePath(location.pathname))return <ArcadeApp themeButton={themeButton}/>;
   if(path===ADMIN_PATH)return <FacilitatorAdmin auth={facilitatorAuth} onAuth={setFacilitatorAuth} localeToggle={localeToggle} themeButton={themeButton} action={action} busy={busy} error={error} clearError={()=>setError('')} enterRoom={enterRoom}
     onWorkspace={()=>action(async()=>{if(session&&room&&room.me.role==='Facilitator'){go('/');return;}const squads=await api('facilitator/overview',{...(facilitatorAuth?.hostKey?{hostKey:facilitatorAuth.hostKey}:{})});await landIn(facilitatorAuth,squads);})}/>;
-  if(!session&&facilitatorEmpty)return <FacilitatorEmptyShell onAdmin={()=>openAdmin()} account={<>{localeToggle}{themeButton}</>}/>;
+  if(!session&&facilitatorEmpty)return <FacilitatorEmptyShell onAdmin={()=>openAdmin()} onTeach={()=>action(async()=>{const auth=facilitatorAuth||{hostKey:''};const result=await api('facilitator/teach',{...(auth.hostKey?{hostKey:auth.hostKey}:{})});saveSession(result);enterRoom();})} account={<>{localeToggle}{themeButton}</>}/>;
   if(!session||!room)return <><header className="welcome-header"><Brand/><div className="welcome-actions">{localeToggle}{themeButton}</div></header><Join ready={session} action={action} busy={busy} error={error} clearError={()=>setError('')} joined={resumeToken=>{if(resumeToken)setParticipantAccess(resumeToken);setSession(true);}} onFacilitator={landIn} onAdmin={openAdmin}/></>;
   const facilitator=room.me.role==='Facilitator';
   const shellAccount=<>{localeToggle}{themeButton}<button type="button" onClick={leaveSession}><LogOut size={16}/>{t('account.leave')}</button></>;
@@ -94,6 +94,7 @@ function App(){
     <p><a className="button" href={`/?learn=${encodeURIComponent(lesson.id)}`} target="_blank" rel="noopener noreferrer">{t('classroom.learn.open')}</a></p>
     <iframe title={lesson.title} src={`/?learn=${encodeURIComponent(lesson.id)}`} loading="lazy"/>
   </div>;
+  const renderDecks=facilitator?()=><Decks room={room} action={action} busy={busy} onRoom={()=>{}}/>:undefined;
   return <ClassroomShell
     room={room}
     facilitator={facilitator}
@@ -105,6 +106,7 @@ function App(){
     renderWorkshop={renderWorkshop}
     renderArcade={renderArcade}
     renderLearn={renderLearn}
+    renderDecks={renderDecks}
   />;
 }
 
@@ -266,28 +268,9 @@ function FacilitatorAdmin({auth,onAuth,onWorkspace,enterRoom,localeToggle,themeB
   </div>;
 }
 
-// Facilitator signed in with no squad: teach-mode Classroom (Wave 1–7) without Create-squad gate.
-// Live cohorts stay optional on /facilitator. Participant join-gate is unchanged.
-function FacilitatorEmptyShell({onAdmin,account}){
+// Soft fallback if teach attach fails: retry teach, never force Create as the only path.
+function FacilitatorEmptyShell({onAdmin,account,onTeach}){
   const t=useT();
-  const renderWorkshop=lesson=>{
-    const href=lesson.href||classroomPathForDay(lesson.day);
-    return <div className="classroom-teach-embed" data-testid="classroom-teach-embed" data-day={lesson.day}>
-      <p className="muted">{t('classroom.teachEmbedHelp')}</p>
-      <p><a className="button" href={href} target="_blank" rel="noopener noreferrer">{t('classroom.teachOpenSlide')}</a></p>
-      <iframe title={lesson.title} src={href} loading="lazy"/>
-    </div>;
-  };
-  const renderArcade=lesson=><div className="classroom-arcade-embed" data-testid="classroom-arcade-embed">
-    <p className="muted">{t('classroom.arcade.help')}</p>
-    <p><a className="button" href={lesson.href||'/arcade'} target="_blank" rel="noopener noreferrer">{t('classroom.arcade.open')}</a></p>
-    <iframe title={lesson.title} src={lesson.href||'/arcade'} loading="lazy"/>
-  </div>;
-  const renderLearn=lesson=><div className="classroom-learn-embed" data-testid="classroom-learn-embed">
-    <p className="muted">{lesson.title}</p>
-    <p><a className="button" href={`/?learn=${encodeURIComponent(lesson.id)}`} target="_blank" rel="noopener noreferrer">{t('classroom.learn.open')}</a></p>
-    <iframe title={lesson.title} src={`/?learn=${encodeURIComponent(lesson.id)}`} loading="lazy"/>
-  </div>;
   return <ClassroomShell
     room={null}
     facilitator
@@ -295,11 +278,19 @@ function FacilitatorEmptyShell({onAdmin,account}){
     onAdmin={onAdmin}
     account={account}
     avatarLabel={t('simple.facilitator')}
-    renderWorkshop={renderWorkshop}
-    renderArcade={renderArcade}
-    renderLearn={renderLearn}
+    emptyCta={<div data-testid="facilitator-teach-fallback">
+      <p className="simple-eyebrow">{t('simple.facilitator')}</p>
+      <h1>{t('classroom.teachFallbackTitle')}</h1>
+      <p className="simple-intro">{t('classroom.teachFallbackHelp')}</p>
+      {onTeach&&<button type="button" className="simple-primary" data-testid="facilitator-teach-retry" onClick={onTeach}>{t('classroom.teachRetry')}</button>}
+      <button type="button" data-testid="facilitator-empty-cta" onClick={onAdmin}>{t('nav.admin')}</button>
+    </div>}
+    renderWorkshop={()=>null}
+    renderArcade={()=>null}
+    renderLearn={()=>null}
   />;
 }
+
 
 function CohortPanel({squads,hostKey,action,onSquadsChanged}){
   const t=useT();

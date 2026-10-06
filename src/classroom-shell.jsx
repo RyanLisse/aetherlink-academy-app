@@ -35,10 +35,11 @@ export function ClassroomShell({
   renderLearn,
   emptyCta=null,
   teachMode=false,
+  renderDecks=null,
 }){
   const t=useT();
   const {locale}=useI18n();
-  const [screen,setScreen]=useState('home'); // home | course
+  const [screen,setScreen]=useState('home'); // home | course | decks
   const [courseId,setCourseId]=useState(null);
   const [lessonKey,setLessonKey]=useState(null); // string id within course
   const [route,setRoute]=useState(null);
@@ -169,7 +170,12 @@ export function ClassroomShell({
   const courseMeta=courses.find(c=>c.id===courseId);
 
   let mainBody=null;
-  if(screen==='home'){
+  if(screen==='decks'&&renderDecks){
+    mainBody=<div className="classroom-decks" data-testid="classroom-decks">
+      <button type="button" className="classroom-back" data-testid="classroom-decks-back" onClick={()=>setScreen('home')}><ArrowLeft size={16} aria-hidden="true"/>{t('classroom.backToCourses')}</button>
+      {renderDecks()}
+    </div>;
+  }else if(screen==='home'){
     mainBody=<section className="classroom-home" data-testid="classroom-home">
       <header className="classroom-home-head">
         <p className="classroom-eyebrow">{t('classroom.eyebrow')}</p>
@@ -254,6 +260,7 @@ export function ClassroomShell({
           <ul className="classroom-resources">
             <li><a href="/arcade">{t('classroom.course.arcade')}</a></li>
             <li><button type="button" onClick={()=>openCourse('learn')}>{t('classroom.course.learn')}</button></li>
+            {facilitator&&renderDecks&&<li><button type="button" data-testid="classroom-right-decks" onClick={()=>setScreen('decks')}>{t('classroom.nav.decks')}</button></li>}
             {facilitator&&onAdmin&&<li><button type="button" onClick={onAdmin}>{t('nav.admin')}</button></li>}
           </ul>
         </section>
@@ -266,6 +273,7 @@ export function ClassroomShell({
       <button type="button" className="classroom-brand" onClick={backHome}>AetherLink <span>Academy</span></button>
       <nav className="classroom-top-actions" aria-label={t('classroom.chromeLabel')}>
         <button type="button" className={screen==='home'?'is-active':undefined} data-testid="classroom-nav-home" onClick={backHome}><BookOpen size={16} aria-hidden="true"/>{t('classroom.nav.classroom')}</button>
+        {facilitator&&renderDecks&&<button type="button" data-testid="nav-decks" className={screen==='decks'?'is-active':undefined} onClick={()=>setScreen('decks')}><Presentation size={16} aria-hidden="true"/>{t('classroom.nav.decks')}</button>}
         {facilitator&&onAdmin&&<button type="button" data-testid="nav-admin" onClick={onAdmin}><LayoutGrid size={16} aria-hidden="true"/>{t('nav.admin')}</button>}
         {account}
         <span className="classroom-avatar" aria-label={avatarLabel}>{(avatarLabel||'?').slice(0,2).toUpperCase()}</span>
