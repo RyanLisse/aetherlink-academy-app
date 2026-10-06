@@ -38,7 +38,7 @@ test('/facilitator admin: squads + cohorts with create/delete/open, no participa
 
 test('post-auth land-in opens the Academy workspace, not the hub; empty state points to admin',()=>{
  assert.match(main,/const landIn=useCallback\(async\(auth,squads\)=>\{setFacilitatorAuth\(auth\);if\(!squads\?\.length\)\{setFacilitatorEmpty\(true\)/);
- assert.match(main,/api\('facilitator\/attach',\{hostKey:auth\.hostKey,roomId:squads\[0\]\.id\}\)/,'newest squad opens as facilitator');
+ assert.match(main,/api\('facilitator\/attach',\{\.\.\.\(auth\.hostKey\?\{hostKey:auth\.hostKey\}:\{\}\),roomId:squads\[0\]\.id\}\)/,'newest squad opens as facilitator');
  const join=between(main,'function Join(','function FacilitatorWorkspace(');
  assert.match(join,/await onFacilitator\(\{hostKey:data\.hostKey,identity:null\},squads\)/,'start-key unlock lands in');
  assert.match(join,/params\.get\('facilitator'\)==='1'&&!params\.get\('code'\)&&!getToken\(\)/,'Google callback (/?facilitator=1) lands in');
