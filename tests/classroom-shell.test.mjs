@@ -42,7 +42,7 @@ test('i18n classroom keys present EN+NL with parity',()=>{
   const en=JSON.parse(readFileSync(path.join(root,'src/i18n/en.json'),'utf8'));
   const nl=JSON.parse(readFileSync(path.join(root,'src/i18n/nl.json'),'utf8'));
   assert.deepEqual(Object.keys(en).sort(),Object.keys(nl).sort());
-  assert.notEqual(nl['classroom.homeTitle'],en['classroom.homeTitle']);
+  assert.notEqual(nl['classroom.homeHelp'],en['classroom.homeHelp']);
 });
 
 test('old community skool-shell files are gone',()=>{
@@ -101,5 +101,28 @@ test('Classroom chrome exposes room Decks entry for facilitator teach slides',()
   for(const file of ['src/i18n/en.json','src/i18n/nl.json','packages/i18n/src/en.json','packages/i18n/src/nl.json']){
     const catalog=JSON.parse(readFileSync(path.join(root,file),'utf8'));
     assert.equal(typeof catalog['classroom.nav.decks'],'string',`${file} classroom.nav.decks`);
+  }
+});
+
+test('UI/UX A+B: Wave hero + Open Classroom + Slides; no Community; teach three-column',()=>{
+  assert.match(shell,/data-testid="classroom-wave-hero"/);
+  assert.match(shell,/data-testid="classroom-open-classroom"/);
+  assert.match(shell,/data-testid="classroom-hero-slides"/);
+  assert.match(shell,/data-testid="classroom-bewerk-slides"/);
+  assert.match(shell,/data-testid="classroom-teach-controls"/);
+  assert.match(shell,/data-testid="classroom-jump-session"/);
+  assert.match(shell,/data-testid="classroom-preview-participant"/);
+  assert.match(shell,/classroom\.openClassroom/);
+  assert.match(shell,/classroom\.bewerkSlides/);
+  assert.match(shell,/classroom\.teachControls/);
+  assert.doesNotMatch(shell,/Community/);
+  assert.doesNotMatch(shell,/leaderboard/i);
+  assert.match(css,/classroom-wave-hero/);
+  assert.match(css,/classroom-teach-controls|classroom-session-btn/);
+  for(const file of ['src/i18n/en.json','src/i18n/nl.json','packages/i18n/src/en.json','packages/i18n/src/nl.json']){
+    const catalog=JSON.parse(readFileSync(path.join(root,file),'utf8'));
+    for(const key of ['classroom.openClassroom','classroom.bewerkSlides','classroom.teachControls','classroom.hero.slides','classroom.previewStub']){
+      assert.equal(typeof catalog[key],'string',`${file} ${key}`);
+    }
   }
 });
