@@ -1,3 +1,4 @@
 node_modules/
 */claude-project/output/*.md
 labels.json
+03-mcp/data/transactions.working.json

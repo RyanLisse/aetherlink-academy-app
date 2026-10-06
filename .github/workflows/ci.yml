@@ -80,6 +80,9 @@ jobs:
       - name: W4 lesson 3 dry run
         working-directory: training-lab/w4-support-agent-sdk
         run: npm run lesson3 -- MSG-08 --dry-run
+      - name: W4 transaction clerk dry run
+        working-directory: training-lab/w4-support-agent-sdk
+        run: npm run clerk -- "List all PENDING transactions." --dry-run
       - name: W4 MCP smoke test
         working-directory: training-lab/w4-support-agent-sdk
         run: npm run smoke:mcp
