@@ -27,7 +27,7 @@ async function openTryItPage(page){
 async function openDay1WorkshopLesson(page){
   await page.getByTestId('classroom-shell').waitFor();
   await page.getByTestId('classroom-home').waitFor();
-  await page.getByTestId('classroom-course-card').filter({hasText:/Workshop|Wave/i}).first().click();
+  await page.getByTestId('classroom-open-classroom').click();
   await page.getByTestId('classroom-course').waitFor();
   const lesson=page.locator('[data-testid="classroom-outline-lesson"][data-lesson="workshop:day-1:lesson"]');
   if(await lesson.count()){

@@ -120,7 +120,9 @@ test('facilitator lands in Classroom course grid and can open a course outline',
     assert.deepEqual(await blockingViolations(page),[],'classroom home');
     await shot(page,'facilitator-room-1024.png');
 
-    await page.getByTestId('classroom-course-card').filter({hasText:'Wave Workshop'}).or(page.getByTestId('classroom-course-card').first()).click();
+    const openWave = page.getByTestId('classroom-open-classroom');
+    if (await openWave.count()) await openWave.click();
+    else await page.getByTestId('classroom-course-card').first().click();
     await page.getByTestId('classroom-course').waitFor();
     await page.getByTestId('classroom-outline').waitFor();
     await page.getByTestId('classroom-lesson').waitFor();
