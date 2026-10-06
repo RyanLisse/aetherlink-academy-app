@@ -99,11 +99,27 @@ export class PostgresStore {
    return {token:await this.session(client,id,'facilitator','browser',createdBy?.name),roomId:id,code};
   });
  }
+ async ensureTeachSession(createdBy) {
+  return this.transaction(async client=>{
+   const owner=createdBy?.email||'__host__';
+   const found=await client.query("SELECT data FROM rooms WHERE coalesce(data->>'teachSession','false')='true' AND coalesce(data->>'teachOwner','__host__')=$1 FOR UPDATE",[owner]);
+   if(found.rows[0]){
+    const r=found.rows[0].data;
+    return {token:await this.session(client,r.id,'facilitator','browser',createdBy?.name),roomId:r.id,code:r.code,teach:true};
+   }
+   const id=randomUUID();
+   const code=randomBytes(5).toString('hex').toUpperCase();
+   const r={id,code,name:'Personal teach',createdBy:createdBy||null,createdAt:Date.now(),roundSeconds:1500,members:[],round:1,phase:'Plan',day:1,mode:'lesson',running:false,remaining:1500,deadline:null,evidence:[],handoffs:[],version:1,teachSession:true,teachOwner:owner};
+   await client.query('INSERT INTO rooms VALUES ($1,$2,$3)',[id,code,JSON.stringify(r)]);
+   return {token:await this.session(client,id,'facilitator','browser',createdBy?.name),roomId:id,code,teach:true};
+  });
+ }
  async join(code,name) {
   return this.transaction(async client=>{
    const result=await client.query('SELECT data FROM rooms WHERE code=$1 FOR UPDATE',[code.toUpperCase()]);
    const r=result.rows[0]?.data;
    if (!r) fail(404,'Room code not found.');
+   if (r.teachSession) fail(403,'This room is a private facilitator teach session.');
    if (r.cohortId) fail(403,COHORT_ROOM_JOIN_MESSAGE);
    const existing=r.members.find(m=>m.name.toLowerCase()===name.toLowerCase());
    if (existing) fail(409,DUPLICATE_PARTICIPANT_MESSAGE);
@@ -210,7 +226,7 @@ export class PostgresStore {
  }
  remaining(r,now=Date.now()) {return Store.prototype.remaining.call(this,r,now);}
  async overview() {
-  const result=await this.transaction(client=>client.query('SELECT data FROM rooms'));
+  const result=await this.transaction(client=>client.query("SELECT data FROM rooms WHERE coalesce(data->>'teachSession','false') <> 'true'"));
   return result.rows.map(({data:r})=>({id:r.id,name:r.name,code:r.code,createdBy:r.createdBy||null,createdAt:r.createdAt||null,round:r.round,phase:r.phase,day:r.day,mode:r.mode,running:r.running,remaining:this.remaining(r),roundSeconds:r.roundSeconds||1500,members:r.members.map((m)=>({id:m.id,name:m.name,online:(this.live.get(m.id)||0)>Date.now()-12000,help:m.help,lastMcp:m.lastMcp||null})),evidence:r.evidence.length,awaitingReview:awaitingReview(r).length,handoffs:r.handoffs.length,board:r.board?.status||null})).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
  }
  view(r,s) {return Store.prototype.view.call(this,r,s);}

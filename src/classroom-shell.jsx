@@ -4,9 +4,10 @@ import {api} from './api';
 import {useT,useI18n} from './i18n';
 import learnCatalog from '../content/learn-claude-code/catalog.json';
 import arcadeManifest from '../content/arcade/arcade-manifest.json';
+import {TEACH_WAVE_DAYS, teachDayTitle, teachLessonHref} from './teach-catalog';
 import './classroom-shell.css';
 
-const LOCAL_KEY=(roomId,personId)=>`academy-classroom-progress:v1:${roomId}:${personId||'anon'}`;
+const LOCAL_KEY=(roomId,personId)=>`academy-classroom-progress:v1:${roomId||'teach'}:${personId||'anon'}`;
 
 function readLocal(roomId,personId){
   try{return JSON.parse(localStorage.getItem(LOCAL_KEY(roomId,personId))||'{}');}catch{return {};}
@@ -33,24 +34,27 @@ export function ClassroomShell({
   renderArcade,
   renderLearn,
   emptyCta=null,
+  teachMode=false,
+  renderDecks=null,
 }){
   const t=useT();
   const {locale}=useI18n();
-  const [screen,setScreen]=useState('home'); // home | course
+  const [screen,setScreen]=useState('home'); // home | course | decks
   const [courseId,setCourseId]=useState(null);
   const [lessonKey,setLessonKey]=useState(null); // string id within course
   const [route,setRoute]=useState(null);
   const [routeError,setRouteError]=useState('');
-  const [localProgress,setLocalProgress]=useState(()=>readLocal(room?.id,room?.me?.id));
+  const [localProgress,setLocalProgress]=useState(()=>readLocal(room?.id||(teachMode?'teach':null),room?.me?.id||(teachMode?'facilitator':undefined)));
   const [saving,setSaving]=useState(false);
 
-  const personId=room?.me?.id;
-  const roomId=room?.id;
+  const personId=room?.me?.id||(teachMode?'facilitator':undefined);
+  const roomId=room?.id||(teachMode?'teach':undefined);
+  const canBrowse=Boolean(room)||teachMode;
 
-  useEffect(()=>{setLocalProgress(readLocal(roomId,personId));},[roomId,personId]);
+  useEffect(()=>{if(roomId)setLocalProgress(readLocal(roomId,personId));},[roomId,personId]);
 
   const reloadRoute=useCallback(async()=>{
-    if(!room)return;
+    if(!room){setRoute(null);setRouteError('');return;}
     try{
       const next=await api(`day-route?locale=${locale}`);
       setRoute(next);setRouteError('');
@@ -60,13 +64,30 @@ export function ClassroomShell({
   const progressKey=room?.me?.progressByDay;
   useEffect(()=>{reloadRoute();},[reloadRoute,room?.day,room?.version,progressKey]);
 
-  const workshopDays=useMemo(()=>route?.days||[],[route]);
+  const workshopDays=useMemo(()=>{
+    if(route?.days?.length)return route.days;
+    if(teachMode)return TEACH_WAVE_DAYS.map(d=>({
+      day:d.day,
+      title:teachDayTitle(d.day,locale),
+      released:true,
+      activities:{lessonTitle:teachDayTitle(d.day,locale)},
+      progress:{},
+      tasks:null,
+    }));
+    return [];
+  },[route,teachMode,locale]);
   const workshopLessons=useMemo(()=>workshopDays.flatMap(day=>{
     // Facilitators must see every Wave day selectable. Server readableDays already unlocks them;
     // keep client unlock so a stale day-route cannot day-lock the outline for Facilitator.
-    const released=facilitator?true:day.released!==false;
+    // Teach-mode (no room) also unlocks all Wave sessions without Create squad.
+    const released=facilitator||teachMode?true:day.released!==false;
     const moduleTitle=t('classroom.session',{day:day.day});
     const moduleSubtitle=day.title;
+    const localLessonDone=Boolean(localProgress[`workshop:day-${day.day}:lesson`]);
+    // Teach-mode without a room: lesson browse only (assignments/quiz/review need a live squad).
+    if(teachMode&&!room){
+      return [{key:`workshop:day-${day.day}:lesson`,day:day.day,page:'lesson',moduleId:`day-${day.day}`,moduleTitle,moduleSubtitle,title:day.activities?.lessonTitle||day.title,kind:'workshop',done:localLessonDone,released,href:teachLessonHref(day.day)}];
+    }
     const rows=[
       {key:`workshop:day-${day.day}:lesson`,day:day.day,page:'lesson',moduleId:`day-${day.day}`,moduleTitle,moduleSubtitle,title:day.activities?.lessonTitle||day.title,kind:'workshop',done:Boolean(day.progress?.lessonDone),released},
       {key:`workshop:day-${day.day}:assignments`,day:day.day,page:'assignments',moduleId:`day-${day.day}`,moduleTitle,moduleSubtitle,title:day.activities?.missionTitle||t('coursePages.assignments'),kind:'workshop',done:Boolean(day.tasks?.total>0&&day.tasks.approved===day.tasks.total),released},
@@ -74,7 +95,7 @@ export function ClassroomShell({
     ];
     if(day.day===room?.day)rows.push({key:`workshop:day-${day.day}:review`,day:day.day,page:'review',moduleId:`day-${day.day}`,moduleTitle,moduleSubtitle,title:t('nav.review'),kind:'workshop',done:Boolean(day.progress?.hasHandoff),released});
     return rows;
-  }),[workshopDays,room?.day,t,facilitator]);
+  }),[workshopDays,t,facilitator,teachMode,room,localProgress]);
 
   const arcadeLessons=useMemo(()=>{
     const lessons=(arcadeManifest.lessons||[]).map(L=>({
@@ -119,10 +140,10 @@ export function ClassroomShell({
   const backHome=()=>{setScreen('home');setCourseId(null);setLessonKey(null);};
 
   const markComplete=async()=>{
-    if(!activeLesson||!room)return;
+    if(!activeLesson||(!room&&!teachMode))return;
     setSaving(true);
     try{
-      if(activeLesson.kind==='workshop'&&activeLesson.page==='lesson'){
+      if(room&&activeLesson.kind==='workshop'&&activeLesson.page==='lesson'){
         await api('lesson-complete',{day:activeLesson.day,done:!activeLesson.done});
         await reloadRoute();
       }else{
@@ -149,19 +170,25 @@ export function ClassroomShell({
   const courseMeta=courses.find(c=>c.id===courseId);
 
   let mainBody=null;
-  if(screen==='home'){
+  if(screen==='decks'&&renderDecks){
+    mainBody=<div className="classroom-decks" data-testid="classroom-decks">
+      <button type="button" className="classroom-back" data-testid="classroom-decks-back" onClick={()=>setScreen('home')}><ArrowLeft size={16} aria-hidden="true"/>{t('classroom.backToCourses')}</button>
+      {renderDecks()}
+    </div>;
+  }else if(screen==='home'){
     mainBody=<section className="classroom-home" data-testid="classroom-home">
       <header className="classroom-home-head">
         <p className="classroom-eyebrow">{t('classroom.eyebrow')}</p>
         <h1>{t('classroom.homeTitle')}</h1>
         <p className="muted">{t('classroom.homeHelp')}</p>
       </header>
-      {!room&&emptyCta&&<div className="classroom-empty-cta" data-testid="facilitator-empty">{emptyCta}</div>}
+      {teachMode&&!room&&<p className="classroom-teach-note muted" data-testid="teach-session-note">{t('classroom.teachNote')}</p>}
+      {!room&&!teachMode&&emptyCta&&<div className="classroom-empty-cta" data-testid="facilitator-empty">{emptyCta}</div>}
       {routeError&&<p className="error" role="alert">{routeError}</p>}
       <div className="classroom-grid" data-testid="classroom-grid">
         {courses.map(course=>{
           const Icon=course.icon;
-          return <button type="button" key={course.id} className={'classroom-card tone-'+course.tone} data-testid="classroom-course-card" data-course={course.id} onClick={()=>room&&openCourse(course.id)} disabled={!room}>
+          return <button type="button" key={course.id} className={'classroom-card tone-'+course.tone} data-testid="classroom-course-card" data-course={course.id} onClick={()=>canBrowse&&openCourse(course.id)} disabled={!canBrowse}>
             <div className="classroom-card-cover" aria-hidden="true"><Icon size={36}/></div>
             <div className="classroom-card-body">
               <h2>{course.title}</h2>
@@ -216,7 +243,7 @@ export function ClassroomShell({
         </div>
         <nav className="classroom-lesson-nav" aria-label={t('classroom.lessonNav')}>
           <button type="button" data-testid="classroom-prev" onClick={goPrev} disabled={activeIndex<=0}><ArrowLeft size={16} aria-hidden="true"/>{t('classroom.prev')}</button>
-          <button type="button" className={activeLesson?.done?'is-done':undefined} data-testid="classroom-mark-complete" disabled={!activeLesson||locked||saving||(activeLesson.kind==='workshop'&&activeLesson.page!=='lesson')} onClick={()=>action?action(markComplete):markComplete()}>
+          <button type="button" className={activeLesson?.done?'is-done':undefined} data-testid="classroom-mark-complete" disabled={!activeLesson||locked||saving||(activeLesson.kind==='workshop'&&activeLesson.page!=='lesson'&&!(teachMode&&!room))} onClick={()=>action?action(markComplete):markComplete()}>
             <Check size={16} aria-hidden="true"/>{activeLesson?.done?t('classroom.completed'):t('classroom.markComplete')}
           </button>
           <button type="button" className="gradient" data-testid="classroom-next" onClick={goNext} disabled={activeIndex<0||activeIndex>=lessonsFor.length-1}>{t('classroom.next')}<ArrowRight size={16} aria-hidden="true"/></button>
@@ -233,6 +260,7 @@ export function ClassroomShell({
           <ul className="classroom-resources">
             <li><a href="/arcade">{t('classroom.course.arcade')}</a></li>
             <li><button type="button" onClick={()=>openCourse('learn')}>{t('classroom.course.learn')}</button></li>
+            {facilitator&&renderDecks&&<li><button type="button" data-testid="classroom-right-decks" onClick={()=>setScreen('decks')}>{t('classroom.nav.decks')}</button></li>}
             {facilitator&&onAdmin&&<li><button type="button" onClick={onAdmin}>{t('nav.admin')}</button></li>}
           </ul>
         </section>
@@ -245,6 +273,7 @@ export function ClassroomShell({
       <button type="button" className="classroom-brand" onClick={backHome}>AetherLink <span>Academy</span></button>
       <nav className="classroom-top-actions" aria-label={t('classroom.chromeLabel')}>
         <button type="button" className={screen==='home'?'is-active':undefined} data-testid="classroom-nav-home" onClick={backHome}><BookOpen size={16} aria-hidden="true"/>{t('classroom.nav.classroom')}</button>
+        {facilitator&&renderDecks&&<button type="button" data-testid="nav-decks" className={screen==='decks'?'is-active':undefined} onClick={()=>setScreen('decks')}><Presentation size={16} aria-hidden="true"/>{t('classroom.nav.decks')}</button>}
         {facilitator&&onAdmin&&<button type="button" data-testid="nav-admin" onClick={onAdmin}><LayoutGrid size={16} aria-hidden="true"/>{t('nav.admin')}</button>}
         {account}
         <span className="classroom-avatar" aria-label={avatarLabel}>{(avatarLabel||'?').slice(0,2).toUpperCase()}</span>
@@ -252,7 +281,7 @@ export function ClassroomShell({
     </header>
     <div className="classroom-body">{mainBody}</div>
     <footer className="classroom-bottom" data-testid="classroom-bottom">
-      <span>{room?.code?`${t('roster.roomCode')} ${room.code}`:t('classroom.bottom.empty')}</span>
+      <span>{room?.code?`${t('roster.roomCode')} ${room.code}`:teachMode?t('classroom.bottom.teach'):t('classroom.bottom.empty')}</span>
       {room&&<span>{t('classroom.bottom.roundDay',{round:room.round,day:room.day})}</span>}
       {busy&&<span>{t('common.loading')}</span>}
     </footer>
