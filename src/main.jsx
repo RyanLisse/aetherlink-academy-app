@@ -1,6 +1,6 @@
 import React,{useEffect,useState,useRef,useCallback,lazy,Suspense} from 'react';
 import {createRoot} from 'react-dom/client';
-import {ArrowRight,Download,FileText,House,LayoutGrid,LogOut,Moon,Plus,Sparkles,Sun,Trash2,Users,X} from 'lucide-react';
+import {ArrowRight,Download,FileText,House,LayoutGrid,LogOut,Moon,Sparkles,Sun,Trash2,Users,X} from 'lucide-react';
 import {api,authApi,getToken,getParticipantAccess,saveParticipantAccess,forgetParticipantAccess,saveSession} from './api';
 import {Lesson,Solo,Review} from './panels';
 import {reportScreen,startScreenReporting} from './screen';
@@ -52,7 +52,7 @@ function App(){
   const go=useCallback(next=>{if(location.pathname+location.search!==next)history.pushState(null,'',next);setPath(new URL(next,location.origin).pathname);},[]);
   const enterRoom=useCallback(resumeToken=>{if(resumeToken)setParticipantAccess(resumeToken);setFacilitatorEmpty(false);setRoom(null);setSessionEpoch(epoch=>epoch+1);setSession(true);go('/');},[go]);
   // Facilitator land-in: open the newest squad's workshop; with no squad yet, show the empty workspace shell.
-  const landIn=useCallback(async(auth,squads)=>{setFacilitatorAuth(auth);setFacilitatorEmpty(false);if(!squads?.length){const result=await api('facilitator/teach',{...(auth?.hostKey?{hostKey:auth.hostKey}:{})});saveSession(result);enterRoom();return;}const result=await api('facilitator/attach',{...(auth.hostKey?{hostKey:auth.hostKey}:{}),roomId:squads[0].id});saveSession(result);enterRoom();},[go,enterRoom]);
+  const landIn=useCallback(async(auth,squads)=>{setFacilitatorAuth(auth);setFacilitatorEmpty(false);if(!squads?.length){const result=await api('facilitator/teach',{...(auth?.hostKey?{hostKey:auth.hostKey}:{})});saveSession(result);enterRoom();return;}const result=await api('facilitator/attach',{...(auth.hostKey?{hostKey:auth.hostKey}:{}),roomId:squads[0].id});saveSession(result);enterRoom();},[enterRoom]);
   const openAdmin=useCallback(auth=>{if(auth)setFacilitatorAuth(auth);go(ADMIN_PATH);},[go]);
   const navigate=useCallback((next)=>{
     setView(next);

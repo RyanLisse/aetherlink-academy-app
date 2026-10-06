@@ -95,7 +95,7 @@ export function ClassroomShell({
     ];
     if(day.day===room?.day)rows.push({key:`workshop:day-${day.day}:review`,day:day.day,page:'review',moduleId:`day-${day.day}`,moduleTitle,moduleSubtitle,title:t('nav.review'),kind:'workshop',done:Boolean(day.progress?.hasHandoff),released});
     return rows;
-  }),[workshopDays,room?.day,t,facilitator,teachMode,room,localProgress]);
+  }),[workshopDays,t,facilitator,teachMode,room,localProgress]);
 
   const arcadeLessons=useMemo(()=>{
     const lessons=(arcadeManifest.lessons||[]).map(L=>({
