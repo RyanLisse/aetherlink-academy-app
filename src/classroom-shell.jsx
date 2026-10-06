@@ -182,7 +182,7 @@ export function ClassroomShell({
         <h1>{t('classroom.homeTitle')}</h1>
         <p className="muted">{t('classroom.homeHelp')}</p>
       </header>
-      {teachMode&&!room&&<p className="classroom-teach-note muted" data-testid="facilitator-teach-note">{t('classroom.teachNote')}</p>}
+      {teachMode&&!room&&<p className="classroom-teach-note muted" data-testid="teach-session-note">{t('classroom.teachNote')}</p>}
       {!room&&!teachMode&&emptyCta&&<div className="classroom-empty-cta" data-testid="facilitator-empty">{emptyCta}</div>}
       {routeError&&<p className="error" role="alert">{routeError}</p>}
       <div className="classroom-grid" data-testid="classroom-grid">

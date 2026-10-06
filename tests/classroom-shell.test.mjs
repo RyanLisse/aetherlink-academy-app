@@ -68,7 +68,7 @@ test('facilitator teach-mode: browse without room; Wave catalog unlocked; contra
   assert.match(shell,/teachMode/);
   assert.match(shell,/canBrowse/);
   assert.match(shell,/TEACH_WAVE_DAYS/);
-  assert.match(shell,/facilitator-teach-note/);
+  assert.match(shell,/teach-session-note/);
   assert.match(shell,/classroom\.teachNote/);
   assert.match(shell,/classroom\.bottom\.teach/);
   assert.match(css,/--c-surface: var\(--surface/);

@@ -278,11 +278,11 @@ function FacilitatorEmptyShell({onAdmin,account,onTeach}){
     onAdmin={onAdmin}
     account={account}
     avatarLabel={t('simple.facilitator')}
-    emptyCta={<div data-testid="facilitator-teach-fallback">
+    emptyCta={<div data-testid="teach-session-fallback">
       <p className="simple-eyebrow">{t('simple.facilitator')}</p>
       <h1>{t('classroom.teachFallbackTitle')}</h1>
       <p className="simple-intro">{t('classroom.teachFallbackHelp')}</p>
-      {onTeach&&<button type="button" className="simple-primary" data-testid="facilitator-teach-retry" onClick={onTeach}>{t('classroom.teachRetry')}</button>}
+      {onTeach&&<button type="button" className="simple-primary" data-testid="teach-session-retry" onClick={onTeach}>{t('classroom.teachRetry')}</button>}
       <button type="button" data-testid="facilitator-empty-cta" onClick={onAdmin}>{t('nav.admin')}</button>
     </div>}
     renderWorkshop={()=>null}
