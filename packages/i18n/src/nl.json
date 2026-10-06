@@ -1030,7 +1030,7 @@
   "classroom.nav.classroom": "Classroom",
   "classroom.chromeLabel": "Classroom-navigatie",
   "classroom.course.workshop": "Wave Workshop",
-  "classroom.course.workshopHelp": "Dagpakketten, decks, opdrachten en quizzes voor deze squad.",
+  "classroom.course.workshopHelp": "Alle 7 Wave-sessies (dag 1–7): decks, opdrachten en quizzes voor deze squad.",
   "classroom.course.arcade": "Arcade-lab",
   "classroom.course.arcadeHelp": "Begeleide arcade-labs en HTML-solo-oefeningen.",
   "classroom.course.learn": "Learn Claude Code",
@@ -1055,5 +1055,16 @@
   "classroom.bottom.roundDay": "Ronde {round} · Dag {day}",
   "classroom.arcade.open": "Open in Arcade",
   "classroom.arcade.help": "Deze les draait in het Arcade-lab. Markeer voltooid als je klaar bent.",
-  "classroom.learn.open": "Open hoofdstuk"
+  "classroom.learn.open": "Open hoofdstuk",
+  "classroom.session": "Sessie {day}",
+  "classroom.sessionSubtitle": "{title}",
+  "classroom.sessionsLabel": "7 sessies",
+  "classroom.teachNote": "Teach-modus — blader door Wave Workshop-sessies zonder een squad aan te maken. Gebruik Admin wanneer je een live cohort nodig hebt.",
+  "classroom.bottom.teach": "Facilitator teach-modus",
+  "classroom.teachEmbedHelp": "Workshop-dagslides openen hier. Maak alleen een squad via Admin wanneer je een live cohort-sessie nodig hebt.",
+  "classroom.teachOpenSlide": "Open slides in een nieuw tabblad",
+  "classroom.nav.decks": "Slides",
+  "classroom.teachFallbackTitle": "Teach-modus openen lukte niet",
+  "classroom.teachFallbackHelp": "Probeer teach-modus opnieuw, of open Admin voor live cohorts. Lesgeven vereist geen squad.",
+  "classroom.teachRetry": "Open teach-modus"
 }

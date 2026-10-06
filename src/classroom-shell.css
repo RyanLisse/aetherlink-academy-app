@@ -1,6 +1,6 @@
 .classroom-shell{
   --c-bg: var(--bg, #f4f7fb);
-  --c-surface: var(--panel, #fff);
+  --c-surface: var(--surface, #fff);
   --c-text: var(--text, #0b2443);
   --c-muted: var(--muted, #5b6b82);
   --c-border: var(--border, #d5deea);
@@ -21,7 +21,7 @@
 .classroom-top-actions button.is-active{border-color:var(--c-accent);box-shadow:inset 0 0 0 1px var(--c-accent);}
 .classroom-avatar{
   width:30px;height:30px;border-radius:99px;display:grid;place-items:center;font-size:11px;font-weight:700;
-  background:#122338;color:#69e2f2;
+  background:var(--surface2, #102238);color:var(--cyan, #69e2f2);border:1px solid var(--c-border);
 }
 .classroom-body{flex:1;min-height:0;overflow:auto;}
 .classroom-bottom{
@@ -72,7 +72,7 @@
   width:100%;display:flex;gap:8px;align-items:flex-start;text-align:left;border:0;background:transparent;
   border-radius:8px;padding:8px;font:inherit;font-size:13px;cursor:pointer;color:inherit;
 }
-.classroom-module button.is-active{background:var(--c-bg);box-shadow:inset 0 0 0 1px var(--c-border);}
+.classroom-module button.is-active{background:var(--c-bg);box-shadow:inset 0 0 0 1px var(--c-border);color:var(--c-text);}
 .classroom-module button:disabled{opacity:.45;cursor:not-allowed;}
 .classroom-lesson{display:flex;flex-direction:column;min-width:0;background:var(--c-bg);}
 .classroom-lesson-head{padding:18px 20px 8px;}
@@ -88,7 +88,7 @@
   border-radius:8px;padding:8px 12px;font:inherit;font-size:13px;font-weight:650;cursor:pointer;color:inherit;
 }
 .classroom-lesson-nav button:disabled{opacity:.4;cursor:not-allowed;}
-.classroom-lesson-nav button.is-done{border-color:#36b99a;color:#087f68;}
+.classroom-lesson-nav button.is-done{border-color:var(--cyan);color:var(--cyan);}
 .classroom-lesson-nav .gradient{border:0;}
 .classroom-right{border-left:1px solid var(--c-border);background:var(--c-surface);padding:14px;overflow:auto;}
 .classroom-right section{margin-bottom:16px;padding:12px;border:1px solid var(--c-border);border-radius:12px;background:var(--c-bg);}
@@ -111,3 +111,18 @@
   .classroom-course{grid-template-columns:minmax(0,1fr);}
   .classroom-outline{border-right:0;border-bottom:1px solid var(--c-border);max-height:220px;}
 }
+
+.classroom-module-subtitle{
+  margin:0 0 .45rem;
+  font-size:.78rem;
+  line-height:1.3;
+  color:var(--muted, #8b93a7);
+}
+
+.classroom-teach-note{margin:12px 0 0;font-size:13px;max-width:52rem;}
+.classroom-teach-embed{
+  border:1px solid var(--c-border);border-radius:12px;padding:12px;background:var(--c-surface);color:var(--c-text);
+}
+.classroom-teach-embed iframe{width:100%;min-height:70vh;border:0;border-radius:8px;background:var(--c-bg);}
+.classroom-arcade-embed,.classroom-learn-embed{color:var(--c-text);}
+.classroom-module-subtitle{color:var(--c-muted);font-size:12px;margin:0 0 6px;}

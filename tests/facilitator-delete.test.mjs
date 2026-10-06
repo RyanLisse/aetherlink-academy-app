@@ -121,7 +121,7 @@ test('facilitator hub shows delete with confirm on squad and cohort cards',()=>{
  assert.match(main,/data-testid="cohort-delete"/);
  assert.match(main,/confirm\(t\('overview\.deleteConfirm'/);
  assert.match(main,/confirm\(t\('cohort\.deleteConfirm'/);
- assert.match(main,/api\('facilitator\/room\/delete',\{hostKey,roomId:squad\.id\}\)/);
+ assert.match(main,/api\('facilitator\/room\/delete',\{\.\.\.authBody,roomId:squad\.id\}\)/);
  assert.match(main,/api\('facilitator\/cohort\/delete',\{hostKey,cohortId:cohort\.id\}\)/);
  for(const file of ['src/i18n/en.json','src/i18n/nl.json','packages/i18n/src/en.json','packages/i18n/src/nl.json']){
   const catalog=JSON.parse(readFileSync(path.join(root,file),'utf8'));

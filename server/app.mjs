@@ -148,8 +148,13 @@ export function createApp({
     },
   });
   const requireFacilitator = async (req) => {
-    const key = Buffer.from(hash(req.body?.hostKey || ''));
-    if (timingSafeEqual(key, Buffer.from(hash(hostKey)))) return null;
+    // Empty/missing hostKey means cookie/SSO path — do not compare hashes (avoids
+    // treating SSO create/attach as a failed start-key attempt when the body omits it).
+    const provided = typeof req.body?.hostKey === 'string' ? req.body.hostKey : '';
+    if (provided) {
+      const key = Buffer.from(hash(provided));
+      if (timingSafeEqual(key, Buffer.from(hash(hostKey)))) return null;
+    }
     const identity = await store.facilitator(
       namedCookie(req, 'academy-facilitator'),
     );

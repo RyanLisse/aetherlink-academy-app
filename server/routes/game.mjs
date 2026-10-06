@@ -78,6 +78,18 @@ export function registerRoomRoutes(app, deps) {
     }),
   );
   app.post(
+    '/game/facilitator/teach',
+    wrap(async (req, res) => {
+      const identity = await requireFacilitator(req);
+      setSession(
+        res,
+        await store.ensureTeachSession(
+          identity && { email: identity.email, name: identity.name },
+        ),
+      );
+    }),
+  );
+  app.post(
     '/game/logout',
     wrap(async (req, res) => {
       await store.logout(token(req));

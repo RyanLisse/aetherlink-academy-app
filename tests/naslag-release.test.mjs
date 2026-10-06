@@ -211,3 +211,23 @@ test('a read-only cohort session reads every day in the naslag but cannot write'
   }
  }finally{await g.close();}
 });
+
+test('facilitator day-route unlocks all Wave days while room is still on day 1',async()=>{
+ const g=await gateway();
+ try{
+  const participant=await g.call('GET','/game/day-route',{token:g.ann.token});
+  assert.equal(participant.status,200);
+  assert.deepEqual(participant.body.released,[1]);
+  assert.equal(participant.body.days.filter(d=>d.released).length,1);
+
+  const facilitator=await g.call('GET','/game/day-route',{token:g.room.token});
+  assert.equal(facilitator.status,200);
+  assert.deepEqual(facilitator.body.released,[1,2,3,4,5,6,7],'readableDays gives facilitators the full Wave');
+  assert.equal(facilitator.body.days.length,7);
+  assert.deepEqual(facilitator.body.days.map(d=>d.released),Array(7).fill(true));
+  assert.equal(facilitator.body.days[6].day,7);
+  const pack=await g.call('GET','/game/day-pack?day=7',{token:g.room.token});
+  assert.equal(pack.status,200);
+  assert.equal(pack.body.day,7);
+ }finally{await g.close();}
+});

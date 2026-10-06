@@ -51,3 +51,18 @@ test('facilitator session store failure redirects to login_error=session not ver
   assert.ok(warnings.some(entry=>entry[0]==='[academy] Google sign-in failed'&&entry[1]?.code==='session'));
  }finally{console.warn=warn;instance.store.facilitatorLogin=original;}
 });
+
+test('SSO create without hostKey field still authorizes via academy-facilitator cookie',async()=>{
+  const {publicKey,privateKey}=generateKeyPairSync('rsa',{modulusLength:2048}),jwk={...publicKey.export({format:'jwk'}),kid:'omit-key',alg:'RS256',use:'sig'};let nonce;
+  const encode=value=>Buffer.from(JSON.stringify(value)).toString('base64url'),issue=()=>{const header=encode({alg:'RS256',kid:jwk.kid}),now=Math.floor(Date.now()/1000),payload=encode({iss:'https://accounts.google.com',aud:'omit-client',sub:'omit-subject',email:'omit@allowed.example',email_verified:true,name:'Omit Facilitator',hd:'allowed.example',nonce,iat:now,exp:now+600}),signature=sign('RSA-SHA256',Buffer.from(`${header}.${payload}`),privateKey).toString('base64url');return `${header}.${payload}.${signature}`;};
+  const fetchImpl=async url=>{if(url==='https://accounts.google.com/.well-known/openid-configuration')return Response.json({issuer:'https://accounts.google.com',authorization_endpoint:'https://accounts.google.com/o/oauth2/v2/auth',token_endpoint:'https://oauth2.googleapis.com/token',jwks_uri:'https://www.googleapis.com/oauth2/v3/certs'});if(url==='https://www.googleapis.com/oauth2/v3/certs')return Response.json({keys:[jwk]});if(url==='https://oauth2.googleapis.com/token')return Response.json({id_token:issue()});throw Error(`Unexpected URL ${url}`);};
+  const signingSecret='omit-signing-secret',loginSecret=createHmac('sha256',signingSecret).update('academy-login-state').digest(),instance=createApp({dir:mkdtempSync(path.join(os.tmpdir(),'academy-sso-omit-')),hostKey:'break-glass-key',signingSecret,publicBaseUrl:'https://academy.example.test',googleClientId:'omit-client',googleClientSecret:'omit-secret',facilitatorDomains:'allowed.example',fetchImpl});
+  const start=await invoke(instance.app,'/auth/google/start');const loginCookie=cookie(start,'academy-login'),loginState=readLoginState(decodeURIComponent(loginCookie),loginSecret);nonce=loginState.nonce;
+  const callback=await invoke(instance.app,'/auth/google/callback',{query:{code:'authorization-code',state:loginState.state},cookies:{'academy-login':loginCookie}});
+  const facilitatorCookie=cookie(callback,'academy-facilitator');assert.ok(facilitatorCookie);
+  const created=await invoke(instance.app,'/game/create',{body:{name:'Omit-key squad'},cookies:{'academy-facilitator':facilitatorCookie}});
+  assert.equal(created.statusCode,200,JSON.stringify(created.body));
+  assert.ok(created.body.token);
+  const emptyString=await invoke(instance.app,'/game/create',{body:{name:'Empty-string hostKey',hostKey:''},cookies:{'academy-facilitator':facilitatorCookie}});
+  assert.equal(emptyString.statusCode,200,JSON.stringify(emptyString.body));
+});

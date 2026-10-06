@@ -1030,7 +1030,7 @@
   "classroom.nav.classroom": "Classroom",
   "classroom.chromeLabel": "Classroom navigation",
   "classroom.course.workshop": "Wave Workshop",
-  "classroom.course.workshopHelp": "Day packs, decks, assignments, and quizzes for this squad.",
+  "classroom.course.workshopHelp": "All 7 Wave sessions (Day 1–7): decks, assignments, and quizzes for this squad.",
   "classroom.course.arcade": "Arcade lab",
   "classroom.course.arcadeHelp": "Guided arcade labs and HTML solo drills.",
   "classroom.course.learn": "Learn Claude Code",
@@ -1055,5 +1055,16 @@
   "classroom.bottom.roundDay": "Round {round} · Day {day}",
   "classroom.arcade.open": "Open in Arcade",
   "classroom.arcade.help": "This lesson runs in the Arcade lab. Mark complete when you finish.",
-  "classroom.learn.open": "Open chapter"
+  "classroom.learn.open": "Open chapter",
+  "classroom.session": "Session {day}",
+  "classroom.sessionSubtitle": "{title}",
+  "classroom.sessionsLabel": "7 sessions",
+  "classroom.teachNote": "Teach mode — browse Wave Workshop sessions without creating a squad. Use Admin when you need a live cohort.",
+  "classroom.bottom.teach": "Facilitator teach mode",
+  "classroom.teachEmbedHelp": "Workshop day slides open here. Create a squad from Admin only when you need a live cohort session.",
+  "classroom.teachOpenSlide": "Open slides in a new tab",
+  "classroom.nav.decks": "Slides",
+  "classroom.teachFallbackTitle": "Could not open teach mode",
+  "classroom.teachFallbackHelp": "Retry teach mode, or open Admin for live cohorts. Teaching does not require creating a squad.",
+  "classroom.teachRetry": "Open teach mode"
 }
