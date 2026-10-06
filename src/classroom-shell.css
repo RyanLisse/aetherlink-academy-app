@@ -111,3 +111,10 @@
   .classroom-course{grid-template-columns:minmax(0,1fr);}
   .classroom-outline{border-right:0;border-bottom:1px solid var(--c-border);max-height:220px;}
 }
+
+.classroom-module-subtitle{
+  margin:0 0 .45rem;
+  font-size:.78rem;
+  line-height:1.3;
+  color:var(--muted, #8b93a7);
+}

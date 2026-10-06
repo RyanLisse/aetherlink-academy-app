@@ -62,14 +62,19 @@ export function ClassroomShell({
 
   const workshopDays=useMemo(()=>route?.days||[],[route]);
   const workshopLessons=useMemo(()=>workshopDays.flatMap(day=>{
+    // Facilitators must see every Wave day selectable. Server readableDays already unlocks them;
+    // keep client unlock so a stale day-route cannot day-lock the outline for Facilitator.
+    const released=facilitator?true:day.released!==false;
+    const moduleTitle=t('classroom.session',{day:day.day});
+    const moduleSubtitle=day.title;
     const rows=[
-      {key:`workshop:day-${day.day}:lesson`,day:day.day,page:'lesson',moduleId:`day-${day.day}`,moduleTitle:day.title,title:day.activities?.lessonTitle||day.title,kind:'workshop',done:Boolean(day.progress?.lessonDone),released:day.released},
-      {key:`workshop:day-${day.day}:assignments`,day:day.day,page:'assignments',moduleId:`day-${day.day}`,moduleTitle:day.title,title:day.activities?.missionTitle||t('coursePages.assignments'),kind:'workshop',done:Boolean(day.tasks?.total>0&&day.tasks.approved===day.tasks.total),released:day.released},
-      {key:`workshop:day-${day.day}:quiz`,day:day.day,page:'quiz',moduleId:`day-${day.day}`,moduleTitle:day.title,title:t('coursePages.quiz'),kind:'workshop',done:Boolean(day.progress?.hasQuiz),released:day.released},
+      {key:`workshop:day-${day.day}:lesson`,day:day.day,page:'lesson',moduleId:`day-${day.day}`,moduleTitle,moduleSubtitle,title:day.activities?.lessonTitle||day.title,kind:'workshop',done:Boolean(day.progress?.lessonDone),released},
+      {key:`workshop:day-${day.day}:assignments`,day:day.day,page:'assignments',moduleId:`day-${day.day}`,moduleTitle,moduleSubtitle,title:day.activities?.missionTitle||t('coursePages.assignments'),kind:'workshop',done:Boolean(day.tasks?.total>0&&day.tasks.approved===day.tasks.total),released},
+      {key:`workshop:day-${day.day}:quiz`,day:day.day,page:'quiz',moduleId:`day-${day.day}`,moduleTitle,moduleSubtitle,title:t('coursePages.quiz'),kind:'workshop',done:Boolean(day.progress?.hasQuiz),released},
     ];
-    if(day.day===room?.day)rows.push({key:`workshop:day-${day.day}:review`,day:day.day,page:'review',moduleId:`day-${day.day}`,moduleTitle:day.title,title:t('nav.review'),kind:'workshop',done:Boolean(day.progress?.hasHandoff),released:day.released});
+    if(day.day===room?.day)rows.push({key:`workshop:day-${day.day}:review`,day:day.day,page:'review',moduleId:`day-${day.day}`,moduleTitle,moduleSubtitle,title:t('nav.review'),kind:'workshop',done:Boolean(day.progress?.hasHandoff),released});
     return rows;
-  }),[workshopDays,room?.day,t]);
+  }),[workshopDays,room?.day,t,facilitator]);
 
   const arcadeLessons=useMemo(()=>{
     const lessons=(arcadeManifest.lessons||[]).map(L=>({
@@ -135,7 +140,7 @@ export function ClassroomShell({
   const modules=useMemo(()=>{
     const map=new Map();
     for(const lesson of lessonsFor){
-      if(!map.has(lesson.moduleId))map.set(lesson.moduleId,{id:lesson.moduleId,title:lesson.moduleTitle,lessons:[]});
+      if(!map.has(lesson.moduleId))map.set(lesson.moduleId,{id:lesson.moduleId,title:lesson.moduleTitle,subtitle:lesson.moduleSubtitle||'',lessons:[]});
       map.get(lesson.moduleId).lessons.push(lesson);
     }
     return [...map.values()];
@@ -179,8 +184,9 @@ export function ClassroomShell({
         <h2>{courseMeta?.title}</h2>
         <p className="muted">{t('classroom.progressLabel',{pct:courseMeta?.progress||0})}</p>
         <div className="classroom-outline-scroll">
-          {modules.map(mod=><div key={mod.id} className="classroom-module">
+          {modules.map(mod=><div key={mod.id} className="classroom-module" data-testid="classroom-module" data-session={mod.id}>
             <p className="classroom-module-title">{mod.title}</p>
+            {mod.subtitle?<p className="classroom-module-subtitle">{mod.subtitle}</p>:null}
             <ul>
               {mod.lessons.map(lesson=>{
                 const selected=lesson.key===activeLesson?.key;

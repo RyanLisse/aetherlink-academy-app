@@ -49,3 +49,17 @@ test('old community skool-shell files are gone',()=>{
   assert.equal(existsSync(path.join(root,'src/skool-shell.jsx')),false);
   assert.equal(existsSync(path.join(root,'src/skool-shell.css')),false);
 });
+
+test('Wave outline labels Session/Day 1–7; facilitator unlocks all days in shell',()=>{
+  assert.match(shell,/classroom\.session/);
+  assert.match(shell,/moduleSubtitle/);
+  assert.match(shell,/data-testid="classroom-module"/);
+  assert.match(shell,/facilitator\?true:day\.released!==false/);
+  assert.match(shell,/classroom-module-subtitle/);
+  for(const file of ['src/i18n/en.json','src/i18n/nl.json','packages/i18n/src/en.json','packages/i18n/src/nl.json']){
+    const catalog=JSON.parse(readFileSync(path.join(root,file),'utf8'));
+    assert.equal(typeof catalog['classroom.session'],'string',`${file} classroom.session`);
+    assert.match(catalog['classroom.session'],/\{day\}/);
+    assert.match(catalog['classroom.course.workshopHelp'],/7/);
+  }
+});
