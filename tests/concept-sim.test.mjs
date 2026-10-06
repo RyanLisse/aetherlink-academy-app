@@ -266,9 +266,10 @@ test('SRE on-call ConceptSim uses the fixture evidence and is locale-complete',a
   assert.deepEqual(locale.steps
    .filter(step=>step.type==='system_event'&&/^(FAIL approval|APPROVED rollback)/.test(step.content))
    .map(step=>step.content),approvalEvents);
+  assert.ok(locale.steps.some(step=>step.type==='system_event'&&step.content==='{"data_gaps":[]}'));
  }
  assert.ok(en.steps.some(step=>step.toolName==='watch'&&/LANDED/.test(step.content)));
- assert.match(en.steps.at(-1).annotation,/fixed pipeline.*real model uses lessons as context/i);
+ assert.match(en.steps.at(-1).annotation,/60 passing tests and five bench cases at 100%.*fixed pipeline.*real model uses lessons as context/i);
  assert.equal(getSim('sre-oncall-loop','en')?.title,en.title);
  assert.equal(getSim('sre-oncall-loop','nl')?.title,nl.title);
  const pack=DAY_PACKS.find(day=>day.day===5);

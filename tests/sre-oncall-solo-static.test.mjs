@@ -20,6 +20,7 @@ const mirroredFiles=[
  'docs/console-incident.png',
  'docs/gate-step-9.md',
  'docs/solutions/step-9.md',
+ 'docs/verification.md',
  'references/README.md',
  'SOLO.md',
  'README.md',

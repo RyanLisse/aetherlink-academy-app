@@ -71,6 +71,11 @@
         },
         {
           "type": "system_event",
+          "content": "{\"data_gaps\":[]}",
+          "annotation": "The structured offline verdict includes the required empty data_gaps array for this fixture."
+        },
+        {
+          "type": "system_event",
           "content": "PASS contract · OPEN: a human decides. Nothing was rolled back, scaled or paged.",
           "annotation": "Four sources are cited, including deploys; the cited tools appear in the trace."
         },
@@ -109,7 +114,7 @@
         {
           "type": "system_event",
           "content": "PASS check",
-          "annotation": "The bench floor only goes up and harmful stays 0; npm run check reports 57 passing tests and five bench cases at 100%. The offline run demonstrates a fixed pipeline, while only a real model uses lessons as context."
+          "annotation": "The bench floor only goes up and harmful stays 0; npm run check reports 60 passing tests and five bench cases at 100%. The offline run demonstrates a fixed pipeline, while only a real model uses lessons as context."
         }
       ],
       "attribution": "Academy-authored ConceptSim for the SRE solo mission. Scenario from RyanLisse/sre-oncall-agent fixtures (MIT). Not a port of an upstream chapter."
@@ -183,6 +188,11 @@
         },
         {
           "type": "system_event",
+          "content": "{\"data_gaps\":[]}",
+          "annotation": "Het gestructureerde offline verdict bevat voor dit scenario de verplichte lege data_gaps-array."
+        },
+        {
+          "type": "system_event",
           "content": "PASS contract · OPEN: a human decides. Nothing was rolled back, scaled or paged.",
           "annotation": "Er staan vier bronnen in het bewijs, waaronder deploys; de genoemde tools staan in de trace."
         },
@@ -221,7 +231,7 @@
         {
           "type": "system_event",
           "content": "PASS check",
-          "annotation": "De benchgrens gaat alleen omhoog en harmful blijft 0; npm run check rapporteert 57 geslaagde tests en vijf benchcases op 100%. De offline run toont een vaste pipeline, terwijl alleen een echt model lessen als context gebruikt."
+          "annotation": "De benchgrens gaat alleen omhoog en harmful blijft 0; npm run check rapporteert 60 geslaagde tests en vijf benchcases op 100%. De offline run toont een vaste pipeline, terwijl alleen een echt model lessen als context gebruikt."
         }
       ],
       "attribution": "Door Academy geschreven ConceptSim voor de SRE-solo-missie. Scenario uit de fixtures van RyanLisse/sre-oncall-agent (MIT). Geen port van een upstream-hoofdstuk."
