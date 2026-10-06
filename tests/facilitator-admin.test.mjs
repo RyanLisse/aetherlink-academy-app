@@ -39,17 +39,19 @@ test('/facilitator admin: squads + cohorts with create/delete/open, no participa
 test('post-auth land-in opens the Academy workspace, not the hub; empty state points to admin',()=>{
  assert.match(main,/const landIn=useCallback\(async\(auth,squads\)=>\{setFacilitatorAuth\(auth\);if\(!squads\?\.length\)\{setFacilitatorEmpty\(true\)/);
  assert.match(main,/api\('facilitator\/attach',\{hostKey:auth\.hostKey,roomId:squads\[0\]\.id\}\)/,'newest squad opens as facilitator');
- const join=between(main,'function Join(','function LabConfigChrome(');
+ const join=between(main,'function Join(','function FacilitatorWorkspace(');
  assert.match(join,/await onFacilitator\(\{hostKey:data\.hostKey,identity:null\},squads\)/,'start-key unlock lands in');
  assert.match(join,/params\.get\('facilitator'\)==='1'&&!params\.get\('code'\)&&!getToken\(\)/,'Google callback (/?facilitator=1) lands in');
  assert.doesNotMatch(join,/<FacilitatorWorkspace /,'the hub is no longer rendered inside the join gate');
  const empty=between(main,'function FacilitatorEmptyShell(','function CohortPanel(');
- assert.match(empty,/academy-simple/);assert.match(empty,/data-testid="nav-admin"/);assert.doesNotMatch(empty,/join-copy/);
+ assert.match(empty,/ClassroomShell/);assert.match(empty,/data-testid="facilitator-empty"/);assert.doesNotMatch(empty,/join-copy/);
 });
 
 test('workspace has an explicit way back to admin; leaving a squad returns to admin',()=>{
  assert.match(workshop,/\{onAdmin&&<button type="button" data-testid="nav-admin" onClick=\{onAdmin\}>/);
- assert.match(main,/<FacilitatorRoomWorkspace [^>]*onAdmin=\{\(\)=>openAdmin\(\)\}/);
+ assert.match(main,/<ClassroomShell[\s\S]*?onAdmin=\{facilitator\?\(\)=>openAdmin\(\):undefined\}/);
+ const chrome=readFileSync(path.join(root,'src/classroom-shell.jsx'),'utf8');
+ assert.match(chrome,/data-testid="nav-admin"/);
  assert.match(main,/if\(room\.me\.role==='Facilitator'\)\{setRoom\(null\);setConnected\(false\);setSession\(false\);go\(ADMIN_PATH\);return;\}/);
  assert.doesNotMatch(main,/sessionStorage\.setItem\([^)]*hostKey/i,'the start key is never stored');
  for(const file of ['src/i18n/en.json','src/i18n/nl.json','packages/i18n/src/en.json','packages/i18n/src/nl.json']){

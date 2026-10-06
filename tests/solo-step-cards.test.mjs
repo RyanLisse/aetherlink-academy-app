@@ -61,9 +61,8 @@ test('participant Course overview exposes chapters, activity rows and a Continue
   assert.match(panels, /course\.backToToday/);
 });
 
-test('Course uses a distinct icon and the stretch marker is a standalone pill', () => {
-  assert.match(main, /\['route','nav\.courseOverview',Compass\]/);
-  assert.match(main, /\['lesson','nav\.lesson',BookOpen\]/);
+test('Course stretch marker is a standalone pill; ClassroomShell owns course chrome', () => {
+  assert.match(main, /ClassroomShell/);
   assert.match(panels, /className="submission-grid-task-title">\{task\.title\}<\/span>\{!task\.required&&<small className="submission-grid-stretch">/);
   assert.match(activitiesCss, /\.submissions-grid thead th>\.submission-grid-stretch\{display:block/);
   assert.equal(en['route.eyebrow'], 'Course');

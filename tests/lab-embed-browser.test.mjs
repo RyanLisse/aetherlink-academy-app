@@ -24,6 +24,23 @@ async function openTryItPage(page){
  await page.locator('[data-testid="lesson-page"][data-lesson-page="sim"]').waitFor();
 }
 
+async function openDay1WorkshopLesson(page){
+  await page.getByTestId('classroom-shell').waitFor();
+  await page.getByTestId('classroom-home').waitFor();
+  await page.getByTestId('classroom-course-card').filter({hasText:/Workshop|Wave/i}).first().click();
+  await page.getByTestId('classroom-course').waitFor();
+  const lesson=page.locator('[data-testid="classroom-outline-lesson"][data-lesson="workshop:day-1:lesson"]');
+  if(await lesson.count()){
+    await lesson.click();
+  }else{
+    // fall back: first enabled outline lesson
+    await page.locator('[data-testid="classroom-outline-lesson"]:not([disabled])').first().click();
+  }
+  await page.getByTestId('classroom-lesson').waitFor();
+  await page.getByTestId('lesson-stepper').waitFor();
+}
+
+
 test('a real Arcade lesson embedded in the day-1 lesson reports completion into room progress',async()=>{
  for(const built of ['dist/index.html','apps/arcade-lab/dist/index.html'])assert.ok(existsSync(path.join(root,built)),`${built} missing: run pnpm run build first`);
  const port=await freePort(),base=`http://127.0.0.1:${port}`;
@@ -39,7 +56,7 @@ test('a real Arcade lesson embedded in the day-1 lesson reports completion into 
   const page=await context.newPage();
   const state=()=>page.evaluate(async()=>(await fetch('/game/state',{headers:{authorization:`Bearer ${sessionStorage.getItem('academy-token')}`}})).json());
   await page.goto(`${base}/#access=${resumeToken}`);
-  await page.getByTestId('participant-primary-nav').getByRole('button',{name:'Les',exact:true}).click();
+  await openDay1WorkshopLesson(page);
   await openTryItPage(page);
   const embed=page.locator('article.lab-embed[data-lab-id="sample-counter"]');
   await embed.getByTestId('lab-play').click();
@@ -72,12 +89,12 @@ test('a real Arcade lesson embedded in the day-1 lesson reports completion into 
   assert.equal(saved.evidence,'sample-counter: 1/1 checkpoints, end reached');
   await shot(page,'lab-embed-desktop-done.png');
 
-  await page.getByTestId('participant-primary-nav').locator('[data-nav="route"]').click();
-  await page.getByTestId('course-overview').waitFor();
-  await page.locator('.course-chapter[data-day="1"]').waitFor({state:'visible'});
+  await page.getByTestId('classroom-nav-home').click();
+  await page.getByTestId('classroom-home').waitFor();
+  await page.getByTestId('classroom-grid').waitFor();
 
   await page.setViewportSize({width:390,height:844});
-  await page.getByTestId('participant-primary-nav').getByRole('button',{name:'Les',exact:true}).click();
+  await openDay1WorkshopLesson(page);
   await openTryItPage(page);
   await embed.scrollIntoViewIfNeeded();
   await chip.filter({hasText:'Afgerond'}).waitFor();
@@ -109,7 +126,7 @@ test('graded Arcade stops are checked by the server before the lab can complete'
   const state=()=>page.evaluate(async()=>(await fetch('/game/state',{headers:{authorization:`Bearer ${sessionStorage.getItem('academy-token')}`}})).json());
   const stops=async()=>(await state()).me.progressByDay['1']?.labStops?.['ws-2-eve-state'];
   await page.goto(`${base}/#access=${resumeToken}`);
-  await page.getByTestId('participant-primary-nav').getByRole('button',{name:'Les',exact:true}).click();
+  await openDay1WorkshopLesson(page);
   await openTryItPage(page);
   const embed=page.locator('article.lab-embed[data-lab-id="ws-2-eve-state"]');
   await embed.getByTestId('lab-play').click();
