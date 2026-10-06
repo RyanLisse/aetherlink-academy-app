@@ -28,28 +28,27 @@ for (const [width, height] of [[1440, 900], [390, 844]]) {
     await expect(page).toHaveScreenshot(`join-${width}.png`, {fullPage: true});
   });
 
-  test(`participant room ${width}`, async ({page}) => {
+  test(`participant classroom ${width}`, async ({page}) => {
     await open(page, {width, height});
     await page.goto(`${fixture.base}/#access=${fixture.participantAccess}`);
-    await page.getByRole('heading', {name: 'Squad Noord'}).waitFor();
-    await page.getByTestId('today-next').waitFor();
-    await page.waitForFunction(()=>!document.querySelector('.primary [data-status="loading"]'));
+    await page.getByTestId('classroom-shell').waitFor();
+    await page.getByTestId('classroom-home').waitFor();
+    await page.getByTestId('classroom-grid').waitFor();
     await settle(page);
-    await expect(page).toHaveScreenshot(`participant-room-${width}.png`, {fullPage: true});
+    await expect(page).toHaveScreenshot(`participant-classroom-${width}.png`, {fullPage: true});
   });
 }
 
-test('facilitator workshop landing 1024', async ({page}) => {
+test('facilitator classroom landing 1024', async ({page}) => {
   await open(page, {width: 1024, height: 768, token: fixture.facilitatorToken});
   await page.goto(fixture.base + '/');
-  await page.getByRole('heading', {name: 'Squad Noord'}).waitFor();
-  await expect(page.locator('.simple-eyebrow')).toHaveText('Facilitatorwerkplek · Dag 1');
-  await expect(page.getByRole('heading', {name: 'Jouw workshop'})).toBeVisible();
-  await expect(page.getByRole('button', {name: 'Slides presenteren'})).toBeVisible();
-  await expect(page.getByRole('region', {name: 'Facilitatorbediening'})).toHaveCount(0);
-  await expect(page.locator('.simple-settings')).toHaveCount(0);
+  await page.getByTestId('classroom-shell').waitFor();
+  await page.getByTestId('classroom-home').waitFor();
+  await expect(page.getByTestId('classroom-grid')).toBeVisible();
+  await expect(page.getByTestId('nav-admin')).toBeVisible();
+  await expect(page.locator('.join-copy')).toHaveCount(0);
   await settle(page);
-  await expect(page).toHaveScreenshot('facilitator-room-1024.png');
+  await expect(page).toHaveScreenshot('facilitator-classroom-1024.png');
 });
 
 test('facilitator overview 1024', async ({page}) => {
