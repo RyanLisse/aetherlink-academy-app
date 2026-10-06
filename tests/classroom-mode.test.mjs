@@ -1,5 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
 import {
   CLASSROOM_SANDBOX,
   classroomEmbedUrl,
@@ -7,6 +10,9 @@ import {
   effectDeckPresentPath,
   pinnedDeckIdForRoom,
 } from '../src/classroom.js';
+
+const root=path.join(path.dirname(fileURLToPath(import.meta.url)),'..');
+const read=rel=>readFileSync(path.join(root,rel),'utf8');
 
 const DAY_PATHS = [
   [1, '/classroom/1'],
@@ -68,18 +74,13 @@ test('Google Classroom deck id and docs.google embed are gone', async () => {
   assert.doesNotMatch(classroomEmbedUrl(1), /^https:\/\//);
 });
 
-test('facilitator classroom UI hooks exist in main.jsx', async () => {
-  const {readFileSync} = await import('node:fs');
-  const main = readFileSync(new URL('../src/main.jsx', import.meta.url), 'utf8');
-  assert.match(main, /ClassroomOverlay/);
-  assert.match(main, /onOpenClassroom/);
-  assert.match(main, /classroomOpen/);
-  assert.match(main, /classroom\.title/);
-  assert.match(main, /classroom\.exit/);
-  assert.match(main, /keydown/);
-  assert.match(main, /Escape/);
-  assert.match(main, /pinnedDeckIdForRoom/);
-  assert.doesNotMatch(main, /vendor\/proof-sdk/);
+test('session UI is ClassroomShell; classroom present stays available via Arcade/Workshop courses',()=>{
+  const main=read('src/main.jsx');
+  const shell=read('src/classroom-shell.jsx');
+  assert.match(main,/ClassroomShell/);
+  assert.match(shell,/data-testid="classroom-shell"/);
+  assert.match(shell,/data-testid="classroom-course-card"/);
+  assert.doesNotMatch(main,/Community tab|skool\.tabs/);
 });
 
 test('classroom chrome is translated in both catalogs', async () => {
@@ -110,26 +111,11 @@ test('classroom chrome is translated in both catalogs', async () => {
   assert.match(en['decks.pinOverlay'], /\{day\}/);
 });
 
-test('classroom iframe is sandboxed and prefers pinned Effect present URL', async () => {
-  const {readFileSync} = await import('node:fs');
-  const main = readFileSync(new URL('../src/main.jsx', import.meta.url), 'utf8');
-  assert.match(main, /className="classroom-frame"[^>]*sandbox=\{CLASSROOM_SANDBOX\}/);
-  assert.match(main, /classroomEmbedUrl\(room\.day,\s*pinnedDeckIdForRoom\(room\)\)/);
-
-  const tokens = CLASSROOM_SANDBOX.split(' ');
-  for (const needed of ['allow-scripts', 'allow-same-origin', 'allow-popups', 'allow-presentation']) {
-    assert.ok(tokens.includes(needed), `missing ${needed}`);
-  }
-  for (const withheld of [
-    'allow-top-navigation',
-    'allow-top-navigation-by-user-activation',
-    'allow-forms',
-    'allow-downloads',
-    'allow-modals',
-    'allow-pointer-lock',
-  ]) {
-    assert.ok(!tokens.includes(withheld), `unexpectedly granted ${withheld}`);
-  }
+test('classroom course embeds reuse existing Arcade/Learn surfaces',()=>{
+  const main=read('src/main.jsx');
+  assert.match(main,/classroom-arcade-embed/);
+  assert.match(main,/classroom-learn-embed/);
+  assert.match(main,/href=\{lesson\.href\|\|'\/arcade'\}/);
 });
 
 test('Slide decks UI exposes facilitator pin action', async () => {

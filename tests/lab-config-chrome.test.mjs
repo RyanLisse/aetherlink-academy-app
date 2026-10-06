@@ -13,17 +13,11 @@ const en = JSON.parse(readFileSync(join(root, 'src/i18n/en.json'), 'utf8'));
 const nl = JSON.parse(readFileSync(join(root, 'src/i18n/nl.json'), 'utf8'));
 const docs = readFileSync(join(root, 'docs/LAB-EMBED.md'), 'utf8');
 
-test('F3 teacher config chrome lives in teach bar (catalog select + open toggle)', () => {
-  assert.match(main, /function LabConfigChrome/);
-  assert.match(main, /fac-lab-config/);
-  assert.match(main, /data-testid="fac-lab-select"/);
-  assert.match(main, /data-testid="fac-lab-open"/);
-  assert.match(main, /api\('lab-catalog'\)/);
-  assert.match(main, /control\('lab'/);
-  assert.match(css, /\.fac-lab-config/);
-  const teachIdx = main.indexOf('facilitator-teach');
-  const dialsIdx = main.indexOf('facilitator-dials');
-  assert.ok(main.slice(teachIdx, dialsIdx).includes('LabConfigChrome'), 'lab config belongs in teach bar');
+test('F3 ClassroomShell replaced teach-bar lab config chrome', () => {
+  assert.match(main, /ClassroomShell/);
+  assert.doesNotMatch(main, /function LabConfigChrome/);
+  assert.doesNotMatch(main, /data-testid="fac-lab-select"/);
+  assert.doesNotMatch(main, /facilitator-teach/);
 });
 
 test('F4 student play surface gates the iframe behind Enter lab', () => {
