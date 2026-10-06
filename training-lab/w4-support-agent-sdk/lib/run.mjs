@@ -6,7 +6,7 @@ import { parseMessages } from './messages.mjs';
 const packageDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const messagesPath = path.join(packageDirectory, 'customer-messages.md');
 
-export async function runLesson({ buildOptions }) {
+export async function runLesson({ buildOptions, dryRunNote }) {
   const [id, ...args] = process.argv.slice(2);
   const dryRun = args.includes('--dry-run');
   const unexpectedArgs = args.filter((arg) => arg !== '--dry-run');
@@ -23,11 +23,16 @@ export async function runLesson({ buildOptions }) {
   }
 
   const prompt = `Customer message ${message.id}\nSubject: ${message.subject}\n\n${message.message}`;
-  const options = buildOptions();
+  await runQuery({ prompt, options: buildOptions(), dryRun, dryRunNote });
+}
 
+export async function runQuery({ prompt, options, dryRun, dryRunNote }) {
   if (dryRun) {
     console.log(prompt);
     console.log(JSON.stringify(options, null, 2));
+    if (dryRunNote) {
+      console.log(dryRunNote);
+    }
     console.log('dry run — no model call, not model evidence');
     return;
   }

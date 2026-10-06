@@ -10,7 +10,9 @@
     "lesson1": "node 01-single-agent/agent.mjs",
     "lesson2": "node 02-subagents/agent.mjs",
     "lesson3": "node 03-mcp/agent.mjs",
+    "clerk": "node 03-mcp/clerk.mjs",
     "smoke:mcp": "node 03-mcp/transaction-mcp/smoke.mjs",
+    "reset:mcp": "node 03-mcp/transaction-mcp/reset.mjs",
     "check": "node check.mjs"
   },
   "dependencies": {
