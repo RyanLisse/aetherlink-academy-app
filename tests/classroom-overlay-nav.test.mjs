@@ -117,22 +117,10 @@ test('deckFullscreenAllowed is false when framed (F4)', () => {
   );
 });
 
-test('ClassroomOverlay effect does not depend on onClose (FS thrash fix)', () => {
-  const main = readFileSync(new URL('../src/main.jsx', import.meta.url), 'utf8');
-  const start = main.indexOf('function ClassroomOverlay');
-  const end = main.indexOf('function Brand()');
-  assert.ok(start >= 0 && end > start);
-  const overlay = main.slice(start, end);
-  assert.match(overlay, /onCloseRef/);
-  assert.match(overlay, /onCloseRef\.current\s*=\s*onClose/);
-  // Mount effect must not list onClose in deps (empty deps = mount once).
-  assert.match(overlay, /\},\[\]\);/);
-  assert.doesNotMatch(overlay, /\},\[onClose\]\);/);
-  assert.match(overlay, /forwardClassroomNavKey/);
-  assert.match(overlay, /isClassroomNavKey/);
-  // Belt-and-suspenders: App uses stable closeClassroom
-  assert.match(main, /closeClassroom\s*=\s*useCallback/);
-  assert.match(main, /onClose=\{closeClassroom\}/);
+test('ClassroomOverlay is no longer mounted from session shell (Classroom course grid owns session UI)',()=>{
+  const main=readFileSync(new URL('../src/main.jsx', import.meta.url),'utf8');
+  assert.doesNotMatch(main,/function ClassroomOverlay/);
+  assert.match(main,/ClassroomShell/);
 });
 
 test('framed deck FS guards land in Deck package + Effect present HTML', () => {
@@ -207,16 +195,8 @@ test('AET-107 fullscreen label flips with fullscreenElement (Deck + Effect prese
   assert.match(present, /fullscreenchange/);
 });
 
-test('AET-107 Classroom overlay chrome ⛶ flips label and blurs after enter-FS', () => {
-  const main = readFileSync(new URL('../src/main.jsx', import.meta.url), 'utf8');
-  const start = main.indexOf('function ClassroomOverlay');
-  const end = main.indexOf('function Brand()');
-  assert.ok(start >= 0 && end > start);
-  const overlay = main.slice(start, end);
-  assert.match(overlay, /classroom-overlay-fullscreen/);
-  assert.match(overlay, /classroom\.enterFullscreen/);
-  assert.match(overlay, /classroom\.exitFullscreen/);
-  assert.match(overlay, /fullscreenchange/);
-  assert.match(overlay, /event\.currentTarget\.blur\(\)/);
-  assert.match(overlay, /frameRef\.current\?\.focus/);
+test('AET-107 overlay chrome retired from session; Classroom shell provides lesson chrome instead',()=>{
+  const shell=readFileSync(new URL('../src/classroom-shell.jsx', import.meta.url),'utf8');
+  assert.match(shell,/classroom-mark-complete/);
+  assert.match(shell,/classroom-outline/);
 });
