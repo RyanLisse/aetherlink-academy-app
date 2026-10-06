@@ -94,7 +94,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
@@ -102,10 +102,13 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
           node-version: '24'
-      - name: npm run n8n -- --version
+      - name: npm ci
         working-directory: training-lab/w3-n8n-triage
         env:
           npm_config_foreground_scripts: 'true'
+        run: npm ci --no-audit --no-fund
+      - name: npm run n8n -- --version
+        working-directory: training-lab/w3-n8n-triage
         run: npm run n8n -- --version
 
   tests:

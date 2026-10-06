@@ -38,7 +38,11 @@ test('answer key and template cover exactly the graded fixture tickets', () => {
 
 test('package pins n8n, requires Node 24, and ignores participant labels', () => {
   const pkg = readJson('package.json');
-  assert.equal(pkg.scripts.n8n, 'npx --yes n8n@2.41.1');
+  assert.equal(pkg.scripts.n8n, 'n8n');
+  assert.deepEqual(pkg.devDependencies, {n8n: '2.41.1'});
+  const lock = readJson('package-lock.json');
+  assert.deepEqual(lock.packages[''].devDependencies, {n8n: '2.41.1'});
+  assert.equal(lock.packages['node_modules/n8n'].version, '2.41.1');
   assert.equal(pkg.scripts.check, 'node check.mjs');
   assert.equal(pkg.engines.node, '>=24');
   assert.match(readFileSync(path.join(packageRoot, '.gitignore'), 'utf8'), /^labels\.json$/m);

@@ -27,7 +27,25 @@ git sparse-checkout set training-lab/w3-n8n-triage
 cd training-lab/w3-n8n-triage
 ```
 
-There is nothing to install. `npm run n8n` downloads n8n 2.41.1 the first time.
+## Install n8n once, before the workshop
+
+```sh
+npm install
+```
+
+`npm install` installs n8n 2.41.1 from `package-lock.json` into `node_modules`: about 2,400 packages and 2.5 GB. It takes a few minutes on macOS and Linux and 15 to 25 minutes on Windows, so run it before the workshop. You need to run it only once. You do not need Visual Studio or other build tools.
+
+On Windows the install prints warnings such as `gyp ERR! find VS` and `Failed to build optional crypto binding` for `ssh2`. These warnings are expected. The binding is optional, and the install still finishes. Wait until the prompt comes back.
+
+If PowerShell says `npm.ps1 cannot be loaded because running scripts is disabled on this system`, type `npm.cmd` instead of `npm`:
+
+```powershell
+npm.cmd install
+npm.cmd run n8n
+npm.cmd run check
+```
+
+Command Prompt does not have this restriction, so `npm` works there.
 
 ## Start n8n on your machine
 
@@ -35,13 +53,13 @@ There is nothing to install. `npm run n8n` downloads n8n 2.41.1 the first time.
 npm run n8n
 ```
 
-Wait for `Editor is now accessible via: http://localhost:5678`, then open http://localhost:5678 in your browser. On the first start n8n asks you to create an owner account. It is a local account stored on your machine (in `.n8n` in your home folder); use any name and password you will remember. Stop n8n with `Ctrl+C`.
+Wait for `Editor is now accessible via: http://localhost:5678`, then open http://localhost:5678 in your browser. On the first start n8n asks you to create an owner account. It is a local account stored on your machine, in the `.n8n` folder in your home folder (`%USERPROFILE%\.n8n` on Windows). Enter a name, an email address, and a password you will remember. The password needs at least 8 characters, 1 number, and 1 capital letter. Stop n8n with `Ctrl+C`. If Command Prompt asks `Terminate batch job (Y/N)?`, answer `Y`.
 
 If your facilitator gives you a shared workshop instance, you can use it instead. The steps are the same. Never use a production n8n.
 
 ## L1: Switch without an LLM
 
-1. In n8n, create a workflow. In the workflow menu (`...`), choose **Import from File** and pick `n8n-triage-l1-switch.json` from this folder.
+1. In n8n, create a workflow. In the workflow menu (`...`), choose **Import** → **From file** and pick `n8n-triage-l1-switch.json` from this folder.
 2. Open **Priority Switch** and read its rules: which words send a ticket to High, which to Medium, and what falls through to Low.
 3. Click **Execute workflow**. **Fixture Tickets** sends four tickets through the Switch.
 4. Open **High Priority Action**, **Medium Priority Action**, and **Low Priority Action**, and note which `ticket_id` landed in each branch.
@@ -72,7 +90,7 @@ Without a valid credential the workflow imports but does not run. An import alon
 ## Check your work
 
 1. Run `npm run check`. The first run creates `labels.json` from `labels.template.json`.
-2. Open `labels.json` and write the label of each ticket: `low`, `medium`, or `high`.
+2. Open `labels.json` in a text editor (on Windows, for example `notepad labels.json`) and write the label of each ticket: `low`, `medium`, or `high`.
 3. Run `npm run check` again.
 
 ```text
