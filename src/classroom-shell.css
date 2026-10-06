@@ -21,8 +21,8 @@
 }
 .classroom-top-actions button.is-active{border-color:var(--c-accent);box-shadow:inset 0 0 0 1px var(--c-accent);}
 .classroom-teach-badge{
-  display:inline-flex;gap:6px;align-items:center;border:1px solid var(--c-accent-strong);color:var(--c-accent-strong);
-  border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;background:color-mix(in srgb, var(--c-accent-strong) 10%, var(--c-surface));
+  display:inline-flex;gap:6px;align-items:center;border:1px solid #1d4ed8;color:#fff;
+  border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;background:#1d4ed8;
 }
 .classroom-avatar{
   width:30px;height:30px;border-radius:99px;display:grid;place-items:center;font-size:11px;font-weight:700;
