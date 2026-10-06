@@ -8,10 +8,11 @@ import {getDayPack,listDaySummaries,listRouteDays,starterFileNames} from '../ser
 const root=process.cwd();
 const decks=await loadDeckSlides(root);
 
-test('Wave 1–7 stay locked; Harness and SRE solo packs are opt-in',()=>{
- assert.deepEqual(listDaySummaries().map(d=>d.day),Array.from({length:25},(_,i)=>i+1));
+test('Wave 1–7 stay locked; Harness packs 8–24 are opt-in',()=>{
+ assert.deepEqual(listDaySummaries().map(d=>d.day),Array.from({length:24},(_,i)=>i+1));
  assert.deepEqual([1,2,3,4,5,6,7].map(day=>getDayPack(day).code),['classroom-1','classroom-2','workshop-3','workshop-4','workshop-5','workshop-6','workshop-7']);
  assert.deepEqual([1,2,3,4,5,6,7].map(day=>getDayPack(day).mission.id),['CLASSROOM-01','CLASSROOM-02','TRIAGE-N8N-03','TRIAGE-CLAUDE-04','SDLC-BRIEF-05','EIGEN-SLICE-06','EIGEN-SHIP-07']);
+ assert.equal(getDayPack(5).mission.id,'SDLC-BRIEF-05');
  assert.equal(getDayPack(8)?.code,'harness');
  assert.equal(getDayPack(9)?.mission.id,'HARNESS-S02');
  assert.equal(getDayPack(10)?.mission.id,'HARNESS-S03');
@@ -21,8 +22,15 @@ test('Wave 1–7 stay locked; Harness and SRE solo packs are opt-in',()=>{
  assert.equal(getDayPack(22)?.mission.id,'HARNESS-S15');
  assert.equal(getDayPack(24)?.mission.id,'HARNESS-S17');
  assert.equal(getDayPack(24)?.code,'harness');
- assert.equal(getDayPack(25)?.kind,'solo');
- assert.equal(getDayPack(25)?.mission.id,'SRE-ONCALL-25');
+ assert.equal(getDayPack(25),null);
+ const day5=getDayPack(5);
+ assert.deepEqual(day5.steps.map(step=>step.id),[
+  'w5-solo1','w5-solo2','w5-solo3','w5-solo4','w5-solo5','w5-solo6','w5-solo7',
+  'sre-0','sre-1','sre-2','sre-3','sre-4','sre-5','sre-6','sre-8','sre-9'
+ ]);
+ assert.deepEqual(day5.steps.slice(0,7).map(step=>step.level),Array(7).fill('required'));
+ assert.equal(day5.steps.slice(7).every(step=>step.level==='stretch'),true);
+ assert.deepEqual(day5.sims.map(sim=>sim.id),['w5-sdlc-loop','sre-oncall-loop']);
  assert.equal(listRouteDays()[6].title,'Workshop 7 · Own assignment: ship it');
  assert.equal(getDayPack(7).copy.nl.title,'Workshop 7 · Eigen opdracht: afronden');
  assert.equal(listRouteDays().length,7,'default route stays Wave 1–7');
@@ -209,31 +217,35 @@ test('Workshop 4 cites HTML Solo packs weather + day5 + council (AET-130)',()=>{
  assert.equal(d4.materials.some(m=>/start-solo/i.test(m.href||'')||/start-solo/i.test(m.label||'')),false);
 });
 
-test('Workshop 5 cites daily-brief HTML course + Assignments + SOLO (AET-131)',()=>{
+test('Workshop 5 cites daily-brief and SRE HTML courses + SOLO (AET-131)',()=>{
  const d5=getDayPack(5);
  const solos=d5.materials.filter(m=>m.kind==='solo');
  assert.deepEqual(solos.map(m=>m.href),[
-  '/courses/sre-oncall-agent/course/index.html',
   '/courses/aetherlink-daily-brief-lab-s1/index.html',
-  '/courses/aetherlink-daily-brief-lab-s1/SOLO.md'
+  '/courses/aetherlink-daily-brief-lab-s1/SOLO.md',
+  '/courses/sre-oncall-agent/course/index.html',
+  '/courses/sre-oncall-agent/SOLO.md'
  ]);
  const assignments=d5.materials.filter(m=>m.kind==='assignment');
  assert.deepEqual(assignments.map(m=>m.href),[
   '/courses/aetherlink-daily-brief-lab-s1/intent.md',
   '/courses/aetherlink-daily-brief-lab-s1/docs/spec.md',
-  '/courses/aetherlink-daily-brief-lab-s1/docs/gate.md'
+  '/courses/aetherlink-daily-brief-lab-s1/docs/gate.md',
+  '/courses/sre-oncall-agent/docs/gate-step-9.md'
  ]);
  for(const lang of ['en','nl']){
   const mats=d5.copy[lang].materials;
   assert.deepEqual(mats.filter(m=>m.kind==='solo').map(m=>m.href),[
-   '/courses/sre-oncall-agent/course/index.html',
    '/courses/aetherlink-daily-brief-lab-s1/index.html',
-   '/courses/aetherlink-daily-brief-lab-s1/SOLO.md'
+   '/courses/aetherlink-daily-brief-lab-s1/SOLO.md',
+   '/courses/sre-oncall-agent/course/index.html',
+   '/courses/sre-oncall-agent/SOLO.md'
   ],lang);
   assert.deepEqual(mats.filter(m=>m.kind==='assignment').map(m=>m.href),[
    '/courses/aetherlink-daily-brief-lab-s1/intent.md',
    '/courses/aetherlink-daily-brief-lab-s1/docs/spec.md',
-   '/courses/aetherlink-daily-brief-lab-s1/docs/gate.md'
+   '/courses/aetherlink-daily-brief-lab-s1/docs/gate.md',
+   '/courses/sre-oncall-agent/docs/gate-step-9.md'
   ],lang);
   // no EN leak under nl labels for new cites
   if(lang==='nl'){

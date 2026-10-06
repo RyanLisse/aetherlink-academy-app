@@ -9,7 +9,7 @@ import {createApp} from '../server/app.mjs';
 import {PostgresStore} from '../server/postgres-store.mjs';
 import {Store} from '../server/store.mjs';
 import {listRouteDays} from '../server/content.mjs';
-import {courseOrder,courseTemplate,courseTemplates,parseCourse,sdlcSreCourseTemplate,SRE_SOLO_DAYS,sreSoloCourseTemplate} from '../content/days/course.mjs';
+import {courseOrder,courseTemplate,parseCourse} from '../content/days/course.mjs';
 
 async function invoke(app,route,{method='get',body={},cookies={},query={}}={}){
  const layer=app.router.stack.find(candidate=>candidate.route?.path===route&&candidate.route.methods[method]);assert.ok(layer,`Missing ${method} ${route}`);
@@ -33,21 +33,6 @@ const SYNTHETIC_COURSE={name:'Wave 2 · synthetische testcursus',days:[{day:5,ti
 test('courseOrder without a course is the fixed 7-day order',()=>{
  assert.deepEqual(courseOrder(null).map(({position,day})=>[position,day]),[[1,1],[2,2],[3,3],[4,4],[5,5],[6,6],[7,7]]);
  assert.deepEqual(courseTemplate(),{name:'Wave · 7 dagen',days:[1,2,3,4,5,6,7].map(day=>({day,title:null,date:null}))});
-});
-
-test('SRE solo templates are opt-in and compose with Workshop 5',()=>{
- assert.deepEqual(SRE_SOLO_DAYS,[25]);
- assert.deepEqual(sreSoloCourseTemplate(),{name:'Solo-missie · AI-SRE first responder',days:[{day:25,title:'Solo mission · AI SRE first responder',date:null}]});
- assert.deepEqual(sdlcSreCourseTemplate(),{name:'AI-native SDLC · W5 + SRE-solo',days:[
-  {day:5,title:'Workshop 5 · AI-native SDLC',date:null},
-  {day:25,title:'Solo mission · AI SRE first responder',date:null}
- ]});
- assert.deepEqual(courseTemplates().map(template=>template.name),[
-  'Wave · 7 dagen',
-  'Harness Engineering',
-  'Solo-missie · AI-SRE first responder',
-  'AI-native SDLC · W5 + SRE-solo'
- ]);
 });
 
 test('parseCourse keeps order, drops excluded days and normalises overrides',()=>{
@@ -124,11 +109,9 @@ test('participants cannot read the composer or change the course',async()=>{
  const composer=await invoke(app,'/game/course',host);
  assert.equal(composer.statusCode,200);
  assert.equal(composer.body.course,null);
- assert.deepEqual(composer.body.packs.map(pack=>pack.day),Array.from({length:25},(_,i)=>i+1));
+ assert.deepEqual(composer.body.packs.map(pack=>pack.day),Array.from({length:24},(_,i)=>i+1));
  assert.deepEqual(composer.body.template.days.map(d=>d.day),[1,2,3,4,5,6,7]);
  assert.ok(composer.body.templates.some(t=>t.name==='Harness Engineering'&&t.days.map(d=>d.day).join()===Array.from({length:17},(_,i)=>8+i).join()));
- assert.ok(composer.body.templates.some(t=>t.name==='Solo-missie · AI-SRE first responder'&&t.days.map(d=>d.day).join()==='25'));
- assert.ok(composer.body.templates.some(t=>t.name==='AI-native SDLC · W5 + SRE-solo'&&t.days.map(d=>d.day).join()==='5,25'));
 });
 
 test('an invalid course is rejected and leaves the room unchanged',async()=>{

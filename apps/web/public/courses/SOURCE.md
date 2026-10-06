@@ -13,7 +13,7 @@ Pinned to the companion repositories' `main` after their standalone PRs merged.
 ## W5 daily-brief (AET-131)
 - `RyanLisse/aetherlink-daily-brief-lab-s1@3dea7c15cb10147cc28ebdc1c305edb34a8e8f96` (HTML course modules 01–06 + Assignments templates + SOLO.md + rulebook companions)
 
-## Solo mission · SRE first responder (day 25)
+## Solo mission · SRE first responder
 - `RyanLisse/sre-oncall-agent@0c8358dcfc61ed09c9d54a5175836da0084a3634`
 - pinned to PR #1 head; re-pin to main after it squash-merges
 

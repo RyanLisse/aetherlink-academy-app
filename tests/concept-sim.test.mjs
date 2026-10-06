@@ -205,7 +205,10 @@ test('AET-118 P0 W5 retrofit: diagram + ConceptSim + locale-complete; Apple bar 
 
   // Apple bar / pedagogy vehicles kept
   assert.equal(en.demo?.slides?.length, 7);
-  assert.equal(en.steps?.length, 7);
+  assert.equal(en.steps?.filter(step=>step.level==='required').length, 7);
+  assert.equal(en.steps?.filter(step=>step.level==='stretch').length, 9);
+  assert.equal(nl.steps?.filter(step=>step.level==='required').length, 7);
+  assert.equal(nl.steps?.filter(step=>step.level==='stretch').length, 9);
   assert.ok(en.materials?.some((m) => /aetherlink-daily-brief-lab-s1/.test(m.href || '')));
   assert.ok(nl.materials?.some((m) => /aetherlink-daily-brief-lab-s1/.test(m.href || '')));
 
@@ -268,7 +271,7 @@ test('SRE on-call ConceptSim uses the fixture evidence and is locale-complete',a
  assert.match(en.steps.at(-1).annotation,/fixed pipeline.*real model uses lessons as context/i);
  assert.equal(getSim('sre-oncall-loop','en')?.title,en.title);
  assert.equal(getSim('sre-oncall-loop','nl')?.title,nl.title);
- const pack=DAY_PACKS.find(day=>day.day===25);
+ const pack=DAY_PACKS.find(day=>day.day===5);
  assert.ok(pack?.sims.some(sim=>sim.id==='sre-oncall-loop'));
 });
 

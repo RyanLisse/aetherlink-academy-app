@@ -1,4 +1,5 @@
 import {diagram,link,question,slide} from './model.mjs';
+import {SRE_DIAGRAMS,SRE_MATERIALS,SRE_OPEN_ITEMS,SRE_SIM_ID,SRE_SIM_TITLES,SRE_STEPS} from './w5-sre-solo.mjs';
 
 const d='workshop-5';
 
@@ -35,6 +36,7 @@ const en = {
   'An AI-native SDLC is not “let the agent loose.” It is a harness loop around a stable lab vehicle: intent, spec, plan, build, test, review, gate — then handoff back into the next intent.',
   'Two human gates keep the loop honest: accept the plan before build, and fill docs/gate.md (PASS / FAIL / OPEN) with citations before you claim ship. The agent may use one read-only tool; no shell, no write.',
   'Every block follows the same rhythm: explanation, demonstration, then you do it yourself. The diagram and ConceptSim explain the harness; the lab produces the seven files.',
+  'Optional solo mission: apply the same loop to operations with the AI SRE first responder (stretch steps S0–S9). The agent reads, cites and proposes; a named human decides, acts and closes.',
  ],
  workedExample:'Mechanism: Plan→…→gate harness around aetherlink-daily-brief-lab-s1. Motto: human gates keep the harness honest. Step the ConceptSim without API keys, walk the HTML course + Assignments + SOLO under /courses/aetherlink-daily-brief-lab-s1/ (modules 01–06), then run SOLO 1–7 on your branch if you clone the vehicle.',
  loop:[
@@ -64,10 +66,10 @@ const en = {
   {id:'w5-solo4',badge:'4',level:'required',timerMinutes:25,title:'SOLO 4 · render the sample',goal:'Make test/render.test.ts red, then green with src/render.ts, and write out/latest.html with npm run brief:sample.',doneWhen:'npm run brief:sample produces out/latest.html; screenshot kept as proof.',slide:slide(d,29,'Red render test → green sample HTML.')},
   {id:'w5-solo5',badge:'5',level:'required',timerMinutes:20,title:'SOLO 5 · one read-only tool',goal:'Add one read-only tool to the agent, run npm run brief live, and trace every sentence to a tool call in run.log.',doneWhen:'No shell tool and no write tool; every sentence is traceable.',slide:slide(d,36,'One read-only tool. No shell, no write.')},
   {id:'w5-solo6',badge:'6',level:'required',timerMinutes:15,title:'SOLO 6 · docs/evidence.md',goal:'Run typecheck, test, and brief; note exit codes and one quoted line per command, a screenshot under docs/evidence/, and a reviewer.',doneWhen:'A stranger can re-run the three commands; PDF diffs sit as OPEN.',slide:slide(d,40,'Proof a stranger can re-run.')},
-  {id:'w5-solo7',badge:'7',level:'required',timerMinutes:15,title:'SOLO 7 · gate and PR',goal:'Fill docs/gate.md with PASS, FAIL, or OPEN and citations; refuse PASS on unread checks; keep credentials out of the repo; open the PR.',doneWhen:'Gate filled, no secrets in the repo, and the PR is open.',slide:slide(d,46,'Fill the gate. Open the PR.')}
+  {id:'w5-solo7',badge:'7',level:'required',timerMinutes:15,title:'SOLO 7 · gate and PR',goal:'Fill docs/gate.md with PASS, FAIL, or OPEN and citations; refuse PASS on unread checks; keep credentials out of the repo; open the PR.',doneWhen:'Gate filled, no secrets in the repo, and the PR is open.',slide:slide(d,46,'Fill the gate. Open the PR.')},
+  ...SRE_STEPS.en
  ],
  materials:[
-  link('solo','Solo mission · AI SRE first responder','/courses/sre-oncall-agent/course/index.html','same loop applied to operations · day 25'),
   link('solo','HTML course · daily-brief modules 01–06','/courses/aetherlink-daily-brief-lab-s1/index.html','modules 01–06 · empty-main pedagogy'),
   link('assignment','Assignment · intent','/courses/aetherlink-daily-brief-lab-s1/intent.md','intent.md template'),
   link('assignment','Assignment · spec (flight plan)','/courses/aetherlink-daily-brief-lab-s1/docs/spec.md','docs/spec.md (+ design/plan)'),
@@ -77,10 +79,11 @@ const en = {
   link('vehicle','Lab repo aetherlink-daily-brief-lab-s1','https://github.com/RyanLisse/aetherlink-daily-brief-lab-s1','Slide 2; main is intentionally empty; private repo'),
   link('naslag','AI-native SDLC playbook','https://academy.claude.com/courses/ai-native-sdlc-playbook','NASLAG.md Support Day 1–2 · Anthropic Academy'),
   link('naslag','AI-native SDLC blog playbook','https://claude.com/blog/the-ai-native-sdlc-playbook','NASLAG.md Support Day 1–2 · claude.com/blog'),
-  link('diagram','SDLC harness-loop diagram','/diagrams/workshop/w5-harness-loop.svg','Workshop 5')
+  link('diagram','SDLC harness-loop diagram','/diagrams/workshop/w5-harness-loop.svg','Workshop 5'),
+  ...SRE_MATERIALS.en
  ],
- diagrams:[DIAGRAM_EN],
- simTitles:{'w5-sdlc-loop':'Concept sim · Plan → gate'},
+ diagrams:[DIAGRAM_EN,...SRE_DIAGRAMS.en],
+ simTitles:{'w5-sdlc-loop':'Concept sim · Plan → gate',[SRE_SIM_ID]:SRE_SIM_TITLES.en},
  proof:[
   'intent.md with outcome, three verifiable checks, hard bound, owners, and at least one OPEN (slide 14).',
   'docs/spec.md and docs/plan.md, with the plan accepted by a human before build (slides 18 and 22).',
@@ -106,7 +109,8 @@ const en = {
   stretch:'Pin the weekday schedule with gitlab-ci.example.yml or GitHub Actions (slides 42 and 46).'
  },
  openItems:[
-  'aetherlink-daily-brief-lab-s1 is a private repository; per-participant access is not arranged in the lesson plan.'
+  'aetherlink-daily-brief-lab-s1 is a private repository; per-participant access is not arranged in the lesson plan.',
+  ...SRE_OPEN_ITEMS.en
  ]
 };
 
@@ -122,6 +126,7 @@ const nl = {
   'Een AI-native SDLC is niet “laat de agent los.” Het is een harnesslus om een stabiel lab-voertuig: intent, spec, plan, build, test, review, gate — en daarna handoff terug naar de volgende intent.',
   'Twee menselijke gates houden de lus eerlijk: accepteer het plan vóór de build, en vul docs/gate.md (PASS / FAIL / OPEN) met citaten vóór je ship claimt. De agent mag één read-only tool; geen shell, geen write.',
   'Elk blok volgt hetzelfde ritme: uitleg, voordoen en daarna zelf doen. Het diagram en de ConceptSim leggen de harness uit; het lab levert de zeven bestanden.',
+  'Optionele solo-missie: pas dezelfde lus toe op operations met de AI-SRE first responder (stretch-stappen S0–S9). De agent leest, citeert en stelt voor; een mens op naam beslist, handelt en sluit af.',
  ],
  workedExample:'Mechanisme: Plan→…→gate-harness om aetherlink-daily-brief-lab-s1. Motto: menselijke gates houden de harness eerlijk. Stap de ConceptSim zonder API-sleutels, loop de HTML-cursus + Opdrachten + SOLO onder /courses/aetherlink-daily-brief-lab-s1/ (modules 01–06), daarna SOLO 1–7 op je branch als je de repository clonet.',
  loop:[
@@ -151,10 +156,10 @@ const nl = {
   {id:'w5-solo4',badge:'4',level:'required',timerMinutes:25,title:'SOLO 4 · render de sample',goal:'Maak test/render.test.ts rood, dan groen met src/render.ts, en schrijf out/latest.html met npm run brief:sample.',doneWhen:'npm run brief:sample levert out/latest.html op; screenshot bewaard als bewijs.',slide:slide(d,29,'Red render test → green sample HTML.')},
   {id:'w5-solo5',badge:'5',level:'required',timerMinutes:20,title:'SOLO 5 · één read-only tool',goal:'Voeg één read-only tool toe aan de agent, run npm run brief live en herleid elke zin naar een tool-call in run.log.',doneWhen:'Geen shell-tool en geen write-tool; elke zin is herleidbaar.',slide:slide(d,36,'One read-only tool. No shell, no write.')},
   {id:'w5-solo6',badge:'6',level:'required',timerMinutes:15,title:'SOLO 6 · docs/evidence.md',goal:'Run typecheck, test en brief; noteer exitcodes en één geciteerde regel per commando, een screenshot onder docs/evidence/ en een reviewer.',doneWhen:'Een vreemde kan de drie commando’s opnieuw draaien; verschillen met de PDF’s staan als OPEN.',slide:slide(d,40,'Proof a stranger can re-run.')},
-  {id:'w5-solo7',badge:'7',level:'required',timerMinutes:15,title:'SOLO 7 · gate en PR',goal:'Vul docs/gate.md met PASS, FAIL of OPEN en citaten, weiger PASS op ongelezen checks, houd credentials buiten de repo en open de PR.',doneWhen:'Gate ingevuld, geen secrets in de repo en de PR staat open.',slide:slide(d,46,'Fill the gate. Open the PR.')}
+  {id:'w5-solo7',badge:'7',level:'required',timerMinutes:15,title:'SOLO 7 · gate en PR',goal:'Vul docs/gate.md met PASS, FAIL of OPEN en citaten, weiger PASS op ongelezen checks, houd credentials buiten de repo en open de PR.',doneWhen:'Gate ingevuld, geen secrets in de repo en de PR staat open.',slide:slide(d,46,'Fill the gate. Open the PR.')},
+  ...SRE_STEPS.nl
  ],
  materials:[
-  link('solo','Solo-missie · AI-SRE first responder','/courses/sre-oncall-agent/course/index.html','zelfde lus toegepast op operations · dag 25'),
   link('solo','HTML-cursus · daily-brief modules 01–06','/courses/aetherlink-daily-brief-lab-s1/index.html','modules 01–06 · lege-main-pedagogiek'),
   link('assignment','Opdracht · intent','/courses/aetherlink-daily-brief-lab-s1/intent.md','intent.md-sjabloon'),
   link('assignment','Opdracht · spec (vluchtplan)','/courses/aetherlink-daily-brief-lab-s1/docs/spec.md','docs/spec.md (+ design/plan)'),
@@ -164,10 +169,11 @@ const nl = {
   link('vehicle','Lab-repository aetherlink-daily-brief-lab-s1','https://github.com/RyanLisse/aetherlink-daily-brief-lab-s1','Dia 2; main is expres leeg; privé-repository'),
   link('naslag','AI-native SDLC playbook','https://academy.claude.com/courses/ai-native-sdlc-playbook','NASLAG.md Support Day 1–2 · Anthropic Academy'),
   link('naslag','AI-native SDLC blog-playbook','https://claude.com/blog/the-ai-native-sdlc-playbook','NASLAG.md Support Day 1–2 · claude.com/blog'),
-  link('diagram','SDLC-harnesslus-diagram','/diagrams/workshop/w5-harness-loop.svg','Workshop 5')
+  link('diagram','SDLC-harnesslus-diagram','/diagrams/workshop/w5-harness-loop.svg','Workshop 5'),
+  ...SRE_MATERIALS.nl
  ],
- diagrams:[DIAGRAM_NL],
- simTitles:{'w5-sdlc-loop':'Concept-sim · Plan → gate'},
+ diagrams:[DIAGRAM_NL,...SRE_DIAGRAMS.nl],
+ simTitles:{'w5-sdlc-loop':'Concept-sim · Plan → gate',[SRE_SIM_ID]:SRE_SIM_TITLES.nl},
  proof:[
   'intent.md met uitkomst, drie controleerbare checks, harde grens, eigenaren en minstens één OPEN (dia 14).',
   'docs/spec.md en docs/plan.md, met het plan geaccepteerd door een mens vóór de build (dia 18 en 22).',
@@ -193,7 +199,8 @@ const nl = {
   stretch:'Leg de weekday-schedule vast met gitlab-ci.example.yml of GitHub Actions (dia 42 en 46).'
  },
  openItems:[
-  'aetherlink-daily-brief-lab-s1 is een privé-repository; toegang per deelnemer is niet geregeld in het lesplan.'
+  'aetherlink-daily-brief-lab-s1 is een privé-repository; toegang per deelnemer is niet geregeld in het lesplan.',
+  ...SRE_OPEN_ITEMS.nl
  ]
 };
 
@@ -206,5 +213,8 @@ export default {
  copy:{en,nl},
  // Structural defaults (NL) for lint / FAQ index — deck citations live here
  ...nl,
- sims:[{id:'w5-sdlc-loop',title:'Concept-sim · Plan → gate'}],
+ sims:[
+  {id:'w5-sdlc-loop',title:'Concept-sim · Plan → gate'},
+  {id:SRE_SIM_ID,title:SRE_SIM_TITLES.nl}
+ ],
 };

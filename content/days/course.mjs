@@ -11,8 +11,6 @@ export const WAVE_DAYS=[1,2,3,4,5,6,7];
 /** Harness Engineering vertical (AET-116 / AET-117) — s01–s17 (Slice 1+2). */
 export const HARNESS_DAYS=[8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24];
 
-export const SRE_SOLO_DAYS=[25];
-
 const invalid=message=>Object.assign(new Error(message),{status:400});
 const PACK_DAYS=new Set(DAY_PACKS.map(pack=>pack.day));
 const ISO_DATE=/^\d{4}-\d{2}-\d{2}$/;
@@ -36,29 +34,9 @@ export function harnessCourseTemplate(){
  };
 }
 
-export function sreSoloCourseTemplate(){
- return {
-  name:'Solo-missie · AI-SRE first responder',
-  days:SRE_SOLO_DAYS.map(day=>{
-   const pack=packOrNull(day);
-   return {day,title:pack?.title??null,date:null};
-  })
- };
-}
-
-export function sdlcSreCourseTemplate(){
- return {
-  name:'AI-native SDLC · W5 + SRE-solo',
-  days:[5,25].map(day=>{
-   const pack=packOrNull(day);
-   return {day,title:pack?.title??null,date:null};
-  })
- };
-}
-
-/** Named course starters for the facilitator composer (Wave, Harness, and solo tracks). */
+/** Named course starters for the facilitator composer (Wave default + Harness track). */
 export function courseTemplates(){
- return [courseTemplate(),harnessCourseTemplate(),sreSoloCourseTemplate(),sdlcSreCourseTemplate()];
+ return [courseTemplate(),harnessCourseTemplate()];
 }
 
 const optionalText=(value,max,label)=>{

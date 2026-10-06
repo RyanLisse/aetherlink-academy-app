@@ -44,34 +44,32 @@ test('pinned SRE course mirror has its required files and diagram references',()
  assert.match(source,/sre-oncall-agent@[0-9a-f]{40}/);
 });
 
-test('Day 25 and Workshop 5 course materials resolve under public assets in EN and NL',()=>{
- const day25=DAY_PACKS.find(pack=>pack.day===25);
+test('Workshop 5 SRE course materials resolve under public assets in EN and NL',()=>{
  const day5=DAY_PACKS.find(pack=>pack.day===5);
- assert.ok(day25);
  assert.ok(day5);
- for(const pack of [day25,day5]){
-  for(const locale of ['en','nl']){
-   const hrefs=pack.copy[locale].materials.map(item=>item.href).filter(href=>href?.startsWith('/courses/'));
-   assert.ok(hrefs.length>0,`day ${pack.day} ${locale} has a /courses/ link`);
-   for(const href of hrefs){
-    const file=path.join(publicAssets,href.split(/[?#]/,1)[0].replace(/^\/+/,''));
-    assert.equal(existsSync(file),true,`day ${pack.day} ${locale}: ${href}`);
-   }
+ for(const locale of ['en','nl']){
+  const hrefs=day5.copy[locale].materials.map(item=>item.href).filter(href=>href?.startsWith('/courses/'));
+  assert.ok(hrefs.length>0,`day 5 ${locale} has a /courses/ link`);
+  for(const href of hrefs){
+   const file=path.join(publicAssets,href.split(/[?#]/,1)[0].replace(/^\/+/,''));
+   assert.equal(existsSync(file),true,`day 5 ${locale}: ${href}`);
   }
  }
 });
 
-test('Day 25 locale steps stay paired and use cross-platform command lines',()=>{
- const day25=DAY_PACKS.find(pack=>pack.day===25);
- assert.ok(day25);
- const en=day25.copy.en.solo;
- const nl=day25.copy.nl.solo;
+test('Workshop 5 SRE stretch steps stay paired and use cross-platform command lines',()=>{
+ const copy=DAY_PACKS.find(pack=>pack.day===5).copy;
+ const en=copy.en.solo.filter(step=>step.id.startsWith('sre-'));
+ const nl=copy.nl.solo.filter(step=>step.id.startsWith('sre-'));
  assert.deepEqual(en.map(step=>step.id),['sre-0','sre-1','sre-2','sre-3','sre-4','sre-5','sre-6','sre-8','sre-9']);
  assert.deepEqual(nl.map(step=>step.id),en.map(step=>step.id));
+ assert.deepEqual(en.map(step=>step.badge),['S0','S1','S2','S3','S4','S5','S6','S8','S9']);
+ assert.deepEqual(nl.map(step=>step.badge),en.map(step=>step.badge));
  assert.deepEqual(nl.map(step=>step.run.length),en.map(step=>step.run.length));
  assert.deepEqual(nl.map(step=>(step.prompts??[]).length),en.map(step=>(step.prompts??[]).length));
  for(const locale of ['en','nl']){
-  for(const step of day25.copy[locale].solo){
+  for(const step of copy[locale].solo.filter(item=>item.id.startsWith('sre-'))){
+   assert.equal(step.level,'stretch',`${locale} ${step.id} level`);
    assert.equal(typeof step.watchFor,'string',`${locale} ${step.id} watchFor`);
    assert.ok(step.watchFor.length>0,`${locale} ${step.id} watchFor`);
    for(const command of step.run){

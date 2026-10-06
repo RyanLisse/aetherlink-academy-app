@@ -22,9 +22,8 @@ import day21 from './day-21-harness-s14.mjs';
 import day22 from './day-22-harness-s15.mjs';
 import day23 from './day-23-harness-s16.mjs';
 import day24 from './day-24-harness-s17.mjs';
-import day25 from './day-25-solo-sre-oncall.mjs';
 import {projectDayPack} from './model.mjs';
 
-export const DAY_SOURCES=[day1,day2,day3,day4,day5,day6,day7,day8,day9,day10,day11,day12,day13,day14,day15,day16,day17,day18,day19,day20,day21,day22,day23,day24,day25];
+export const DAY_SOURCES=[day1,day2,day3,day4,day5,day6,day7,day8,day9,day10,day11,day12,day13,day14,day15,day16,day17,day18,day19,day20,day21,day22,day23,day24];
 export const DAY_PACKS=DAY_SOURCES.map(projectDayPack);
 export const DAY_COUNT=DAY_PACKS.length;
