@@ -13,6 +13,10 @@ Pinned to the companion repositories' `main` after their standalone PRs merged.
 ## W5 daily-brief (AET-131)
 - `RyanLisse/aetherlink-daily-brief-lab-s1@3dea7c15cb10147cc28ebdc1c305edb34a8e8f96` (HTML course modules 01–06 + Assignments templates + SOLO.md + rulebook companions)
 
+## Solo mission · SRE first responder
+- `RyanLisse/sre-oncall-agent@16d4aa1f7c8750962f0aa0254478aeda3fec28ae`
+- pinned to PR #1 head after merging `origin/main`
+
 Academy Done path = HTML/lab surfaces linked from Workshop day-packs. Claude Code `/start-solo` is **not required** for these tickets (→ AET-132 concepts). Source EN course body stays EN (SoT); touched Academy chrome remains locale-safe.
 
 `main.js` and `styles.css` are the same codebase-to-course engine in every course (byte-identical copies, as the engine header asks: "Copy this file verbatim into the course output directory"). They stay per course so each mirror matches its source repo and each page loads `main.js` / `styles.css` relative to itself.

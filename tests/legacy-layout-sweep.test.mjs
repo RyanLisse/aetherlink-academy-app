@@ -109,7 +109,6 @@ test('every lesson day, page and viewport is free of layout defects',async()=>{
   }
   assert.deepEqual(defects,[],`layout defects found:\n${defects.join('\n')}`);
 });
-
 test('every participant and facilitator destination is free of layout defects',async()=>{
   assert.ok(existsSync(path.join(root,'dist/index.html')),'dist/index.html missing: run pnpm run build first');
   const fixture=await startLegacyFixture();
@@ -156,4 +155,3 @@ test('every participant and facilitator destination is free of layout defects',a
   }
   assert.deepEqual(defects,[],`layout defects found:\n${defects.join('\n')}`);
 });
-
