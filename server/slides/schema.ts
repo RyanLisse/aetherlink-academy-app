@@ -26,6 +26,8 @@ export const DeckId=Schema.UUID;
 
 const Ordinal=(max:number)=>Schema.Int.pipe(Schema.between(0,max));
 const Minutes=Schema.Int.pipe(Schema.between(1,120));
+/** Same-origin image path: a bundled app asset (workshop-N/…, assets/…) or a room file (/game/files/<id>). No scheme, no host, no `..`. */
+export const ShowcaseImage=Schema.String.pipe(Schema.maxLength(200),Schema.pattern(/^(?!.*\.\.)\/?(?:workshop-\d{1,2}\/|assets\/|game\/files\/)[A-Za-z0-9_-][A-Za-z0-9._\/-]*$/));
 /** Safe subset of the classroom deck's `visual` options (packages/deck source-visuals). Unknown keys are dropped. */
 export const ClassroomVisual=Schema.Struct({
  bot:Schema.optional(Schema.Literal('wave','think','point','head')),
@@ -45,6 +47,10 @@ export const ClassroomVisual=Schema.Struct({
  pairs:Schema.optional(Schema.Boolean),
  oneCol:Schema.optional(Schema.Boolean),
  phrase:Schema.optional(Text(300)),
+ /** Showcase image (W3/W5/W4 concept visuals): same-origin app asset or room file only, never an external URL. */
+ opener:Schema.optional(Schema.Literal('showcase')),
+ image:Schema.optional(ShowcaseImage),
+ imageLink:Schema.optional(Text(200)),
  highlight:Schema.optional(Schema.Array(Schema.Struct({in:Schema.Union(Schema.Literal('title','subtitle','tagline'),Schema.String.pipe(Schema.pattern(/^card:\d{1,2}$/))),text:Text(200).pipe(Schema.minLength(1)),tone:Schema.Literal('orange','purple','mark')})).pipe(Schema.maxItems(6))),
 });
 export const ClassroomType=Schema.Literal('context','concept','practice','review','quiz','recap','pause');
