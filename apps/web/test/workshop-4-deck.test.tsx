@@ -112,16 +112,15 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
     });
   });
 
-  it('links the workshop package on the agenda and SOLO 0 slides', () => {
-    const pkg = 'https://github.com/RyanLisse/aetherlink-academy-app/tree/main/training-lab/w4-support-agent-sdk';
+  it('links the workshop repo on the agenda and SOLO 0 slides', () => {
+    const repo = 'https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent';
     expect(workshop4SourceSlides[0]?.subtitle).toMatch(/10:00–16:00/);
-    expect(workshop4SourceSlides[2]?.keyPoints).toContain(`Workshop package: ${pkg}`);
-    expect(workshop4SourceSlides[2]?.keyPoints).toContain('Bonus n8n bridge: https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent');
+    expect(workshop4SourceSlides[2]?.keyPoints).toContain(`Workshop repo: ${repo}`);
     const cards = workshop4SourceSlides[14]?.cards as ReadonlyArray<{title: string; body: string}>;
-    const packageCard = cards.find((card) => card.title === 'Workshop package');
-    expect(packageCard?.body).toContain(pkg);
-    expect(packageCard?.body).toContain('git clone --depth 1 --filter=blob:none --sparse https://github.com/RyanLisse/aetherlink-academy-app.git w4-support');
-    expect(packageCard?.body).toContain('git sparse-checkout set training-lab/w4-support-agent-sdk');
+    const repoCard = cards.find((card) => card.title === 'Workshop repo');
+    expect(repoCard?.body).toContain(`git clone ${repo}.git`);
+    expect(repoCard?.body).toContain('npm run lesson1 -- MSG-01 --dry-run');
+    expect(JSON.stringify(workshop4SourceSlides[14])).not.toMatch(/sparse/);
   });
 
   it('keeps the intro and concept-recap slides in English', () => {
@@ -131,7 +130,7 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
 
   it('teaches the Agent SDK package, mapping, and four questions', () => {
     const blob = JSON.stringify(workshop4SourceSlides);
-    expect(blob).toMatch(/training-lab\/w4-support-agent-sdk/);
+    expect(blob).toMatch(/aetherlink-day5-n8n-to-agent/);
     expect(blob).toMatch(/settingSources/);
     expect(blob).toMatch(/ticket-analyst/);
     expect(blob).toMatch(/email-responder/);

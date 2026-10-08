@@ -36,8 +36,8 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     keyPoints: [
       "10:00 Welcome + recap · 10:15 Concepts n8n → Agent SDK · 10:45 Step 0 · setup · 11:00 Break · 11:15 Step 1 · one agent + CLAUDE.md · 12:00 Lunch",
       "13:00 Step 2 · subagents · 14:00 Step 3 · MCP transaction data · 14:45 Break · 15:00 Step 4 · check + Proof · 15:30 Stretch · 15:45 Wrap-up + bridge to W5",
-      "Workshop package: https://github.com/RyanLisse/aetherlink-academy-app/tree/main/training-lab/w4-support-agent-sdk",
-      "Bonus n8n bridge: https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent",
+      "Workshop repo: https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent",
+      "Fell behind? git checkout step-1 … step-4 (finished state of each step)",
     ],
     notes: "Run of show 10:00–16:00 (break 11:00, lunch 12:00–13:00, break 14:45). Format: I show it, you do it.",
   },
@@ -110,7 +110,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
         ],
       },
     ],
-    notes: "Overview before the 8 concepts (~2 min). Say: same labels LOW/MEDIUM/HIGH, same specialists, same human at the end; only the toolbox changes. The n8n side comes from the day5 repo n8n/support-triage.json (W3 flow). The SDK side comes from training-lab/w4-support-agent-sdk (aetherlink-academy-app@main ba862a8). Hooks and Skills are NOT in the exercise; we only show them as concepts. Visual: concepts/visuals/00-overview.png (light: visuals/light/00-overview.png).",
+    notes: "Overview before the 8 concepts (~2 min). Say: same labels LOW/MEDIUM/HIGH, same specialists, same human at the end; only the toolbox changes. The n8n side comes from the day5 repo n8n/support-triage.json (W3 flow). The SDK side comes from the starter repo's step branches (step-1 … step-4). Hooks and Skills are NOT in the exercise; we only show them as concepts. Visual: concepts/visuals/00-overview.png (light: visuals/light/00-overview.png).",
   },
   {
     lessonId: "workshop-4",
@@ -132,7 +132,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
         ],
       },
     ],
-    notes: "n8n: AI Agent node (export: '@n8n/n8n-nodes-langchain.agent'). SDK: query() in training-lab/w4-support-agent-sdk/lib/run.mjs:44-46 (import + for await), trace print l.47-58, result l.61-62. maxTurns: 01-single-agent/options.mjs:12 (=2), 02-subagents/options.mjs:17 (=10), 03-mcp/options.mjs:22 (=10). day5: src/agent.ts DEFAULT_MAX_TURNS=8 ('n8n: Max Iterations'). Live: Step 1. Visual: concepts/visuals/01-agent-loop.png (light: visuals/light/01-agent-loop.png).",
+    notes: "n8n: AI Agent node (export: '@n8n/n8n-nodes-langchain.agent'). SDK: query() in lib/run.mjs:44-46 (import + for await), trace print l.47-58, result l.61-62. maxTurns: 01-single-agent/options.mjs:12 (=2), 02-subagents/options.mjs:17 (=10), 03-mcp/options.mjs:22 (=10). day5: src/agent.ts DEFAULT_MAX_TURNS=8 ('n8n: Max Iterations'). Live: Step 1. Visual: concepts/visuals/01-agent-loop.png (light: visuals/light/01-agent-loop.png).",
   },
   {
     lessonId: "workshop-4",
@@ -162,7 +162,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
         ],
       },
     ],
-    notes: "n8n text verbatim from day5 n8n/support-triage.json (AI Agent options.systemMessage). SDK: training-lab/w4-support-agent-sdk/01-single-agent/options.mjs:8-11 (cwd, settingSources, systemPrompt preset); 01-single-agent/claude-project/CLAUDE.md (Priority definitions l.13-16, Required output l.18-20). day5: src/prompts.ts COORDINATOR_SYSTEM + settingSources: [] in src/agent.ts. Live: Step 1 (tone trap). Visual: concepts/visuals/02-systeemprompt.png (light: visuals/light/02-systeemprompt.png).",
+    notes: "n8n text verbatim from day5 n8n/support-triage.json (AI Agent options.systemMessage). SDK: 01-single-agent/options.mjs:8-11 (cwd, settingSources, systemPrompt preset); 01-single-agent/claude-project/CLAUDE.md (Priority definitions l.13-16, Required output l.18-20). day5: src/prompts.ts COORDINATOR_SYSTEM + settingSources: [] in src/agent.ts. Live: Step 1 (tone trap). Visual: concepts/visuals/02-systeemprompt.png (light: visuals/light/02-systeemprompt.png).",
   },
   {
     lessonId: "workshop-4",
@@ -184,7 +184,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
         ],
       },
     ],
-    notes: "SDK: training-lab/w4-support-agent-sdk/01-single-agent/options.mjs:12-13 (tools: [], disallowedTools); 02-subagents/options.mjs:13-15 (tools/allowedTools/disallowedTools); 03-mcp/options.mjs:17-20 (allowedTools incl. mcp__transactions__get_transaction and list_transactions). day5: src/tools.ts COORDINATOR_TOOLS = ['Agent']. Live: Steps 1–3. Visual: concepts/visuals/03-tools.png (light: visuals/light/03-tools.png).",
+    notes: "SDK: 01-single-agent/options.mjs:12-13 (tools: [], disallowedTools); 02-subagents/options.mjs:13-15 (tools/allowedTools/disallowedTools); 03-mcp/options.mjs:17-20 (allowedTools incl. mcp__transactions__get_transaction and list_transactions). day5: src/tools.ts COORDINATOR_TOOLS = ['Agent']. Live: Steps 1–3. Visual: concepts/visuals/03-tools.png (light: visuals/light/03-tools.png).",
   },
   {
     lessonId: "workshop-4",
@@ -200,14 +200,14 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
       {
         title: "Claude Agent SDK · Workshop 4",
         items: [
-          "transactions.xlsx → server.js (MCP, stdio)",
+          "docs/transactions.xlsx → server.js (MCP, stdio)",
           "The SDK starts the server on demand",
           "mcp__transactions__get_transaction",
           "ticket-analyst → \"External data:\"",
         ],
       },
     ],
-    notes: "Honest note: the W3 n8n export (day5 n8n/support-triage.json) has NO HTTP Request node; the n8n side is a concept. SDK: training-lab/w4-support-agent-sdk/03-mcp/options.mjs:23-30 (mcpServers.transactions, type stdio, command node), analyst tool 03-mcp/agents.mjs:34, server 03-mcp/transaction-mcp/server.js, data 03-mcp/data/transactions.xlsx. Tool name format mcp__<server>__<tool> confirmed in the Agent SDK hooks docs (docs.claude.com/en/docs/agent-sdk/hooks). Without a model: npm run smoke:mcp. Live: Step 3. Visual: concepts/visuals/04-mcp.png (light: visuals/light/04-mcp.png).",
+    notes: "Honest note: the W3 n8n export (day5 n8n/support-triage.json) has NO HTTP Request node; the n8n side is a concept. SDK: 03-mcp/options.mjs:23-30 (mcpServers.transactions, type stdio, command node), analyst tool 03-mcp/agents.mjs:34, server 03-mcp/transaction-mcp/server.js, data docs/transactions.xlsx (also in .mcp.json for Claude Code). Tool name format mcp__<server>__<tool> confirmed in the Agent SDK hooks docs (docs.claude.com/en/docs/agent-sdk/hooks). Without a model: npm run smoke:mcp. Live: Step 3. Visual: concepts/visuals/04-mcp.png (light: visuals/light/04-mcp.png).",
   },
   {
     lessonId: "workshop-4",
@@ -229,7 +229,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
         ],
       },
     ],
-    notes: "In the exercise: canUseTool = askPerson in training-lab/w4-support-agent-sdk/03-mcp/approval.mjs:23-41, wired in 03-mcp/options.mjs:19; permissionMode 'acceptEdits' in 02-subagents/options.mjs:16 and 03-mcp/options.mjs:21. NOT in the exercise: SDK hooks (options.hooks with PreToolUse/PostToolUse, matcher on tool name, permissionDecision allow/deny/ask) — concept only, source docs.claude.com/en/docs/agent-sdk/hooks. Neither repo uses hooks. n8n IF/Wait/Error Workflow are not in the W3 export; concept. Live: Step 3b (npm run clerk, y/N). Visual: concepts/visuals/05-hooks.png (light: visuals/light/05-hooks.png).",
+    notes: "In the exercise: canUseTool = askPerson in 03-mcp/approval.mjs:23-41, wired in 03-mcp/options.mjs:19; permissionMode 'acceptEdits' in 02-subagents/options.mjs:16 and 03-mcp/options.mjs:21. NOT in the exercise: SDK hooks (options.hooks with PreToolUse/PostToolUse, matcher on tool name, permissionDecision allow/deny/ask) — concept only, source docs.claude.com/en/docs/agent-sdk/hooks. Neither repo uses hooks. n8n IF/Wait/Error Workflow are not in the W3 export; concept. Live: Step 3b (npm run clerk, y/N). Visual: concepts/visuals/05-hooks.png (light: visuals/light/05-hooks.png).",
   },
   {
     lessonId: "workshop-4",
@@ -252,7 +252,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
         ],
       },
     ],
-    notes: "SDK: subagents live in options.agents: training-lab/w4-support-agent-sdk/02-subagents/agents.mjs:19-30 (ticket-analyst l.20-24, email-responder l.25-29), wired in 02-subagents/options.mjs:12-14; orchestrator rules 02-subagents/claude-project/CLAUDE.md:6-10 and :20-21. Note: the package does NOT use .claude/agents files; that file format is in the day5 repo (.claude/agents/customer-reply.md, risk.md). Live: Step 2. Visual: concepts/visuals/06-subagents.png (light: visuals/light/06-subagents.png).",
+    notes: "SDK: subagents live in options.agents: 02-subagents/agents.mjs:19-30 (ticket-analyst l.20-24, email-responder l.25-29), wired in 02-subagents/options.mjs:12-14; orchestrator rules 02-subagents/claude-project/CLAUDE.md:6-10 and :20-21. The prompts live in .claude/agents/ticket-analyst.md and .claude/agents/email-responder.md (Claude Code format); lib/agents.mjs loads them into options.agents. Live: Step 2. Visual: concepts/visuals/06-subagents.png (light: visuals/light/06-subagents.png).",
   },
   {
     lessonId: "workshop-4",
@@ -291,13 +291,13 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
       {
         title: "Claude Agent SDK · Workshop 4",
         items: [
-          "Fixed code: routeDecision() (day5 src/router.ts), npm run check",
+          "Fixed code: npm run check (check.mjs)",
           "Agent chooses: which subagent, which tool",
           "Fixed = rules, money, compliance · Agent = open questions",
         ],
       },
     ],
-    notes: "n8n Switch rules (priority equals low/medium/high) from day5 n8n/support-triage.json. Deterministic in code: day5 src/router.ts routeDecision ('The n8n Switch node') and training-lab/w4-support-agent-sdk/check.mjs (hash check of labels). Dynamic: the orchestrator in 02-subagents/claude-project/CLAUDE.md picks its own Agent calls; 03-mcp/claude-project/CLAUDE.md:31-35 only sends 'Staff instruction:' to the transaction clerk. The Academy package itself has no Switch step (see PREP gap G2). Discuss: when do you choose which? Visual: concepts/visuals/08-workflows-vs-dynamisch.png (light: visuals/light/08-workflows-vs-dynamisch.png).",
+    notes: "n8n Switch rules (priority equals low/medium/high) from day5 n8n/support-triage.json. Deterministic in code: day5 src/router.ts routeDecision ('The n8n Switch node') and check.mjs (hash check of labels). Dynamic: the orchestrator in 02-subagents/claude-project/CLAUDE.md picks its own Agent calls; 03-mcp/claude-project/CLAUDE.md:31-35 only sends 'Staff instruction:' to the transaction clerk. The Academy package itself has no Switch step (see PREP gap G2). Discuss: when do you choose which? Visual: concepts/visuals/08-workflows-vs-dynamisch.png (light: visuals/light/08-workflows-vs-dynamisch.png).",
   },
   /* ===== Lessons ===== */
   {
@@ -310,19 +310,19 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     visual: { bot: "point", place: "beside" },
     cards: [
       { title: "Level", body: "SOLO 0" },
-      { title: "Workshop package", body: "https://github.com/RyanLisse/aetherlink-academy-app/tree/main/training-lab/w4-support-agent-sdk\ngit clone --depth 1 --filter=blob:none --sparse https://github.com/RyanLisse/aetherlink-academy-app.git w4-support\ncd w4-support\ngit sparse-checkout set training-lab/w4-support-agent-sdk" },
+      { title: "Workshop repo", body: "https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent\ngit clone https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent.git\ncd aetherlink-day5-n8n-to-agent\nnpm install\nnpm run verify\nnpm run lesson1 -- MSG-01 --dry-run" },
     ],
     steps: [
       "Check for Node.js 22 or newer.",
-      "Clone the repository with --depth 1 --filter=blob:none --sparse.",
-      "Select training-lab/w4-support-agent-sdk with git sparse-checkout.",
-      "Run npm install in the package (it also installs the Lesson 3 server dependencies), then run lesson1 with MSG-01 and --dry-run.",
+      "Clone the workshop repo (you start on main).",
+      "Run npm install, then npm run verify.",
+      "Run npm run lesson1 -- MSG-01 --dry-run.",
       "Keep ANTHROPIC_API_KEY in your shell only for real model runs.",
     ],
-    expected: "The package installs, and the dry run prints the prompt and options without calling a model.",
-    subtitle: "Install the sparse npm package and inspect a dry run before calling a model.",
-    keyPoints: ["Use Node.js 22 or newer.", "One npm install covers all three lessons.", "A dry run is not model evidence."],
-    notes: "Participants follow the sparse clone commands in the day pack; the package README repeats every step for self-study. Check that npm install finishes and the dry run prints the prompt, absolute cwd, project settings, and the dry-run notice. It must not import or start the SDK. Keep any API key in the shell.",
+    expected: "npm run verify shows fail 0, and the dry run prints the prompt and options and ends with dry run — no model call, not model evidence.",
+    subtitle: "Clone the workshop repo, install, and inspect a dry run before calling a model.",
+    keyPoints: ["Use Node.js 22 or newer.", "main is the starting point; step-1 … step-4 hold each finished step.", "A dry run is not model evidence."],
+    notes: "Participants clone https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent (main = Step 0); its README and SOLO.md repeat every step for self-study, and step-1 … step-4 are the catch-up branches. Check that npm install finishes and the dry run prints the prompt, absolute cwd, project settings, and the dry-run notice. It must not import or start the SDK. Keep any API key in the shell.",
   },
   {
     lessonId: "workshop-4",
@@ -365,13 +365,13 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
       "Run lesson1 for MSG-01 through MSG-06.",
       "Temporarily remove ## Priority definitions from the Lesson 1 CLAUDE.md.",
       "Rerun the loud-tone and tone-trap messages.",
-      "Restore CLAUDE.md with git restore.",
-      "Enter one label per message in the support check.",
+      "Paste the section back (lost it? git checkout step-1 -- 01-single-agent/claude-project/CLAUDE.md).",
+      "Write down one label per message (you enter them in labels.json in Step 4).",
     ],
-    expected: "All six messages run, the tone-trap comparison is recorded, CLAUDE.md is restored, and labels are submitted.",
+    expected: "All six messages run, the tone-trap comparison is recorded, CLAUDE.md is restored, and the six labels are written down. Fell behind? git checkout step-1.",
     subtitle: "Run the first six messages and test how project rules affect tone.",
     keyPoints: ["Run all six messages.", "Compare the tone-trap runs.", "Restore CLAUDE.md before continuing."],
-    notes: "Give participants 15 minutes. Ask them to remove only the Priority definitions section, rerun the loud-tone and tone-trap messages, and restore the original CLAUDE.md. Have them enter their own labels in the support autograder. Do not read out answer keys.",
+    notes: "Give participants 15 minutes. Ask them to remove only the Priority definitions section, rerun the loud-tone and tone-trap messages, and restore the original CLAUDE.md. Have them write down their own labels; they enter them in labels.json with npm run check in Step 4. Do not read out answer keys.",
   },
   {
     lessonId: "workshop-4",
@@ -448,7 +448,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
       { title: "Read tools", body: "list_transactions and get_transaction." },
       { title: "Write tools", body: "add, update, delete — a person approves." },
     ],
-    notes: "Explain Lesson 3. Show that 03-mcp/data/transactions.xlsx and transaction-mcp/server.js are outside 03-mcp/claude-project. npm install downloads dependencies only. The Agent SDK starts server.js on demand and connects over stdio. The server registers five tools, each with a zod input schema. The ticket-analyst gets only get_transaction. The transaction-clerk gets list, get, add, update and delete, and only acts on a prompt that starts with Staff instruction:. Writes go to a working copy, never to the workbook.",
+    notes: "Explain Lesson 3. Show that docs/transactions.xlsx and 03-mcp/transaction-mcp/server.js are outside 03-mcp/claude-project. npm install downloads dependencies only. The Agent SDK starts server.js on demand and connects over stdio. The server registers five tools, each with a zod input schema. The ticket-analyst gets only get_transaction. The transaction-clerk gets list, get, add, update and delete, and only acts on a prompt that starts with Staff instruction:. Writes go to a working copy, never to the workbook.",
   },
   {
     lessonId: "workshop-4",
@@ -474,7 +474,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     visual: { bot: "point", place: "beside" },
     cards: [{ title: "Level", body: "SOLO 3" }],
     steps: [
-      "Run npm run smoke:mcp; it starts server.js over stdio and calls no model.",
+      "Get the server (git checkout step-3 -- 03-mcp .mcp.json .claude lib package.json), run npm install, then npm run smoke:mcp; it starts server.js over stdio and calls no model.",
       "Run lesson3 with MSG-08, MSG-07, and MSG-09.",
       "Follow each get_transaction trace and the External data: line.",
       "Run clerk to set TX-1003 to COMPLETED; answer n, then y.",
@@ -483,7 +483,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     expected: "The three runs show the MCP trace and external-data source, and the clerk run shows a declined and an approved change.",
     subtitle: "Use the MCP tool for transaction facts and record their source.",
     keyPoints: ["Smoke-test the MCP server first.", "Follow each lookup trace.", "Keep the workbook outside the project."],
-    notes: "Give participants 20 minutes. Remind them that npm install does not start the server; the smoke test and the Agent SDK start it over stdio. They should run the three messages, inspect each External data: line, and confirm that the workbook is outside claude-project. Then they run npm run clerk -- \"Set the status of TX-1003 to COMPLETED.\" twice: answer n at Allow this change? [y/N] the first time and y the second time. The change lands in data/transactions.working.json; npm run reset:mcp removes it.",
+    notes: "Give participants 20 minutes. Remind them that npm install does not start the server; the smoke test and the Agent SDK start it over stdio. They should run the three messages, inspect each External data: line, and confirm that the workbook is outside claude-project. Then they run npm run clerk -- \"Set the status of TX-1003 to COMPLETED.\" twice: answer n at Allow this change? [y/N] the first time and y the second time. The change lands in participant-output/transactions.working.json; npm run reset:mcp removes it.",
   },
   {
     lessonId: "workshop-4",
@@ -510,15 +510,15 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     cards: [{ title: "Level", body: "SOLO 4" }],
     steps: [
       "Build a table with message, agent label, and facts from external data.",
-      "Submit your labels to the support-mcp check.",
+      "Run npm run check, fill in labels.json, and run npm run check again.",
       "Review drafts in the Lesson 2 and Lesson 3 output folders.",
       "Attach the table and a run trace to Proof.",
       "Record the human review gate; a dry run is not model evidence.",
     ],
-    expected: "The acceptance table, submitted labels, run trace, and human review gate are recorded in Proof.",
+    expected: "The acceptance table, npm run check output, run trace, and human review gate are recorded in Proof.",
     subtitle: "Record the labels, external facts, run evidence, and human review.",
     keyPoints: ["Fill the acceptance table.", "Trace external facts to MCP.", "Have a human review each draft."],
-    notes: "Give participants 15 minutes to complete the acceptance table and support-mcp check. They should attach their trace, review the drafts in both output folders, and record the human gate. Do not use dry-run output as model evidence.",
+    notes: "Give participants 15 minutes to complete the acceptance table and npm run check (git checkout step-4 if they lack check.mjs). They should attach their trace, review the drafts in both output folders, and record the human gate. Do not use dry-run output as model evidence.",
   },
   {
     lessonId: "workshop-4",
