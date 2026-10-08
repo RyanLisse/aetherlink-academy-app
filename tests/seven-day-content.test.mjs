@@ -60,7 +60,7 @@ test('the lint names a citation whose slide title drifted and a missing starter'
  drifted[2].mission.starterFiles=['missing.json'];
  assert.deepEqual(validateDayPacks(drifted,{root,decks}),[
   'day 3: starter file missing: starter/missing.json',
-  'day 4: step w4-solo2 cites workshop-4 slide 10 "Run your agent" but the deck has "Run the orchestrator and inspect the draft."'
+  'day 4: step w4-solo2 cites workshop-4 slide 22 "Run your agent" but the deck has "Run the orchestrator and inspect the draft."'
  ]);
 });
 

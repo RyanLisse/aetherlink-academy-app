@@ -1,5 +1,47 @@
-/** AET-80 Workshop 4 · Claude Agent SDK lessons · classroom deck. */
+/** AET-80 Workshop 4 · Claude Agent SDK lessons · classroom deck.
+ *  28 slides: 3 intro · 2 bridge · 9 concept-recap visuals (apps/web/public/workshop-4) · 14 lesson slides.
+ *  Intro + concept-recap text mirrors the live room deck (EN, 2026-10-08).
+ */
 export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
+  /* ===== Intro (live room deck since 2026-10-08) ===== */
+  {
+    lessonId: "workshop-4",
+    title: "Welcome to Workshop 4 · Support agents with the Claude Agent SDK",
+    kicker: "Workshop 4 · Thu 8 Oct",
+    type: "concept",
+    visual: { bot: "wave", place: "beside" },
+    subtitle: "Thu 8 Oct · 10:00–16:00 · today we rebuild yesterday’s n8n ticket flow in code.",
+    notes: "Welcome (10:00; session 10:00–16:00). Today: the same ticket flow as yesterday in n8n, now in code with the Claude Agent SDK.",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "Yesterday’s recap · Workshop 3 · Agents in n8n",
+    kicker: "Recap · one ticket, three levels",
+    type: "recap",
+    layout: "recap",
+    items: [
+      { label: "L1 · Rules", caption: "Input → Switch → Low / Med / High. No LLM." },
+      { label: "L2 · Judgment", caption: "+ one AI Agent with memory suggests the priority." },
+      { label: "L3 · Specialists", caption: "Reply and Risk as separate specialists, one human gate." },
+      { label: "Human", caption: "A human approves the reply before it is sent." },
+    ],
+    notes: "Recap W3 (source: W3 deck). L1 Switch without an LLM; L2 one AI Agent with memory suggests the priority, a human reviews; L3 Reply and Risk specialists with one human gate. Auto-send off.",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "Today · agenda",
+    kicker: "Run of show · 10:00–16:00",
+    type: "context",
+    subtitle: "I show it, you do it.",
+    keyPoints: [
+      "10:00 Welcome + recap · 10:15 Concepts n8n → Agent SDK · 10:45 Step 0 · setup · 11:00 Break · 11:15 Step 1 · one agent + CLAUDE.md · 12:00 Lunch",
+      "13:00 Step 2 · subagents · 14:00 Step 3 · MCP transaction data · 14:45 Break · 15:00 Step 4 · check + Proof · 15:30 Stretch · 15:45 Wrap-up + bridge to W5",
+      "Workshop package: https://github.com/RyanLisse/aetherlink-academy-app/tree/main/training-lab/w4-support-agent-sdk",
+      "Bonus n8n bridge: https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent",
+    ],
+    notes: "Run of show 10:00–16:00 (break 11:00, lunch 12:00–13:00, break 14:45). Format: I show it, you do it.",
+  },
+  /* ===== Bridge from Workshop 3 ===== */
   {
     lessonId: "workshop-4",
     title: "Yesterday's n8n. Today's Agent SDK.",
@@ -30,6 +72,234 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     ],
     notes: "Ask four questions throughout the day: What does the main agent know? What belongs to a subagent? When is a tool needed? What information came from external data? Map the n8n AI Agent node to query(), the system message to CLAUDE.md, Risk and Customer Reply roles to ticket-analyst and email-responder, a tool or HTTP node to MCP get_transaction, and the human gate to a draft in output/.",
   },
+  /* ===== Concept recap: n8n ↔ Agent SDK, one visual each (public/workshop-4) ===== */
+  {
+    lessonId: "workshop-4",
+    title: "n8n ↔ Agent SDK at a glance",
+    kicker: "Concept recap · overview",
+    type: "concept",
+    layout: "compare",
+    visual: { opener: "showcase", image: "workshop-4/00-overview.png", imageLink: "n8n ↔ Agent SDK at a glance: n8n left, Claude Agent SDK right" },
+    subtitle: "Same labels, same specialists, same human at the end.",
+    keyPoints: ["Same labels, same specialists, same human at the end."],
+    columns: [
+      {
+        title: "n8n · Workshop 3",
+        items: [
+          "AI Agent node",
+          "System Message",
+          "Tools on the AI Agent",
+          "HTTP Request node",
+          "IF · Wait · Error Workflow",
+          "Customer Reply + Risk Agent",
+          "Reusable sub-workflow",
+          "Fixed graph Input → Switch",
+        ],
+      },
+      {
+        title: "Claude Agent SDK · Workshop 4",
+        items: [
+          "query() + agent loop",
+          "CLAUDE.md / systemPrompt",
+          "tools · allowedTools",
+          "MCP server · get_transaction",
+          "canUseTool · permissionMode · hooks (hooks: not in the exercise)",
+          "subagents: ticket-analyst + email-responder",
+          "Skill · SKILL.md (not in the exercise)",
+          "code where it must · agent chooses where it may",
+        ],
+      },
+    ],
+    notes: "Overview before the 8 concepts (~2 min). Say: same labels LOW/MEDIUM/HIGH, same specialists, same human at the end; only the toolbox changes. The n8n side comes from the day5 repo n8n/support-triage.json (W3 flow). The SDK side comes from training-lab/w4-support-agent-sdk (aetherlink-academy-app@main ba862a8). Hooks and Skills are NOT in the exercise; we only show them as concepts. Visual: concepts/visuals/00-overview.png (light: visuals/light/00-overview.png).",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "Agent and agent loop",
+    kicker: "Concept 1 · Agent",
+    type: "concept",
+    layout: "compare",
+    visual: { opener: "showcase", image: "workshop-4/01-agent-loop.png", imageLink: "Agent and agent loop: n8n left, Claude Agent SDK right" },
+    subtitle: "The AI Agent node becomes a loop in code: think, tool, observe, repeat, answer.",
+    keyPoints: ["The AI Agent node becomes a loop in code: think, tool, observe, repeat, answer."],
+    columns: [
+      { title: "n8n · Workshop 3", items: ["AI Agent node with Chat Model, Memory and Tools", "Options → Max Iterations", "One run per click"] },
+      {
+        title: "Claude Agent SDK · Workshop 4",
+        items: [
+          "for await (… of query({ prompt, options }))",
+          "Think → tool call → observe → repeat → answer",
+          "maxTurns limits the loop",
+        ],
+      },
+    ],
+    notes: "n8n: AI Agent node (export: '@n8n/n8n-nodes-langchain.agent'). SDK: query() in training-lab/w4-support-agent-sdk/lib/run.mjs:44-46 (import + for await), trace print l.47-58, result l.61-62. maxTurns: 01-single-agent/options.mjs:12 (=2), 02-subagents/options.mjs:17 (=10), 03-mcp/options.mjs:22 (=10). day5: src/agent.ts DEFAULT_MAX_TURNS=8 ('n8n: Max Iterations'). Live: Step 1. Visual: concepts/visuals/01-agent-loop.png (light: visuals/light/01-agent-loop.png).",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "System prompt",
+    kicker: "Concept 2 · System prompt",
+    type: "concept",
+    layout: "compare",
+    visual: { opener: "showcase", image: "workshop-4/02-systeemprompt.png", imageLink: "System prompt: n8n left, Claude Agent SDK right" },
+    subtitle: "The system message now lives in a file next to the code.",
+    keyPoints: ["The system message now lives in a file next to the code."],
+    columns: [
+      {
+        title: "n8n · Workshop 3",
+        items: [
+          "AI Agent → Options → System Message",
+          "One text field in the node",
+          "W3: \"Always talk with the Customer Reply Agent and with the Risk Agent\"",
+        ],
+      },
+      {
+        title: "Claude Agent SDK · Workshop 4",
+        items: [
+          "CLAUDE.md: Purpose · Rules · Priority definitions",
+          "settingSources: ['project'] loads CLAUDE.md",
+          "systemPrompt: preset 'claude_code'",
+          "Alternative: systemPrompt as a string (day5)",
+        ],
+      },
+    ],
+    notes: "n8n text verbatim from day5 n8n/support-triage.json (AI Agent options.systemMessage). SDK: training-lab/w4-support-agent-sdk/01-single-agent/options.mjs:8-11 (cwd, settingSources, systemPrompt preset); 01-single-agent/claude-project/CLAUDE.md (Priority definitions l.13-16, Required output l.18-20). day5: src/prompts.ts COORDINATOR_SYSTEM + settingSources: [] in src/agent.ts. Live: Step 1 (tone trap). Visual: concepts/visuals/02-systeemprompt.png (light: visuals/light/02-systeemprompt.png).",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "Tools",
+    kicker: "Concept 3 · Tools",
+    type: "concept",
+    layout: "compare",
+    visual: { opener: "showcase", image: "workshop-4/03-tools.png", imageLink: "Tools: n8n left, Claude Agent SDK right" },
+    subtitle: "In code you state exactly which tools exist and which are allowed.",
+    keyPoints: ["In code you state exactly which tools exist and which are allowed."],
+    columns: [
+      { title: "n8n · Workshop 3", items: ["You attach tools to the AI Agent", "Customer Reply Agent and Risk Agent as tools", "Everything attached is allowed"] },
+      {
+        title: "Claude Agent SDK · Workshop 4",
+        items: [
+          "tools: what exists (Lesson 1: [] · Lesson 2: ['Agent','Write'])",
+          "allowedTools: what runs without asking",
+          "disallowedTools: ['WebSearch','WebFetch','Bash']",
+        ],
+      },
+    ],
+    notes: "SDK: training-lab/w4-support-agent-sdk/01-single-agent/options.mjs:12-13 (tools: [], disallowedTools); 02-subagents/options.mjs:13-15 (tools/allowedTools/disallowedTools); 03-mcp/options.mjs:17-20 (allowedTools incl. mcp__transactions__get_transaction and list_transactions). day5: src/tools.ts COORDINATOR_TOOLS = ['Agent']. Live: Steps 1–3. Visual: concepts/visuals/03-tools.png (light: visuals/light/03-tools.png).",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "MCP: external data",
+    kicker: "Concept 4 · MCP",
+    type: "concept",
+    layout: "compare",
+    visual: { opener: "showcase", image: "workshop-4/04-mcp.png", imageLink: "MCP: external data: n8n left, Claude Agent SDK right" },
+    subtitle: "The MCP server owns the data. The agent only sees what the tool returns.",
+    keyPoints: ["The MCP server owns the data. The agent only sees what the tool returns."],
+    columns: [
+      { title: "n8n · Workshop 3", items: ["HTTP Request node per API", "External service", "(Concept: the W3 export has no HTTP node)"] },
+      {
+        title: "Claude Agent SDK · Workshop 4",
+        items: [
+          "transactions.xlsx → server.js (MCP, stdio)",
+          "The SDK starts the server on demand",
+          "mcp__transactions__get_transaction",
+          "ticket-analyst → \"External data:\"",
+        ],
+      },
+    ],
+    notes: "Honest note: the W3 n8n export (day5 n8n/support-triage.json) has NO HTTP Request node; the n8n side is a concept. SDK: training-lab/w4-support-agent-sdk/03-mcp/options.mjs:23-30 (mcpServers.transactions, type stdio, command node), analyst tool 03-mcp/agents.mjs:34, server 03-mcp/transaction-mcp/server.js, data 03-mcp/data/transactions.xlsx. Tool name format mcp__<server>__<tool> confirmed in the Agent SDK hooks docs (docs.claude.com/en/docs/agent-sdk/hooks). Without a model: npm run smoke:mcp. Live: Step 3. Visual: concepts/visuals/04-mcp.png (light: visuals/light/04-mcp.png).",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "Control: hooks and approval",
+    kicker: "Concept 5 · Control",
+    type: "concept",
+    layout: "compare",
+    visual: { opener: "showcase", image: "workshop-4/05-hooks.png", imageLink: "Control: hooks and approval: n8n left, Claude Agent SDK right" },
+    subtitle: "A human or a rule decides before a tool changes anything.",
+    keyPoints: ["A human or a rule decides before a tool changes anything."],
+    columns: [
+      { title: "n8n · Workshop 3", items: ["IF node: check before the action", "Wait node: wait for approval", "Error Workflow: on failure"] },
+      {
+        title: "Claude Agent SDK · Workshop 4",
+        items: [
+          "canUseTool → \"Allow this change? [y/N]\" (in the exercise)",
+          "permissionMode: 'acceptEdits' (in the exercise)",
+          "Hooks PreToolUse / PostToolUse (not in the exercise)",
+        ],
+      },
+    ],
+    notes: "In the exercise: canUseTool = askPerson in training-lab/w4-support-agent-sdk/03-mcp/approval.mjs:23-41, wired in 03-mcp/options.mjs:19; permissionMode 'acceptEdits' in 02-subagents/options.mjs:16 and 03-mcp/options.mjs:21. NOT in the exercise: SDK hooks (options.hooks with PreToolUse/PostToolUse, matcher on tool name, permissionDecision allow/deny/ask) — concept only, source docs.claude.com/en/docs/agent-sdk/hooks. Neither repo uses hooks. n8n IF/Wait/Error Workflow are not in the W3 export; concept. Live: Step 3b (npm run clerk, y/N). Visual: concepts/visuals/05-hooks.png (light: visuals/light/05-hooks.png).",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "Subagents",
+    kicker: "Concept 6 · Subagents",
+    type: "concept",
+    layout: "compare",
+    visual: { opener: "showcase", image: "workshop-4/06-subagents.png", imageLink: "Subagents: n8n left, Claude Agent SDK right" },
+    subtitle: "The orchestrator delegates. Each specialist does one task.",
+    keyPoints: ["The orchestrator delegates. Each specialist does one task."],
+    columns: [
+      { title: "n8n · Workshop 3", items: ["AI Agent as coordinator", "Customer Reply Agent + Risk Agent (own model + memory)", "Code → Switch afterwards"] },
+      {
+        title: "Claude Agent SDK · Workshop 4",
+        items: [
+          "Orchestrator follows CLAUDE.md: delegate, don't do it yourself",
+          "Agent → ticket-analyst (priority)",
+          "Agent → email-responder (draft email)",
+          "output/MSG-05.md = draft for the human",
+        ],
+      },
+    ],
+    notes: "SDK: subagents live in options.agents: training-lab/w4-support-agent-sdk/02-subagents/agents.mjs:19-30 (ticket-analyst l.20-24, email-responder l.25-29), wired in 02-subagents/options.mjs:12-14; orchestrator rules 02-subagents/claude-project/CLAUDE.md:6-10 and :20-21. Note: the package does NOT use .claude/agents files; that file format is in the day5 repo (.claude/agents/customer-reply.md, risk.md). Live: Step 2. Visual: concepts/visuals/06-subagents.png (light: visuals/light/06-subagents.png).",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "Skills",
+    kicker: "Concept 7 · Skills",
+    type: "concept",
+    layout: "compare",
+    visual: { opener: "showcase", image: "workshop-4/07-skills.png", imageLink: "Skills: n8n left, Claude Agent SDK right" },
+    subtitle: "A skill is a recipe Claude picks up by itself when it fits.",
+    keyPoints: ["A skill is a recipe Claude picks up by itself when it fits."],
+    columns: [
+      { title: "n8n · Workshop 3", items: ["Execute Workflow node calls a sub-workflow", "Reusable sub-workflow or template", "You choose when it runs"] },
+      {
+        title: "Claude Agent SDK · Workshop 4",
+        items: [
+          ".claude/skills/<name>/SKILL.md (name + description)",
+          "At start: only the description",
+          "Claude picks the skill → full content loads",
+          "settingSources: ['project'] · option skills",
+        ],
+      },
+    ],
+    notes: "NOT in the exercise: neither repo has .claude/skills or the skills option. Concept only. Source: docs.claude.com/en/docs/agent-sdk/skills ('Extend agents with skills'): skills are SKILL.md files, loaded via settingSources, model-invoked, scoped with the skills option; no programmatic API like agents. No live step. Visual: concepts/visuals/07-skills.png (light: visuals/light/07-skills.png).",
+  },
+  {
+    lessonId: "workshop-4",
+    title: "Fixed workflow vs. dynamic agent",
+    kicker: "Concept 8 · Workflows",
+    type: "concept",
+    layout: "compare",
+    visual: { opener: "showcase", image: "workshop-4/08-workflows-vs-dynamisch.png", imageLink: "Fixed workflow vs. dynamic agent: n8n left, Claude Agent SDK right" },
+    subtitle: "Code where it must. The agent chooses where it may. Always a human at the end.",
+    keyPoints: ["Code where it must. The agent chooses where it may. Always a human at the end."],
+    columns: [
+      { title: "n8n · Workshop 3", items: ["Input → Switch → Low / Medium / High", "You draw every path up front", "Works well for fixed rules"] },
+      {
+        title: "Claude Agent SDK · Workshop 4",
+        items: [
+          "Fixed code: routeDecision() (day5 src/router.ts), npm run check",
+          "Agent chooses: which subagent, which tool",
+          "Fixed = rules, money, compliance · Agent = open questions",
+        ],
+      },
+    ],
+    notes: "n8n Switch rules (priority equals low/medium/high) from day5 n8n/support-triage.json. Deterministic in code: day5 src/router.ts routeDecision ('The n8n Switch node') and training-lab/w4-support-agent-sdk/check.mjs (hash check of labels). Dynamic: the orchestrator in 02-subagents/claude-project/CLAUDE.md picks its own Agent calls; 03-mcp/claude-project/CLAUDE.md:31-35 only sends 'Staff instruction:' to the transaction clerk. The Academy package itself has no Switch step (see PREP gap G2). Discuss: when do you choose which? Visual: concepts/visuals/08-workflows-vs-dynamisch.png (light: visuals/light/08-workflows-vs-dynamisch.png).",
+  },
+  /* ===== Lessons ===== */
   {
     lessonId: "workshop-4",
     title: "Get the workshop package.",
@@ -38,7 +308,10 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     layout: "exercise",
     timer: 10,
     visual: { bot: "point", place: "beside" },
-    cards: [{ title: "Level", body: "SOLO 0" }],
+    cards: [
+      { title: "Level", body: "SOLO 0" },
+      { title: "Workshop package", body: "https://github.com/RyanLisse/aetherlink-academy-app/tree/main/training-lab/w4-support-agent-sdk\ngit clone --depth 1 --filter=blob:none --sparse https://github.com/RyanLisse/aetherlink-academy-app.git w4-support\ncd w4-support\ngit sparse-checkout set training-lab/w4-support-agent-sdk" },
+    ],
     steps: [
       "Check for Node.js 22 or newer.",
       "Clone the repository with --depth 1 --filter=blob:none --sparse.",

@@ -1,3 +1,4 @@
+import {existsSync, readFileSync} from 'node:fs';
 import {describe, expect, it} from 'vitest';
 import {workshop4SourceSlides} from '../src/deck/workshop4-slides.ts';
 import {W4_SOLO_COMPANIONS} from '../src/deck/workshop4-companions.ts';
@@ -8,9 +9,41 @@ import {workshop3SourceSlides} from '../src/deck/workshop3-slides.ts';
 import {workshop5SourceSlides} from '../src/deck/workshop5-slides.ts';
 import {expectWorkshopClassroomContract} from './workshop-classroom-contract.ts';
 
+const introTitles = [
+  'Welcome to Workshop 4 · Support agents with the Claude Agent SDK',
+  'Yesterday’s recap · Workshop 3 · Agents in n8n',
+  'Today · agenda',
+];
+
+const conceptRecapTitles = [
+  'n8n ↔ Agent SDK at a glance',
+  'Agent and agent loop',
+  'System prompt',
+  'Tools',
+  'MCP: external data',
+  'Control: hooks and approval',
+  'Subagents',
+  'Skills',
+  'Fixed workflow vs. dynamic agent',
+];
+
+const conceptRecapImages = [
+  '00-overview.png',
+  '01-agent-loop.png',
+  '02-systeemprompt.png',
+  '03-tools.png',
+  '04-mcp.png',
+  '05-hooks.png',
+  '06-subagents.png',
+  '07-skills.png',
+  '08-workflows-vs-dynamisch.png',
+];
+
 const titles = [
+  ...introTitles,
   "Yesterday's n8n. Today's Agent SDK.",
   'Map n8n to the Agent SDK.',
+  ...conceptRecapTitles,
   'Get the workshop package.',
   'Lesson 1: one agent reads CLAUDE.md.',
   'Watch one agent classify a message.',
@@ -27,15 +60,73 @@ const titles = [
   'Close: keep a human in the loop.',
 ];
 
+const addedTitles = new Set([...introTitles, ...conceptRecapTitles]);
+const visualOf = (slide: Record<string, unknown> | undefined): Record<string, unknown> =>
+  slide?.visual && typeof slide.visual === 'object' ? slide.visual as Record<string, unknown> : {};
+
 describe('Workshop 4 Agent SDK classroom deck', () => {
   const slides = normalizeSlides(workshop4SourceSlides);
   const practice = workshop4SourceSlides.filter((slide) => slide.type === 'practice');
+  /** The 16 lesson slides; the 3 intro and 9 concept-recap slides mirror the live room deck and have their own checks. */
+  const lessonSlides = workshop4SourceSlides.filter((slide) => !addedTitles.has(String(slide.title)));
 
-  it('has the requested 16-slide sequence', () => {
-    expect(workshop4SourceSlides).toHaveLength(16);
-    expect(slides).toHaveLength(16);
+  it('has the requested 28-slide sequence', () => {
+    expect(workshop4SourceSlides).toHaveLength(28);
+    expect(slides).toHaveLength(28);
+    expect(lessonSlides).toHaveLength(16);
     expect(workshop4SourceSlides.every((slide) => slide.lessonId === 'workshop-4')).toBe(true);
     expect(workshop4SourceSlides.map((slide) => String(slide.title))).toEqual(titles);
+  });
+
+  it('opens with the three intro slides, then the bridge, then nine concept-recap visuals', () => {
+    expect(workshop4SourceSlides.slice(0, 3).map((slide) => String(slide.title))).toEqual(introTitles);
+    expect(workshop4SourceSlides.slice(3, 5).map((slide) => String(slide.title))).toEqual([
+      "Yesterday's n8n. Today's Agent SDK.",
+      'Map n8n to the Agent SDK.',
+    ]);
+    expect(workshop4SourceSlides.slice(5, 14).map((slide) => String(slide.title))).toEqual(conceptRecapTitles);
+    expect(workshop4SourceSlides[14]?.title).toBe('Get the workshop package.');
+    expect(workshop4SourceSlides[1]).toMatchObject({type: 'recap', layout: 'recap'});
+    expect(workshop4SourceSlides[2]).toMatchObject({type: 'context'});
+    for (const slide of workshop4SourceSlides.slice(0, 14)) {
+      expect(String(slide.notes ?? '').trim(), String(slide.title)).not.toBe('');
+      expect(String(slide.kicker ?? '').trim(), String(slide.title)).not.toBe('');
+    }
+  });
+
+  it('gives each concept-recap slide a committed English visual and an n8n | Agent SDK compare', () => {
+    workshop4SourceSlides.slice(5, 14).forEach((slide, index) => {
+      const title = String(slide.title);
+      const visual = visualOf(slide);
+      expect(visual.opener, title).toBe('showcase');
+      expect(visual.image, title).toBe(`workshop-4/${conceptRecapImages[index]}`);
+      expect(visual.bot, title).toBeUndefined();
+      const file = new URL(`../public/workshop-4/${conceptRecapImages[index]}`, import.meta.url);
+      expect(existsSync(file), title).toBe(true);
+      expect(readFileSync(file).subarray(1, 4).toString('latin1'), title).toBe('PNG');
+      expect(slide.layout, title).toBe('compare');
+      const columns = slide.columns as ReadonlyArray<{title: string; items: ReadonlyArray<string>}>;
+      expect(columns.map((column) => column.title), title).toEqual(['n8n · Workshop 3', 'Claude Agent SDK · Workshop 4']);
+      for (const column of columns) expect(column.items.length, title).toBeGreaterThan(0);
+      expect(String(slide.subtitle ?? ''), title).toMatch(/[.!?]$/);
+    });
+  });
+
+  it('links the workshop package on the agenda and SOLO 0 slides', () => {
+    const pkg = 'https://github.com/RyanLisse/aetherlink-academy-app/tree/main/training-lab/w4-support-agent-sdk';
+    expect(workshop4SourceSlides[0]?.subtitle).toMatch(/10:00–16:00/);
+    expect(workshop4SourceSlides[2]?.keyPoints).toContain(`Workshop package: ${pkg}`);
+    expect(workshop4SourceSlides[2]?.keyPoints).toContain('Bonus n8n bridge: https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent');
+    const cards = workshop4SourceSlides[14]?.cards as ReadonlyArray<{title: string; body: string}>;
+    const packageCard = cards.find((card) => card.title === 'Workshop package');
+    expect(packageCard?.body).toContain(pkg);
+    expect(packageCard?.body).toContain('git clone --depth 1 --filter=blob:none --sparse https://github.com/RyanLisse/aetherlink-academy-app.git w4-support');
+    expect(packageCard?.body).toContain('git sparse-checkout set training-lab/w4-support-agent-sdk');
+  });
+
+  it('keeps the intro and concept-recap slides in English', () => {
+    const blob = JSON.stringify(workshop4SourceSlides.slice(0, 14));
+    expect(blob).not.toMatch(/\b(?:Welkom|Vandaag|gisteren|Werkvorm|één|beeld|Vaste|dynamische|Systeemprompt|externe|goedkeuring|oefening|niet)\b/);
   });
 
   it('teaches the Agent SDK package, mapping, and four questions', () => {
@@ -80,7 +171,7 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
   });
 
   it('gives each concept and context slide notes, cards, and key points', () => {
-    const concepts = workshop4SourceSlides.filter((slide) => slide.type === 'concept' || slide.type === 'context');
+    const concepts = lessonSlides.filter((slide) => slide.type === 'concept' || slide.type === 'context');
     expect(concepts.length).toBeGreaterThan(0);
 
     for (const slide of concepts) {
@@ -104,7 +195,7 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
   });
 
   it('uses the classroom contract and keeps the bridge and companion routes', () => {
-    expectWorkshopClassroomContract(workshop4SourceSlides);
+    expectWorkshopClassroomContract(lessonSlides);
     expect(workshop4SourceSlides.at(-1)?.kicker).toMatch(/Workshop 5/);
     expect(isWorkshop4Path('/workshop/4')).toBe(true);
     expect(isWorkshop4Path('/lesson/workshop-4')).toBe(true);
