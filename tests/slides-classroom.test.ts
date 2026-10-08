@@ -59,3 +59,19 @@ test('patching classroom fields regenerates HTML, keeps key points, and an HTML 
   assert.equal(edited.slide.classroom,undefined);
  }finally{await svc.close();}
 });
+
+test('classroom showcase images accept same-origin paths only and reach participants',async()=>{
+ const svc=createSlidesService();
+ try{
+  const visual={opener:'showcase',image:'workshop-4/00-overview.png',imageLink:'n8n ↔ Agent SDK at a glance'} as const;
+  const deck=await svc.run('createDeck',facilitator,{title:'W4',slides:[{classroom:{title:'n8n ↔ Agent SDK at a glance',type:'concept',layout:'compare',columns:[{title:'n8n',items:['AI Agent node']},{title:'SDK',items:['query()']}],visual}}]}) as any;
+  const theirs=await svc.run('getDeck',participant,{deckId:deck.id}) as any;
+  assert.deepEqual(theirs.slides[0].classroom.visual,visual);
+  for(const image of ['/game/files/abc-123','/workshop-3/01-n8n.jpeg','assets/stekkie.webp']){
+   assert.equal(await status(svc.run('addSlide',facilitator,{deckId:deck.id,classroom:{title:'ok',visual:{opener:'showcase',image}}})),200,image);
+  }
+  for(const image of ['https://evil.example/x.png','//evil.example/x.png','javascript:alert(1)','/workshop-4/../../etc/passwd','data:image/png;base64,AAAA','/api/secret.png']){
+   assert.equal(await status(svc.run('addSlide',facilitator,{deckId:deck.id,classroom:{title:'bad',visual:{opener:'showcase',image}}})),400,image);
+  }
+ }finally{await svc.close();}
+});

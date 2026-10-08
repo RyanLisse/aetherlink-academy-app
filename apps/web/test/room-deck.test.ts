@@ -28,6 +28,14 @@ describe('room decks in the classroom renderer', () => {
     expect(slides[2]).toMatchObject({visual: {bot: 'think', place: 'beside'}});
   });
 
+  it('keeps a showcase image on a room deck slide without adding a bot', () => {
+    const visual = {opener: 'showcase', image: 'workshop-4/00-overview.png', imageLink: 'n8n ↔ Agent SDK at a glance'};
+    const [slide] = roomDeckSlides({id, title: 'W4', revision: 1, slides: [
+      {id: 's1', kind: 'classroom', textPreview: 'x', classroom: {title: 'n8n ↔ Agent SDK at a glance', type: 'concept', layout: 'compare', visual}},
+    ]});
+    expect(slide?.visual).toEqual(visual);
+  });
+
   it('uses the bot pose for eligible classroom slides and preserves explicit/specialized styling', () => {
     const guarded = {title: 'Guardrails', visual: {bot: 'head'}};
     const exercise = {title: 'Exercise', layout: 'exercise'};
