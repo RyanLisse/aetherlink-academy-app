@@ -124,7 +124,7 @@ describe('AET-81 workshop 6 eigen-opdracht thin-slice deck', () => {
     expect(classroom.filter((s) => s.lessonId === 'workshop-6')).toHaveLength(0);
     expect(workshop3SourceSlides.length).toBe(18);
     expect(workshop3SourceSlides.every((s) => s.lessonId === 'workshop-3')).toBe(true);
-    expect(workshop4SourceSlides.length).toBe(16);
+    expect(workshop4SourceSlides.length).toBe(28);
     expect(workshop4SourceSlides.every((s) => s.lessonId === 'workshop-4')).toBe(true);
     expect(workshop5SourceSlides.length).toBe(49);
     expect(workshop5SourceSlides.every((s) => s.lessonId === 'workshop-5')).toBe(true);

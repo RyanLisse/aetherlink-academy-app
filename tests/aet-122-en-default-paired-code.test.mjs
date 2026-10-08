@@ -42,7 +42,7 @@ test('122-2 workshop day 4 ships one paired TS/Python identity', () => {
   assert.match(ex.python, /query\(prompt=prompt,\s*options=options\)/);
   assert.match(ex.typescript, /mcpServers[\s\S]*mcp__transactions__get_transaction/);
   assert.match(ex.python, /mcp_servers[\s\S]*mcp__transactions__get_transaction/);
-  assert.equal(ex.slide?.slide, 11);
+  assert.equal(ex.slide?.slide, 23);
   assert.equal(ex.slide?.title, 'Lesson 3: look up transaction data through MCP.');
   assert.doesNotMatch(`${ex.typescript}\n${ex.python}`, /\b(?:LOW|MEDIUM|HIGH)\b/);
 });

@@ -259,7 +259,7 @@ test('SOLO 1 checks the six new support messages without exposing their answer k
  const pack=await call(bo.token,'day-pack');
  const solo1=pack.body.steps.find(step=>step.id==='w4-solo1');
  assert.equal(solo1.autograde,'support');
- assert.equal(solo1.slide.slide,6);
+ assert.equal(solo1.slide.slide,18);
  assert.match(solo1.title,/Lesson 1/i);
  assert.match(solo1.goal,/first six messages/i);
  assert.match(solo1.instructions.join('\n'),/MSG-01[\s\S]*MSG-06/);
