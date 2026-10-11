@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#06111e"><title>Presenter view · Workshop 5</title>
+<link rel="stylesheet" href="styles.css?v=92">
+<style>
+  body{padding:1.4rem clamp(1rem,3vw,2.2rem);gap:1.2rem;min-height:100vh}
+  .p-top{display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;border-bottom:1px solid var(--border);padding-bottom:1rem}
+  .p-brand{font-weight:750;letter-spacing:.1em;font-size:.95rem}
+  .p-brand span{color:var(--cyan)}
+  .p-clock{display:flex;gap:1.4rem;align-items:center;font-variant-numeric:tabular-nums}
+  .p-clock .label{display:block;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .p-elapsed{font-size:1.6rem;font-weight:700;color:var(--text)}
+  .p-status{font-size:.8rem;color:var(--muted);display:flex;align-items:center;gap:.4rem}
+  .p-status .dot{width:8px;height:8px;border-radius:50%;background:var(--border)}
+  .p-status.live .dot{background:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 30%,transparent)}
+  .p-grid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(280px,1fr);gap:1.4rem;margin-top:1.2rem;flex:1}
+  .p-shot{position:relative;width:100%;aspect-ratio:16/9;border:1px solid var(--border);border-radius:12px;overflow:hidden;background:var(--bg);margin-bottom:1rem}
+  .p-shot iframe{position:absolute;left:0;top:0;width:1600px;height:900px;border:0;transform-origin:0 0;pointer-events:none}
+  .p-shot.small{margin:.5rem 0 0}
+  #p-shot{max-width:min(100%,560px)}
+  .p-block.keys{border-left:4px solid var(--aether-orange)}
+  .p-keys{margin:0;padding-left:1.2rem;display:grid;gap:.35rem;font-size:1.15rem;line-height:1.4;font-weight:700}
+  .p-hidden[hidden]{display:none}
+  .p-hidden{display:inline-flex;padding:.2rem .55rem;border-radius:999px;border:1px dashed #ff9f5a;color:#ff9f5a;font-size:.7rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+  .p-side .timer{grid-template-columns:1fr;justify-items:center;text-align:center;margin:0}
+  .p-side .pause-box{border-radius:14px;padding:1rem}
+  .p-side .pause-clock{font-size:3.4rem}
+  .p-timer-label{font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 .4rem}
+  .p-main{min-width:0}
+  .p-kicker{font-size:.75rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0 0 .4rem;display:flex;gap:.6rem;align-items:center}
+  .p-type{padding:.25rem .6rem;border-radius:999px;font-weight:750;color:var(--ink);background:var(--context)}
+  [data-ptype=concept] .p-type{background:var(--concept)}
+  [data-ptype=practice] .p-type{background:var(--practice)}
+  [data-ptype=review] .p-type{background:var(--review)}
+  [data-ptype=recap] .p-type{background:var(--recap)}
+  [data-ptype=pause] .p-type{background:var(--pause);color:#fff}
+  [data-ptype=context] .p-type{background:var(--context);color:#fff}
+  [data-ptype=quiz] .p-type{background:var(--quiz,#ff4fa3);color:#fff}
+  .p-title{font-size:clamp(1.5rem,3vw,2.3rem);margin:0 0 1rem;line-height:1.1}
+  .p-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1rem}
+  .p-block h2{margin:0 0 .6rem;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .p-block.notes{border-left:4px solid var(--cyan)}
+  .p-block.prompt{border-left:4px solid var(--violet)}
+  .p-block p{margin:0;white-space:pre-wrap;line-height:1.6;font-size:1.05rem}
+  .p-side{display:flex;flex-direction:column;gap:1rem}
+  .p-next{background:var(--surface2);border:1px dashed var(--border);border-radius:12px;padding:1rem 1.2rem}
+  .p-next h2{margin:0 0 .3rem;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+  .p-next strong{font-size:1.05rem;display:block}
+  .p-timer{background:var(--surface);border:3px solid var(--amber);border-radius:14px;padding:1rem;text-align:center}
+  .p-timer .face{font-size:2.6rem;font-weight:800;color:var(--amber);font-variant-numeric:tabular-nums}
+  .p-timer.late .face{color:#ff5a5a}
+  .p-timer .ctrl{display:flex;gap:.5rem;justify-content:center;margin-top:.6rem}
+  .p-timer button{min-height:36px;padding:.4rem .8rem;font-size:.8rem}
+  .p-empty{color:var(--muted);font-style:italic}
+  .p-nav{display:flex;gap:.5rem;margin-top:.8rem}
+  .p-progress{font-size:.85rem;color:var(--muted)}
+</style>
+</head>
+<body>
+  <div class="p-top">
+    <div class="p-brand">AETHER<span>LINK</span> · Presenter view</div>
+    <div class="p-clock">
+      <div><span class="label">Elapsed</span><span id="elapsed" class="p-elapsed">00:00</span></div>
+      <div class="p-status" id="sync-status"><span class="dot"></span><span id="sync-label">Waiting for the main window…</span></div>
+    </div>
+  </div>
+  <div class="p-grid">
+    <div class="p-main" id="ptype-wrap">
+      <p class="p-kicker"><span class="p-type" id="p-type-label">Context</span><span id="p-kicker-text"></span><span class="p-progress" id="p-progress"></span><span class="p-hidden" id="p-hidden" hidden>Hidden</span></p>
+      <h1 class="p-title" id="p-title">Waiting for the presentation…</h1>
+      <div class="p-shot" id="p-shot"><iframe id="p-frame" title="Current slide" tabindex="-1" scrolling="no"></iframe></div>
+      <div class="p-block keys" id="p-keys-block" hidden>
+        <h2>Key points</h2>
+        <ul class="p-keys" id="p-keys"></ul>
+      </div>
+      <div class="p-block notes">
+        <h2>Full text</h2>
+        <p id="p-notes" class="p-empty">Open the main deck and navigate a slide to see its notes here.</p>
+      </div>
+      <div class="p-block prompt" id="p-prompt-block" hidden>
+        <h2>Say / paste this</h2>
+        <p id="p-prompt"></p>
+      </div>
+    </div>
+    <div class="p-side">
+      <div class="p-next">
+        <h2>Next slide</h2>
+        <strong id="p-next-title">—</strong>
+        <div class="p-shot small" id="p-next-shot"><iframe id="p-next-frame" title="Next slide" tabindex="-1" scrolling="no"></iframe></div>
+      </div>
+      <div id="p-timer" hidden>
+        <p class="p-timer-label" id="p-timer-label">Timer</p>
+        <div id="p-timer-slot"></div>
+      </div>
+    </div>
+  </div>
+  <script>window.DECK_PAGE = "workshop5.html";</script><script src="workshop5-slides.js?v=1" defer></script>
+  <script src="timers.js?v=92" defer></script>
+  <script src="presenter.js?v=92" defer></script>
+</body></html>
