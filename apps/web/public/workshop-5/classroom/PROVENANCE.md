@@ -1,8 +1,8 @@
 # Workshop 5 classroom deck provenance
 
 - Source repository: `https://github.com/jyse/aetherlink-classroom-slides.git`
-- Source commit: `c9111c354cb94975bb904e194529688d274a3ff0`
-- Copied payload SHA-256: `a27a97536a020493db2cfca86263171688199e06bdd7c4b2f11469789e9f9125`
+- Source commit: `26822d7e44d215a2427ed26585857daf745c7485`
+- Copied payload SHA-256: `aa126af7d78d7400fd0e413614b712c9b20f03ceccb45de302c0d1a4122c81ab`
 - Published entry point: `/workshop-5/classroom/workshop5.html`
 
 Reproduce the static artifact from a checkout at the source commit:

@@ -102,7 +102,7 @@ window.SLIDES = [
       "Five skill showcases.",
       "15:40: your hackathon intent.md."
     ],
-    "notes": "Time: 10:05 · 5 min.\n1. Say: “Each block has three parts. I explain one concept. I show it in my IDE. You do it with a timer.”\n2. Show: the breaks at 11:00, 12:00, and 14:40.\n3. Show: the end point at 15:40. Each team writes the intent.md for its hackathon idea.\n4. Say the five showcases: /design-control-loop (11:25), /show-me (13:52), /verify-this (15:00), /review-and-ship + /visual-pr (15:18), /handoff (15:45).\n5. Say: “At the start of each block, open progress.md. Show the current checks and your latest dated evidence. This takes 30 seconds.”"
+    "notes": "Time: 10:05 · 5 min.\n1. Say: “Each block has three parts. I explain one concept. I show it in my IDE. You do it with a timer.”\n2. Show: the breaks at 11:00, 12:00, and 14:40.\n3. Show: the end point at 15:40. Each team writes the intent.md for its hackathon idea.\n4. Say the five showcases: /design-control-loop (11:25), /show-me (13:52), /verify-this (15:00), /review-and-ship + /visual-pr (15:18), /handoff (15:45).\n5. Say: “At the start of each block, run npm run progress -- --status. Show the current checks. Open PROGRESS.md for your latest dated evidence. This takes 30 seconds.”"
   },
   {
     "title": "What was most useful in the last session?",
@@ -515,7 +515,7 @@ window.SLIDES = [
       "Run /status. Check your account.",
       "Type /. Find the 8 lab skills."
     ],
-    "expected": "Tests green. progress.md: 0 · Setup [x].",
+    "expected": "Tests green. Status: [x] STEP-0 Setup.",
     "stepsHeading": "Do this now:",
     "cards": [
       {
@@ -532,9 +532,9 @@ window.SLIDES = [
     "keyPoints": [
       "This is a check, not an install.",
       "Red? We help in the break.",
-      "progress.md counts."
+      "npm run progress -- --status shows current evidence."
     ],
-    "notes": "Time: 10:50 · 10 min. This block continues into the break.\n1. Show: in the lab folder, run npm ci and npm test (pass 13).\n2. Show: run claude. Select “Yes” at the trust question. Approve the MCP server sre.\n3. Show: run /status. Show your account.\n4. Show: type /. Show the 8 skills: design-control-loop, grilling, show-me, verify-this, review-and-ship, visual-pr, handoff, incident-triage.\n5. Show: open progress.md. The AUTO block shows “0 · Setup [x]”.\n6. Let them do: the same steps. Check one green tick per table.\n7. If “npm: command not found”: install Node LTS (INSTALL.md step 3).\n8. If /status shows no account: run /login. Use Vertex only if the company requires it (CLAUDE_CODE_USE_VERTEX=1, ANTHROPIC_VERTEX_PROJECT_ID, CLOUD_ML_REGION, gcloud auth application-default login).\n9. If MCP shows “Pending approval”: start claude in the repo folder. Approve the server.\n10. If the hook does not run: restart claude. Trust the project.\n11. If Windows shows CRLF errors: clone again. .gitattributes sets LF.\n12. If a skill behaves differently: an old copy in ~/.claude/skills wins. Rename it.\n13. If native fails: use INSTALL-DOCKER.md."
+    "notes": "Time: 10:50 · 10 min. This block continues into the break.\n1. Show: in the lab folder, run npm ci and npm test (pass 13).\n2. Show: run claude. Select “Yes” at the trust question. Approve the MCP server sre.\n3. Show: run /status. Show your account.\n4. Show: type /. Show the 8 skills: design-control-loop, grilling, show-me, verify-this, review-and-ship, visual-pr, handoff, incident-triage.\n5. Show: run npm run progress -- --status. It shows “[x] STEP-0 Setup”. Open PROGRESS.md to show the dated STEP-0 history entry.\n6. Let them do: the same steps. Check one green tick per table.\n7. If “npm: command not found”: install Node LTS (INSTALL.md step 3).\n8. If /status shows no account: run /login. Use Vertex only if the company requires it (CLAUDE_CODE_USE_VERTEX=1, ANTHROPIC_VERTEX_PROJECT_ID, CLOUD_ML_REGION, gcloud auth application-default login).\n9. If MCP shows “Pending approval”: start claude in the repo folder. Approve the server.\n10. If the hook does not run: restart claude. Trust the project.\n11. If Windows shows CRLF errors: clone again. .gitattributes sets LF.\n12. If a skill behaves differently: an old copy in ~/.claude/skills wins. Rename it.\n13. If native fails: use INSTALL-DOCKER.md."
   },
   {
     "title": "Break",
@@ -576,7 +576,7 @@ window.SLIDES = [
       "Progress check: show your counter.",
       "A wish is not a rule."
     ],
-    "notes": "Time: 11:15 · 2 min.\n1. Progress check (30 s): “Open progress.md. Show your AUTO counter.”\n2. If a person is at 0: a neighbor helps. You visit them at lunch.\n3. Show: intent.md in the repo. Read one outcome and one boundary aloud.\n4. Say the term “intent.md” only after that."
+    "notes": "Time: 11:15 · 2 min.\n1. Progress check (30 s): “Run npm run progress -- --status. Show your current counter.”\n2. If a person is at 0: a neighbor helps. You visit them at lunch.\n3. Show: intent.md in the repo. Read one outcome and one boundary aloud.\n4. Say the term “intent.md” only after that."
   },
   {
     "title": "intent.md",
@@ -879,16 +879,16 @@ window.SLIDES = [
       "Keep it short.",
       "People maintain it."
     ],
-    "notes": "Time: 13:00 · 3 min.\n1. Progress check (30 s): show the current AUTO checks and the latest dated evidence. Ask which current check supports it. Do not call it verified from an agent claim.\n2. Show: the lab CLAUDE.md. Show the commands, the rules (“propose, never execute”), and how to verify.\n3. Say: “If the agent makes the same mistake two times, add the rule here.”\n4. Say: “AGENTS.md, progress.md, and SOLO.md are next to CLAUDE.md.”"
+    "notes": "Time: 13:00 · 3 min.\n1. Progress check (30 s): run npm run progress -- --status for the current checks. Open PROGRESS.md for the latest dated evidence. Ask which current check supports it. Do not call it verified from an agent claim.\n2. Show: the lab CLAUDE.md. Show the commands, the rules (“propose, never execute”), and how to verify.\n3. Say: “If the agent makes the same mistake two times, add the rule here.”\n4. Say: “AGENTS.md, PROGRESS.md, and SOLO.md are next to CLAUDE.md.”"
   },
   {
-    "title": "progress.md",
+    "title": "PROGRESS.md",
     "kicker": "W5 · DEFINITION · BUILD 1",
-    "subtitle": "Current checks above. Append-only build log below.",
+    "subtitle": "Append-only history. Current evidence lives in --status.",
     "type": "concept",
     "source": {
       "url": "https://github.com/RyanLisse/claude-code-skills-pack/blob/main/PROGRESS.md",
-      "label": "Open the progress.md template"
+      "label": "Open the PROGRESS.md template"
     },
     "cards": [
       {
@@ -908,17 +908,17 @@ window.SLIDES = [
         "body": "Deliberately not done · Known limits"
       }
     ],
-    "tagline": "AUTO = current overview. Dated entries = append-only history.",
+    "tagline": "--status = current evidence. PROGRESS.md = append-only history.",
     "visual": {
       "compact": true,
       "stagger": "pop"
     },
     "keyPoints": [
-      "AUTO keeps the current overview and checklist.",
+      "npm run progress -- --status shows the current checklist.",
       "Dated log entries preserve history. Never rewrite them.",
       "A correction gets its own timestamp and evidence."
     ],
-    "notes": "Time: 13:03 · 3 min.\n1. Show: progress.md. The AUTO block is the current overview and checklist. The hook updates it from files and checks.\n2. Show: below AUTO, each build-log entry starts with an ISO 8601 timestamp and timezone offset. The timestamp records when the validation and log entry were made.\n3. Read the four fields: What shipped, Why, Validation, and Deliberately not done. Under Why, include how it works and which options you rejected.\n4. Say: “Dated entries are append-only. Never rewrite history.”\n5. Say: “A correction gets a new timestamp. Explain what changed and add the new evidence.”\n6. Say: “A claim is not verified until a current check supports it.”"
+    "notes": "Time: 13:03 · 3 min.\n1. Show: run npm run progress -- --status. It reads current evidence and writes nothing.\n2. Open PROGRESS.md. The hook appends one dated STEP entry when evidence first exists. Each entry starts with an ISO 8601 timestamp and timezone offset. The timestamp records when the validation and log entry were made.\n3. Read the four fields: What shipped, Why, Validation, and Deliberately not done. Under Why, include how it works and which options you rejected.\n4. Say: “Dated entries are append-only. Never rewrite history.”\n5. Say: “A correction gets a new timestamp. Explain what changed and add the new evidence.”\n6. Say: “A historical entry is not current status. Run the status command for current evidence.”"
   },
   {
     "title": "MCP",
@@ -1181,7 +1181,7 @@ window.SLIDES = [
       "Edit guard.mjs until green.",
       "Open a PR/MR."
     ],
-    "expected": "test:hooks green with your rule. Build 1 [x].",
+    "expected": "test:hooks green. Status: [x] STEP-4 Build.",
     "stepsHeading": "Do this now:",
     "cards": [
       {
@@ -1213,9 +1213,9 @@ window.SLIDES = [
     "keyPoints": [
       "Test first.",
       "The agent cannot edit .claude/.",
-      "Build 1 [x] after your first deny."
+      "STEP-4 is [x] after your first deny."
     ],
-    "notes": "Time: 13:30 · 20 min.\n1. Let them do: the five steps on the slide.\n2. Say: “The agent cannot edit .claude/ (deny). You edit guard.mjs yourself. The human owns the boundary.”\n3. Check: npm run test:hooks is green (39 guard + 23 progress) plus the new test.\n4. Check: progress.md shows Build 1 [x] after one deny in audit.jsonl.\n5. At 13:50, go to the next block."
+    "notes": "Time: 13:30 · 20 min.\n1. Let them do: the five steps on the slide.\n2. Say: “The agent cannot edit .claude/ (deny). You edit guard.mjs yourself. The human owns the boundary.”\n3. Check: npm run test:hooks is green, including the new test.\n4. Check: npm run progress -- --status shows “[x] STEP-4 Build” after one deny in audit.jsonl.\n5. At 13:50, go to the next block."
   },
   {
     "title": "plan.md",
@@ -1335,7 +1335,7 @@ window.SLIDES = [
       "Cite log ids.",
       "Find the distractor."
     ],
-    "notes": "Time: 14:05 · 35 min.\n1. Let them do: the five steps on the slide.\n2. Check each team: plan.md exists and a human accepted it before the diagnosis.\n3. Hint for inc-002: compare EUR with USD and GBP (http_5xx_rate_eur ≈ 98 %). The report-cron message is a distractor.\n4. Hint for inc-004: deploy d-0160 (docs only, 7 minutes earlier) is not the cause. Read psp_latency_p95_ms and the retries.\n5. Stretch: inc-003 (memory leak) and inc-005 (certificate) on paper. See docs/stretch-incidents.md.\n6. Check: progress.md shows Build 2 [x] after plan.md and one diagnosis JSON."
+    "notes": "Time: 14:05 · 35 min.\n1. Let them do: the five steps on the slide.\n2. Check each team: plan.md exists and a human accepted it before the diagnosis.\n3. Hint for inc-002: compare EUR with USD and GBP (http_5xx_rate_eur ≈ 98 %). The report-cron message is a distractor.\n4. Hint for inc-004: deploy d-0160 (docs only, 7 minutes earlier) is not the cause. Read psp_latency_p95_ms and the retries.\n5. Stretch: inc-003 (memory leak) and inc-005 (certificate) on paper. See docs/stretch-incidents.md.\n6. Check: npm run progress -- --status shows “[x] STEP-5 Diagnose” after plan.md and one diagnosis JSON."
   },
   {
     "title": "Break",
@@ -1492,9 +1492,9 @@ window.SLIDES = [
     "keyPoints": [
       "Fix the diagnosis.",
       "Another team runs it again.",
-      "Test [x] in progress.md."
+      "STEP-6 Test is [x] in --status."
     ],
-    "notes": "Time: 15:04 · 11 min. Test is 20 min in v5.\n1. Let them do: the four steps on the slide.\n2. Gate: a reviewer from another team runs npm run eval again on your branch.\n3. Check: progress.md shows Test [x] after a current PASS in .lab/eval-results.json and a verdict in docs/verify/."
+    "notes": "Time: 15:04 · 11 min. Test is 20 min in v5.\n1. Let them do: the four steps on the slide.\n2. Gate: a reviewer from another team runs npm run eval again on your branch.\n3. Check: npm run progress -- --status shows “[x] STEP-6 Test” after a current PASS in .lab/eval-results.json and a verdict in docs/verify/."
   },
   {
     "title": "workflows",
@@ -1639,7 +1639,7 @@ window.SLIDES = [
     "keyPoints": [
       "A neighbor approves, not you.",
       "git add -f approvals/approvals.jsonl.",
-      "Deploy [x] in progress.md."
+      "STEP-7 Gate is [x] in --status."
     ],
     "notes": "Time: 15:23 · 7–8 min.\n1. Let them do: the four steps on the slide.\n2. If npm run approve says “Refused”: it runs inside Claude Code. Use your own terminal. Do not use the ! prefix.\n3. If CI fails on check:approval: a human runs npm run approve, then git add -f approvals/approvals.jsonl, commit, and push."
   },
@@ -1681,7 +1681,7 @@ window.SLIDES = [
       "A human triages.",
       "Only mention /improve-claude-md."
     ],
-    "notes": "Time: 15:30 · 10 min.\n1. Progress check (30 s).\n2. Show: write a new (fictional) incident as an eval case. Run npm run eval.\n3. Say: control bands 1σ, 2σ, 3σ (p.49–51).\n4. Say: “Claude Tag exists. Slack connections are probably not allowed at Worldline.”\n5. Say (20 s): “/improve-claude-md rewrites a long CLAUDE.md. Review the result as a PR/MR.”\n6. Check: progress.md shows Maintain [x] after one eval case more than the 3 included cases."
+    "notes": "Time: 15:30 · 10 min.\n1. Progress check (30 s): run npm run progress -- --status.\n2. Show: write a new (fictional) incident as an eval case. Run npm run eval.\n3. Say: control bands 1σ, 2σ, 3σ (p.49–51).\n4. Say: “Claude Tag exists. Slack connections are probably not allowed at Worldline.”\n5. Say (20 s): “/improve-claude-md rewrites a long CLAUDE.md. Review the result as a PR/MR.”\n6. Check: the status command shows “[x] STEP-8 Maintain” after one eval case more than the 3 included cases."
   },
   {
     "title": "From lab to hackathon",
@@ -1689,7 +1689,7 @@ window.SLIDES = [
     "cards": [
       {
         "title": "Repo template",
-        "body": "CLAUDE.md, intent/spec/plan templates, progress.md."
+        "body": "CLAUDE.md, intent/spec/plan templates, PROGRESS.md."
       },
       {
         "title": "Controls",
@@ -1746,7 +1746,7 @@ window.SLIDES = [
       "Day 2 starts with full context.",
       "The facilitator reviews in W6."
     ],
-    "notes": "Time: 15:42 · 8 min. Showcase 5 at 15:45 (1–2 min).\n1. Show: run /handoff. HANDOFF.md lists what is done, what is open, and the next step.\n2. Say: “Day 2 of the hackathon, or a teammate, starts with full context.”\n3. Let them do: each team writes intent.md for its own idea.\n4. Say: “I review your intent.md in W6.”\n5. Check: progress.md shows Hackathon [x] after a complete HANDOFF.md."
+    "notes": "Time: 15:42 · 8 min. Showcase 5 at 15:45 (1–2 min).\n1. Show: run /handoff. HANDOFF.md lists what is done, what is open, and the next step.\n2. Say: “Day 2 of the hackathon, or a teammate, starts with full context.”\n3. Let them do: each team writes intent.md for its own idea.\n4. Say: “I review your intent.md in W6.”\n5. Check: npm run progress -- --status shows “[x] STEP-9 Hackathon” after a complete HANDOFF.md."
   },
   {
     "title": "External skills: read first",
