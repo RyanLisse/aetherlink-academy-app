@@ -9,9 +9,11 @@
    same timer as the deck (timers.js, shared through localStorage).
    ========================================================================== */
 const slides = window.SLIDES || [];
-const PRESENTER_CHANNEL = 'aetherlink-classroom-slides';
-const PRESENTER_KEY = 'als:presenter:index';
-const HIDDEN_KEY = 'als:hidden';
+const DECK_ID = window.DECK_PAGE || 'index.html';
+const PRESENTER_CHANNEL = 'aetherlink-classroom-slides:' + DECK_ID;
+const PRESENTER_KEY = 'als:presenter:index:' + DECK_ID;
+const HIDDEN_KEY = 'als:hidden:' + DECK_ID;
+const SHOWN_KEY = 'als:shown:' + DECK_ID;
 const $ = id => document.getElementById(id);
 
 let current = 0;
@@ -43,7 +45,7 @@ const ro = new ResizeObserver(entries => entries.forEach(e => fitShot(e.target))
 
 function isHidden(i) {
   const id = i + ':' + slides[i].title; const list = k => { try { return JSON.parse(localStorage.getItem(k) || '[]'); } catch { return []; } };
-  return slides[i].hidden ? !list('als:shown').includes(id) : list(HIDDEN_KEY).includes(id);
+  return slides[i].hidden ? !list(SHOWN_KEY).includes(id) : list(HIDDEN_KEY).includes(id);
 }
 
 /* ---- the timer for this slide, if it has one (assignment, break or quiet timer) ---- */
@@ -90,7 +92,7 @@ if (channel) {
   channel.addEventListener('message', e => { if (e.data && e.data.type === 'slide') { setSyncStatus(true); renderSlide(e.data.index); } });
 }
 window.addEventListener('storage', e => {
-  if (e.key === HIDDEN_KEY || e.key === 'als:shown') { $('p-hidden').hidden = !isHidden(current); return; }
+  if (e.key === HIDDEN_KEY || e.key === SHOWN_KEY) { $('p-hidden').hidden = !isHidden(current); return; }
   if (e.key !== PRESENTER_KEY || !e.newValue) return;
   try { const data = JSON.parse(e.newValue); setSyncStatus(true); renderSlide(data.index); } catch {}
 });

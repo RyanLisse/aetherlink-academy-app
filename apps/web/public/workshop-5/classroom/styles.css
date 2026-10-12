@@ -1191,3 +1191,31 @@ html.embed body{min-height:100vh}
 .asg-steps.many .asg-step{padding:clamp(.5rem,1.1vh,.75rem) 1.1rem;font-size:clamp(1.02rem,1.65vw,1.3rem)}
 
 .code-card .code-block{margin:.5rem 0 0;background:#0b0f19;border:1px solid #2a3350;border-radius:10px;padding:.7rem .9rem;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:clamp(.66rem,.82vw,.8rem);line-height:1.4;white-space:pre;overflow-x:auto;color:#dbe4ff}
+
+/* Standalone Anatomy figures share one frame; presenter previews use SVG posters. */
+body[data-opener="anatomy"] .slide-body{justify-content:flex-start}
+body[data-opener="anatomy"] .slide-main{display:grid;place-items:center}
+.anatomy-figure{width:min(100%,1100px);margin:0;display:grid;gap:.6rem}
+.anatomy-figure iframe,.anatomy-figure>img{display:block;width:100%;aspect-ratio:16/9;height:auto;max-height:58vh;border:0;border-radius:16px;background:var(--bg);object-fit:contain}
+.anatomy-figure iframe{height:min(58vh,619px)}
+.anatomy-figure figcaption{color:var(--muted);font-size:clamp(.9rem,1.4vw,1.2rem);text-align:center}
+@media(max-width:600px){.anatomy-figure iframe{height:62vh;max-height:62vh}.anatomy-figure>img{max-height:62vh}.anatomy-figure figcaption{text-align:left}}
+
+.session-picker select{max-width:260px;min-height:42px;padding:.65rem .75rem;border:1px solid var(--border);border-radius:10px;background:var(--card,#102238);color:var(--text);font:inherit;cursor:pointer}
+@media(max-width:800px){
+  .toolbar{flex-direction:column;align-items:stretch}
+  .brand{align-self:flex-start}
+  .tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%;overflow:visible}
+  .tools button{white-space:normal;min-width:0}
+  .session-picker{grid-column:1/-1;min-width:0}
+  .session-picker select{max-width:100%;min-width:0;width:100%}
+  .progress{width:100%;gap:1px}
+  .progress .seg{min-width:0}
+}
+
+@media(max-width:760px){
+  .day-route{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;padding:0}
+  .day-route::before{display:none}
+  .dr-stop{min-width:0}
+  .dr-label{max-width:100%;white-space:normal;overflow-wrap:anywhere;text-align:center}
+}

@@ -51,7 +51,7 @@ function renderCard(c, i) { const card = node('article', 'card'); card.style.set
 
 /* ---- slide layouts ---- */
 let slideController = null;
-function renderTagline(stage, s) { if (s.tagline) stage.append(node('p', 'tagline', s.tagline)); }
+function renderTagline(stage, s) { if (!s.visual?.anatomy && s.tagline) stage.append(node('p', 'tagline', s.tagline)); }
 function renderPillars(stage, s) { const row = node('div', 'pillars'); (s.items || []).forEach((it, i) => { const p = node('div', 'pillar'); p.style.setProperty('--i', i); p.append(node('span', 'pillar-label', it.label)); if (it.caption) p.append(node('span', 'pillar-caption', it.caption)); row.append(p); }); stage.append(row); }
 function renderSteps(stage, s) {
   const wrap = node('div', 'steps-wrap'); const row = node('ol', 'steps-chain'); let active = -1; const els = []; const co = s.callout;
@@ -86,6 +86,7 @@ function renderTimer(stage, s) {
     onDone: () => notify('Time is up — this assignment ends now'), onEmpty: () => notify('Set the minutes first, then press Start.'), signal: slideController.signal }));
 }
 function renderLayout(stage, s) {
+  if (s.visual?.anatomy) return;
   const L = s.layout;
   if (L === 'pillars') renderPillars(stage, s);
   else if (L === 'steps') renderSteps(stage, s);
@@ -566,6 +567,15 @@ function buildOpener(stage, main, s, v) {
 function rel(el, stage) { const a = el.getBoundingClientRect(), b = stage.getBoundingClientRect(); return { x: a.left - b.left + stage.scrollLeft, y: a.top - b.top, w: a.width, h: a.height }; }
 function renderVisual(stage, body, main, s) {
   const v = s.visual; if (!v) return;
+  if (v.anatomy) {
+    const a = v.anatomy; const figure = node('figure', 'anatomy-figure');
+    if (EMBED) {
+      const img = document.createElement('img'); img.src = a.poster; img.alt = a.title + '. ' + a.caption; figure.append(img);
+    } else {
+      const frame = document.createElement('iframe'); frame.src = a.src; frame.title = a.title; figure.append(frame);
+    }
+    figure.append(node('figcaption', null, a.caption)); main.append(figure); return;
+  }
   if (v.art === 'timeline') main.prepend(ART.timeline());
   if (v.cardArt) { const cards = main.querySelectorAll('.card'); Object.entries(v.cardArt).forEach(([i, kind]) => { if (cards[i] && ART[kind]) cards[i].append(ART[kind]()); }); }
   if (v.pillarIcons) main.querySelectorAll('.pillar').forEach((p, i) => p.prepend(svg('0 0 24 24', PILLAR_ICONS[i % PILLAR_ICONS.length], 'pillar-icon')));
@@ -726,8 +736,9 @@ function renderProgress() {
 }
 
 /* ---- presenter-view sync: BroadcastChannel, localStorage fallback ---- */
-const PRESENTER_CHANNEL = 'aetherlink-classroom-slides';
-const PRESENTER_KEY = 'als:presenter:index';
+const DECK_ID = location.pathname.split('/').pop() || 'index.html';
+const PRESENTER_CHANNEL = 'aetherlink-classroom-slides:' + DECK_ID;
+const PRESENTER_KEY = 'als:presenter:index:' + DECK_ID;
 let presenterChannel = null;
 try { if ('BroadcastChannel' in window) presenterChannel = new BroadcastChannel(PRESENTER_CHANNEL); } catch {}
 function broadcastSlide(index) {
@@ -735,7 +746,7 @@ function broadcastSlide(index) {
   try { localStorage.setItem(PRESENTER_KEY, JSON.stringify({ index, at: Date.now() })); } catch {}
 }
 function openPresenterView() {
-  const w = window.open((window.PRESENTER_PAGE || 'presenter.html') + '?i=' + current, 'aetherlink-presenter', 'width=1000,height,680,noopener');
+  const w = window.open((window.PRESENTER_PAGE || 'presenter.html') + '?i=' + current, 'aetherlink-presenter:' + DECK_ID, 'width=1000,height,680,noopener');
   if (!w) notify('Allow pop-ups to open the presenter view.');
 }
 
@@ -744,10 +755,10 @@ const EMBED = new URLSearchParams(location.search).has('embed');
 if (EMBED) document.documentElement.classList.add('embed');
 
 /* ---- hide a slide for now: H toggles; arrows, Home and End skip hidden slides ---- */
-const HIDDEN_KEY = 'als:hidden';
+const HIDDEN_KEY = 'als:hidden:' + DECK_ID;
 const hideId = i => i + ':' + slides[i].title;
 // A slide with `hidden: true` in slides.js starts hidden on every laptop; H (or Chapters) can still show it.
-const SHOWN_KEY = 'als:shown';
+const SHOWN_KEY = 'als:shown:' + DECK_ID;
 const readSet = k => { try { return new Set(JSON.parse(localStorage.getItem(k) || '[]')); } catch { return new Set(); } };
 const writeSet = (k, set) => { try { localStorage.setItem(k, JSON.stringify([...set])); } catch {} };
 function isHidden(i) { const id = hideId(i); return slides[i].hidden ? !readSet(SHOWN_KEY).has(id) : readSet(HIDDEN_KEY).has(id); }
@@ -840,7 +851,7 @@ function render() {
   document.body.classList.toggle('dark', !!s.dark);
   document.body.classList.toggle('is-assignment', type === 'practice');
   document.body.dataset.type = type;
-  document.body.dataset.opener = s.visual?.opener || '';
+  document.body.dataset.opener = s.visual?.anatomy ? 'anatomy' : s.visual?.opener || '';
   document.title = s.title + ' · Aetherlink classroom';
   const stage = $('stage'); stage.replaceChildren();
   if (type === 'practice' && s.layout === 'exercise') { renderAssignment(stage, s); finishRender(s); return; }
@@ -864,8 +875,8 @@ function render() {
   renderLayout(main, s);
   renderTagline(main, s);
   renderVisual(stage, body, main, s);
-  applyStepThrough(main, s);
-  const instructions = (s.visual?.quiz || s.visual?.stamps || s.visual?.perCard || s.visual?.runner) ? null : renderInstructions(s);
+  if (!s.visual?.anatomy) applyStepThrough(main, s);
+  const instructions = (s.visual?.anatomy || s.visual?.quiz || s.visual?.stamps || s.visual?.perCard || s.visual?.runner) ? null : renderInstructions(s);
   if (instructions) {
     const side = sideBySide(s, instructions);
     body.classList.toggle('with-side', side);
