@@ -1424,7 +1424,7 @@ window.SLIDES = [
       "The diagnosis cites refs.",
       "Challenge it in chat."
     ],
-    "notes": "Time: 13:52 · 2 min showcase + 8 min demo. Showcase 2.\n1. Show: run /show-me on fixtures/incidents/bad-deploy.json. It draws deploy d-4821 → checkout → error_rate.\n2. Say: “To understand is not to diagnose. The diagnosis cites refs.”\n3. Show: press Shift+Tab (plan mode). Claude proposes docs/plan.md. Correct one step. Accept it.\n4. Show: in a second terminal, run npm run shop, npm run traffic, then npm run chaos -- deploy v2.15.0 --mode bad-deploy.\n5. Show: the console opens an incident. Read the trace and the evidence refs.\n6. Show: ask in chat “Could this be something other than the deployment?” The agent tests the hypothesis. It does not just agree."
+    "notes": "Time: 13:52 · 2 min showcase + 8 min demo. Showcase 2.\n1. Show: run /show-me on fixtures/incidents/bad-deploy.json. It draws deploy d-4821 → checkout → error_rate.\n2. Say: “To understand is not to diagnose. The diagnosis cites refs.”\n3. Show: press Shift+Tab (plan mode). Claude proposes docs/plan.md. Correct one step. Accept it.\n4. Show: in a second terminal, run npm run shop, npm run traffic, then npm run chaos -- deploy v2.15.0 --mode bad-deploy.\n5. Show: the console opens an incident. Read the trace and the evidence refs.\n6. Show: ask in chat “Could this be something other than the deployment?” With a model key, the agent tests the hypothesis and does not just agree. Offline, point at ruled_out and would_change_my_mind instead."
   },
   {
     "title": "Assignment 6: Diagnose a live incident",
@@ -1435,8 +1435,8 @@ window.SLIDES = [
     "steps": [
       "Terminal 1: npm run shop. Terminal 2: npm run traffic.",
       "npm run chaos -- deploy v2.15.0 --mode bad-deploy.",
-      "Open the incident at :4320. Click every evidence ref.",
-      "Chat: “Could this be something other than the deployment?”",
+      "Open the incident at :4320. Match every evidence ref to a line in the trace.",
+      "Chat: “Could this be something other than the deployment?” Offline you get the scripted summary: compare it with ruled_out.",
       "Save it to docs/diagnosis-live.md. Open a PR/MR."
     ],
     "expected": "An incident with a diagnosis. Refs on every claim. docs/diagnosis-live.md.",
@@ -1509,7 +1509,7 @@ window.SLIDES = [
   {
     "title": "Watch: the bench and the ratchet",
     "kicker": "W5 · TEST · DEMO",
-    "subtitle": "5 cases. All pass. Harmful 0.",
+    "subtitle": "Every case passes. Harmful 0.",
     "type": "concept",
     "cards": [
       {
