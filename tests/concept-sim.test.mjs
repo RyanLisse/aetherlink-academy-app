@@ -226,7 +226,7 @@ test('AET-118 P0 W5 retrofit: diagram + ConceptSim + locale-complete; Apple bar 
   assert.equal(getSim('w5-sdlc-loop', 'nl')?.title, simNl.title);
 });
 
-test('AET-118 P1 W4 retrofit: diagram + ConceptSim + locale-complete; SOLO 0–4 kept', async () => {
+test('AET-118 P1 W4 retrofit: diagram + ConceptSim + locale-complete; SOLO 0–5 kept', async () => {
   const {DAY_PACKS} = await import('../content/days/index.mjs');
   const {projectPackLocale} = await import('../content/days/locale.mjs');
   const {parseLocalizedScenario, projectScenario, assertScenarioLocaleComplete} = await import('../packages/concept-sim/src/index.ts');
@@ -239,21 +239,21 @@ test('AET-118 P1 W4 retrofit: diagram + ConceptSim + locale-complete; SOLO 0–4
   const en = projectPackLocale(pack, 'en');
   const nl = projectPackLocale(pack, 'nl');
   assert.notEqual(en.lesson.narrative[0], nl.lesson.narrative[0]);
-  assert.match(en.lesson.motto || '', /CLAUDE\.md → subagents → MCP/i);
-  assert.match(nl.lesson.motto || '', /CLAUDE\.md → subagents → MCP/i);
+  assert.equal(en.lesson.motto, 'prompt → tools → result · chat in → chat out');
+  assert.equal(nl.lesson.motto, 'prompt → tools → resultaat · chat in → chat uit');
   assert.ok(en.diagrams?.some((d) => d.src === '/diagrams/workshop/w4-ticket-tool-priority.svg'));
   assert.ok(existsSync(join(root, 'public/diagrams/workshop/w4-ticket-tool-priority.svg')));
   assert.ok(en.sims?.some((s) => s.id === 'w4-ticket-priority'));
   assert.ok(nl.sims?.some((s) => s.id === 'w4-ticket-priority'));
 
-  // Required SOLO 0–4 pedagogy kept
-  assert.equal(en.demo?.slides?.length, 4);
-  assert.equal(en.steps?.length, 5);
-  assert.deepEqual(en.steps.map((s) => `${s.badge}:${s.level}`), ['S0:required','S1:required','S2:required','S3:required','S4:required']);
+  // Required SOLO 0–5 pedagogy kept
+  assert.equal(en.demo?.slides?.length, 6);
+  assert.equal(en.steps?.length, 6);
+  assert.deepEqual(en.steps.map((s) => `${s.badge}:${s.level}`), ['S0:required','S1:required','S2:required','S3:required','S4:required','S5:required']);
   assert.ok(en.materials?.some((m) => /aetherlink-day5-n8n-to-agent/.test(m.href || '')));
   assert.ok(nl.materials?.some((m) => /aetherlink-day5-n8n-to-agent/.test(m.href || '')));
   assert.equal(en.mission?.id, 'TRIAGE-CLAUDE-04');
-  assert.deepEqual(en.steps.filter((step) => step.autograde).map((step) => step.autograde), ['support','support-mcp']);
+  assert.deepEqual(en.steps.filter((step) => step.autograde).map((step) => step.autograde), []);
 
   const raw = JSON.parse(readFileSync(join(root, 'content/sims/w4-ticket-priority.json'), 'utf8'));
   const localized = parseLocalizedScenario(raw, 'w4-ticket-priority');

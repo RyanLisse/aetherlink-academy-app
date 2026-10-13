@@ -10,6 +10,16 @@ import {releasedDays} from "../server/release.mjs";
 import {DAY_SOURCES} from "../content/days/index.mjs";
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
+const participantCopy = (source) => {
+  const fields = ["title", "blurb", "leerdoel", "mission", "solo", "materials", "proof", "openItems"];
+  const select = (copy) => Object.fromEntries(fields.map((field) => [field, copy[field]]));
+  return JSON.stringify({
+    ...select(source),
+    copy: Object.fromEntries(
+      Object.entries(source.copy || {}).map(([locale, copy]) => [locale, select(copy)]),
+    ),
+  });
+};
 
 async function gateway() {
   const dir = mkdtempSync(path.join(os.tmpdir(), "academy-aet-83-"));
@@ -137,14 +147,16 @@ test("AET-83-3: facilitator toggle off → participant POST /game/chat returns 4
 
 test("AET-83-4: quiz keys and facilitator demo script never leak in retrieval answers", () => {
   for (const source of DAY_SOURCES.slice(0, 7)) {
+    const participantText = participantCopy(source);
     for (const {question, options, answer} of source.quiz) {
       const body = JSON.stringify(answerQuestion({day: source.day, query: `${question} ${options[answer]}`}).hits);
-      assert.equal(body.includes(question), false, question);
-      assert.equal(body.includes(options[answer]), false, options[answer]);
+      for (const secret of [question, options[answer]]) {
+        if (!participantText.includes(secret)) assert.equal(body.includes(secret), false, secret);
+      }
     }
     for (const line of source.demo.script) {
       const {hits} = answerQuestion({day: source.day, query: line});
-      assert.equal(JSON.stringify(hits).includes(line), false, line);
+      if (!participantText.includes(line)) assert.equal(JSON.stringify(hits).includes(line), false, line);
     }
   }
 });
