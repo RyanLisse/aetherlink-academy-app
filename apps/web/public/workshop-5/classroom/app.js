@@ -187,7 +187,7 @@ function renderExtras(stage, main, s, v) {
     win.append(box, meter); grid.after(win);
   }
   if (v.reveal === 'click') {                                  // 12: cards open one by one, so the room answers first
-    grid.classList.add('reveal-grid'); let reacted = null;
+    grid.classList.add('reveal-grid');
     const open = i => { const c = cards[i]; if (!c || !c.classList.contains('closed')) return false; c.classList.remove('closed'); c.setAttribute('aria-hidden', 'false'); x.react?.(i); return true; };
     cards.forEach((c, i) => { c.classList.add('closed'); c.setAttribute('aria-hidden', 'true'); const cover = node('span', 'card-cover', String(i + 1)); c.append(cover); c.addEventListener('click', () => open(i)); });
     const next = () => open(cards.findIndex(c => c.classList.contains('closed')));
