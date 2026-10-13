@@ -253,7 +253,7 @@ test('AET-118 P1 W4 retrofit: diagram + ConceptSim + locale-complete; SOLO 0–5
   assert.ok(en.materials?.some((m) => /aetherlink-day5-n8n-to-agent/.test(m.href || '')));
   assert.ok(nl.materials?.some((m) => /aetherlink-day5-n8n-to-agent/.test(m.href || '')));
   assert.equal(en.mission?.id, 'TRIAGE-CLAUDE-04');
-  assert.deepEqual(en.steps.filter((step) => step.autograde).map((step) => step.autograde), []);
+  assert.deepEqual(en.steps.filter((step) => step.autograde).map((step) => step.autograde), ['support','support-mcp']);
 
   const raw = JSON.parse(readFileSync(join(root, 'content/sims/w4-ticket-priority.json'), 'utf8'));
   const localized = parseLocalizedScenario(raw, 'w4-ticket-priority');

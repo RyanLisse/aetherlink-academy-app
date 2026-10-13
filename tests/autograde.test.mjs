@@ -7,7 +7,7 @@ import {createApp} from '../server/app.mjs';
 import {dayChecks} from '../server/progress.mjs';
 import {dayPackIssues} from '../server/day-pack-lint.mjs';
 import {TRIAGE_FIXTURES} from '../content/triage/grade.mjs';
-import {gradeSupport,SUPPORT_FIXTURES} from '../content/support/grade.mjs';
+import {SUPPORT_FIXTURES} from '../content/support/grade.mjs';
 
 const ALL_CORRECT={'WL-1026':'high','WL-1027':'low','WL-9001':'medium','WL-9002':'medium'};
 const ONE_WRONG={...ALL_CORRECT,'WL-9002':'low'};
@@ -125,39 +125,37 @@ test('tasks without an autograder keep peer or facilitator review',async t=>{
  assert.equal((await task(bo.token,'w3-proof')).status,'approved');
 });
 
-test('day 4 SOLO assignments use human review, not support autograding',async t=>{
+test('day 4 autogrades only SOLO 1 and SOLO 4 with separate support ticket sets',async t=>{
  const {bo,call,task}=await room(t,4);
  const day4=(await call(bo.token,'tasks')).body.tasks;
- assert.deepEqual(day4.filter(task=>task.autograde).map(task=>task.id),[]);
- for(const taskId of ['w4-solo1','w4-solo4']){
-  const card=await task(bo.token,taskId);
-  assert.equal(card.status,'open');
-  assert.equal(card.autograde,undefined);
-  const refused=await call(bo.token,`tasks/${taskId}/autograde`,{labels:SUPPORT_L1});
-  assert.deepEqual([refused.status,refused.body.error],[409,'This assignment is reviewed by a person, not automatically.']);
- }
+ assert.deepEqual(day4.filter(task=>task.autograde).map(task=>task.id),['w4-solo1','w4-solo4']);
+ assert.deepEqual((await task(bo.token,'w4-solo1')).autograde.tickets.map(ticket=>ticket.ticketId),['MSG-01','MSG-02','MSG-03','MSG-04','MSG-05','MSG-06']);
+ assert.deepEqual((await task(bo.token,'w4-solo4')).autograde.tickets.map(ticket=>ticket.ticketId),['MSG-01','MSG-02','MSG-03','MSG-04','MSG-05','MSG-06','MSG-07','MSG-08','MSG-09']);
+ assert.match((await task(bo.token,'w4-solo1')).autograde.tickets[0].message,/^Subject: THIS IS RIDICULOUS!!!\n\n/);
  const wrongDay=await call(bo.token,'tasks/w3-l1/autograde',{labels:ALL_CORRECT});
  assert.deepEqual([wrongDay.status,wrongDay.body.error],[400,'Unknown assignment for support day 4.']);
 });
 
-test('support grading checks MSG-01 through MSG-06 and reports pass, fail, and score',()=>{
- const ids=Object.keys(SUPPORT_L1);
+test('support autograder checks MSG-01 through MSG-06 and reports pass, fail, and score',async t=>{
+ const {bo,grade,task}=await room(t,4);
  const wrong={...SUPPORT_L1,'MSG-06':'high'};
- const failed=gradeSupport(wrong,ids);
- assert.deepEqual([failed.pass,failed.matched,failed.total],[false,5,6]);
- assert.deepEqual([failed.rows.at(-1).ticketId,failed.rows.at(-1).match],['MSG-06',false]);
- const passed=gradeSupport(SUPPORT_L1,ids);
- assert.deepEqual([passed.pass,passed.matched,passed.total],[true,6,6]);
+ const failed=await grade(bo.token,'w4-solo1',wrong);
+ assert.deepEqual([failed.status,failed.body.status,failed.body.autograde.passed,failed.body.autograde.score,failed.body.autograde.total],[200,'open',false,5,6]);
+ assert.deepEqual(failed.body.autograde.results.at(-1),{ticketId:'MSG-06',correct:false});
+ assert.equal((await task(bo.token,'w4-solo1')).autograde.tickets.length,6);
+ const passed=await grade(bo.token,'w4-solo1',SUPPORT_L1);
+ assert.deepEqual([passed.body.status,passed.body.autograde.passed,passed.body.autograde.score,passed.body.autograde.total],['approved',true,6,6]);
 });
 
-test('support-mcp grading checks MSG-01 through MSG-09 and reports pass, fail, and score',()=>{
- const ids=Object.keys(SUPPORT_MCP);
+test('support-mcp autograder checks MSG-01 through MSG-09 and reports pass, fail, and score',async t=>{
+ const {bo,grade,task}=await room(t,4);
  const wrong={...SUPPORT_MCP,'MSG-09':'high'};
- const failed=gradeSupport(wrong,ids);
- assert.deepEqual([failed.pass,failed.matched,failed.total],[false,8,9]);
- assert.deepEqual([failed.rows.at(-1).ticketId,failed.rows.at(-1).match],['MSG-09',false]);
- const passed=gradeSupport(SUPPORT_MCP,ids);
- assert.deepEqual([passed.pass,passed.matched,passed.total],[true,9,9]);
+ const failed=await grade(bo.token,'w4-solo4',wrong);
+ assert.deepEqual([failed.status,failed.body.status,failed.body.autograde.passed,failed.body.autograde.score,failed.body.autograde.total],[200,'open',false,8,9]);
+ assert.deepEqual(failed.body.autograde.results.at(-1),{ticketId:'MSG-09',correct:false});
+ assert.equal((await task(bo.token,'w4-solo4')).autograde.tickets.length,9);
+ const passed=await grade(bo.token,'w4-solo4',SUPPORT_MCP);
+ assert.deepEqual([passed.body.status,passed.body.autograde.passed,passed.body.autograde.score,passed.body.autograde.total],['approved',true,9,9]);
 });
 
 test('participant isolation: a pass is personal and the facilitator cannot submit labels',async t=>{
@@ -256,23 +254,33 @@ test('AET-103 decision: correct labels auto-approve every triage level L1 to L3 
 // Mentions like "MSG-02 high" in prose leak as surely as an expected_priority key.
 const proseLeaks=raw=>[...expectedByTicketId].filter(([id,label])=>new RegExp(`${id}\\W{1,3}${label}\\b`,'i').test(raw)).map(([id,label])=>`${id}=${label}`);
 
-test('SOLO 1 follows the Step 1 lesson without exposing support answer keys',async t=>{
- const {bo,call,task}=await room(t,4);
+test('SOLO 1 follows the Step 1 lesson and keeps support answer keys server-side',async t=>{
+ const {bo,call,grade,task}=await room(t,4);
  const pack=await call(bo.token,'day-pack');
  const solo1=pack.body.steps.find(step=>step.id==='w4-solo1');
- assert.equal(solo1.autograde,undefined);
+ assert.equal(solo1.autograde,'support');
  assert.equal(solo1.slide.slide,22);
  assert.match(solo1.title,/SOLO 1.*Structured output.*memory/i);
  assert.match(solo1.goal,/configured priority schema.*deterministic route/i);
  assert.match(solo1.instructions.join('\n'),/MSG-01 --dry-run[\s\S]*priority-schema\.mjs[\s\S]*lib\/switch\.mjs[\s\S]*--no-memory/);
+ assert.match(solo1.instructions.join('\n'),/MSG-01–MSG-06 in the `support` check/);
  assert.deepEqual(leaks(pack.body),[]);
  assert.deepEqual(proseLeaks(pack.raw),[]);
  assert.doesNotMatch(pack.raw,/expected_priority|"expected"/);
  const card=await task(bo.token,'w4-solo1');
- assert.deepEqual([card.status,card.autograde],['open',undefined]);
+ assert.deepEqual([card.status,card.autograde.tickets.map(ticket=>ticket.ticketId)],['open',['MSG-01','MSG-02','MSG-03','MSG-04','MSG-05','MSG-06']]);
  const solo4=pack.body.steps.find(step=>step.id==='w4-solo4');
+ assert.equal(solo4.autograde,'support-mcp');
+ assert.equal(solo4.slide.slide,32);
  assert.match(solo4.instructions.join('\n'),/MSG-01, MSG-05, MSG-07, MSG-08, and MSG-09/);
- assert.equal((await task(bo.token,'w4-solo4')).autograde,undefined);
+ assert.match(solo4.instructions.join('\n'),/MSG-01 through MSG-09.*support-mcp/);
+ assert.equal((await task(bo.token,'w4-solo4')).autograde.tickets.length,9);
+ const miss=await grade(bo.token,'w4-solo1',{...SUPPORT_L1,'MSG-06':'high'});
+ assert.deepEqual([miss.status,miss.body.status,miss.body.autograde.score],[200,'open',5]);
+ assert.deepEqual(proseLeaks(miss.raw),[]);
+ const hit=await grade(bo.token,'w4-solo1',SUPPORT_L1);
+ assert.deepEqual([hit.body.status,hit.body.autograde.reviewer],['approved',{role:'auto-graded'}]);
+ assert.deepEqual((await grade(bo.token,'w4-solo4',SUPPORT_MCP)).body.status,'approved','SOLO 4 keeps its own support-mcp autograde');
 });
 
 test('the prose leak detector finds an expected label written next to its ticket',()=>{
@@ -298,9 +306,9 @@ test('Workshop 4 day pack, deck, starter, and package docs keep support answer k
  assert.doesNotMatch(pack.raw,/expected_priority|"expected"/);
  assert.doesNotMatch(tasks.raw,/expected_priority|"expected"/);
  assert.doesNotMatch(starter.raw,/\b(?:low|medium|high)\b/i);
- const refused=await call(bo.token,'tasks/w4-solo1/autograde',{labels:SUPPORT_L1});
- assert.deepEqual([refused.status,refused.body.error],[409,'This assignment is reviewed by a person, not automatically.']);
- assert.deepEqual(leaks(refused.body),[]);
+ const failed=await call(bo.token,'tasks/w4-solo1/autograde',{labels:{...SUPPORT_L1,'MSG-06':'high'}});
+ assert.equal(failed.status,200);
+ assert.deepEqual(leaks(failed.body),[]);
 
  const packageRoot=path.join(process.cwd(),'training-lab','w4-support-agent-sdk');
  const packageFiles=filesBelow(packageRoot).filter(file=>

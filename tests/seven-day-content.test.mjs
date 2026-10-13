@@ -67,7 +67,7 @@ test('the lint names a citation whose slide title drifted and a missing starter'
 test('Workshop 3 keeps triage fixtures; Workshop 4 uses its acceptance table and check',()=>{
  const day3=getDayPack(3),day4=getDayPack(4);
  assert.deepEqual(day3.steps.filter(s=>s.autograde).map(s=>s.autograde),['triage','triage','triage']);
- assert.deepEqual(day4.steps.filter(s=>s.autograde),[]);
+ assert.deepEqual(day4.steps.filter(s=>s.autograde).map(s=>[s.id,s.autograde]),[['w4-solo1','support'],['w4-solo4','support-mcp']]);
  assert.deepEqual(day4.mission.starterFiles,['customer-messages.md']);
  assert.equal(SUPPORT_FIXTURES.id,'support-messages-v1');
  assert.deepEqual(SUPPORT_FIXTURES.tickets.map(({ticket})=>ticket.ticket_id),Array.from({length:10},(_,i)=>`MSG-${String(i+1).padStart(2,'0')}`));
