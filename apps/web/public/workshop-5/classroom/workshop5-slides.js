@@ -20,7 +20,7 @@ window.SLIDES = [
       "Welcome the room.",
       "Check the setup."
     ],
-    "notes": "Time: 10:00 · 1 min. Show this slide while people arrive.\n1. Say: “Welcome. Today we build an SRE agent.”\n2. Check: ask for hands. Who installed Node 20 and Claude Code before today?\n3. If a person has no setup: do not fix it now. Help them at slide 17 and in the 11:00 break."
+    "notes": "Time: 10:00 · 1 min. Show this slide while people arrive.\n1. Say: “Welcome. Today we build an SRE agent.”\n2. Check: ask for hands. Who installed Node 22+ and Claude Code before today?\n3. If a person has no setup: do not fix it now. Help them at slide 17 and in the 11:00 break."
   },
   {
     "title": "Goal of the day",
@@ -521,7 +521,7 @@ window.SLIDES = [
       },
       {
         "label": "Local MCP only",
-        "caption": "Server sre. Read-only. In the repo."
+        "caption": "Server telemetry. Read-only. In the repo."
       },
       {
         "label": "Sample data",
@@ -616,7 +616,7 @@ window.SLIDES = [
       "The 12 red tests are today's exercises.",
       "npm run progress shows A-1 … A-9."
     ],
-    "notes": "Time: 10:50 · 10 min. This block continues into the break.\n1. Show: on workshop/start, run npm ci, npm run fixtures and npm test (fail 0).\n2. Show: npm run test:workshop. Say: “12 red tests. They are your exercises for today. They go green one assignment at a time.”\n3. Show: npm run console. Open http://localhost:4320. In a second terminal: curl localhost:4320/api/health.\n4. Show: run claude in the repo folder. Select “Yes” at the trust question. Run /status: your account and the guard + progress hooks.\n5. Show: type /. The 8 lab skills: design-control-loop, grilling, show-me, verify-this, review-and-ship, visual-pr, handoff, incident-triage. More skills = your own ~/.claude/skills or the skills pack.\n6. Show: npm run progress. It lists A-1 … A-9 with evidence.\n7. Let them do: the same steps. Check one green tick per table.\n8. If npm test is red: wrong branch. git checkout workshop/start, npm ci.\n9. If “npm: command not found”: install Node 20 LTS.\n10. If port 4320 is busy: stop the old console (pkill -f console/server.ts).\n11. If /status shows no account: /login. Vertex only if the company requires it.\n12. If a skill behaves differently: an old copy in ~/.claude/skills wins. Rename it.\n13. No Claude Code at all? The day still works: every exercise is TypeScript + node:test. See FACILITATOR.md “No-Claude dry run”."
+    "notes": "Time: 10:50 · 10 min. This block continues into the break.\n1. Show: on workshop/start, run npm ci, npm run fixtures and npm test (fail 0).\n2. Show: npm run test:workshop. Say: “12 red tests. They are your exercises for today. They go green one assignment at a time.”\n3. Show: npm run console. Open http://localhost:4320. In a second terminal: curl localhost:4320/api/health.\n4. Show: run claude in the repo folder. Select “Yes” at the trust question. Run /status: your account and the guard + progress hooks.\n5. Show: type /. The 8 lab skills: design-control-loop, grilling, show-me, verify-this, review-and-ship, visual-pr, handoff, incident-triage. More skills = your own ~/.claude/skills or the skills pack.\n6. Show: npm run progress. It lists A-1 … A-9 with evidence.\n7. Let them do: the same steps. Check one green tick per table.\n8. If npm test is red: wrong branch. git checkout workshop/start, npm ci.\n9. If “npm: command not found”: install Node 22 LTS or newer.\n10. If port 4320 is busy: stop the old console (pkill -f console/server.ts).\n11. If /status shows no account: /login. Vertex only if the company requires it.\n12. If a skill behaves differently: an old copy in ~/.claude/skills wins. Rename it.\n13. No Claude Code at all? The day still works: every exercise is TypeScript + node:test. See FACILITATOR.md “No-Claude dry run”."
   },
   {
     "title": "Break",
@@ -1059,13 +1059,13 @@ window.SLIDES = [
         2
       ]
     },
-    "prompt": "List the alerts and tell me which incident to look at first. Use only the sre MCP tools.",
+    "prompt": "List the alerts and tell me which incident to look at first. Use only the telemetry MCP tools.",
     "keyPoints": [
       "The agent calls 4 read-only tools.",
       "Data before theory: deploys and metrics first.",
       "No tool can write."
     ],
-    "notes": "Time: 13:09 · 3 min.\n1. Show: run npm run console. Open http://localhost:4320.\n2. Show: New investigation. Type “Investigate checkout errors”.\n3. Show: the trace. list_deploys and summarize_metrics come before search_logs.\n4. Show: src/tools.ts. Count the tools. None writes.\n5. If port 4320 is busy: stop the old console (Ctrl-C) or set PORT."
+    "notes": "Time: 13:09 · 3 min.\n1. Show: run npm run console. Open http://localhost:4320.\n2. Show: New investigation. Type “Investigate checkout errors”.\n3. Show: the trace. list_deploys and summarize_metrics come before search_logs.\n4. Show: src/tools.ts. Count the tools. None writes.\n5. If port 4320 is busy: stop the old console (Ctrl-C) or start it with AGENT_CONSOLE_PORT=4321."
   },
   {
     "title": "skills",
@@ -1252,7 +1252,7 @@ window.SLIDES = [
       "Open audit.jsonl.",
       "No hook? Check trust or Node."
     ],
-    "notes": "Time: 13:25 · 5 min.\n1. Show: paste the prompt.\n2. Show: three denies. Read each reason aloud.\n3. Show: approvals/audit.jsonl has three new lines.\n4. If the hook does not run: the project is not trusted. Start claude in the repo and accept trust.\n5. If Node is missing on the laptop: install Node 20 LTS."
+    "notes": "Time: 13:25 · 5 min.\n1. Show: paste the prompt.\n2. Show: three denies. Read each reason aloud.\n3. Show: approvals/audit.jsonl has three new lines.\n4. If the hook does not run: the project is not trusted. Start claude in the repo and accept trust.\n5. If Node is missing on the laptop: install Node 22 LTS or newer."
   },
   {
     "title": "Assignment 4: Wire and prove the controls",
