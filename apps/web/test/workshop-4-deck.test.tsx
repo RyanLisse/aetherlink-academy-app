@@ -137,6 +137,24 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
     expect(JSON.stringify(workshop4SourceSlides[18])).not.toMatch(/sparse/);
   });
 
+  it('separates offline inspection from live or labelled sample results', () => {
+    const step1Demo = workshop4SourceSlides.find((slide) => slide.title === 'Demo · Step 1: schema, route, and memory');
+    const step1Practice = workshop4SourceSlides.find((slide) => slide.title === 'Run Step 1 and test chat memory');
+    const step2Demo = workshop4SourceSlides.find((slide) => slide.title === 'Demo · Step 2: trace the two agents');
+    const step2Practice = workshop4SourceSlides.find((slide) => slide.title === 'Run the orchestrator and inspect the draft.');
+    const step1Text = JSON.stringify([step1Demo, step1Practice]);
+    const step2Text = JSON.stringify([step2Demo, step2Practice]);
+
+    expect(step1Text).toContain('01-single-agent/priority-schema.mjs');
+    expect(step1Text).toContain('outputFormat');
+    expect(step1Text).toContain('lib/switch.mjs');
+    expect(step1Text).toContain('docs/sample-trace.md');
+    expect(step1Text).toContain('does not produce');
+    expect(step2Text).toContain('docs/sample-trace.md');
+    expect(step2Text).toContain('MSG-10');
+    expect(step2Text).not.toMatch(/MSG-10 --dry-run/);
+  });
+
   it('keeps the intro and concept-recap slides in English', () => {
     const blob = JSON.stringify(workshop4SourceSlides.slice(0, 14));
     expect(blob).not.toMatch(/\b(?:Welkom|Vandaag|gisteren|Werkvorm|één|beeld|Vaste|dynamische|Systeemprompt|externe|goedkeuring|oefening|niet)\b/);

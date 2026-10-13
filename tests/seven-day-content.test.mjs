@@ -182,25 +182,33 @@ test('starter whitelist keeps legacy files and adds the triage and support start
  assert.equal(starterFileNames.includes('../package.json'),false);
 });
 
-test('Workshop 4 cites HTML Solo packs weather + day5 + council (AET-130)',()=>{
+test('Workshop 4 cites the HTML Solo packs and participant repo vehicle (AET-130)',()=>{
  const d4=getDayPack(4);
  const solos=d4.materials.filter(m=>m.kind==='solo');
  assert.deepEqual(solos.map(m=>m.href),[
   '/courses/weather-agent-sdk/index.html',
   '/courses/aetherlink-day5-n8n-to-agent/index.html',
-  '/courses/council-agent-sdk/index.html'
+  '/courses/council-agent-sdk/index.html',
+  'https://github.com/RyanLisse/aetherlink-academy-app/tree/main/training-lab/w4-support-agent-sdk'
  ]);
  assert.match(solos[1].label,/optional parity bonus|optionele pariteitsbonus/i);
- assert.ok(d4.materials.some(m=>m.kind==='vehicle'&&m.href.endsWith('/training-lab/w4-support-agent-sdk')));
+ const vehicle=d4.materials.find(m=>m.kind==='vehicle');
+ assert.equal(vehicle.href,'https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent');
  for(const lang of ['en','nl']){
   const mats=d4.copy[lang].materials.filter(m=>m.kind==='solo');
   assert.deepEqual(mats.map(m=>m.href),[
    '/courses/weather-agent-sdk/index.html',
    '/courses/aetherlink-day5-n8n-to-agent/index.html',
-   '/courses/council-agent-sdk/index.html'
+   '/courses/council-agent-sdk/index.html',
+   'https://github.com/RyanLisse/aetherlink-academy-app/tree/main/training-lab/w4-support-agent-sdk'
   ],lang);
   assert.match(mats[1].label,lang==='en'?/optional parity bonus/i:/optionele pariteitsbonus/i,lang);
-  // no EN leak under nl labels for the three solos — labels stay product ids + short NL notes
+  assert.match(mats[3].label,lang==='en'?/Legacy SDK-only package \(optional comparison\)/i:/Oud SDK-only pakket \(optionele vergelijking\)/i,lang);
+  const langVehicle=d4.copy[lang].materials.find(m=>m.kind==='vehicle');
+  assert.equal(langVehicle.href,'https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent',lang);
+  assert.equal(langVehicle.label,lang==='en'?'Workshop 4 participant repo · aetherlink-day5-n8n-to-agent':'Workshop 4-deelnemersrepo · aetherlink-day5-n8n-to-agent',lang);
+  assert.equal(langVehicle.note,lang==='en'?'Steps 0–5 · Claude Code by default, SDK optional':'Stappen 0–5 · Claude Code standaard, SDK optioneel',lang);
+  // Product identifiers and repository names remain unchanged inside localized labels.
   assert.equal(mats.every(m=>typeof m.label==='string'&&m.label.length>0),true,lang);
  }
  assert.equal(d4.materials.some(m=>/start-solo/i.test(m.href||'')||/start-solo/i.test(m.label||'')),false);
