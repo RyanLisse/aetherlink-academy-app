@@ -139,9 +139,9 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
 
   it('separates offline inspection from live or labelled sample results', () => {
     const step1Demo = workshop4SourceSlides.find((slide) => slide.title === 'Demo · Step 1: schema, route, and memory');
-    const step1Practice = workshop4SourceSlides.find((slide) => slide.type === 'practice' && slide.kicker?.startsWith('SOLO 1'));
+    const step1Practice = workshop4SourceSlides.find((slide) => slide.type === 'practice' && typeof slide.kicker === 'string' && slide.kicker.startsWith('SOLO 1'));
     const step2Demo = workshop4SourceSlides.find((slide) => slide.title === 'Demo · Step 2: trace the two agents');
-    const step2Practice = workshop4SourceSlides.find((slide) => slide.type === 'practice' && slide.kicker?.startsWith('SOLO 2'));
+    const step2Practice = workshop4SourceSlides.find((slide) => slide.type === 'practice' && typeof slide.kicker === 'string' && slide.kicker.startsWith('SOLO 2'));
     expect(step1Practice).toBeDefined();
     expect(step2Practice).toBeDefined();
     const step1Text = JSON.stringify([step1Demo, step1Practice]);
