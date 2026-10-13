@@ -2,8 +2,8 @@
 
 - Source repository: `https://github.com/jyse/aetherlink-classroom-slides.git`
 - Upstream base commit: `77c375982f922d057823f45c7f41b718149d008f`
-- Source commit: `20a1b988b0dafaff95e1658f6a27055bd4039f23` (7 commits on top of the base: the local SRE-agent console lab. Not yet upstream: Devin cannot push to `jyse/aetherlink-classroom-slides`.)
-- Copied payload SHA-256 (all files here except this one, sorted by path): `5804ba47c187ef625c33724113912398411b90aa876292c57852c7a96eb398ae`
+- Source commit: `c5af4914b74ffb3cc1e06e6028ff85f097177dc7` (8 commits on top of the base: the local SRE-agent console lab. Not yet upstream: Devin cannot push to `jyse/aetherlink-classroom-slides`.)
+- Copied payload SHA-256 (all files here except this one, sorted by path): `d88e8e768d4a2f9754a324dabaccee1ba11370c726869d685f8580e2ce09c85a`
 - Published entry point: `/workshop-5/classroom/workshop5.html`
 
 Reproduce the static artifact from a checkout at the source commit:

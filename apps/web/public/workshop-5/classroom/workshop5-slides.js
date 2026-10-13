@@ -1434,8 +1434,8 @@ window.SLIDES = [
     "layout": "exercise",
     "steps": [
       "Terminal 1: npm run shop. Terminal 2: npm run traffic.",
-      "npm run chaos -- deploy v2.15.0 --mode bad-deploy.",
-      "Open the incident at :4320. Match every evidence ref to a line in the trace.",
+      "npm run chaos -- deploy v2.15.0 --mode bad-deploy. The incident opens after about 5 minutes.",
+      "Open the incident at :4320. For every evidence ref, name the tool in the trace that produced it.",
       "Chat: “Could this be something other than the deployment?” Offline you get the scripted summary: compare it with ruled_out.",
       "Save it to docs/diagnosis-live.md. Open a PR/MR."
     ],
@@ -1456,7 +1456,7 @@ window.SLIDES = [
       "Chat answers questions. It does not act.",
       "Find what was ruled out."
     ],
-    "notes": "Time: 14:10 · 30 min.\n1. Let them do: the five steps on the slide. Optional first: /show-me on fixtures/incidents/bad-deploy.json, plan mode, and a human accepts docs/plan.md.\n2. The console listener detects the error spike deterministically (about 10 s per tick) and opens an incident.\n3. Check each team: the diagnosis has a hypothesis, evidence refs (metrics, deploys, diff, logs), blast radius, customer_impact, ruled out and data gaps.\n4. Check: the chat answer to the challenge cites evidence. Ask “roll back now” in chat: it refuses.\n5. If no incident appears: traffic is not running. npm run traffic must be up before chaos. curl localhost:4320/api/incidents.\n6. Stretch: other modes from npm run chaos, or the fixtures in fixtures/incidents/.\n7. Catch-up: git checkout w5-step-5-diagnose -- docs/diagnosis-live.md."
+    "notes": "Time: 14:10 · 30 min.\n1. Let them do: the five steps on the slide. Optional first: /show-me on fixtures/incidents/bad-deploy.json, plan mode, and a human accepts docs/plan.md.\n2. The console listener opens an incident once the error rate stays above 2% for 5 minutes. For a faster room, start the console with AGENT_LISTEN_WINDOW_MIN=1 npm run console.\n3. Check each team: the diagnosis has a hypothesis, evidence refs (metrics, deploys, diff, logs), blast radius, customer_impact, ruled out and data gaps.\n4. Check: the chat answer to the challenge cites evidence. Ask “roll back now” in chat: it refuses.\n5. If no incident appears after 5 minutes: traffic is not running. npm run traffic must be up before chaos. curl localhost:4320/api/incidents.\n6. Stretch: other modes from npm run chaos, or the fixtures in fixtures/incidents/.\n7. Catch-up: git checkout w5-step-5-diagnose -- docs/diagnosis-live.md."
   },
   {
     "title": "Break",
