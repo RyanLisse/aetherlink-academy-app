@@ -16,7 +16,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   {
     lessonId: "workshop-4",
     title: "Yesterday’s recap · Maarten’s n8n build",
-    kicker: "Recap · one ticket, three levels",
+    kicker: "Recap · Maarten's flow, node by node",
     type: "recap",
     layout: "recap",
     items: [
@@ -314,7 +314,6 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     title: "Structured output: parser to JSON schema",
     kicker: "Concept · structured output",
     type: "concept",
-    layout: "compare",
     visual: { bot: "think", place: "beside" },
     subtitle: "The parser becomes a schema; the Switch stays deterministic code.",
     keyPoints: ["Structured Output Parser / Priority Parser defines the shape.", "outputFormat uses json_schema.", "lib/switch.mjs routes the parsed priority."],
@@ -331,7 +330,6 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     title: "Memory is the session",
     kicker: "Concept · memory",
     type: "concept",
-    layout: "compare",
     visual: { bot: "point", place: "beside" },
     subtitle: "Chat resumes a session; a fresh session starts when memory is off.",
     keyPoints: ["Simple Memory carries a favourite-colour test across turns.", "npm run chat resumes with the previous sessionId.", "--no-memory starts each turn without resume."],
@@ -346,7 +344,6 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     title: "Two ways to run the same agent",
     kicker: "Concept · choose a backend",
     type: "concept",
-    layout: "compare",
     visual: { bot: "think", place: "beside" },
     subtitle: "Claude Code is the default; the SDK backend is available when you need it.",
     keyPoints: ["claude-code runs claude -p with your Claude Code login.", "sdk runs query() with an API key; sdk-login is an opt-in local path.", "canUseTool is SDK-only; use interactive claude for the clerk in Claude Code mode."],
