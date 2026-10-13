@@ -10,8 +10,8 @@ import {workshop5SourceSlides} from '../src/deck/workshop5-slides.ts';
 import {expectWorkshopClassroomContract} from './workshop-classroom-contract.ts';
 
 const introTitles = [
-  'Welcome to Workshop 4 · Support agents with the Claude Agent SDK',
-  'Yesterday’s recap · Workshop 3 · Agents in n8n',
+  'Welcome to Workshop 4 · Support agents with Claude Code and the Agent SDK',
+  'Yesterday’s recap · Maarten’s n8n build',
   'Today · agenda',
 ];
 
@@ -44,19 +44,27 @@ const titles = [
   "Yesterday's n8n. Today's Agent SDK.",
   'Map n8n to the Agent SDK.',
   ...conceptRecapTitles,
+  'Structured output: parser to JSON schema',
+  'Memory is the session',
+  'Two ways to run the same agent',
+  'Demo · Step 0: the offline path',
   'Get the workshop package.',
-  'Lesson 1: one agent reads CLAUDE.md.',
-  'Watch one agent classify a message.',
-  'Run Lesson 1 and test the tone trap.',
-  'Discuss: what does the main agent know?',
-  'Lesson 2: delegate to two subagents.',
-  'Watch the orchestrator save a draft.',
+  'Step 1 · Structured priority output and chat memory',
+  'Demo · Step 1: schema, route, and memory',
+  'Run Step 1 and test chat memory.',
+  'Discuss: what makes the route predictable?',
+  'Step 2 · Risk analysis and customer reply agents',
+  'Demo · Step 2: trace the two agents',
   'Run the orchestrator and inspect the draft.',
-  'Lesson 3: look up transaction data through MCP.',
-  'Watch an MCP transaction lookup.',
-  'Run Lesson 3 with transaction messages.',
+  'Discuss: which facts came from a tool?',
+  'Step 3 · Customer and transaction MCP tools + approval gate',
+  'Demo · Step 3: customer lookup and approval gate',
+  'Run Step 3 customer and transaction lookups.',
   'Discuss: tools and external data.',
-  'Complete the acceptance table and Proof.',
+  'Step 4 · Acceptance table and npm run check',
+  'Step 5 · Build your own agent',
+  'Demo · Step 5: run the starter',
+  'Your turn · build your own agent',
   'Close: keep a human in the loop.',
 ];
 
@@ -67,13 +75,13 @@ const visualOf = (slide: Record<string, unknown> | undefined): Record<string, un
 describe('Workshop 4 Agent SDK classroom deck', () => {
   const slides = normalizeSlides(workshop4SourceSlides);
   const practice = workshop4SourceSlides.filter((slide) => slide.type === 'practice');
-  /** The 16 lesson slides; the 3 intro and 9 concept-recap slides mirror the live room deck and have their own checks. */
+  /** The 24 lesson slides; the 3 intro and 9 visual concept-recap slides have their own checks. */
   const lessonSlides = workshop4SourceSlides.filter((slide) => !addedTitles.has(String(slide.title)));
 
-  it('has the requested 28-slide sequence', () => {
-    expect(workshop4SourceSlides).toHaveLength(28);
-    expect(slides).toHaveLength(28);
-    expect(lessonSlides).toHaveLength(16);
+  it('has the requested 36-slide sequence', () => {
+    expect(workshop4SourceSlides).toHaveLength(36);
+    expect(slides).toHaveLength(36);
+    expect(lessonSlides).toHaveLength(24);
     expect(workshop4SourceSlides.every((slide) => slide.lessonId === 'workshop-4')).toBe(true);
     expect(workshop4SourceSlides.map((slide) => String(slide.title))).toEqual(titles);
   });
@@ -85,7 +93,13 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
       'Map n8n to the Agent SDK.',
     ]);
     expect(workshop4SourceSlides.slice(5, 14).map((slide) => String(slide.title))).toEqual(conceptRecapTitles);
-    expect(workshop4SourceSlides[14]?.title).toBe('Get the workshop package.');
+    expect(workshop4SourceSlides.slice(14, 18).map((slide) => String(slide.title))).toEqual([
+      'Structured output: parser to JSON schema',
+      'Memory is the session',
+      'Two ways to run the same agent',
+      'Demo · Step 0: the offline path',
+    ]);
+    expect(workshop4SourceSlides[18]?.title).toBe('Get the workshop package.');
     expect(workshop4SourceSlides[1]).toMatchObject({type: 'recap', layout: 'recap'});
     expect(workshop4SourceSlides[2]).toMatchObject({type: 'context'});
     for (const slide of workshop4SourceSlides.slice(0, 14)) {
@@ -116,11 +130,11 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
     const repo = 'https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent';
     expect(workshop4SourceSlides[0]?.subtitle).toMatch(/10:00–16:00/);
     expect(workshop4SourceSlides[2]?.keyPoints).toContain(`Workshop repo: ${repo}`);
-    const cards = workshop4SourceSlides[14]?.cards as ReadonlyArray<{title: string; body: string}>;
+    const cards = workshop4SourceSlides[18]?.cards as ReadonlyArray<{title: string; body: string}>;
     const repoCard = cards.find((card) => card.title === 'Workshop repo');
     expect(repoCard?.body).toContain(`git clone ${repo}.git`);
     expect(repoCard?.body).toContain('npm run lesson1 -- MSG-01 --dry-run');
-    expect(JSON.stringify(workshop4SourceSlides[14])).not.toMatch(/sparse/);
+    expect(JSON.stringify(workshop4SourceSlides[18])).not.toMatch(/sparse/);
   });
 
   it('keeps the intro and concept-recap slides in English', () => {
@@ -132,8 +146,20 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
     const blob = JSON.stringify(workshop4SourceSlides);
     expect(blob).toMatch(/aetherlink-day5-n8n-to-agent/);
     expect(blob).toMatch(/settingSources/);
-    expect(blob).toMatch(/ticket-analyst/);
-    expect(blob).toMatch(/email-responder/);
+    expect(blob).toMatch(/outputFormat: json_schema/);
+    expect(blob).toMatch(/Simple Memory.*session resume|session resume.*Simple Memory/);
+    expect(blob).toMatch(/claude-code/);
+    expect(blob).toMatch(/--max-turns/);
+    expect(blob).toMatch(/--agents/);
+    expect(blob).toMatch(/--mcp-config/);
+    expect(blob).toMatch(/--json-schema/);
+    expect(blob).toMatch(/--resume/);
+    expect(blob).toMatch(/canUseTool is SDK-only/);
+    expect(blob).toMatch(/risk-agent/);
+    expect(blob).toMatch(/customer-reply-agent/);
+    expect(blob).toMatch(/customer-context-agent/);
+    expect(blob).not.toMatch(/ticket-analyst|email-responder/);
+    expect(blob).toMatch(/mcp__customers__get_customer/);
     expect(blob).toMatch(/get_transaction/);
     expect(blob).toMatch(/stdio/);
 
@@ -148,14 +174,39 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
     }
   });
 
+  it('keeps the offline setup, acceptance table, and Step 5 commands in the lesson', () => {
+    const blob = JSON.stringify(workshop4SourceSlides);
+    const step0Demo = workshop4SourceSlides.find((slide) => slide.title === 'Demo · Step 0: the offline path');
+    expect(JSON.stringify(step0Demo)).toMatch(/docs\/SETUP\.md/);
+    expect(JSON.stringify(step0Demo)).toMatch(/npm ci/);
+    expect(JSON.stringify(step0Demo)).toMatch(/npm run doctor/);
+    expect(JSON.stringify(step0Demo)).toMatch(/npm run verify/);
+    expect(JSON.stringify(step0Demo)).toMatch(/--dry-run/);
+    expect(JSON.stringify(step0Demo)).toMatch(/backend:/);
+    expect(JSON.stringify(step0Demo)).toMatch(/Claude Code equivalent:/);
+    expect(blob).toMatch(/docs\/SETUP\.md/);
+    expect(blob).toMatch(/npm run doctor/);
+    expect(blob).toMatch(/npm run verify/);
+    expect(blob).toMatch(/backend:/);
+    expect(blob).toMatch(/Claude Code equivalent:/);
+    expect(blob).toMatch(/acceptance table/i);
+    expect(blob).toMatch(/npm run check/);
+    expect(blob).toMatch(/participant-output\//);
+    expect(blob).toMatch(/05-build-your-own/);
+    expect(blob).toMatch(/Find and fix the bug in utils\.js/);
+    expect(blob).toMatch(/Workshop 5/);
+    expect(blob).not.toMatch(/\bProof\b/);
+  });
+
   it('gives every practice slide a timer, checklist, expected outcome, and point pose', () => {
-    expect(practice).toHaveLength(5);
+    expect(practice).toHaveLength(6);
     expect(practice.map((slide) => String(slide.kicker))).toEqual([
       'SOLO 0 · Your turn',
       'SOLO 1 · Your turn',
       'SOLO 2 · Your turn',
       'SOLO 3 · Your turn',
-      'SOLO 4 · Your turn · Proof',
+      'SOLO 4 · Your turn',
+      'SOLO 5 · Your turn',
     ]);
 
     for (const slide of practice) {
@@ -187,7 +238,7 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
     expect(blob).toMatch(/LOW, MEDIUM, and HIGH|LOW.*MEDIUM.*HIGH/);
     expect(blob).toMatch(/human review/i);
     expect(blob).not.toMatch(/\bEve\b/);
-    expect(blob).not.toMatch(/aetherlink-daily-brief-lab-s1|intent\.md|progress\.md|step-1-plan|docs\/gate\.md/);
+    expect(blob).not.toMatch(/aetherlink-daily-brief-lab-s1|progress\.md|step-1-plan|docs\/gate\.md/);
     expect(blob).not.toMatch(/Plan → Design → Build|one lesson per SDLC/i);
     expect(blob).not.toMatch(/MSG-\d{2}\W{1,3}(?:low|medium|high)\b/i);
     expect(blob).not.toMatch(/\b(?:low|medium|high)\W{1,3}MSG-\d{2}/i);

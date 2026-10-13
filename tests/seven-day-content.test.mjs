@@ -60,17 +60,14 @@ test('the lint names a citation whose slide title drifted and a missing starter'
  drifted[2].mission.starterFiles=['missing.json'];
  assert.deepEqual(validateDayPacks(drifted,{root,decks}),[
   'day 3: starter file missing: starter/missing.json',
-  'day 4: step w4-solo2 cites workshop-4 slide 22 "Run your agent" but the deck has "Run the orchestrator and inspect the draft."'
+  'day 4: step w4-solo2 cites workshop-4 slide 26 "Run your agent" but the deck has "Run the orchestrator and inspect the draft."'
  ]);
 });
 
-test('Workshop 3 keeps triage fixtures; Workshop 4 grades new support messages',()=>{
+test('Workshop 3 keeps triage fixtures; Workshop 4 uses its acceptance table and check',()=>{
  const day3=getDayPack(3),day4=getDayPack(4);
  assert.deepEqual(day3.steps.filter(s=>s.autograde).map(s=>s.autograde),['triage','triage','triage']);
- assert.deepEqual(day4.steps.filter(s=>s.autograde).map(s=>[s.id,s.autograde]),[
-  ['w4-solo1','support'],
-  ['w4-solo4','support-mcp']
- ]);
+ assert.deepEqual(day4.steps.filter(s=>s.autograde),[]);
  assert.deepEqual(day4.mission.starterFiles,['customer-messages.md']);
  assert.equal(SUPPORT_FIXTURES.id,'support-messages-v1');
  assert.deepEqual(SUPPORT_FIXTURES.tickets.map(({ticket})=>ticket.ticket_id),Array.from({length:10},(_,i)=>`MSG-${String(i+1).padStart(2,'0')}`));
@@ -81,23 +78,25 @@ test('Workshop 3 keeps triage fixtures; Workshop 4 grades new support messages',
  assert.equal(SUPPORT_FIXTURES.tickets.at(-1).expected_priority,undefined);
 });
 
-test('Workshop 4 quiz covers project settings, delegation, and stdio MCP',()=>{
+test('Workshop 4 quiz covers structured output, delegation, and customer MCP',()=>{
  const pack=getDayPack(4);
  for(const lang of ['en','nl']){
   const quiz=pack.copy[lang].quiz;
   assert.equal(quiz.questions.length,3,lang);
   const quizText=JSON.stringify(quiz.questions);
-  assert.match(quizText,/settingSources: \['project'\]/,lang);
-  assert.match(quizText,/ticket-analyst/,lang);
-  assert.match(quizText,/npm install/,lang);
-  assert.match(quizText,lang==='en'?/on demand over stdio/i:/op verzoek via stdio/i,lang);
-  assert.doesNotMatch(quizText,/transactions\.xlsx/i,lang);
+  assert.match(quizText,/outputFormat: \{ type: 'json_schema', schema \}/,lang);
+  assert.match(quizText,/risk-agent/,lang);
+  assert.match(quizText,/get_customer/,lang);
+  assert.doesNotMatch(quizText,/ticket-analyst|email-responder|Proof/i,lang);
+ }
+ for(const acceptance of [pack.reviewCriteria,...['en','nl'].map((lang)=>pack.copy[lang].proof)].flat()){
+  assert.doesNotMatch(acceptance,/\bProof\b/i);
  }
 });
 
 test('Workshop 3 keeps its levels; all Workshop 4 lessons are required',()=>{
  assert.deepEqual(getDayPack(3).steps.map(s=>`${s.badge}:${s.level}`),['L1:required','L2:required','L3:stretch','P:required']);
- assert.deepEqual(getDayPack(4).steps.map(s=>`${s.badge}:${s.level}`),['S0:required','S1:required','S2:required','S3:required','S4:required']);
+ assert.deepEqual(getDayPack(4).steps.map(s=>`${s.badge}:${s.level}`),['S0:required','S1:required','S2:required','S3:required','S4:required','S5:required']);
  assert.deepEqual(getDayPack(5).lesson.loop.map(s=>s.label),['Intent','Spec','Plan','Build','Test','Review','Handoff']);
  assert.deepEqual(getDayPack(1).lesson.loop.map(s=>s.label),['Explore','Plan','Create','Test','Human review','Handoff']);
 });
