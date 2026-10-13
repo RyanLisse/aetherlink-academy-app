@@ -57,8 +57,8 @@ const titles = [
   'Demo · Step 2: trace the two agents',
   'Run the orchestrator and inspect the draft.',
   'Discuss: which facts came from a tool?',
-  'Step 3 · Customer and transaction MCP tools + approval gate',
-  'Demo · Step 3: customer lookup and approval gate',
+  'Step 3 · Read-only customer and transaction MCP tools',
+  'Demo · Step 3: read-only customer and transaction lookups',
   'Run Step 3 customer and transaction lookups.',
   'Discuss: tools and external data.',
   'Step 4 · Acceptance table and npm run check',
@@ -139,9 +139,11 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
 
   it('separates offline inspection from live or labelled sample results', () => {
     const step1Demo = workshop4SourceSlides.find((slide) => slide.title === 'Demo · Step 1: schema, route, and memory');
-    const step1Practice = workshop4SourceSlides.find((slide) => slide.title === 'Run Step 1 and test chat memory');
+    const step1Practice = workshop4SourceSlides.find((slide) => slide.type === 'practice' && slide.kicker?.startsWith('SOLO 1'));
     const step2Demo = workshop4SourceSlides.find((slide) => slide.title === 'Demo · Step 2: trace the two agents');
-    const step2Practice = workshop4SourceSlides.find((slide) => slide.title === 'Run the orchestrator and inspect the draft.');
+    const step2Practice = workshop4SourceSlides.find((slide) => slide.type === 'practice' && slide.kicker?.startsWith('SOLO 2'));
+    expect(step1Practice).toBeDefined();
+    expect(step2Practice).toBeDefined();
     const step1Text = JSON.stringify([step1Demo, step1Practice]);
     const step2Text = JSON.stringify([step2Demo, step2Practice]);
 
@@ -150,9 +152,29 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
     expect(step1Text).toContain('lib/switch.mjs');
     expect(step1Text).toContain('docs/sample-trace.md');
     expect(step1Text).toContain('does not produce');
+    expect(step1Text).toContain('live run (Claude Code login, or --backend sdk with a key)');
     expect(step2Text).toContain('docs/sample-trace.md');
     expect(step2Text).toContain('MSG-10');
+    expect(step2Text).toContain('live run (Claude Code login, or --backend sdk with a key)');
     expect(step2Text).not.toMatch(/MSG-10 --dry-run/);
+  });
+
+  it('keeps Step 3 read-only and reserves human review for reply drafts', () => {
+    const step3Text = JSON.stringify(workshop4SourceSlides.slice(27, 31));
+
+    expect(step3Text).toContain('mcp__customers__get_customer');
+    expect(step3Text).toContain('mcp__transactions__get_transaction');
+    expect(step3Text).toContain('list_transactions');
+    expect(step3Text).toMatch(/human review/i);
+    expect(step3Text).not.toMatch(/clerk|approval gate|Staff instruction|add_transaction|update_transaction|delete_transaction/i);
+  });
+
+  it('explains backend selection on slides 17–19', () => {
+    const backendText = JSON.stringify(workshop4SourceSlides.slice(16, 19));
+
+    expect(backendText).toContain('ANTHROPIC_API_KEY is set in your shell');
+    expect(backendText).toContain('the runner picks sdk');
+    expect(backendText).toContain('force one with --backend');
   });
 
   it('keeps the intro and concept-recap slides in English', () => {

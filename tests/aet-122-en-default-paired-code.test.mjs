@@ -41,18 +41,21 @@ test('122-2 workshop day 4 ships one paired TS/Python identity', () => {
   assert.match(ex.typescript, /query\(\{\s*prompt,\s*options\s*\}\)/);
   assert.match(ex.python, /query\(prompt=prompt,\s*options=options\)/);
   assert.match(ex.typescript, /mcpServers[\s\S]*mcp__transactions__get_transaction/);
+  assert.match(ex.typescript, /mcp__transactions__list_transactions/);
   assert.match(ex.python, /mcp_servers[\s\S]*mcp__transactions__get_transaction/);
+  assert.match(ex.python, /mcp__transactions__list_transactions/);
   assert.match(ex.typescript, /path\.join\(lessonDirectory, "transaction-mcp", "server\.js"\)/);
   assert.match(ex.typescript, /path\.join\(lessonDirectory, "transaction-mcp", "customers\.js"\)/);
-  assert.match(ex.typescript, /TRANSACTIONS_XLSX: workbook, TRANSACTIONS_STORE: workingCopy/);
+  assert.match(ex.typescript, /TRANSACTIONS_XLSX: workbook/);
   assert.match(ex.typescript, /CUSTOMER_CONTEXT_CSV: customerContext/);
   assert.match(ex.python, /Path\(__file__\)\.resolve\(\)\.parent/);
   assert.match(ex.python, /transaction-mcp" \/ "server\.js"/);
   assert.match(ex.python, /transaction-mcp" \/ "customers\.js"/);
-  assert.match(ex.python, /TRANSACTIONS_XLSX": str\(workbook\), "TRANSACTIONS_STORE": str\(working_copy\)/);
+  assert.match(ex.python, /TRANSACTIONS_XLSX": str\(workbook\)/);
   assert.match(ex.python, /CUSTOMER_CONTEXT_CSV": str\(customer_context\)/);
   assert.equal(ex.slide?.slide, 28);
-  assert.equal(ex.slide?.title, 'Step 3 · Customer and transaction MCP tools + approval gate');
+  assert.equal(ex.slide?.title, 'Step 3 · Read-only customer and transaction MCP tools');
+  assert.doesNotMatch(`${ex.typescript}\n${ex.python}`, /clerk|approval|canUseTool|askPerson|add_transaction|update_transaction|delete_transaction|TRANSACTIONS_STORE/i);
   assert.doesNotMatch(`${ex.typescript}\n${ex.python}`, /\b(?:LOW|MEDIUM|HIGH)\b/);
 });
 
