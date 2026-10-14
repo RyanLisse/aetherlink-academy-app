@@ -12,7 +12,9 @@ import {expectWorkshopClassroomContract} from './workshop-classroom-contract.ts'
 const introTitles = [
   'Welcome to Workshop 4 · Support agents with Claude Code and the Agent SDK',
   'Yesterday’s recap · Maarten’s n8n build',
+  'Quiz: yesterday\'s n8n flow',
   'Today · agenda',
+  'Goal of today',
 ];
 
 const conceptRecapTitles = [
@@ -49,10 +51,12 @@ const titles = [
   'Two ways to run the same agent',
   'Demo · Step 0: the offline path',
   'Get the workshop package.',
+  'Short break',
   'Step 1 · Structured priority output and chat memory',
   'Demo · Step 1: schema, route, and memory',
   'Run Step 1 and test chat memory.',
   'Discuss: what makes the route predictable?',
+  'Lunch',
   'Step 2 · Risk analysis and customer reply agents',
   'Demo · Step 2: trace the two agents',
   'Run the orchestrator and inspect the draft.',
@@ -65,51 +69,74 @@ const titles = [
   'Step 5 · Build your own agent',
   'Demo · Step 5: run the starter',
   'Your turn · build your own agent',
+  'Short break',
+  'Assignment · Extend the MCP',
+  'Not every agent has every tool',
+  'Quiz: who may change a transaction?',
+  'When does the hook ask?',
+  'Where you change what, and why (1/2)',
+  'Where you change what, and why (2/2)',
+  'Demo · Assignment: one write, three outcomes',
+  'What good looks like (1/2): offline checks',
+  'What good looks like (2/2): live runs',
+  'Extend the MCP: tools, agent, hooks.',
+  'Discuss: who can change data, and when?',
   'Close: keep a human in the loop.',
 ];
 
+const coreIntroTitles = introTitles.filter((title) => title !== 'Goal of today' && !title.startsWith('Quiz:'));
 const addedTitles = new Set([...introTitles, ...conceptRecapTitles]);
+const rhythmTypes = new Set(['quiz', 'pause']);
+const isRhythm = (slide: Record<string, unknown>): boolean => rhythmTypes.has(String(slide.type)) || slide.title === 'Goal of today';
 const visualOf = (slide: Record<string, unknown> | undefined): Record<string, unknown> =>
   slide?.visual && typeof slide.visual === 'object' ? slide.visual as Record<string, unknown> : {};
 
 describe('Workshop 4 Agent SDK classroom deck', () => {
   const slides = normalizeSlides(workshop4SourceSlides);
   const practice = workshop4SourceSlides.filter((slide) => slide.type === 'practice');
-  /** The 24 lesson slides; the 3 intro and 9 visual concept-recap slides have their own checks. */
-  const lessonSlides = workshop4SourceSlides.filter((slide) => !addedTitles.has(String(slide.title)));
+  /** The 32 lesson slides; the 3 intro and 9 visual concept-recap slides have their own checks. */
+  const coreSlides = workshop4SourceSlides.filter((slide) => !isRhythm(slide));
+  const lessonSlides = coreSlides.filter((slide) => !addedTitles.has(String(slide.title)));
 
-  it('has the requested 36-slide sequence', () => {
-    expect(workshop4SourceSlides).toHaveLength(36);
-    expect(slides).toHaveLength(36);
-    expect(lessonSlides).toHaveLength(24);
+  it('keeps the day rhythm: a quiz recap, a goal, two short breaks and lunch', () => {
+    const pauses = workshop4SourceSlides.filter((slide) => slide.type === 'pause');
+    expect(pauses.map((slide) => visualOf(slide).countdown)).toEqual([15, 60, 15]);
+    expect(pauses.map((slide) => (slide.cards as Array<{title: string}>)[0]?.title)).toEqual(['Back at 11:15', 'Back at 13:00', 'Back at 15:00']);
+    expect(workshop4SourceSlides.filter((slide) => slide.type === 'quiz')).toHaveLength(2);
+  });
+
+  it('has the requested 52-slide sequence', () => {
+    expect(workshop4SourceSlides).toHaveLength(52);
+    expect(slides).toHaveLength(52);
+    expect(lessonSlides).toHaveLength(34);
     expect(workshop4SourceSlides.every((slide) => slide.lessonId === 'workshop-4')).toBe(true);
     expect(workshop4SourceSlides.map((slide) => String(slide.title))).toEqual(titles);
   });
 
   it('opens with the three intro slides, then the bridge, then nine concept-recap visuals', () => {
-    expect(workshop4SourceSlides.slice(0, 3).map((slide) => String(slide.title))).toEqual(introTitles);
-    expect(workshop4SourceSlides.slice(3, 5).map((slide) => String(slide.title))).toEqual([
+    expect(coreSlides.slice(0, 3).map((slide) => String(slide.title))).toEqual(coreIntroTitles);
+    expect(coreSlides.slice(3, 5).map((slide) => String(slide.title))).toEqual([
       "Yesterday's n8n. Today's Agent SDK.",
       'Map n8n to the Agent SDK.',
     ]);
-    expect(workshop4SourceSlides.slice(5, 14).map((slide) => String(slide.title))).toEqual(conceptRecapTitles);
-    expect(workshop4SourceSlides.slice(14, 18).map((slide) => String(slide.title))).toEqual([
+    expect(coreSlides.slice(5, 14).map((slide) => String(slide.title))).toEqual(conceptRecapTitles);
+    expect(coreSlides.slice(14, 18).map((slide) => String(slide.title))).toEqual([
       'Structured output: parser to JSON schema',
       'Memory is the session',
       'Two ways to run the same agent',
       'Demo · Step 0: the offline path',
     ]);
-    expect(workshop4SourceSlides[18]?.title).toBe('Get the workshop package.');
-    expect(workshop4SourceSlides[1]).toMatchObject({type: 'recap', layout: 'recap'});
-    expect(workshop4SourceSlides[2]).toMatchObject({type: 'context'});
-    for (const slide of workshop4SourceSlides.slice(0, 14)) {
+    expect(coreSlides[18]?.title).toBe('Get the workshop package.');
+    expect(coreSlides[1]).toMatchObject({type: 'recap', layout: 'recap'});
+    expect(coreSlides[2]).toMatchObject({type: 'context'});
+    for (const slide of coreSlides.slice(0, 14)) {
       expect(String(slide.notes ?? '').trim(), String(slide.title)).not.toBe('');
       expect(String(slide.kicker ?? '').trim(), String(slide.title)).not.toBe('');
     }
   });
 
   it('gives each concept-recap slide a committed English visual and an n8n | Agent SDK compare', () => {
-    workshop4SourceSlides.slice(5, 14).forEach((slide, index) => {
+    coreSlides.slice(5, 14).forEach((slide, index) => {
       const title = String(slide.title);
       const visual = visualOf(slide);
       expect(visual.opener, title).toBe('showcase');
@@ -129,19 +156,19 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
   it('links the workshop repo on the agenda and SOLO 0 slides', () => {
     const repo = 'https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent';
     expect(workshop4SourceSlides[0]?.subtitle).toMatch(/10:00–16:00/);
-    expect(workshop4SourceSlides[2]?.keyPoints).toContain(`Workshop repo: ${repo}`);
-    const cards = workshop4SourceSlides[18]?.cards as ReadonlyArray<{title: string; body: string}>;
+    expect(coreSlides[2]?.keyPoints).toContain(`Workshop repo: ${repo}`);
+    const cards = coreSlides[18]?.cards as ReadonlyArray<{title: string; body: string}>;
     const repoCard = cards.find((card) => card.title === 'Workshop repo');
     expect(repoCard?.body).toContain(`git clone ${repo}.git`);
     expect(repoCard?.body).toContain('npm run lesson1 -- MSG-01 --dry-run');
-    expect(JSON.stringify(workshop4SourceSlides[18])).not.toMatch(/sparse/);
+    expect(JSON.stringify(coreSlides[18])).not.toMatch(/sparse/);
   });
 
   it('separates offline inspection from live or labelled sample results', () => {
     const step1Demo = workshop4SourceSlides.find((slide) => slide.title === 'Demo · Step 1: schema, route, and memory');
-    const step1Practice = workshop4SourceSlides.find((slide) => slide.type === 'practice' && typeof slide.kicker === 'string' && slide.kicker.startsWith('SOLO 1'));
+    const step1Practice = workshop4SourceSlides.find((slide) => slide.type === 'practice' && String(slide.kicker ?? '').startsWith('SOLO 1'));
     const step2Demo = workshop4SourceSlides.find((slide) => slide.title === 'Demo · Step 2: trace the two agents');
-    const step2Practice = workshop4SourceSlides.find((slide) => slide.type === 'practice' && typeof slide.kicker === 'string' && slide.kicker.startsWith('SOLO 2'));
+    const step2Practice = workshop4SourceSlides.find((slide) => slide.type === 'practice' && String(slide.kicker ?? '').startsWith('SOLO 2'));
     expect(step1Practice).toBeDefined();
     expect(step2Practice).toBeDefined();
     const step1Text = JSON.stringify([step1Demo, step1Practice]);
@@ -160,7 +187,7 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
   });
 
   it('keeps Step 3 read-only and reserves human review for reply drafts', () => {
-    const step3Text = JSON.stringify(workshop4SourceSlides.slice(27, 31));
+    const step3Text = JSON.stringify(coreSlides.slice(27, 31));
 
     expect(step3Text).toContain('mcp__customers__get_customer');
     expect(step3Text).toContain('mcp__transactions__get_transaction');
@@ -170,7 +197,7 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
   });
 
   it('explains backend selection on slides 17–19', () => {
-    const backendText = JSON.stringify(workshop4SourceSlides.slice(16, 19));
+    const backendText = JSON.stringify(coreSlides.slice(16, 19));
 
     expect(backendText).toContain('ANTHROPIC_API_KEY is set in your shell');
     expect(backendText).toContain('the runner picks sdk');
@@ -178,7 +205,7 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
   });
 
   it('keeps the intro and concept-recap slides in English', () => {
-    const blob = JSON.stringify(workshop4SourceSlides.slice(0, 14));
+    const blob = JSON.stringify(coreSlides.slice(0, 14));
     expect(blob).not.toMatch(/\b(?:Welkom|Vandaag|gisteren|Werkvorm|één|beeld|Vaste|dynamische|Systeemprompt|externe|goedkeuring|oefening|niet)\b/);
   });
 
@@ -194,7 +221,7 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
     expect(blob).toMatch(/--mcp-config/);
     expect(blob).toMatch(/--json-schema/);
     expect(blob).toMatch(/--resume/);
-    expect(blob).toMatch(/canUseTool is SDK-only/);
+    expect(blob).toMatch(/PreToolUse hook/);
     expect(blob).toMatch(/risk-agent/);
     expect(blob).toMatch(/customer-reply-agent/);
     expect(blob).toMatch(/customer-context-agent/);
@@ -239,7 +266,7 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
   });
 
   it('gives every practice slide a timer, checklist, expected outcome, and point pose', () => {
-    expect(practice).toHaveLength(6);
+    expect(practice).toHaveLength(7);
     expect(practice.map((slide) => String(slide.kicker))).toEqual([
       'SOLO 0 · Your turn',
       'SOLO 1 · Your turn',
@@ -247,6 +274,7 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
       'SOLO 3 · Your turn',
       'SOLO 4 · Your turn',
       'SOLO 5 · Your turn',
+      'SOLO 6 · Your turn',
     ]);
 
     for (const slide of practice) {
