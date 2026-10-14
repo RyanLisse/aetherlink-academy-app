@@ -136,11 +136,11 @@ const DEMO_SLIDES=[
 ];
 
 const en = {
- title:'Workshop 4 · Support agents with Claude Code and the Agent SDK',
+ title:'Workshop 4 · From n8n to Claude Agents SDK',
  tag:'Workshop',
   blurb:'Rebuild Maarten’s n8n support flow with structured output, subagents, read-only MCP tools, and human review of reply drafts.',
  kicker:'Workshop 4 · SOLO 0 → 5',
- lessonTitle:'Support agents with Claude Code and the Agent SDK',
+ lessonTitle:'From n8n to Claude Agents SDK',
  motto:'prompt → tools → result · chat in → chat out',
  leerdoel:'Rebuild the support workflow with Claude Code as the default backend, structured priority output, specialist subagents, customer and transaction MCP lookups, and human review.',
  narrative:[
@@ -215,11 +215,11 @@ const en = {
 };
 
 const nl = {
- title:'Workshop 4 · Supportagents met Claude Code en de Agent SDK',
+ title:'Workshop 4 · From n8n to Claude Agents SDK',
  tag:'Workshop',
  blurb:'Bouw Maartens n8n-supportflow opnieuw met gestructureerde output, subagents, MCP-tools en menselijke review.',
  kicker:'Workshop 4 · SOLO 0 → 5',
- lessonTitle:'Supportagents met Claude Code en de Agent SDK',
+ lessonTitle:'From n8n to Claude Agents SDK',
  motto:'prompt → tools → resultaat · chat in → chat uit',
  leerdoel:'Bouw de supportflow opnieuw met Claude Code als standaardbackend, gestructureerde prioriteitsoutput, specialistische subagents, klant- en transactie-MCP-lookups en menselijke review.',
  narrative:[

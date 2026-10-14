@@ -10,7 +10,7 @@ import {workshop5SourceSlides} from '../src/deck/workshop5-slides.ts';
 import {expectWorkshopClassroomContract} from './workshop-classroom-contract.ts';
 
 const introTitles = [
-  'Welcome to Workshop 4 · Support agents with Claude Code and the Agent SDK',
+  'Welcome to Workshop 4 · From n8n to Claude Agents SDK',
   'Yesterday’s recap · Maarten’s n8n build',
   'Quiz: yesterday\'s n8n flow',
   'Today · agenda',
@@ -147,7 +147,7 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
       expect(readFileSync(file).subarray(1, 4).toString('latin1'), title).toBe('PNG');
       expect(slide.layout, title).toBe('compare');
       const columns = slide.columns as ReadonlyArray<{title: string; items: ReadonlyArray<string>}>;
-      expect(columns.map((column) => column.title), title).toEqual(['n8n · Workshop 3', 'Claude Agent SDK · Workshop 4']);
+      expect(columns.map((column) => column.title), title).toEqual(['n8n · Workshop 3', 'From n8n to Claude Agents SDK · Workshop 4']);
       for (const column of columns) expect(column.items.length, title).toBeGreaterThan(0);
       expect(String(slide.subtitle ?? ''), title).toMatch(/[.!?]$/);
     });

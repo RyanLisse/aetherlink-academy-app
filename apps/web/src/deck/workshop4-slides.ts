@@ -6,7 +6,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
   /* ===== Intro (live room deck since 2026-10-08) ===== */
   {
     lessonId: "workshop-4",
-    title: "Welcome to Workshop 4 · Support agents with Claude Code and the Agent SDK",
+    title: "Welcome to Workshop 4 · From n8n to Claude Agents SDK",
     kicker: "Workshop 4 · Thu 8 Oct",
     type: "concept",
     visual: { bot: "wave", place: "beside" },
@@ -173,7 +173,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
         ],
       },
       {
-        title: "Claude Agent SDK · Workshop 4",
+        title: "From n8n to Claude Agents SDK · Workshop 4",
         items: [
           "npm run chat → query()",
           "CLAUDE.md",
@@ -202,7 +202,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     columns: [
       { title: "n8n · Workshop 3", items: ["AI Agent node with Chat Model, Memory and Tools", "Options → Max Iterations", "One run per click"] },
       {
-        title: "Claude Agent SDK · Workshop 4",
+        title: "From n8n to Claude Agents SDK · Workshop 4",
         items: [
           "for await (… of query({ prompt, options }))",
           "prompt → model turn → tool_use → tool_result → next turn → result message",
@@ -233,7 +233,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
         ],
       },
       {
-        title: "Claude Agent SDK · Workshop 4",
+        title: "From n8n to Claude Agents SDK · Workshop 4",
         items: [
           "CLAUDE.md: Purpose · Rules · Priority definitions",
           "settingSources: ['project'] loads CLAUDE.md",
@@ -256,7 +256,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     columns: [
       { title: "n8n · Workshop 3", items: ["You attach tools to the AI Agent", "Customer Reply Agent and Risk Agent as tools", "Everything attached is allowed"] },
       {
-        title: "Claude Agent SDK · Workshop 4",
+        title: "From n8n to Claude Agents SDK · Workshop 4",
         items: [
           "tools: what exists (Lesson 1: [] · Lesson 2: ['Agent','Write'])",
           "allowedTools: what runs without asking",
@@ -278,7 +278,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     columns: [
       { title: "n8n · Workshop 3", items: ["HTTP Request node per API", "External service", "(Concept: the W3 export has no HTTP node)"] },
       {
-        title: "Claude Agent SDK · Workshop 4",
+        title: "From n8n to Claude Agents SDK · Workshop 4",
         items: [
           "docs/transactions.xlsx → server.js (MCP, stdio)",
           "The SDK starts the server on demand",
@@ -302,7 +302,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     columns: [
       { title: "n8n · Workshop 3", items: ["IF node: check before the action", "Wait node: wait for approval", "Error Workflow: on failure"] },
       {
-        title: "Claude Agent SDK · Workshop 4",
+        title: "From n8n to Claude Agents SDK · Workshop 4",
         items: [
           "PreToolUse hook: allow, ask, or deny per call",
           "Human review stays on reply drafts",
@@ -325,7 +325,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     columns: [
       { title: "n8n · Workshop 3", items: ["AI Agent as coordinator", "Customer Reply Agent + Risk Agent (own model + memory)", "Code → Switch afterwards"] },
       {
-        title: "Claude Agent SDK · Workshop 4",
+        title: "From n8n to Claude Agents SDK · Workshop 4",
         items: [
           "Orchestrator follows CLAUDE.md: delegate, don't do it yourself",
           "Agent → risk-agent (priority)",
@@ -349,7 +349,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     columns: [
       { title: "n8n · Workshop 3", items: ["Execute Workflow node calls a sub-workflow", "Reusable sub-workflow or template", "You choose when it runs"] },
       {
-        title: "Claude Agent SDK · Workshop 4",
+        title: "From n8n to Claude Agents SDK · Workshop 4",
         items: [
           ".claude/skills/<name>/SKILL.md (name + description)",
           "At start: only the description",
@@ -372,7 +372,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     columns: [
       { title: "n8n · Workshop 3", items: ["Input → Switch → Low / Medium / High", "You draw every path up front", "Works well for fixed rules"] },
       {
-        title: "Claude Agent SDK · Workshop 4",
+        title: "From n8n to Claude Agents SDK · Workshop 4",
         items: [
           "Fixed code: npm run check (check.mjs)",
           "Agent chooses: which subagent, which tool",
