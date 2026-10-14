@@ -471,10 +471,6 @@ window.SLIDES = [
     "kicker": "W5 · OUR PROJECT · REFERENCE",
     "subtitle": "Today offline. In production: real cloud signals. Same division of labour.",
     "type": "concept",
-    "repo": {
-      "url": "https://github.com/ai-developer-community/ai-sre-agent",
-      "label": "github.com/ai-developer-community/ai-sre-agent"
-    },
     "layout": "compare",
     "columns": [
       {
@@ -507,7 +503,11 @@ window.SLIDES = [
       "bot": "think",
       "place": "beside"
     },
-    "notes": "Time: 10:49 · 1 min.\n1. Say: “This is what the same agent looks like on Google Cloud. We do not build this today. It needs a cloud project.”\n2. Say: “Look at what stays the same: read-only tools, evidence, a human closes the incident.”\n3. Show: https://github.com/ai-developer-community/ai-sre-agent (README · Run locally)."
+    "notes": "Time: 10:49 · 1 min.\n1. Say: “This is what the same agent looks like on Google Cloud. We do not build this today. It needs a cloud project.”\n2. Say: “Look at what stays the same: read-only tools, evidence, a human closes the incident.”\n3. Show: https://github.com/ai-developer-community/ai-sre-agent (README · Run locally).",
+    "source": {
+      "url": "https://github.com/ai-developer-community/ai-sre-agent",
+      "label": "github.com/ai-developer-community/ai-sre-agent"
+    }
   },
   {
     "title": "The rules for today",
@@ -887,7 +887,7 @@ window.SLIDES = [
       "Write docs/spec.md. One example per field.",
       "npm run test:workshop: the A3 contract tests are red.",
       "Rebuild the evidence rules in src/contract.ts (TODO A3).",
-      "Add the customer_impact field. Green. Open a PR/MR."
+      "Add customer_impact in src/contract.ts, src/runtime.ts and test fixtures. Green. PR/MR."
     ],
     "expected": "A3 tests green. npm test still fail 0. The test commit is first.",
     "stepsHeading": "Do this now:",
@@ -906,7 +906,7 @@ window.SLIDES = [
       "A claim needs a reference.",
       "A missing signal is unknown, not healthy."
     ],
-    "notes": "Time: 11:47 · 12 min. Finish after lunch if needed.\n1. Let them do: each team writes docs/spec.md from intent.md.\n2. Then: npm run test:workshop. The seven A3 tests in test/workshop/contract.test.ts are red.\n3. They rebuild the rules in src/contract.ts (TODO(A3)): a rollback needs a deploys evidence line, a strong proposal needs two sources, low confidence cannot carry a strong proposal, evidence needs at least one line, high confidence is refused while data_gaps exist, and customer_impact is required and non-empty.\n4. Check: the A3 tests go green; npm test stays fail 0; npm run typecheck is clean.\n5. Check: npm run investigate -- fixtures/incidents/bad-deploy.json --dry-run still prints a diagnosis.\n6. Another team reads the spec against intent.md.\n7. Catch-up: git checkout w5-step-2-spec-contract -- src/contract.ts docs/spec.md."
+    "notes": "Time: 11:47 · 12 min. Finish after lunch if needed.\n1. Let them do: each team writes docs/spec.md from intent.md.\n2. Then: npm run test:workshop. The seven A3 tests in test/workshop/contract.test.ts are red.\n3. They rebuild the rules in src/contract.ts (TODO(A3)): a rollback needs a deploys evidence line, a strong proposal needs two sources, low confidence cannot carry a strong proposal, evidence needs at least one line, high confidence is refused while data_gaps exist, and customer_impact is required and non-empty.\n3a. customer_impact is required, so the offline verdicts in src/runtime.ts and the fixtures in test/contract.test.ts need it too. With only src/contract.ts changed, npm test shows 5 failures.\n4. Check: the A3 tests go green; npm test stays fail 0; npm run typecheck is clean.\n5. Check: npm run investigate -- fixtures/incidents/bad-deploy.json --dry-run still prints a diagnosis.\n6. Another team reads the spec against intent.md.\n7. Catch-up: git checkout w5-step-2-spec-contract -- src/contract.ts src/runtime.ts src/prompts.ts src/cli.ts console/index.html test/contract.test.ts docs/spec.md."
   },
   {
     "title": "Lunch",
@@ -1526,7 +1526,7 @@ window.SLIDES = [
       "The adversarial alert tries to give orders. It is data.",
       "bench/ratchet.json is a floor."
     ],
-    "notes": "Time: 14:57 · 3 min.\n1. Show: run npm run bench.\n2. Show: the adversarial case. The alert text contains an instruction. The agent ignores it.\n3. Show: bench/ratchet.json (min_rate 0.7, max_harmful 0).\n4. Say: “Set min_rate lower and CI refuses. The floor only goes up.”"
+    "notes": "Time: 14:57 · 3 min.\n1. Show: run npm run bench.\n2. Show: the adversarial case. The alert text contains an instruction. The agent ignores it.\n3. Show: bench/ratchet.json (min_rate 0.7, max_harmful 0).\n4. Say: “The agent cannot lower min_rate: the guard denies the edit. A human who lowers it shows up in the PR diff, and review rejects it. The floor only goes up.”"
   },
   {
     "title": "Watch: /verify-this",
@@ -1566,7 +1566,7 @@ window.SLIDES = [
       "npm run bench. Expect PASS bench.",
       "Add one case to bench/cases.json.",
       "npm run bench again. Still PASS?",
-      "Try to lower bench/ratchet.json. See it refused.",
+      "Ask Claude to lower bench/ratchet.json. Your A4 rule denies it.",
       "Optional: /verify-this."
     ],
     "expected": "PASS bench. One new case. harmful 0.",
@@ -1588,7 +1588,7 @@ window.SLIDES = [
       "The ratchet only goes up.",
       "harmful must stay 0."
     ],
-    "notes": "Time: 15:04 · 11 min.\n1. Let them do: the steps on the slide.\n2. A good case: a new incident shape, or an adversarial alert whose text tries to give orders. Alert text is data, not policy.\n3. Try lowering min_rate in bench/ratchet.json: the guard from A4 denies the agent; by hand, the bench refuses a lower floor and exits non-zero.\n4. Gate: a reviewer from another team runs npm run bench again on your branch.\n5. Check: npm run progress shows ✓ A-7.\n6. Catch-up: git checkout w5-step-6-eval -- bench/cases.json."
+    "notes": "Time: 15:04 · 11 min.\n1. Let them do: the steps on the slide.\n2. A good case: a new incident shape, or an adversarial alert whose text tries to give orders. Alert text is data, not policy.\n3. Try lowering min_rate in bench/ratchet.json: the guard rule from A4 denies the agent. By hand, a lower floor still passes the bench: it only checks score against the floor. The floor is protected by the guard and by review: reject any PR that lowers ratchet.json.\n4. Gate: a reviewer from another team runs npm run bench again on your branch.\n5. Check: npm run progress shows ✓ A-7.\n6. Catch-up: git checkout w5-step-6-eval -- bench/cases.json."
   },
   {
     "title": "workflows",
@@ -1703,7 +1703,7 @@ window.SLIDES = [
       "/visual-pr writes only docs/pr/.",
       "GitHub and GitLab."
     ],
-    "notes": "Time: 15:18 · 5 min. Showcase 4.\n1. Show: the open bad-deploy incident. Type “roll back now” in chat. The chat refuses: mutations are buttons.\n2. Show: type your name. Click Approve rollback. Execute becomes active.\n3. Show: click Execute rollback. The executor recomputes the target from telemetry. The watch says LANDED.\n4. Show: Mark mitigated. Then Resolve with notes. The notes go to lessons/lessons.md with your name.\n5. Show: git switch -c fix/<name>. Commit. Push. The hook denies the push.\n6. Show: in your OWN terminal, run npm run approve -- ryan fix/<name> \"bad-deploy verdict accepted\". Push again. Open the PR.\n7. Say: “The agent can never merge or approve.”"
+    "notes": "Time: 15:18 · 5 min. Showcase 4.\n1. Show: the open bad-deploy incident. Type “roll back now” in chat. The chat refuses: mutations are buttons.\n2. Show: type your name. Click Approve rollback. Execute becomes active.\n3. Show: click Execute rollback. The executor recomputes the target from telemetry. The watch says LANDED.\n4. Show: Mark mitigated. Then Resolve with notes. The notes go to lessons/lessons.md with your name.\n5. Show: git switch -c fix/<name>. Commit. Push. The hook denies the push.\n6. Show: in your OWN terminal, run npm run approve:git -- ryan fix/<name> \"bad-deploy verdict accepted\". Push again. Open the PR.\n7. Say: “The agent can never merge or approve.”"
   },
   {
     "title": "Assignment 8: The gate: approve with your name",
@@ -1939,10 +1939,6 @@ window.SLIDES = [
   {
     "title": "Time left? The loop, solo",
     "kicker": "W5 · BONUS · DAILY BRIEF SOLO",
-    "repo": {
-      "url": "https://github.com/RyanLisse/aetherlink-daily-brief-lab-s1",
-      "label": "github.com/RyanLisse/aetherlink-daily-brief-lab-s1"
-    },
     "type": "concept",
     "layout": "steps",
     "items": [
@@ -1983,7 +1979,11 @@ window.SLIDES = [
       "Solo and small.",
       "Repo only, sample data, no network."
     ],
-    "notes": "Time: 1 min.\n1. Say: “This is the same loop as this afternoon, solo and small. The guide is SOLO.md in aetherlink-daily-brief-lab-s1.”\n2. Say the rules: work on my/<your-name>, sample data first (npm run brief:sample needs no API key), tokens only read-only and only in .env, a human reads the PR against intent.md.\n3. Say: “Today: steps 1–4 (about 40 min). Steps 5–7 are homework before W6.”"
+    "notes": "Time: 1 min.\n1. Say: “This is the same loop as this afternoon, solo and small. The guide is SOLO.md in aetherlink-daily-brief-lab-s1.”\n2. Say the rules: work on my/<your-name>, sample data first (npm run brief:sample needs no API key), tokens only read-only and only in .env, a human reads the PR against intent.md.\n3. Say: “Today: steps 1–4 (about 40 min). Steps 5–7 are homework before W6.”",
+    "source": {
+      "url": "https://github.com/RyanLisse/aetherlink-daily-brief-lab-s1",
+      "label": "github.com/RyanLisse/aetherlink-daily-brief-lab-s1"
+    }
   },
   {
     "title": "Watch: one source, one gate",
