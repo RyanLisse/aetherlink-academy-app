@@ -69,7 +69,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
       },
       {
         title: "15:00–16:00 · Assignment",
-        body: "Break 14:45–15:00. Extend the MCP. Close at 15:50. Step 5 is homework.",
+        body: "Break 14:45–15:00. Extend the MCP: core first. Close at 15:50. Step 5 is homework.",
       },
     ],
     keyPoints: [
@@ -1108,31 +1108,23 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
       place: "beside",
       stepThrough: true,
     },
-    subtitle: "Why: a real agent changes data. You decide who may write, and when a person decides.",
+    subtitle: "Why: a real agent changes data. Do the core first (35 min).",
     keyPoints: [
-      "Step 3 stays read-only.",
-      "The assignment adds writes to a working copy.",
-      "A hook and a person control each write.",
+      "Core: Part 1 and Part 2.",
+      "Stretch: Part 3 and Part 4.",
+      "Step 3 stays read-only. Writes go to a working copy.",
     ],
     cards: [
       {
-        title: "1 · Tools",
-        body: "CRUD tools → working copy. save_reply_draft → drafts.",
+        title: "Core · Parts 1–2 · 35 min",
+        body: "CRUD tools on a working copy. Only transaction-agent writes. A hook allows, asks or denies each write.",
       },
       {
-        title: "2 · Agents",
-        body: "Make transaction-agent and fraud-check-agent. Give each only its tools.",
-      },
-      {
-        title: "3 · CLAUDE.md",
-        body: "Only transaction-agent writes. Fraud check first. Denied is final.",
-      },
-      {
-        title: "4 · Hooks and workflow",
-        body: "PreToolUse decides. PostToolUse logs. npm run resolve runs the chain.",
+        title: "Stretch · Parts 3–4 · optional",
+        body: "A drafts tool and fraud-check-agent. AskUserQuestion and npm run resolve.",
       },
     ],
-    notes: "Explain the final assignment. Step 3 stays read-only. The assignment adds add_transaction, update_transaction and delete_transaction to the transactions MCP server. These tools write only to participant-output/transactions.working.json; docs/transactions.xlsx does not change. A new drafts MCP server adds save_reply_draft: it writes the reply draft to participant-output/drafts/. Participants make transaction-agent and fraud-check-agent, add rules to CLAUDE.md, write the PreToolUse and PostToolUse hooks, and run the npm run resolve workflow. npm run reset:mcp removes the working copy and the drafts.",
+    notes: "The room target is the core: Part 1 and Part 2. Fast squads do the stretch, the rest can do it at home. npm run check:assignment reports core and stretch apart; it exits 0 when the core passes. Explain the final assignment. Step 3 stays read-only. The assignment adds add_transaction, update_transaction and delete_transaction to the transactions MCP server. These tools write only to participant-output/transactions.working.json; docs/transactions.xlsx does not change. A new drafts MCP server adds save_reply_draft: it writes the reply draft to participant-output/drafts/. Participants make transaction-agent and fraud-check-agent, add rules to CLAUDE.md, write the PreToolUse and PostToolUse hooks, and run the npm run resolve workflow. npm run reset:mcp removes the working copy and the drafts.",
   },
   {
     lessonId: "workshop-4",
@@ -1264,12 +1256,12 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
         body: "Add the write tools. Why: the working copy keeps the workbook unchanged.",
       },
       {
-        title: "03-mcp/transaction-mcp/drafts-server.js",
+        title: "03-mcp/transaction-mcp/drafts-server.js · stretch",
         body: "Add save_reply_draft. Why: a person reads the draft before it is sent.",
       },
       {
         title: "03-mcp/claude-project/.claude/agents/",
-        body: "Make transaction-agent and fraud-check-agent. Why: least privilege.",
+        body: "Make transaction-agent (core) and fraud-check-agent (stretch). Why: least privilege.",
       },
     ],
     notes: "Show each file in the editor. server.js gets add_transaction, update_transaction and delete_transaction; they write to participant-output/transactions.working.json. drafts-server.js gets save_reply_draft; it writes participant-output/drafts/MSG-0N.md. The agent files list the tools for each agent. The SDK agents definition uses the same tool lists.",
@@ -1293,14 +1285,14 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     cards: [
       {
         title: "03-mcp/claude-project/CLAUDE.md",
-        body: "Add the write rules. Why: the orchestrator must know who writes and when to stop.",
+        body: "Add the write rules (core). Add the fraud and question rules (stretch). Why: the orchestrator must know who writes and when to stop.",
       },
       {
         title: "03-mcp/hooks/transaction-guard.mjs + .claude/settings.json",
         body: "Add the hooks. Why: code decides each write, not the model.",
       },
       {
-        title: "03-mcp/resolve.mjs",
+        title: "03-mcp/resolve.mjs · stretch",
         body: "Add the workflow. Why: the same safe order runs every time.",
       },
     ],
@@ -1321,14 +1313,14 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     },
     subtitle: "Run the check, run the workflow, and read the audit log.",
     keyPoints: [
-      "npm run check:assignment fails on step-4.",
+      "npm run check:assignment lists the core items on step-4.",
       "MSG-07 shows ask, allow and deny.",
       "MSG-08 and MSG-09 show hold and ask.",
     ],
     cards: [
       {
         title: "Check first",
-        body: "npm run check:assignment\nOn step-4 it fails and gives hints.",
+        body: "npm run check:assignment\nOn step-4 it lists the core items to fix.",
       },
       {
         title: "Small and large writes",
@@ -1349,18 +1341,18 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     visual: {
       opener: "showcase",
       image: "workshop-4/10-good-offline.png",
-      imageLink: "Terminal: check:assignment passes, the small update is allowed, the large update asks",
+      imageLink: "Terminal: check:assignment passes the core, the small update is allowed, the large update asks",
     },
     subtitle: "Compare your terminal with this screen.",
     keyPoints: [
-      "check:assignment says: Assignment check passed.",
+      "check:assignment says: Core · Parts 1–2: passed.",
       "hook:demo small: Decision allow. No question.",
       "hook:demo large: Decision ask. The reason shows amount and limit.",
     ],
     cards: [
       {
         title: "check:assignment",
-        body: "Assignment check passed. A failure names the file to fix.",
+        body: "Core · Parts 1–2: passed. When the stretch is done too: Assignment check passed.",
       },
       {
         title: "hook:demo small",
@@ -1383,11 +1375,9 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
       image: "workshop-4/11-good-live.png",
       imageLink: "Terminal: MSG-07 denied write, MSG-08 fraud hold, MSG-09 AskUserQuestion",
     },
-    subtitle: "Three tickets, three safe stops.",
+    subtitle: "Stretch: three tickets, three safe stops.",
     keyPoints: [
-      "MSG-07, answer N: the hook denies. The agent stops. No retry.",
-      "MSG-08: fraud-check-agent holds. No write.",
-      "MSG-09: the agent asks you with AskUserQuestion. Choose 1: no write.",
+      "Stretch: three tickets, three safe stops.",
     ],
     cards: [
       {
@@ -1423,16 +1413,16 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
       },
     ],
     steps: [
-      "Add the write tools to server.js. Add save_reply_draft to drafts-server.js.",
-      "Make transaction-agent and fraud-check-agent in .claude/agents/. Give each only its tools.",
-      "Give customer-reply-agent save_reply_draft. Add the write rules to CLAUDE.md.",
-      "Write the PreToolUse and PostToolUse hooks in 03-mcp/hooks/transaction-guard.mjs.",
-      "Run npm run check:assignment until it passes. Then run npm run resolve -- MSG-07.",
+      "Core: add the write tools to server.js. Make transaction-agent and give it get, update and add.",
+      "Core: add the write rules to CLAUDE.md. Write the hooks in 03-mcp/hooks/transaction-guard.mjs.",
+      "Core: run npm run check:assignment until it says Core · Parts 1–2: passed.",
+      "Stretch: add save_reply_draft and fraud-check-agent. Give each agent only its tools.",
+      "Stretch: add AskUserQuestion and npm run resolve. Run npm run resolve -- MSG-07.",
     ],
-    expected: "npm run check:assignment passes, drafts/ has the reply draft, audit.jsonl shows each write, and a denied write stops the run.",
-    subtitle: "Add the write tools, give them to one agent, and control them with hooks.",
+    expected: "Core: check:assignment says Core passed and a large write asks a person. Stretch: Assignment check passed, drafts/ has the draft, a denied write stops the run.",
+    subtitle: "Do the core first. Then do the stretch if you have time.",
     keyPoints: [
-      "Writes go to the working copy only.",
+      "Core first: Part 1 and Part 2.",
       "Only transaction-agent writes.",
       "A denied write is final.",
     ],
@@ -1617,8 +1607,8 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
         caption: "Priority Parser → JSON schema → fixed Switch route.",
       },
       {
-        label: "Five agents",
-        caption: "risk, customer-reply, customer-context, fraud-check and transaction-agent. Each has only its tools.",
+        label: "Least privilege",
+        caption: "Only transaction-agent writes. Each agent has only its tools.",
       },
       {
         label: "Hooks + a person",
