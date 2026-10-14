@@ -1054,7 +1054,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
       { title: "MSG-08 · fraud flag", body: "fraud-check-agent holds. ESCALATE. No write." },
       { title: "MSG-09 · mismatch", body: "AskUserQuestion. Choose 1: ESCALATE. No write." },
     ],
-    notes: "These are real runs on the solution branch. The model words can differ, but the stops must be the same. Check participant-output/audit.jsonl: every write attempt has one line. After MSG-07 with y, a draft is in participant-output/drafts/MSG-07.md and starts with DRAFT. Run npm run reset:mcp to start again.",
+    notes: "These are real runs on the solution branch. The model words can differ, but the stops must be the same. Check participant-output/audit.jsonl: each applied write and each saved draft has one line. A denied write adds no line. After MSG-07 with y, a draft is in participant-output/drafts/MSG-07.md and starts with DRAFT. Run npm run reset:mcp to start again.",
   },
   {
     lessonId: "workshop-4",
