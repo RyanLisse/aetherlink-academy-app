@@ -233,7 +233,7 @@ export const workshop4SourceSlides: ReadonlyArray<Record<string, unknown>> = [
     subtitle: "The MCP server owns the data. The agent only sees what the tool returns.",
     keyPoints: ["The MCP server owns the data. The agent only sees what the tool returns."],
     columns: [
-      { title: "n8n · Workshop 3", items: ["HTTP Request node per API", "External service", "(Concept: the W3 export has no HTTP node)"] },
+      { title: "n8n · Workshop 3", items: ["Customer Context Agent as a tool of the AI Agent", "Data Table reads customer_context.csv", "Same idea: one HTTP Request node per API"] },
       {
         title: "Claude Agent SDK · Workshop 4",
         items: [
