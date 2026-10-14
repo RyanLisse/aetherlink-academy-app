@@ -2,8 +2,8 @@
 
 - Source repository: `https://github.com/RyanLisse/aetherlink-classroom-slides.git` (fork of `jyse/aetherlink-classroom-slides`)
 - Upstream base commit: `77c375982f922d057823f45c7f41b718149d008f`
-- Source commit: `ee7cf611bcbb68dfe204521f7a2ddddb85d7de0b` (W5 deck on the fork: the local SRE-agent console lab, review fixes and the INC-1001 scenario). `sessions.js` stays at the upstream base: the fork's version links decks that are not mirrored here.
-- Copied payload SHA-256 (contents of all files here except this one, concatenated in `LC_ALL=C` path order): `8ff8aa3b75ede294392d5f5ebec38ceee0f7c1936eba58e25607eea2e48729e6`
+- Source commit: `79b50cef007e0c15ded353f1a9e68bbd6b2225e4` (W5 deck on the fork: the local SRE-agent console lab, review fixes, the on-call use case story and the INC-1001 scenario). `sessions.js` stays at the upstream base: the fork's version links decks that are not mirrored here.
+- Copied payload SHA-256 (contents of all files here except this one, concatenated in `LC_ALL=C` path order): `cd782fbebe41ead769812858da1a04da706bffccb4c616424e8fbb1da77e9b9b`
 - Published entry point: `/workshop-5/classroom/workshop5.html`
 
 Reproduce the static artifact from a checkout at the source commit:
