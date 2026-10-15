@@ -89,7 +89,7 @@ window.SLIDES = [
     "cards": [
       {
         "title": "Morning",
-        "body": "10:00 Welcome + W4 recap\n10:30 Why AI-native · 10:45 Setup\n11:15 Plan · 11:40 Design"
+        "body": "10:00 Welcome + W4 recap\n10:30 Why AI-native\n10:43 Use case · 10:54 Setup\n11:15 Plan · 11:40 Design"
       },
       {
         "title": "Afternoon",
@@ -392,7 +392,267 @@ window.SLIDES = [
       "Review in a PR (GitHub) or MR (GitLab).",
       "No external tool."
     ],
-    "notes": "Time: 10:41 · 4 min.\n1. Say: “Each arrow has a file. You can show each file.”\n2. Say: “Together the files are the audit trail: who decided what, from which evidence.”\n3. Say: “All files are in the repo. Review is a PR on GitHub or an MR on GitLab.”"
+    "notes": "Time: 10:41 · 2 min.\n1. Say: “Each arrow has a file. You can show each file.”\n2. Say: “Together the files are the audit trail: who decided what, from which evidence.”\n3. Say: “All files are in the repo. Review is a PR on GitHub or an MR on GitLab.”"
+  },
+  {
+    "title": "Why build an on-call agent?",
+    "kicker": "W5 · THE USE CASE · 1 / 5 · THE PROBLEM",
+    "subtitle": "A small web shop. Six engineers. Tonight, one of them is on call.",
+    "type": "context",
+    "cards": [
+      {
+        "title": "The team",
+        "body": "Six engineers run the shop. Each week one of them is on call, day and night."
+      },
+      {
+        "title": "The page",
+        "body": "When checkout fails, customers cannot pay. Every minute costs orders and trust."
+      },
+      {
+        "title": "The real problem",
+        "body": "The repair is often fast. The search is slow. Tired people guess, and the knowledge stays in one head."
+      }
+    ],
+    "tagline": "We do not build the agent to fix faster. We build it to find the cause faster, with proof.",
+    "visual": {
+      "bot": "wave",
+      "place": "aside",
+      "highlight": [
+        {
+          "in": "subtitle",
+          "text": "one of them is on call",
+          "tone": "orange"
+        }
+      ]
+    },
+    "keyPoints": [
+      "On-call is a team problem, not a hero problem.",
+      "The search costs the most time.",
+      "No proof, no record, no learning."
+    ],
+    "notes": "Time: 10:43 · 1 min.\n1. Say: “Before we build, we ask why. Who has the problem? What is the problem?”\n2. Read the three cards.\n3. Ask: “Who here was on call? What took the most time?” Collect 2 answers.\n4. Say: “Today we follow one night of this team. This is the ticket.”"
+  },
+  {
+    "title": "The ticket: INC-1001",
+    "kicker": "W5 · THE USE CASE · 2 / 5 · ONE NIGHT",
+    "subtitle": "03:50 at night. Checkout fails. You are on call.",
+    "type": "context",
+    "cards": [
+      {
+        "title": "INC-1001 · P1 · checkout",
+        "body": "Alert: error rate 12% for 5 min. The threshold is 2%. Customers cannot pay."
+      },
+      {
+        "title": "What we know",
+        "body": "Deploy v2.15.0 went out a few minutes ago. Nobody knows yet if it is the cause."
+      },
+      {
+        "title": "Your job",
+        "body": "Find the cause, with evidence. Propose one fix. A named human approves it. Close the ticket with notes."
+      }
+    ],
+    "tagline": "Today you build the agent that does the first 40 minutes of this ticket. You decide the rest.",
+    "visual": {
+      "bot": "think",
+      "place": "aside",
+      "highlight": [
+        {
+          "in": "subtitle",
+          "text": "You are on call",
+          "tone": "orange"
+        }
+      ]
+    },
+    "keyPoints": [
+      "One real ticket. We follow it all day.",
+      "The agent finds evidence. A human decides.",
+      "Each assignment is one step of this ticket."
+    ],
+    "notes": "Time: 10:44 · 1 min.\n1. Say: “This is the ticket for today. INC-1001. It is 03:50. Checkout fails. You are on call.”\n2. Show: the three cards. Read the alert out loud.\n3. Ask: “What do you do first?” Collect 2–3 answers. Most people say “look at the deploy” or “roll back”.\n4. Say: “Today you build an agent that does the first 40 minutes for you. It reads, it explains, it proposes. You decide.”\n5. Say: “Every assignment today is one step of this ticket. When you are lost, ask: which step of INC-1001 am I on?”"
+  },
+  {
+    "title": "Without help: where the first hour goes",
+    "kicker": "W5 · THE USE CASE · 3 / 5 · TODAY",
+    "subtitle": "INC-1001, the way most teams work it today.",
+    "type": "concept",
+    "layout": "steps",
+    "detail": "Press → for each step. About 35 minutes of search, 5 minutes of repair.",
+    "items": [
+      {
+        "label": "03:50 Page",
+        "caption": "the phone rings",
+        "detail": "The pager wakes you. You read the alert half asleep."
+      },
+      {
+        "label": "03:55 Five tabs",
+        "caption": "dashboards, logs, deploys",
+        "detail": "You open dashboards, logs, the deploy list, the diff and the team chat. Each tool has its own login and its own clock."
+      },
+      {
+        "label": "04:10 A guess",
+        "caption": "“it is the deploy”",
+        "detail": "You guess the cause before you have proof. Maybe you are right. Maybe it is the payment provider."
+      },
+      {
+        "label": "04:25 Proof",
+        "caption": "match the times",
+        "detail": "You match the error spike to the deploy time by hand. This is the slow part."
+      },
+      {
+        "label": "04:30 Rollback",
+        "caption": "fast, from memory",
+        "detail": "You roll back from memory. Nobody checks if the error rate really went down."
+      },
+      {
+        "label": "Next day",
+        "caption": "no record",
+        "detail": "The ticket says “fixed”. Nobody can say why. The next on-call engineer starts from zero."
+      }
+    ],
+    "visual": {
+      "stepKeys": true
+    },
+    "keyPoints": [
+      "Most of the hour is search, not repair.",
+      "Tired people guess.",
+      "No record, so the team does not learn."
+    ],
+    "notes": "Time: 10:45 · 1 min.\n1. Press → for each step. Read the caption.\n2. Ask: “Which step is the slow one?” Answer: the search, 03:55 to 04:25.\n3. Say: “The agent takes the search. You keep the decision.”"
+  },
+  {
+    "title": "With the agent: what it does, what you do",
+    "kicker": "W5 · THE USE CASE · 4 / 5 · WHO DOES WHAT",
+    "type": "concept",
+    "layout": "compare",
+    "columns": [
+      {
+        "title": "The agent: search and propose",
+        "items": [
+          "Reads logs, metrics, deploys and the diff. Read-only.",
+          "Connects the error spike to deploy v2.15.0, with a reference per claim",
+          "Proposes ONE fix and says what would change its mind"
+        ]
+      },
+      {
+        "title": "You: decide and close",
+        "items": [
+          "Challenge the diagnosis in the chat",
+          "Approve the rollback with your name, then execute",
+          "Check that it landed. Close the ticket. Keep the lesson."
+        ]
+      }
+    ],
+    "visual": {
+      "pairs": true
+    },
+    "keyPoints": [
+      "The agent saves the search, not the decision.",
+      "Evidence before a fix.",
+      "The human signs the fix."
+    ],
+    "notes": "Time: 10:46 · 1 min.\n1. Show the left column. Say: “The agent does the slow part: the search. It shows its evidence. It proposes one fix.”\n2. Show the right column. Say: “You keep every decision. Approve, execute, close. With your name.”\n3. Ask: “Why not let the agent roll back by itself?” Collect answers: a wrong rollback is a second incident; alert text can contain instructions (prompt injection); nobody owns the decision.\n4. Say: “That is why the agent has no write tools. It is the design, not a missing feature.”"
+  },
+  {
+    "title": "The use case on one page",
+    "kicker": "W5 · THE USE CASE · 5 / 5 · THE INTENT",
+    "subtitle": "This is the shape of the intent.md you write in A2.",
+    "type": "context",
+    "cards": [
+      {
+        "title": "Serves",
+        "body": "The on-call engineer of the checkout service. At 03:50, alone."
+      },
+      {
+        "title": "Delivers",
+        "body": "Minutes after the alert: a diagnosis with a reference per claim, and ONE proposed next step."
+      },
+      {
+        "title": "Never does",
+        "body": "Roll back, scale, flip a flag, page people or close the ticket. A named human does that."
+      }
+    ],
+    "tagline": "Success: every claim has a reference, no action without a named human, and the bench score never goes down.",
+    "visual": {
+      "bot": "point",
+      "place": "aside",
+      "highlight": [
+        {
+          "in": "card:2",
+          "text": "A named human does that",
+          "tone": "mark"
+        }
+      ]
+    },
+    "keyPoints": [
+      "Who it serves. What it delivers. What it never does.",
+      "Three checks a stranger can verify.",
+      "The same page works for your hackathon agent."
+    ],
+    "notes": "Time: 10:47 · 1 min.\n1. Say: “This is the use case on one page. Who it serves, what it delivers, what it never does.”\n2. Read the success line. Say: “Each part is a check. A stranger can run it.”\n3. Say: “In A2 you write this page yourself, in intent.md. In A9 you write one for your next agent.”"
+  },
+  {
+    "title": "One ticket, nine assignments",
+    "kicker": "W5 · THE USE CASE · THE MAP",
+    "subtitle": "The SRE agent is the example. The AI-native SDLC is what you learn.",
+    "type": "concept",
+    "layout": "steps",
+    "items": [
+      {
+        "label": "A1 Setup",
+        "caption": "open the console",
+        "detail": "Open the console you work the ticket in."
+      },
+      {
+        "label": "A2 Intent",
+        "caption": "who it serves",
+        "detail": "Agree who the agent serves and what it may never do."
+      },
+      {
+        "label": "A3 Spec",
+        "caption": "what a diagnosis contains",
+        "detail": "Decide what a diagnosis must contain: evidence, customer impact."
+      },
+      {
+        "label": "A4 Controls",
+        "caption": "refuse “roll back now”",
+        "detail": "Make the chat refuse mutations. Block risky commands with a hook."
+      },
+      {
+        "label": "A5 Tool",
+        "caption": "read the deploys",
+        "detail": "Give the agent one read-only tool: the deploy list."
+      },
+      {
+        "label": "A6 Diagnose",
+        "caption": "work the ticket live",
+        "detail": "Break the shop. Watch INC-1001 open. Read and challenge the diagnosis."
+      },
+      {
+        "label": "A7 Bench",
+        "caption": "prove it on old tickets",
+        "detail": "Run the agent on old tickets. The score may not go down."
+      },
+      {
+        "label": "A8 Approve",
+        "caption": "a human signs the rollback",
+        "detail": "Approve the rollback with your name. Execute. Check it landed."
+      },
+      {
+        "label": "A9 Maintain",
+        "caption": "close it, keep the lesson",
+        "detail": "Close the ticket with notes. The lesson becomes a test."
+      }
+    ],
+    "detail": "Click a step to see what you do for INC-1001.",
+    "visual": {
+      "stepKeys": true
+    },
+    "keyPoints": [
+      "Each assignment is one step of INC-1001.",
+      "The steps follow the SDLC loop.",
+      "Lost? Find your step on this map."
+    ],
+    "notes": "Time: 10:48 · 1 min.\n1. Say: “This is the map for today. Each assignment is one step of INC-1001.”\n2. Click: A6 and A8. Say: “At 14:10 you work the ticket live. At 15:23 you sign the rollback.”\n3. Say: “The agent is the example. What you learn is the loop: intent, spec, controls, build, evals, gate, maintain. You use the same loop in the hackathon.”\n4. Say: “When you are lost, come back to this slide.”"
   },
   {
     "title": "Our project: a local AI SRE agent",
@@ -431,7 +691,7 @@ window.SLIDES = [
       "Offline. No API key needed.",
       "Sample data and a local shop only."
     ],
-    "notes": "Time: 10:45 · 2 min.\n1. Say: “Today you build an on-call agent for a small checkout shop. It runs on your laptop. No cloud, no API key.”\n2. Say: “It reads logs, metrics, deploys and the diff. It cannot change anything.”\n3. Say: “The console shows the diagnosis. Every claim has a reference. You can challenge it in chat.”\n4. Say: “Approve, execute and resolve are buttons with your name. Never chat commands.”\n5. Show: https://github.com/RyanLisse/sre-oncall-agent."
+    "notes": "Time: 10:49 · 1 min.\n1. Say: “Today you build an on-call agent for a small checkout shop. It runs on your laptop. No cloud, no API key.”\n2. Say: “It reads logs, metrics, deploys and the diff. It cannot change anything.”\n3. Say: “The console shows the diagnosis. Every claim has a reference. You can challenge it in chat.”\n4. Say: “Approve, execute and resolve are buttons with your name. Never chat commands.”\n5. Show: https://github.com/RyanLisse/sre-oncall-agent."
   },
   {
     "title": "What you build: the on-call console",
@@ -464,7 +724,7 @@ window.SLIDES = [
       "Mutations are buttons, not chat.",
       "A human resolves. The agent only proposes a lesson."
     ],
-    "notes": "Time: 10:47 · 2 min.\n1. Show: the screenshot. Left: the trace (metrics → deploys → diff → logs).\n2. Show: the evidence refs (metrics:, deploys:d-4821, diff:, logs:).\n3. Show: “Pending: a named human must approve.” Execute stays disabled until a human approves.\n4. Say: “Type “roll back now” in the chat. The chat refuses. That is assignment 8.”\n5. Say: “By 16:00 your own copy looks like this.”"
+    "notes": "Time: 10:50 · 1 min.\n1. Show: the screenshot. Left: the trace (metrics → deploys → diff → logs).\n2. Show: the evidence refs (metrics:, deploys:d-4821, diff:, logs:).\n3. Show: “Pending: a named human must approve.” Execute stays disabled until a human approves.\n4. Say: “Type “roll back now” in the chat. The chat refuses. That is assignment 4.”\n5. Say: “By 16:00 your own copy looks like this.”"
   },
   {
     "title": "In production: the same rules",
@@ -503,7 +763,7 @@ window.SLIDES = [
       "bot": "think",
       "place": "beside"
     },
-    "notes": "Time: 10:49 · 1 min.\n1. Say: “This is what the same agent looks like on Google Cloud. We do not build this today. It needs a cloud project.”\n2. Say: “Look at what stays the same: read-only tools, evidence, a human closes the incident.”\n3. Show: https://github.com/ai-developer-community/ai-sre-agent (README · Run locally).",
+    "notes": "Time: 10:51 · 1 min.\n1. Say: “This is what the same agent looks like on Google Cloud. We do not build this today. It needs a cloud project.”\n2. Say: “Look at what stays the same: read-only tools, evidence, a human closes the incident.”\n3. Show: https://github.com/ai-developer-community/ai-sre-agent (README · Run locally).",
     "source": {
       "url": "https://github.com/ai-developer-community/ai-sre-agent",
       "label": "github.com/ai-developer-community/ai-sre-agent"
@@ -543,7 +803,7 @@ window.SLIDES = [
       "All work is in the repo.",
       "Maximum human in the loop."
     ],
-    "notes": "Time: 10:47 · 2 min.\n1. Say the four rules.\n2. Say: “The lab runs native on your laptop with Node and Claude Code. It runs the same on Windows, macOS, and Linux.”\n3. Say: “No API key needed. The agent runs offline on a scripted runtime. A model is optional.”\n4. Say: “Your own Claude account works. If your company requires Vertex AI, use Vertex. INSTALL.md has the steps.”"
+    "notes": "Time: 10:52 · 1 min.\n1. Say the four rules.\n2. Say: “The lab runs native on your laptop with Node and Claude Code. It runs the same on Windows, macOS, and Linux.”\n3. Say: “No API key needed. The agent runs offline on a scripted runtime. A model is optional.”\n4. Say: “Your own Claude account works. If your company requires Vertex AI, use Vertex. INSTALL.md has the steps.”"
   },
   {
     "title": "Your data, your policy",
@@ -578,12 +838,12 @@ window.SLIDES = [
       "The README and handout have the same text.",
       "archify gets external code."
     ],
-    "notes": "Time: 10:49 · 1 min.\n1. Read the subtitle and the two cards aloud.\n2. Show: the same text is at the top of the lab README and the handout (notes/worldline-flags.md).\n3. Say: “archify in the full skills pack gets external code.”\n4. Say: “If you are not sure, ask your security or IT team first.”"
+    "notes": "Time: 10:53 · 1 min.\n1. Read the subtitle and the two cards aloud.\n2. Show: the same text is at the top of the lab README and the handout (notes/worldline-flags.md).\n3. Say: “archify in the full skills pack gets external code.”\n4. Say: “If you are not sure, ask your security or IT team first.”"
   },
   {
     "title": "Assignment 1: Setup check",
     "kicker": "W5 · SETUP · YOUR TURN",
-    "subtitle": "Native on your laptop. Offline. No API key.",
+    "subtitle": "INC-1001: open the console you work the ticket in. Native on your laptop. Offline. No API key.",
     "repo": {
       "url": "https://github.com/RyanLisse/sre-oncall-agent",
       "label": "github.com/RyanLisse/sre-oncall-agent · branch workshop/start"
@@ -616,7 +876,7 @@ window.SLIDES = [
       "The 12 red tests are today's exercises.",
       "npm run progress shows A-1 … A-9."
     ],
-    "notes": "Time: 10:50 · 10 min. This block continues into the break.\n1. Show: on workshop/start, run npm ci, npm run fixtures and npm test (fail 0).\n2. Show: npm run test:workshop. Say: “12 red tests. They are your exercises for today. They go green one assignment at a time.”\n3. Show: npm run console. Open http://localhost:4320. In a second terminal: curl localhost:4320/api/health.\n4. Show: run claude in the repo folder. Select “Yes” at the trust question. Run /status: your account and the guard + progress hooks.\n5. Show: type /. The 8 lab skills: design-control-loop, grilling, show-me, verify-this, review-and-ship, visual-pr, handoff, incident-triage. More skills = your own ~/.claude/skills or the skills pack.\n6. Show: npm run progress. It lists A-1 … A-9 with evidence.\n7. Let them do: the same steps. Check one green tick per table.\n8. If npm test is red: wrong branch. git checkout workshop/start, npm ci.\n9. If “npm: command not found”: install Node 22 LTS or newer.\n10. If port 4320 is busy: stop the old console (pkill -f console/server.ts).\n11. If /status shows no account: /login. Vertex only if the company requires it.\n12. If a skill behaves differently: an old copy in ~/.claude/skills wins. Rename it.\n13. No Claude Code at all? The day still works: every exercise is TypeScript + node:test. See FACILITATOR.md “No-Claude dry run”."
+    "notes": "Time: 10:54 · 9 min. This block continues into the break.\n1. Show: on workshop/start, run npm ci, npm run fixtures and npm test (fail 0).\n2. Show: npm run test:workshop. Say: “12 red tests. They are your exercises for today. They go green one assignment at a time.”\n3. Show: npm run console. Open http://localhost:4320. In a second terminal: curl localhost:4320/api/health.\n4. Show: run claude in the repo folder. Select “Yes” at the trust question. Run /status: your account and the guard + progress hooks.\n5. Show: type /. The 8 lab skills: design-control-loop, grilling, show-me, verify-this, review-and-ship, visual-pr, handoff, incident-triage. More skills = your own ~/.claude/skills or the skills pack.\n6. Show: npm run progress. It lists A-1 … A-9 with evidence.\n7. Let them do: the same steps. Check one green tick per table.\n8. If npm test is red: wrong branch. git checkout workshop/start, npm ci.\n9. If “npm: command not found”: install Node 22 LTS or newer.\n10. If port 4320 is busy: stop the old console (pkill -f console/server.ts).\n11. If /status shows no account: /login. Vertex only if the company requires it.\n12. If a skill behaves differently: an old copy in ~/.claude/skills wins. Rename it.\n13. No Claude Code at all? The day still works: every exercise is TypeScript + node:test. See FACILITATOR.md “No-Claude dry run”."
   },
   {
     "title": "Break",
@@ -796,7 +1056,8 @@ window.SLIDES = [
       "A stranger can run each check.",
       "The merge is the acceptance."
     ],
-    "notes": "Time: 11:28 · 12–15 min.\n1. Let them do: each team fills intent.md on workshop/start.\n2. Walk to each team. Read the boundaries and the three checks.\n3. Gate: if a check is a wish (“the agent is safe”), say “NEEDS REVISION”. A check is a command or a click a stranger can repeat.\n4. Good examples: “chat refuses ‘roll back now’”, “a verdict without an evidence ref is rejected”, “Execute stays disabled without a named approval”.\n5. If Claude cannot write intent.md without asking: this is correct. The hook asks. Confirm the edit yourself.\n6. Check: npm run progress shows ✓ A-2 intent.\n7. Catch-up: git checkout w5-step-1-intent -- intent.md."
+    "notes": "Time: 11:28 · 12–15 min.\n1. Let them do: each team fills intent.md on workshop/start.\n2. Walk to each team. Read the boundaries and the three checks.\n3. Gate: if a check is a wish (“the agent is safe”), say “NEEDS REVISION”. A check is a command or a click a stranger can repeat.\n4. Good examples: “chat refuses ‘roll back now’”, “a verdict without an evidence ref is rejected”, “Execute stays disabled without a named approval”.\n5. If Claude cannot write intent.md without asking: this is correct. The hook asks. Confirm the edit yourself.\n6. Check: npm run progress shows ✓ A-2 intent.\n7. Catch-up: git checkout w5-step-1-intent -- intent.md.",
+    "subtitle": "INC-1001: agree who the agent serves and what it may never do."
   },
   {
     "title": "spec.md",
@@ -880,7 +1141,7 @@ window.SLIDES = [
   {
     "title": "Assignment 3: Spec + contract green",
     "kicker": "W5 · DESIGN · YOUR TURN",
-    "subtitle": "Test first.",
+    "subtitle": "INC-1001: decide what a diagnosis must contain. Test first.",
     "type": "practice",
     "layout": "exercise",
     "steps": [
@@ -1300,12 +1561,13 @@ window.SLIDES = [
       "You edit the hook. The agent cannot edit .claude/.",
       "The ratchet is protected from the agent."
     ],
-    "notes": "Time: 13:30 · 20 min.\n1. Let them do: the five steps on the slide.\n2. Part 1, runtime control: src/chat.ts (TODO(A4)). Chat must refuse rollback, scale, flag, approve and resolve requests and point to the buttons.\n3. Part 2, SDLC control: .claude/hooks/guard.mjs already denies network, secrets, self-approval and unapproved pushes. Each team adds one rule by hand: deny agent edits to bench/ratchet.json.\n4. Say: “The agent cannot edit .claude/ (deny). You edit guard.mjs yourself. The human owns the boundary.” If someone asks Claude to edit the hook and it is denied: that is the lesson.\n5. Check: npm run test:workshop shows the A4 tests green; npm run test:hooks is green; approvals/audit.jsonl has a deny.\n6. Check: npm run progress shows ✓ A-4.\n7. Catch-up: git checkout w5-step-3-design-controls -- src/chat.ts .claude/hooks/guard.mjs.\n8. At 13:50, go to Assignment 5."
+    "notes": "Time: 13:30 · 20 min.\n1. Let them do: the five steps on the slide.\n2. Part 1, runtime control: src/chat.ts (TODO(A4)). Chat must refuse rollback, scale, flag, approve and resolve requests and point to the buttons.\n3. Part 2, SDLC control: .claude/hooks/guard.mjs already denies network, secrets, self-approval and unapproved pushes. Each team adds one rule by hand: deny agent edits to bench/ratchet.json.\n4. Say: “The agent cannot edit .claude/ (deny). You edit guard.mjs yourself. The human owns the boundary.” If someone asks Claude to edit the hook and it is denied: that is the lesson.\n5. Check: npm run test:workshop shows the A4 tests green; npm run test:hooks is green; approvals/audit.jsonl has a deny.\n6. Check: npm run progress shows ✓ A-4.\n7. Catch-up: git checkout w5-step-3-design-controls -- src/chat.ts .claude/hooks/guard.mjs.\n8. At 13:50, go to Assignment 5.",
+    "subtitle": "INC-1001: make the chat refuse “roll back now”."
   },
   {
     "title": "Assignment 5: Build a read-only tool",
     "kicker": "W5 · BUILD 1 · YOUR TURN",
-    "subtitle": "One tool. Read-only. Bound to the telemetry.",
+    "subtitle": "INC-1001: let the agent read the deploy list. One tool. Read-only. Bound to the telemetry.",
     "type": "practice",
     "layout": "exercise",
     "steps": [
@@ -1429,7 +1691,7 @@ window.SLIDES = [
   {
     "title": "Assignment 6: Diagnose a live incident",
     "kicker": "W5 · BUILD 2 · YOUR TURN",
-    "subtitle": "Break the shop. Read the evidence. Challenge it.",
+    "subtitle": "INC-1001: work the ticket live. Break the shop. Read the evidence. Challenge it.",
     "type": "practice",
     "layout": "exercise",
     "steps": [
@@ -1588,7 +1850,8 @@ window.SLIDES = [
       "The ratchet only goes up.",
       "harmful must stay 0."
     ],
-    "notes": "Time: 15:04 · 11 min.\n1. Let them do: the steps on the slide.\n2. A good case: a new incident shape, or an adversarial alert whose text tries to give orders. Alert text is data, not policy.\n3. Try lowering min_rate in bench/ratchet.json: the guard rule from A4 denies the agent. By hand, a lower floor still passes the bench: it only checks score against the floor. The floor is protected by the guard and by review: reject any PR that lowers ratchet.json.\n4. Gate: a reviewer from another team runs npm run bench again on your branch.\n5. Check: npm run progress shows ✓ A-7.\n6. Catch-up: git checkout w5-step-6-eval -- bench/cases.json."
+    "notes": "Time: 15:04 · 11 min.\n1. Let them do: the steps on the slide.\n2. A good case: a new incident shape, or an adversarial alert whose text tries to give orders. Alert text is data, not policy.\n3. Try lowering min_rate in bench/ratchet.json: the guard rule from A4 denies the agent. By hand, a lower floor still passes the bench: it only checks score against the floor. The floor is protected by the guard and by review: reject any PR that lowers ratchet.json.\n4. Gate: a reviewer from another team runs npm run bench again on your branch.\n5. Check: npm run progress shows ✓ A-7.\n6. Catch-up: git checkout w5-step-6-eval -- bench/cases.json.",
+    "subtitle": "INC-1001: prove the agent on old tickets."
   },
   {
     "title": "workflows",
@@ -1735,7 +1998,8 @@ window.SLIDES = [
       "Two gates: console and git.",
       "The agent never approves itself."
     ],
-    "notes": "Time: 15:23 · 7–8 min.\n1. Let them do: steps 1–3. Step 4 is optional or homework.\n2. Runtime gate: src/executor.ts (TODO(A8)) must refuse without a named approval for this incident and this action. test/workshop/executor.test.ts turns green.\n3. Console: Execute stays disabled until a named human approved. If it stays disabled after approval: the name is empty or the approval is for another incident.\n4. SDLC gate (optional): on fix/<name> the push is denied by .claude/hooks/guard.mjs. A neighbor runs npm run approve:git -- <name> fix/<name> \"<reason>\" in their own terminal. Inside Claude Code the script refuses. Then push and open a PR (gh) or MR (glab).\n5. Check: npm run test:workshop is fail 0 now.\n6. Catch-up: git checkout w5-step-7-gate -- src/executor.ts."
+    "notes": "Time: 15:23 · 7–8 min.\n1. Let them do: steps 1–3. Step 4 is optional or homework.\n2. Runtime gate: src/executor.ts (TODO(A8)) must refuse without a named approval for this incident and this action. test/workshop/executor.test.ts turns green.\n3. Console: Execute stays disabled until a named human approved. If it stays disabled after approval: the name is empty or the approval is for another incident.\n4. SDLC gate (optional): on fix/<name> the push is denied by .claude/hooks/guard.mjs. A neighbor runs npm run approve:git -- <name> fix/<name> \"<reason>\" in their own terminal. Inside Claude Code the script refuses. Then push and open a PR (gh) or MR (glab).\n5. Check: npm run test:workshop is fail 0 now.\n6. Catch-up: git checkout w5-step-7-gate -- src/executor.ts.",
+    "subtitle": "INC-1001: a named human signs the rollback."
   },
   {
     "title": "Maintain: each incident becomes an eval",
@@ -1813,7 +2077,7 @@ window.SLIDES = [
   {
     "title": "Assignment 9: Maintain + your hackathon intent.md",
     "kicker": "W5 · SHOWCASE 5 · 15:45 · /HANDOFF",
-    "subtitle": "Then /handoff.",
+    "subtitle": "INC-1001: close the ticket and keep the lesson. Then /handoff.",
     "type": "practice",
     "layout": "exercise",
     "steps": [
