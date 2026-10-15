@@ -4,7 +4,7 @@ import {mkdtempSync} from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {createApp} from '../server/app.mjs';
-import {transition,dayTasks,REVIEWER_ROLES} from '../server/proof-trail.mjs';
+import {transition,dayTasks,dayTasksForPack,REVIEWER_ROLES} from '../server/proof-trail.mjs';
 
 async function invoke(app,route,{body={},cookies={},params={},headers={},method}={}){
  const layer=app.router.stack.find(candidate=>candidate.route?.path===route&&(!method||candidate.route.methods[method]));assert.ok(layer,`Missing route ${route}`);
@@ -57,18 +57,35 @@ for(const [status,event,expected] of TABLE)test(`transition ${status} --${event}
 
 test('tasks come from day-pack ids: the mission, or the progressive steps when a day has them',()=>{
  assert.deepEqual(dayTasks(1).map(t=>t.id),['c1-setup','c1-a1','c1-a2','c1-a3','c1-a4']);
- assert.deepEqual(dayTasks(1)[0],{id:'c1-setup',title:'Set up the practice repository'});
- assert.deepEqual(dayTasks(1,'nl')[0],{id:'c1-setup',title:'Oefenrepository opzetten'});
+ assert.deepEqual(dayTasks(1)[0],{id:'c1-setup',title:'Set up the practice repository',required:true});
+ assert.deepEqual(dayTasks(1,'nl')[0],{id:'c1-setup',title:'Oefenrepository opzetten',required:true});
  assert.deepEqual(dayTasks(3).map(t=>t.id),['w3-l1','w3-l2','w3-l3','w3-proof']);
  assert.deepEqual(dayTasks(9).map(t=>t.id),['s02-dispatch','s02-two-steps','s02-sim']);
  assert.deepEqual(dayTasks(99),[]);
+});
+
+test('task required flags follow stretch levels in Day 5 and the mission fallback',async()=>{
+ const expected=[
+  ['w5-solo1',true],['w5-solo2',true],['w5-solo3',true],['w5-solo4',true],['w5-solo5',true],['w5-solo6',true],['w5-solo7',true],
+  ['sre-0',false],['sre-1',false],['sre-2',false],['sre-3',false],['sre-4',false],['sre-5',false],['sre-6',false],['sre-8',false],['sre-9',false]
+ ];
+ assert.deepEqual(dayTasks(5).map(({id,required})=>[id,required]),expected);
+ assert.equal(dayTasks(3).find(task=>task.id==='w3-l3').required,false);
+ assert.deepEqual(dayTasksForPack({steps:[],mission:{id:'mission-only',title:'Mission only'}}),[{id:'mission-only',title:'Mission only',required:true}]);
+
+ const {instance,host,learner,as,tasks,queue}=fixture();
+ assert.equal((await invoke(instance.app,'/game/control',{body:{action:'day',value:5},cookies:as(host.token)})).statusCode,200);
+ const taskList=(await tasks(learner.token)).body.tasks;
+ assert.deepEqual(taskList.map(({id,required})=>[id,required]),expected);
+ const reviewTasks=(await queue(as(host.token))).body.members.find(member=>member.name==='Bo').tasks;
+ assert.deepEqual(reviewTasks.map(({id,required})=>[id,required]),expected);
 });
 
 test('task → submit → changes requested → resubmit → approved, visible to participant and facilitator',async()=>{
  const {instance,learner,ada,facilitator,as,submit,review,tasks,queue}=fixture();
  const openList=(await tasks(learner.token)).body;
  assert.equal(openList.day,1);
- assert.deepEqual(openList.tasks[0],{id:'c1-setup',title:'Set up the practice repository',day:1,status:'open',submissions:[]});
+ assert.deepEqual(openList.tasks[0],{id:'c1-setup',title:'Set up the practice repository',required:true,day:1,status:'open',submissions:[]});
  assert.deepEqual(openList.tasks.map(t=>t.status),['open','open','open','open','open']);
 
  const first=await submit(learner.token,'t-1','c1-setup');

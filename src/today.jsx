@@ -14,9 +14,10 @@ export function Today({room,onNavigate}){
   const pack=useRemote(`day-pack?locale=${locale}`,[room.day]);
   const trail=useRemote(`tasks?locale=${locale}`,[room.day,evidenceKey]);
   const tasks=trail.data?.tasks||[];
-  const done=tasks.filter(task=>DONE.has(task.status)).length;
-  const next=tasks.find(task=>task.status==='changes_requested')||tasks.find(task=>task.status==='open')||null;
-  const allDone=tasks.length>0&&done===tasks.length;
+  const required=tasks.filter(task=>task.required!==false);
+  const done=required.filter(task=>DONE.has(task.status)).length;
+  const next=required.find(task=>task.status==='changes_requested')||required.find(task=>task.status==='open')||null;
+  const allDone=required.length>0&&done===required.length;
   const saved=room.me.progressByDay?.[String(room.day)]||{};
   const quizTotal=pack.data?.quiz?.questions?.length||0;
   const myEvidence=room.evidence.filter(e=>e.personId===room.me.id&&Number(e.day)===room.day).length;
@@ -29,7 +30,7 @@ export function Today({room,onNavigate}){
     :{view:'solo',label:done||tasks.some(task=>task.status!=='open')?t('today.continue'):t('today.start'),Icon:Target};
   const steps=[
     ['lesson',BookOpen,t('today.step.lesson'),t('today.step.lessonHelp'),null,false],
-    ['solo',Target,t('today.step.assignment'),t('today.step.assignmentHelp'),tasks.length?t('today.tasksDone',{done,total:tasks.length}):null,allDone],
+    ['solo',Target,t('today.step.assignment'),t('today.step.assignmentHelp'),required.length?t('today.tasksDone',{done,total:required.length}):null,allDone],
     ['lesson',Check,t('today.step.quiz'),t('today.step.quizHelp'),saved.quizScore!=null?t('today.quizScore',{score:saved.quizScore,total:quizTotal||saved.quizScore}):quizTotal?t('today.notStarted'):null,quizTotal>0&&saved.quizScore===quizTotal],
     ['review',ClipboardCheck,t('today.step.review'),t('today.step.reviewHelp'),myEvidence?t('today.evidence',{count:myEvidence}):null,false],
   ];
@@ -45,7 +46,7 @@ export function Today({room,onNavigate}){
             ?<strong>{allDone?t('today.allDone'):next?next.title:t('today.waiting')}</strong>
             :<RemoteStatus remote={trail} loading={t('tasks.loading')}/>}
           {next&&next.status!=='open'&&<span className="progress-chip">{t(`tasks.status.${next.status}`)}</span>}
-          {tasks.length>0&&<p className="muted">{t('today.tasksDone',{done,total:tasks.length})}</p>}
+          {required.length>0&&<p className="muted">{t('today.tasksDone',{done,total:required.length})}</p>}
         </div>
         <button type="button" className="gradient" onClick={()=>onNavigate(primary.view)}><primary.Icon size={17} aria-hidden="true"/>{primary.label}<ArrowRight size={17} aria-hidden="true"/></button>
       </div>

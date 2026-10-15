@@ -26,13 +26,15 @@ export function transition(status,event){
 }
 export const reviewEvent=evidenceStatus=>REVIEW_EVENTS[evidenceStatus];
 
-export function dayTasks(day,locale='en'){
- const pack=getDayPack(day);
- if(!pack)return [];
+export function dayTasksForPack(pack,locale='en'){
  const projected=projectPackLocale(pack,locale);
  const titles=new Map((projected.steps||[]).map(step=>[step.id,step.title]));
- if(pack.steps?.length)return pack.steps.map(step=>({id:step.id,title:titles.get(step.id)??step.title,...(step.autograde?{grader:step.autograde}:{})}));
- return [{id:pack.mission.id,title:projected.mission?.title??pack.mission.title}];
+ if(pack.steps?.length)return pack.steps.map(step=>({id:step.id,title:titles.get(step.id)??step.title,required:step.level!=='stretch',...(step.autograde?{grader:step.autograde}:{})}));
+ return [{id:pack.mission.id,title:projected.mission?.title??pack.mission.title,required:true}];
+}
+export function dayTasks(day,locale='en'){
+ const pack=getDayPack(day);
+ return pack?dayTasksForPack(pack,locale):[];
 }
 export function findTask(day,taskId){
  const task=dayTasks(day).find(t=>t.id===taskId);
@@ -81,15 +83,11 @@ export function authorizeTaskReview({s,p}){
 const queueItem=(room,e,locale)=>({evidenceId:e.id,taskId:e.taskId,taskTitle:dayTasks(e.day,locale).find(t=>t.id===e.taskId)?.title||e.taskId,day:e.day,personId:e.personId,name:e.name,at:e.at,attempt:submissionsFor(room,e.personId,e.taskId,e.day).indexOf(e)+1,finding:e.finding,command:e.command,observed:e.observed,limitation:e.limitation});
 
 export function reviewQueue(room,locale='en'){
- const pack=getDayPack(room.day);
- const requiredTaskIds=new Set(pack?.steps?.length
-  ?pack.steps.filter(step=>step.level!=='stretch').map(step=>step.id)
-  :pack?.mission?.id?[pack.mission.id]:[]);
  return {
   day:room.day,
   queue:awaitingReview(room).map(e=>queueItem(room,e,locale)),
-  members:room.members.map(m=>({id:m.id,name:m.name,tasks:taskTrail(room,m.id,room.day,locale).map(({id,title,status,submissions})=>({
-   id,title,status,required:requiredTaskIds.has(id),latestEvidenceId:submissions.at(-1)?.evidenceId||null
+  members:room.members.map(m=>({id:m.id,name:m.name,tasks:taskTrail(room,m.id,room.day,locale).map(({id,title,status,submissions,required})=>({
+   id,title,status,required,latestEvidenceId:submissions.at(-1)?.evidenceId||null
   }))}))
  };
 }

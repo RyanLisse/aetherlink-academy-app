@@ -205,7 +205,10 @@ test('AET-118 P0 W5 retrofit: diagram + ConceptSim + locale-complete; Apple bar 
 
   // Apple bar / pedagogy vehicles kept
   assert.equal(en.demo?.slides?.length, 7);
-  assert.equal(en.steps?.length, 7);
+  assert.equal(en.steps?.filter(step=>step.level==='required').length, 7);
+  assert.equal(en.steps?.filter(step=>step.level==='stretch').length, 9);
+  assert.equal(nl.steps?.filter(step=>step.level==='required').length, 7);
+  assert.equal(nl.steps?.filter(step=>step.level==='stretch').length, 9);
   assert.ok(en.materials?.some((m) => /aetherlink-daily-brief-lab-s1/.test(m.href || '')));
   assert.ok(nl.materials?.some((m) => /aetherlink-daily-brief-lab-s1/.test(m.href || '')));
 
@@ -224,6 +227,53 @@ test('AET-118 P0 W5 retrofit: diagram + ConceptSim + locale-complete; Apple bar 
   assert.ok(simNl.steps.some((s) => s.type === 'system_event' && /MENSELIJKE GATE/i.test(s.content)));
   assert.equal(getSim('w5-sdlc-loop', 'en')?.title, simEn.title);
   assert.equal(getSim('w5-sdlc-loop', 'nl')?.title, simNl.title);
+});
+
+test('SRE on-call ConceptSim uses the fixture evidence and is locale-complete',async()=>{
+ const {parseLocalizedScenario,projectScenario,assertScenarioLocaleComplete}=await import('../packages/concept-sim/src/index.ts');
+ const {DAY_PACKS}=await import('../content/days/index.mjs');
+ const raw=JSON.parse(readFileSync(join(root,'content/sims/sre-oncall-loop.json'),'utf8'));
+ const localized=parseLocalizedScenario(raw,'sre-oncall-loop');
+ assertScenarioLocaleComplete(localized,'sre-oncall-loop');
+ const en=projectScenario(localized,'en');
+ const nl=projectScenario(localized,'nl');
+ assert.ok(en.steps.length>=14);
+ assert.equal(nl.steps.length,en.steps.length);
+ assert.notEqual(
+  JSON.stringify(en.steps.map(step=>step.content+step.annotation)),
+  JSON.stringify(nl.steps.map(step=>step.content+step.annotation))
+ );
+ assert.match(en.steps[0].content,/Error rate 12% for 5 min on checkout \(threshold 2%\)/);
+ assert.match(en.steps.find(step=>step.type==='tool_result'&&step.toolName==='summarize_metrics').content,/"from":0.003,"to":0.12/);
+ assert.match(en.steps.find(step=>step.type==='tool_result'&&step.toolName==='list_deploys').content,/d-4821.*v2\.15\.0.*2026-10-05T03:43:00\.000Z/);
+ assert.match(en.steps.find(step=>step.type==='tool_result'&&step.toolName==='get_diff').content,/PAYMENT_PROVIDER_SECRET_\$\{region\.toUpperCase\(\)\}/);
+ assert.match(en.steps.find(step=>step.type==='tool_result'&&step.toolName==='search_logs').content,/PaymentConfigError: missing key PAYMENT_PROVIDER_SECRET_EU/);
+ const expectedToolInputs={
+  summarize_metrics:{since:'2026-10-05T02:50:00.000Z',until:'2026-10-05T03:50:00Z'},
+  list_deploys:{since:'2026-10-05T02:50:00.000Z',until:'2026-10-05T03:50:00Z'},
+  get_diff:{deploy:'d-4821'},
+  search_logs:{level:'error',since:'2026-10-05T02:50:00.000Z',until:'2026-10-05T03:50:00Z',limit:5}
+ };
+ const approvalEvents=[
+  'FAIL approval\ndecided_by: a named human is required',
+  'APPROVED rollback for INC-1001 by Academy Reviewer\nPASS approval'
+ ];
+ for(const locale of [en,nl]){
+  const toolCalls=Object.fromEntries(locale.steps
+   .filter(step=>step.type==='tool_call'&&Object.hasOwn(expectedToolInputs,step.toolName))
+   .map(step=>[step.toolName,JSON.parse(step.content)]));
+  assert.deepEqual(toolCalls,expectedToolInputs);
+  assert.deepEqual(locale.steps
+   .filter(step=>step.type==='system_event'&&/^(FAIL approval|APPROVED rollback)/.test(step.content))
+   .map(step=>step.content),approvalEvents);
+  assert.ok(locale.steps.some(step=>step.type==='system_event'&&step.content==='{"data_gaps":[]}'));
+ }
+ assert.ok(en.steps.some(step=>step.toolName==='watch'&&/LANDED/.test(step.content)));
+ assert.match(en.steps.at(-1).annotation,/60 passing tests and five bench cases at 100%.*fixed pipeline.*real model uses lessons as context/i);
+ assert.equal(getSim('sre-oncall-loop','en')?.title,en.title);
+ assert.equal(getSim('sre-oncall-loop','nl')?.title,nl.title);
+ const pack=DAY_PACKS.find(day=>day.day===5);
+ assert.ok(pack?.sims.some(sim=>sim.id==='sre-oncall-loop'));
 });
 
 test('AET-118 P1 W4 retrofit: diagram + ConceptSim + locale-complete; SOLO 0–4 kept', async () => {
