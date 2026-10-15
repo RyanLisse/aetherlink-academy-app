@@ -57,6 +57,29 @@ test('day 4 English instructions include the Agent SDK package and lesson comman
   assert.ok(instructions.includes('(cd 03-mcp/transaction-mcp && npm ci)'), 'install the nested MCP server dependencies');
 });
 
+test('day 4 assignment starts with Core and marks Step 5 as homework in both locales', () => {
+  const en = projectPackLocale(day4, 'en');
+  const nl = projectPackLocale(day4, 'nl');
+  const enAssignment = day4.copy.en.narrative.join('\n');
+  const nlAssignment = day4.copy.nl.narrative.join('\n');
+
+  assert.match(enAssignment, /Core Parts 1–2/);
+  assert.match(enAssignment, /about 35 minutes/);
+  assert.match(enAssignment, /Stretch Parts 3–4/);
+  assert.match(enAssignment, /starter files on Step 4/);
+  assert.match(enAssignment, /Step 5 as homework/);
+  assert.match(nlAssignment, /Core, Parts 1–2/);
+  assert.match(nlAssignment, /ongeveer 35 minuten/);
+  assert.match(nlAssignment, /Stretch, Parts 3–4/);
+  assert.match(nlAssignment, /starters op Step 4/);
+  assert.match(nlAssignment, /Step 5 als huiswerk/);
+
+  for (const pack of [en, nl]) {
+    const homework = pack.steps.find((step) => step.id === 'w4-solo5');
+    assert.equal(homework.level, 'stretch');
+  }
+});
+
 test('day 3 English instructions name the L1 starter and credential placeholder', () => {
   const instructions = projectPackLocale(day3, 'en').steps
     .flatMap((step) => step.instructions)

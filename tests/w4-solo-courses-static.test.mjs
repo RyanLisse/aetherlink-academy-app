@@ -15,6 +15,7 @@ const required = [
   'weather-agent-sdk/styles.css',
   'weather-agent-sdk/main.js',
   'aetherlink-day5-n8n-to-agent/LICENSE',
+  'aetherlink-day5-n8n-to-agent/README.md',
   'aetherlink-day5-n8n-to-agent/index.html',
   'aetherlink-day5-n8n-to-agent/SOLO.md',
   'aetherlink-day5-n8n-to-agent/fixtures/expected-labels.json',
@@ -33,14 +34,17 @@ test('W4 HTML Solo courses land under apps/web/public/courses (AET-130)', () => 
   assert.match(weatherInstr, /clothing advice|kledingadvies|jas/i);
   const councilInstr = readFileSync(path.join(courses, 'council-agent-sdk/instructions.md'), 'utf8');
   assert.match(councilInstr, /Judge rule|rechter/i);
+  const source = readFileSync(path.join(courses, 'SOURCE.md'), 'utf8');
+  assert.match(source, /aetherlink-day5-n8n-to-agent@5df4d07b6e958394e12bc61c500092cf88d85b5f/);
+  assert.match(source, /keeps its existing HTML shell, engine, and fundamentals page/);
+  const readme = readFileSync(path.join(courses, 'aetherlink-day5-n8n-to-agent/README.md'), 'utf8');
+  assert.match(readme, /^# Workshop 4 · From n8n to Claude Agents SDK/m);
+  assert.match(readme, /This repo is the whole workshop/);
   const solo = readFileSync(path.join(courses, 'aetherlink-day5-n8n-to-agent/SOLO.md'), 'utf8');
   assert.match(solo, /Step 0/);
-  assert.match(solo, /optional.*parity bonus/i);
-  assert.match(solo, /not part of the\s+required Workshop 4 lessons/i);
-  assert.match(solo, /new customer messages\s+and a transaction workbook/i);
-  const parityReadme = readFileSync(path.join(courses, 'aetherlink-day5-n8n-to-agent/README.md'), 'utf8');
-  assert.match(parityReadme, /optional parity bonus/i);
-  assert.match(parityReadme, /fixtures are separate\s+from Workshop 4's required customer messages/i);
+  assert.match(solo, /^# Workshop 4 · Step by step/m);
+  assert.match(solo, /\| 4 \| Acceptance table and `npm run check` \| `step-4` \|/);
+  assert.match(solo, /^## Stretch · Assignment: chat in, chat out$/m);
   const parityHtml = readFileSync(path.join(courses, 'aetherlink-day5-n8n-to-agent/index.html'), 'utf8');
   assert.match(parityHtml, /optional parity bonus/i);
   assert.match(parityHtml, /separate from Workshop 4's support messages/i);

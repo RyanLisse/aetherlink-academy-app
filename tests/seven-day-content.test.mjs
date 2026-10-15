@@ -60,7 +60,7 @@ test('the lint names a citation whose slide title drifted and a missing starter'
  drifted[2].mission.starterFiles=['missing.json'];
  assert.deepEqual(validateDayPacks(drifted,{root,decks}),[
   'day 3: starter file missing: starter/missing.json',
-  'day 4: step w4-solo2 cites workshop-4 slide 26 "Run your agent" but the deck has "Run the orchestrator and inspect the draft."'
+  'day 4: step w4-solo2 cites workshop-4 slide 25 "Run your agent" but the deck has "Run the orchestrator and inspect the draft."'
  ]);
 });
 
@@ -94,9 +94,11 @@ test('Workshop 4 quiz covers structured output, delegation, and customer MCP',()
  }
 });
 
-test('Workshop 3 keeps its levels; all Workshop 4 lessons are required',()=>{
+test('Workshop 3 keeps its levels; Workshop 4 puts Step 5 in homework',()=>{
  assert.deepEqual(getDayPack(3).steps.map(s=>`${s.badge}:${s.level}`),['L1:required','L2:required','L3:stretch','P:required']);
- assert.deepEqual(getDayPack(4).steps.map(s=>`${s.badge}:${s.level}`),['S0:required','S1:required','S2:required','S3:required','S4:required','S5:required']);
+ assert.deepEqual(getDayPack(4).steps.map(s=>`${s.badge}:${s.level}`),['S0:required','S1:required','S2:required','S3:required','S4:required','S5:stretch']);
+ assert.match(getDayPack(4).copy.en.solo.find(s=>s.id==='w4-solo5').title,/homework/i);
+ assert.match(getDayPack(4).copy.nl.solo.find(s=>s.id==='w4-solo5').title,/huiswerk/i);
  assert.deepEqual(getDayPack(5).lesson.loop.map(s=>s.label),['Intent','Spec','Plan','Build','Test','Review','Handoff']);
  assert.deepEqual(getDayPack(1).lesson.loop.map(s=>s.label),['Explore','Plan','Create','Test','Human review','Handoff']);
 });
