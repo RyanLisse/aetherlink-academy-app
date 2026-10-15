@@ -21,7 +21,7 @@ describe('reference view per day', () => {
     expect(matchReference('/reference/glossary')).toEqual({kind: 'glossary'});
     expect(matchReference('/reference/day/3')).toMatchObject({kind: 'day', day: {day: 3, lessonId: 'workshop-3'}});
     expect(matchReference('/reference/day/8')).toBeNull();
-    expect(REFERENCE_DAYS.map((day) => [day.day, day.slides.length])).toEqual([[1, 67], [2, 46], [3, 18], [4, 36], [5, 49], [6, 14], [7, 14]]);
+    expect(REFERENCE_DAYS.map((day) => [day.day, day.slides.length])).toEqual([[1, 67], [2, 46], [3, 18], [4, 51], [5, 49], [6, 14], [7, 14]]);
   });
 
   test('Workshop 4 reference distinguishes dry-run setup from live or sample results', () => {

@@ -259,7 +259,7 @@ test('SOLO 1 follows the Step 1 lesson and keeps support answer keys server-side
  const pack=await call(bo.token,'day-pack');
  const solo1=pack.body.steps.find(step=>step.id==='w4-solo1');
  assert.equal(solo1.autograde,'support');
- assert.equal(solo1.slide.slide,22);
+ assert.equal(solo1.slide.slide,18);
  assert.match(solo1.title,/SOLO 1.*Structured output.*memory/i);
  assert.match(solo1.goal,/configured priority schema.*deterministic route/i);
  assert.match(solo1.instructions.join('\n'),/MSG-01 --dry-run[\s\S]*priority-schema\.mjs[\s\S]*lib\/switch\.mjs[\s\S]*--no-memory/);

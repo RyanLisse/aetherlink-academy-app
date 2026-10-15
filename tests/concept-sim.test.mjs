@@ -246,10 +246,10 @@ test('AET-118 P1 W4 retrofit: diagram + ConceptSim + locale-complete; SOLO 0–5
   assert.ok(en.sims?.some((s) => s.id === 'w4-ticket-priority'));
   assert.ok(nl.sims?.some((s) => s.id === 'w4-ticket-priority'));
 
-  // Required SOLO 0–5 pedagogy kept
+  // SOLO 0–5 pedagogy kept, with Step 5 as homework
   assert.equal(en.demo?.slides?.length, 6);
   assert.equal(en.steps?.length, 6);
-  assert.deepEqual(en.steps.map((s) => `${s.badge}:${s.level}`), ['S0:required','S1:required','S2:required','S3:required','S4:required','S5:required']);
+  assert.deepEqual(en.steps.map((s) => `${s.badge}:${s.level}`), ['S0:required','S1:required','S2:required','S3:required','S4:required','S5:stretch']);
   assert.ok(en.materials?.some((m) => /aetherlink-day5-n8n-to-agent/.test(m.href || '')));
   assert.ok(nl.materials?.some((m) => /aetherlink-day5-n8n-to-agent/.test(m.href || '')));
   assert.equal(en.mission?.id, 'TRIAGE-CLAUDE-04');
