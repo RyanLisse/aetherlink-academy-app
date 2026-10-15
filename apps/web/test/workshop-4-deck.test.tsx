@@ -44,7 +44,7 @@ const titles = [
   "Yesterday's n8n. Today's Agent SDK.",
   'Map n8n to the Agent SDK.',
   ...conceptRecapTitles,
-  'Get the workshop package.',
+  'Get the starter repo.',
   'Lesson 1: one agent reads CLAUDE.md.',
   'Watch one agent classify a message.',
   'Run Lesson 1 and test the tone trap.',
@@ -85,7 +85,7 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
       'Map n8n to the Agent SDK.',
     ]);
     expect(workshop4SourceSlides.slice(5, 14).map((slide) => String(slide.title))).toEqual(conceptRecapTitles);
-    expect(workshop4SourceSlides[14]?.title).toBe('Get the workshop package.');
+    expect(workshop4SourceSlides[14]?.title).toBe('Get the starter repo.');
     expect(workshop4SourceSlides[1]).toMatchObject({type: 'recap', layout: 'recap'});
     expect(workshop4SourceSlides[2]).toMatchObject({type: 'context'});
     for (const slide of workshop4SourceSlides.slice(0, 14)) {
@@ -116,10 +116,9 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
     const repo = 'https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent';
     expect(workshop4SourceSlides[0]?.subtitle).toMatch(/10:00–16:00/);
     expect(workshop4SourceSlides[2]?.keyPoints).toContain(`Workshop repo: ${repo}`);
-    const cards = workshop4SourceSlides[14]?.cards as ReadonlyArray<{title: string; body: string}>;
-    const repoCard = cards.find((card) => card.title === 'Workshop repo');
-    expect(repoCard?.body).toContain(`git clone ${repo}.git`);
-    expect(repoCard?.body).toContain('npm run lesson1 -- MSG-01 --dry-run');
+    // Live deck (rev 92) keeps only the Level card; the clone command lives in the notes.
+    expect(String(workshop4SourceSlides[14]?.notes)).toContain(`git clone ${repo}.git`);
+    expect(workshop4SourceSlides[14]?.steps).toContain('Run npm run lesson1 -- MSG-01 --dry-run.');
     expect(JSON.stringify(workshop4SourceSlides[14])).not.toMatch(/sparse/);
   });
 
