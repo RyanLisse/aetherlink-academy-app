@@ -7,8 +7,10 @@ Mirrored from the existing Academy course sources:
 Pinned to the companion repositories' `main` after their standalone PRs merged.
 
 - `RyanLisse/weather-agent-sdk@54dbd68c4cae56d7202e6b97aafba023673ea5c6`
-- `RyanLisse/aetherlink-day5-n8n-to-agent@339a8ec029fec39a13a9c77cf9aecfc2b152b217`
+- `RyanLisse/aetherlink-day5-n8n-to-agent@5df4d07b6e958394e12bc61c500092cf88d85b5f`
 - `RyanLisse/council-agent-sdk@5df4d7f25ac6d07356fb45015598b4871bfbc379`
+
+The participant README, SOLO, and n8n workflow come from this main commit. The mirror keeps its existing HTML shell, engine, and fundamentals page because main does not ship those files.
 
 ## W5 daily-brief (AET-131)
 - `RyanLisse/aetherlink-daily-brief-lab-s1@3dea7c15cb10147cc28ebdc1c305edb34a8e8f96` (HTML course modules 01–06 + Assignments templates + SOLO.md + rulebook companions)

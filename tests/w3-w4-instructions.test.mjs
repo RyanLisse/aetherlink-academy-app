@@ -33,18 +33,51 @@ test('day 4 English instructions include the Agent SDK package and lesson comman
     .join('\n');
 
   for (const literal of [
-    'git clone --depth 1 --filter=blob:none --sparse https://github.com/RyanLisse/aetherlink-academy-app.git w4-support',
-    'git sparse-checkout set training-lab/w4-support-agent-sdk',
+    'git clone https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent.git',
+    'cd aetherlink-day5-n8n-to-agent',
+    'npm ci',
+    'npm run doctor',
+    'npm run verify',
     'npm run smoke:mcp',
     'npm run check',
     'npm run lesson1 -- MSG-01 --dry-run',
-    'npm run lesson2 -- MSG-05',
-    'npm run lesson3 -- MSG-08',
-    'npm install',
+    'npm run lesson2 -- MSG-05 --dry-run',
+    'npm run lesson3 -- MSG-08 --dry-run',
+    'npm run chat -- --dry-run',
+    '(cd 03-mcp/transaction-mcp && npm ci)',
+    'git switch step-4',
+    '05-build-your-own/README.md',
+    'cd 05-build-your-own',
+    'node agent.mjs --dry-run',
+    'claude -p "Find and fix the bug in utils.js. Explain the change." --allowedTools Read,Edit,Glob --permission-mode acceptEdits',
   ]) {
     assert.ok(instructions.includes(literal), `day 4 instructions include ${literal}`);
   }
-  assert.ok(!instructions.includes('cd 03-mcp/transaction-mcp'), 'npm install covers the MCP server; no separate install step');
+  assert.ok(!instructions.includes('ANTHROPIC_API_KEY'), 'Claude Code is the default and an API key is optional');
+  assert.ok(instructions.includes('(cd 03-mcp/transaction-mcp && npm ci)'), 'install the nested MCP server dependencies');
+});
+
+test('day 4 assignment starts with Core and marks Step 5 as homework in both locales', () => {
+  const en = projectPackLocale(day4, 'en');
+  const nl = projectPackLocale(day4, 'nl');
+  const enAssignment = day4.copy.en.narrative.join('\n');
+  const nlAssignment = day4.copy.nl.narrative.join('\n');
+
+  assert.match(enAssignment, /Core Parts 1–2/);
+  assert.match(enAssignment, /about 35 minutes/);
+  assert.match(enAssignment, /Stretch Parts 3–4/);
+  assert.match(enAssignment, /starter files on Step 4/);
+  assert.match(enAssignment, /Step 5 as homework/);
+  assert.match(nlAssignment, /Core, Parts 1–2/);
+  assert.match(nlAssignment, /ongeveer 35 minuten/);
+  assert.match(nlAssignment, /Stretch, Parts 3–4/);
+  assert.match(nlAssignment, /starters op Step 4/);
+  assert.match(nlAssignment, /Step 5 als huiswerk/);
+
+  for (const pack of [en, nl]) {
+    const homework = pack.steps.find((step) => step.id === 'w4-solo5');
+    assert.equal(homework.level, 'stretch');
+  }
 });
 
 test('day 3 English instructions name the L1 starter and credential placeholder', () => {

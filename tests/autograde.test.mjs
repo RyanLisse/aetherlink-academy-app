@@ -254,22 +254,27 @@ test('AET-103 decision: correct labels auto-approve every triage level L1 to L3 
 // Mentions like "MSG-02 high" in prose leak as surely as an expected_priority key.
 const proseLeaks=raw=>[...expectedByTicketId].filter(([id,label])=>new RegExp(`${id}\\W{1,3}${label}\\b`,'i').test(raw)).map(([id,label])=>`${id}=${label}`);
 
-test('SOLO 1 checks the six new support messages without exposing their answer key',async t=>{
+test('SOLO 1 follows the Step 1 lesson and keeps support answer keys server-side',async t=>{
  const {bo,call,grade,task}=await room(t,4);
  const pack=await call(bo.token,'day-pack');
  const solo1=pack.body.steps.find(step=>step.id==='w4-solo1');
  assert.equal(solo1.autograde,'support');
  assert.equal(solo1.slide.slide,18);
- assert.match(solo1.title,/Lesson 1/i);
- assert.match(solo1.goal,/first six messages/i);
- assert.match(solo1.instructions.join('\n'),/MSG-01[\s\S]*MSG-06/);
+ assert.match(solo1.title,/SOLO 1.*Structured output.*memory/i);
+ assert.match(solo1.goal,/configured priority schema.*deterministic route/i);
+ assert.match(solo1.instructions.join('\n'),/MSG-01 --dry-run[\s\S]*priority-schema\.mjs[\s\S]*lib\/switch\.mjs[\s\S]*--no-memory/);
+ assert.match(solo1.instructions.join('\n'),/MSG-01–MSG-06 in the `support` check/);
  assert.deepEqual(leaks(pack.body),[]);
  assert.deepEqual(proseLeaks(pack.raw),[]);
  assert.doesNotMatch(pack.raw,/expected_priority|"expected"/);
  const card=await task(bo.token,'w4-solo1');
  assert.deepEqual([card.status,card.autograde.tickets.map(ticket=>ticket.ticketId)],['open',['MSG-01','MSG-02','MSG-03','MSG-04','MSG-05','MSG-06']]);
  const solo4=pack.body.steps.find(step=>step.id==='w4-solo4');
- assert.match(solo4.instructions.join('\n'),/MSG-01 through MSG-09/);
+ assert.equal(solo4.autograde,'support-mcp');
+ assert.equal(solo4.slide.slide,32);
+ assert.match(solo4.instructions.join('\n'),/MSG-01, MSG-05, MSG-07, MSG-08, and MSG-09/);
+ assert.match(solo4.instructions.join('\n'),/MSG-01 through MSG-09.*support-mcp/);
+ assert.equal((await task(bo.token,'w4-solo4')).autograde.tickets.length,9);
  const miss=await grade(bo.token,'w4-solo1',{...SUPPORT_L1,'MSG-06':'high'});
  assert.deepEqual([miss.status,miss.body.status,miss.body.autograde.score],[200,'open',5]);
  assert.deepEqual(proseLeaks(miss.raw),[]);

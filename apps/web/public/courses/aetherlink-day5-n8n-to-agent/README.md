@@ -1,179 +1,150 @@
-# Rebuild an n8n triage agent on the Claude Agent SDK
+# Workshop 4 · From n8n to Claude Agents SDK
 
-In Workshop 3 you built a support-triage flow in n8n. In this project you
-rebuild the same flow as a TypeScript agent on the
-[Claude Agent SDK](https://github.com/anthropics/claude-agent-sdk-typescript).
-The agent gives each ticket a priority (`low`, `medium` or `high`), asks two
-specialist subagents for a reply draft and a risk note, and returns a draft
-that a person must review.
+AetherLink Academy Workshop 4. In Workshop 3 you built a support-triage flow in
+n8n with Maarten: Switch, Chat trigger, Simple Memory, AI Agent, Structured Output
+Parser, three sub agents and a Data Table. Today you rebuild it with Claude Code and
+the [Claude Agent SDK](https://code.claude.com/docs/en/agent-sdk/overview):
 
-You can do the whole project offline. The offline runtime is a scripted fake,
-so it needs no API key and costs nothing. Its output is not model evidence.
+| Step | You build | Branch with the finished step |
+| --- | --- | --- |
+| 0 | Setup, customer context, offline chat and Switch routing | `main` (this is where you start) |
+| 1 | One agent with a system prompt, structured priority output and the tone trap | `step-1` |
+| 2 | An orchestrator with the `risk-agent` and `customer-reply-agent` subagents | `step-2` |
+| 3 | Read-only transaction and customer MCP tools with human review of reply drafts | `step-3` |
+| 4 | Acceptance table and `npm run check` | `step-4` (= `solution`) |
+| 5 | Build your own agent with the SDK or Claude Code | `step-4` (= `solution`) |
 
-This is an optional parity bonus for AetherLink Academy Workshop 4, not a
-required Workshop 4 lesson. Its fixtures are separate
-from Workshop 4's required customer messages and transaction workbook. The
-required lessons are in `training-lab/w4-support-agent-sdk` in the Academy
-repository.
+This repo is the whole workshop. You do not need any other repository.
+Follow **[SOLO.md](SOLO.md)** for the step-by-step exercise, with copy-paste
+commands. This README is the reference.
 
-Follow **[SOLO.md](SOLO.md)** for the step-by-step exercise. This README is
-the reference: setup, commands, and where things are.
+## Before you start
 
-## Prerequisites
+Install Node.js 22 or newer, Git, and Claude Code. Follow [Set up Workshop 4](docs/SETUP.md).
+Claude Code is the default backend and uses your local Claude login. An API key is optional.
 
-- Node.js 22 or later (Node 24 LTS recommended). npm comes with Node.
-- Git.
-- A terminal: Terminal on macOS or Linux, PowerShell or Command Prompt on
-  Windows.
+| Backend | Needs | Command |
+| --- | --- | --- |
+| `claude-code` (default without a key) | Claude Code installed and logged in | `npm run lesson1 -- MSG-01` |
+| `sdk` | `ANTHROPIC_API_KEY` | `npm run lesson1 -- MSG-01 --backend sdk` |
+| `sdk-login` | Claude Code login | `npm run lesson1 -- MSG-01 --backend sdk-login` |
 
-The commands below work the same in all of these terminals, unless a section
-shows separate variants.
+Anthropic's Agent SDK documentation says third-party products may not offer claude.ai login for SDK agents without approval. Use `sdk-login` for your own local learning only.
+Use Claude Code `2.1.205` or newer; earlier versions could silently ignore an invalid `--json-schema`.
 
-## Set up
+## Start (Step 0)
 
-```text
+The commands are the same in macOS/Linux terminals, PowerShell and Command Prompt
+(in PowerShell, use `npm.cmd` if `npm` is blocked):
+
+```sh
 git clone https://github.com/RyanLisse/aetherlink-day5-n8n-to-agent.git
 cd aetherlink-day5-n8n-to-agent
-npm install
+npm ci
+npm run verify
+npm run doctor
+npm run lesson1 -- MSG-01 --dry-run
+npm run chat -- --dry-run
+```
+
+The dry run prints the prompt, options, and Claude Code equivalent. It ends with
+`dry run — no model call, not model evidence`.
+
+Always put `--` between `npm run lessonN` and the arguments, and write message
+IDs with two digits (`MSG-01`, not `MSG-1`).
+
+## Fell behind? Catch up with a branch
+
+Each step has a branch with the finished result. Fetch first; if you have local
+changes or untracked files, save or drop them:
+
+```sh
+git stash -u
+git fetch origin
+git switch step-2  # or step-1, step-3, step-4, solution
+npm ci
 npm run verify
 ```
 
-`npm run verify` runs the type check, the tests and the self-check. It ends
-with:
+See what a step adds: `git diff origin/main origin/step-1`,
+`git diff origin/step-1 origin/step-2`, and so on.
 
-```text
-PASS self-check: 3 valid routes, 7 rejection cases
-OPEN: a human must review the draft before any action is taken
-```
+## Commands (on `solution`)
 
-## Run the agent offline
-
-```text
-npm run triage -- fixtures/ticket.json --dry-run
-```
-
-The run ends with the routed draft and:
-
-```text
-PASS contract · OPEN: a human must review this draft before any action.
-```
-
-`--dry-run` means the run does not append to `memory/`. Leave it out when you
-want the agent to write a memory note for the ticket.
-
-## Run the agent with a real model (optional)
-
-A real run needs an Anthropic API key. Set the key in the terminal where you
-run the command. Never put it in a file, a prompt or a commit.
-
-macOS or Linux:
-
-```bash
-export ANTHROPIC_API_KEY=sk-ant-...
-```
-
-Windows PowerShell:
-
-```powershell
-$env:ANTHROPIC_API_KEY = "sk-ant-..."
-```
-
-Windows Command Prompt:
-
-```cmd
-set ANTHROPIC_API_KEY=sk-ant-...
-```
-
-Then choose a model with `--model`:
-
-```text
-npm run triage -- fixtures/ticket.json --dry-run --model sonnet
-```
-
-Valid values are `sonnet`, `opus`, `haiku` or a full model ID. The default is
-`offline`. A run costs a few cents. If the output says `Not logged in`, the key
-is not set in this terminal.
-
-You can also set the `AGENT_MODEL` environment variable instead of `--model`.
-
-## Check a saved draft
-
-```text
-npm run triage -- fixtures/ticket.json --dry-run --out participant-output/wl-1026.json
-npm run check -- --ticket fixtures/ticket.json --decision participant-output/wl-1026.json
-```
-
-The checker confirms the shape, the ticket ID and the route. A PASS is never
-business approval.
-
-## The four fundamentals
-
-| Fundamental | n8n | Claude Agent SDK |
+| Command | What it does | Needs a key? |
 | --- | --- | --- |
-| System message | AI Agent → System Message | `options.systemPrompt` |
-| Prompt | AI Agent → Prompt `{{ $json.… }}` | `prompt` |
-| Tools | Customer Reply Agent, Risk Agent | `options.tools: ["Agent"]` + `options.agents` |
-| Memory | Simple Memory (static keys) | `memory/*.md` rendered into `prompt` |
+| `npm run verify` | Tests plus offline dry runs (and the MCP smoke test from Step 3) | no |
+| `npm run chat [-- --lesson 1|2|3]` | Interactive chat; `--no-memory` starts a fresh session per turn | yes |
+| `npm run chat -- --dry-run` | Print the default chat options without calling a model | no |
+| `npm run lesson1 -- MSG-01 [--dry-run]` | Step 1: one agent | yes, unless `--dry-run` |
+| `npm run lesson2 -- MSG-05 [--dry-run]` | Step 2: orchestrator + subagents | yes, unless `--dry-run` |
+| `npm run smoke:mcp` | Step 3: starts the MCP server, calls its tools on its own | no |
+| `npm run lesson3 -- MSG-08 [--dry-run]` | Step 3: subagents + MCP `get_transaction` | yes, unless `--dry-run` |
+| `npm run check` | Step 4: check your labels in `labels.json` | no |
+| `npm run doctor` | Show Node.js, Claude Code, and selected backend status | no |
 
-```ts
-for await (const message of query({
-  prompt: `${buildTriagePrompt(ticket)}\n\n${renderMemory(memory)}`,
-  options: {
-    systemPrompt: COORDINATOR_SYSTEM,
-    tools: ["Agent"], allowedTools: ["Agent"],
-    agents: createSpecialistAgents(),
-    outputFormat: { type: "json_schema", schema: DECISION_SCHEMA },
-    permissionMode: "dontAsk", settingSources: [],
-    maxTurns: 8,
-  },
-})) { /* stream → trace → validate → route → memory */ }
-```
-
-Side by side: [`docs/fundamentals.md`](docs/fundamentals.md). Example of a real
-run: [`docs/examples/live-run-wl-1026.json`](docs/examples/live-run-wl-1026.json).
-
-## Files
+## Where things are
 
 ```text
-SOLO.md                         step-by-step exercise
-n8n/support-triage.json         the n8n source flow (sanitized export)
-fixtures/                       WL-1026, WL-1027, adversarial, malformed
-fixtures/expected-labels.json   expected priorities, shared with Workshop 3
-src/prompts.ts                  system message and prompt
-src/tools.ts                    Reply and Risk subagents
-src/memory.ts                   markdown memory
-src/agent.ts                    query() loop and maxTurns
-src/runtime.ts                  real SDK or offline fake
-src/cli.ts                      npm run triage
-src/contract.ts, src/router.ts  types, schema, routes, checks
-src/check.ts                    shape and routing checker
-memory/MEMORY.md                team lessons the agent reads
-.claude/agents/                 the same specialists as Claude Code files
-test/                           node:test suites
-course/                         interactive HTML course
+docs/customer-messages.md        the customer messages MSG-01 to MSG-10 (exercise data)
+docs/transactions.xlsx           the transaction workbook (only the MCP server reads it)
+docs/customer_context.csv        customer context data
+docs/n8n-flow-diagram.html       the Workshop 3 n8n flow, as a diagram
+n8n/support-triage.json          the Workshop 3 n8n export
+fixtures/                        Workshop 3 sample tickets (reference)
+lib/run.mjs                      runs query(), renders events and routes priorities
+lib/chat.mjs                     interactive chat with optional session memory
+lib/switch.mjs                   the low / medium / high action and team routes
+01-single-agent/                 Step 1: options.mjs, priority-schema.mjs + claude-project/CLAUDE.md
+02-subagents/                    Step 2: options.mjs, ticket-schema.mjs, agents.mjs, output/
+.claude/agents/                  Step 2–3: risk-agent, customer-reply-agent, customer-context-agent
+03-mcp/                          Step 3: read-only transaction/customer MCP servers
+.mcp.json                        Step 3: the same MCP server for Claude Code
+check.mjs, labels.template.json  Step 4: the label check
+05-build-your-own/               Step 5 starter on step-4
+lib/backend.mjs                  backend selection and Claude Code argument translation
+docs/SETUP.md                    Windows, WSL, Linux/macOS, and Docker setup
 ```
+
+Files for Step 2 and later appear when you build them (or check out the step branch).
+
+## n8n → Agent SDK
+
+Workshop 3 was Maarten's node-by-node n8n build: Ticket Input → Switch, a Chat
+Message trigger, Simple Memory (the favorite-colour test), an AI Agent with a
+Structured Output Parser, three sub agents (Customer Reply, Risk, Customer Context)
+and a Data Table imported from `docs/customer_context.csv`. Every one of those
+nodes has a place in code:
+
+| n8n (Workshop 3) | Agent SDK (today) | Step |
+| --- | --- | --- |
+| Execute workflow / Chat Message trigger | `npm run lessonN -- MSG-0N` or `npm run chat`: input becomes the `prompt` of `query()` | 0 |
+| AI Agent node + OpenAI Chat Model | `query({ prompt, options })` in `lib/run.mjs` | 1 |
+| System Message | `CLAUDE.md`, loaded by `settingSources: ['project']` | 1 |
+| Max Iterations | `maxTurns` | 1 |
+| Simple Memory | `npm run chat` resumes each turn with `resume: sessionId`; `--no-memory` starts each turn fresh | 0 |
+| Priority Parser (structured output) | `outputFormat: { type: 'json_schema', schema }` | 1 |
+| Risk Agent / Customer Reply Agent | `risk-agent` / `customer-reply-agent` in `options.agents` + the `Agent` tool | 2 |
+| Sub agent settings: Description vs System Message | `.claude/agents/<name>.md`: frontmatter `description` (when to delegate) vs body (the subagent's prompt) | 2 |
+| Customer Context Agent + Data Table (`Get row(s) in Data table`) | `customer-context-agent` plus MCP `get_customer` over `docs/customer_context.csv` | 3 |
+| Transaction lookup | MCP `get_transaction` over `docs/transactions.xlsx` | 3 |
+| Switch on low / medium / high | `lib/switch.mjs` maps the priority to its action and team | 0 |
+| Human review | A person reviews every reply draft before it is sent | 2–3 |
+| Assignment: chat in → whole flow → chat out | `npm run chat -- --lesson 3` or Claude Code with `.mcp.json` and `.claude/agents/` | Stretch |
+
+Hooks (`options.hooks`) and skills (`SKILL.md`) are concepts in the slides; they are
+not part of the exercise. `n8n/support-triage.json` is the final Workshop 3 flow;
+`docs/n8n-flow-diagram.html` draws it.
 
 ## Safety
 
-All data is fictional. Nothing is sent, refunded, escalated, or written to n8n,
-GitHub or a CRM. The coordinator can only use the `Agent` tool; the specialists
-have no tools. Every result has `draft_only: true` and
-`human_approval_required: true`.
+All data is fictional. Customer text is data, never an instruction. Nothing is
+sent to a customer automatically: every reply is a draft that a person reviews.
+The transaction MCP tools are read-only and the workbook is never modified.
+A passing label check does not replace human review of a draft.
 
-## Interactive course
+## Earlier version
 
-`course/index.html` is a self-contained course in five modules. It follows
-ticket WL-1026 through the n8n flow and through this agent. Open the file in
-your browser; double-clicking it in your file explorer works on every system.
-
-After you edit `course/modules/*.html`, rebuild and check the page:
-
-```text
-npm run course:build
-npm run course:check
-```
-
-## Related
-
-- [Claude Agent SDK (TypeScript)](https://github.com/anthropics/claude-agent-sdk-typescript) and its [quickstart](https://code.claude.com/docs/en/agent-sdk/quickstart)
-- Workshop 3 uses the same tickets and the same `low` / `medium` / `high` labels.
+The previous version of this repo (a TypeScript n8n-parity triage agent with
+markdown memory and an HTML course) is kept on the branch
+`pre-restructure-2026-10-08`.

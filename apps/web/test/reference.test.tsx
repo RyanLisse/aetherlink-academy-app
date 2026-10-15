@@ -21,7 +21,19 @@ describe('reference view per day', () => {
     expect(matchReference('/reference/glossary')).toEqual({kind: 'glossary'});
     expect(matchReference('/reference/day/3')).toMatchObject({kind: 'day', day: {day: 3, lessonId: 'workshop-3'}});
     expect(matchReference('/reference/day/8')).toBeNull();
-    expect(REFERENCE_DAYS.map((day) => [day.day, day.slides.length])).toEqual([[1, 67], [2, 46], [3, 18], [4, 28], [5, 49], [6, 14], [7, 14]]);
+    expect(REFERENCE_DAYS.map((day) => [day.day, day.slides.length])).toEqual([[1, 67], [2, 46], [3, 18], [4, 51], [5, 49], [6, 14], [7, 14]]);
+  });
+
+  test('Workshop 4 reference distinguishes dry-run setup from live or sample results', () => {
+    const day = REFERENCE_DAYS[3]!;
+    const content = JSON.stringify(day.slides);
+    expect(content).toContain('01-single-agent/priority-schema.mjs');
+    expect(content).toContain('outputFormat');
+    expect(content).toContain('lib/switch.mjs');
+    expect(content).toContain('MSG-10');
+    expect(content).toContain('docs/sample-trace.md');
+    expect(content).toMatch(/illustrative sample/);
+    expect(content).toMatch(/dry run does not/);
   });
 
   test('a day renders every slide as an anchored reading article through the deck reader mode, without speaker notes', async () => {
