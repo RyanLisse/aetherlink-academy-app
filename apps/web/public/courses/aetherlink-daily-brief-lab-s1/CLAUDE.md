@@ -9,4 +9,4 @@ the repository root does not load them independently. Keep these imports
 explicit so the outcome, the current-state board and the contribution rules are
 loaded together before anything is changed.
 
-See `SOLO.md` for one-line cues (skills / hooks / MCP / subagents / workflows) at the step where they fit.
+See `SOLO.md` for the build prompt, the learner-owned variation, the review, and the stopping point for each step.

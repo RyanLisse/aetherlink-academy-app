@@ -864,8 +864,15 @@
       </section>
 
       <section class="screen animate-in">
-        <h2 class="screen-heading">The quest: change the briefing, not the car</h2>
-        <p>To make a sat-nav speak Dutch you change a setting, you don't rebuild the engine. The clothing quest works the same way: the README says <em>do not add a new tool</em>. You edit <code>instructions.md</code>, and a checker script confirms you did.</p>
+        <h2 class="screen-heading">Prompt Claude Code to change one rule</h2>
+        <p>Use the copy-ready prompt in README section 4. Claude Code asks you for one fictional weather case, changes only the clothing-advice sentence in <code>instructions.md</code>, and shows the diff. Judge the sentence against your case yourself. The quest checks only for clothing words and then runs the fixed Amsterdam fixture for 2026-09-21. It does not execute your case or prove that prose changed the fixture result.</p>
+
+        <div class="translation-box">
+          <div class="translation-code">
+            <span class="translation-label">Claude Code prompt</span>
+            <pre><code>Read README.md section 4, instructions.md, src/quest-clothing.ts, and the weather tests. Ask me to type one fictional weather case. Change only the clothing-advice sentence under "Mini-quest hook" in instructions.md so the advice is short and useful for my case. Do not add a tool or edit runtime code. Show the diff. Ask me to judge whether the sentence fits my case. Then run npm run quest:clothing and npm test. Explain that the quest only checks for clothing words and always runs the Amsterdam fixture for 2026-09-21; it does not execute my case or prove the prose changed fixture output. Stop after I review the sentence and both command results.</code></pre>
+          </div>
+        </div>
         <div class="translation-block animate-in">
           <div class="translation-code">
             <span class="translation-label">src/quest-clothing.ts</span>

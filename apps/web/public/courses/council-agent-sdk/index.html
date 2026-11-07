@@ -839,8 +839,15 @@
       </section>
 
       <section class="screen animate-in">
-        <h2 class="screen-heading">The mini-quest loop</h2>
-        <p>The lab asks you to change <strong>only</strong> the judge rule and watch the numbers move. <code>src/quest-judge.ts</code> first checks you did not delete the judge section entirely.</p>
+        <h2 class="screen-heading">Prompt Claude Code to change the judge rule</h2>
+        <p>Use the copy-ready prompt in README section 4. Claude Code saves the fixed remote-first output first. Your own vague claim helps you choose one of the two supported rule sentences. Claude Code changes only that rule and compares the same fixed question before and after. The quest does not execute your claim.</p>
+
+        <div class="translation-box">
+          <div class="translation-code">
+            <span class="translation-label">Claude Code prompt</span>
+            <pre><code>Read README.md section 4, instructions.md, src/quest-judge.ts, and the council tests. First run npm run quest:judge and save the observed output. Ask me to type one vague claim as design input. Then ask me to choose exactly one supported rule: "Wees strenger bij vage claims." or "Wees mild; vague wording is fine." Change only the Judge rule in instructions.md. Do not edit member instructions or runtime code. Show the diff, rerun npm run quest:judge, and compare the before and after agreement scores. Explain that the quest always evaluates its fixed remote-first question; it does not execute my claim. Run npm test. Stop after I review the rule, comparison, and test result.</code></pre>
+          </div>
+        </div>
 
         <div class="step-cards">
           <div class="step-card"><div class="step-num">1</div><div class="step-body"><strong>Edit the judge rule</strong><p>In <code>instructions.md</code>, under "Judge rule (edit for mini-quest)".</p></div></div>

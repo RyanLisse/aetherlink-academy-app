@@ -1,7 +1,6 @@
 'use strict';
-/* Workshop 5 · AI-native SDLC with an SRE agent (PROPOSAL, local branch only, not pushed).
-   English, ASD-STE100 style. Text ported from the Academy-app v5 deck (workshop5-slides.v5.ts);
-   source: SRE-LESSON.md v5 + DAILY-BRIEF-SOLO.md. Same slide schema as slides.js.
+/* Workshop 5 · AI-native SDLC with an SRE agent.
+   Academy adaptation of the mirrored classroom deck.
    Open workshop5.html (presenter view: workshop5-presenter.html). */
 window.SLIDES = [
   {
@@ -372,7 +371,7 @@ window.SLIDES = [
       },
       {
         "title": "Deploy → Maintain",
-        "body": "named approval → PR/MR → resolved incident → lesson + bench case"
+        "body": "named approval → local review → resolved incident → lesson + bench case"
       }
     ],
     "kicker": "W5 · WHY AI-NATIVE · THE FILE CHAIN",
@@ -389,10 +388,10 @@ window.SLIDES = [
     },
     "keyPoints": [
       "All files are markdown or JSON.",
-      "Review in a PR (GitHub) or MR (GitLab).",
+      "Review the local diff with a neighbor.",
       "No external tool."
     ],
-    "notes": "Time: 10:41 · 2 min.\n1. Say: “Each arrow has a file. You can show each file.”\n2. Say: “Together the files are the audit trail: who decided what, from which evidence.”\n3. Say: “All files are in the repo. Review is a PR on GitHub or an MR on GitLab.”"
+    "notes": "Time: 10:41 · 2 min.\n1. Say: “Each arrow has a file. You can show each file.”\n2. Say: “Together the files are the audit trail: who decided what, from which evidence.”\n3. Say: “All files are in the repo. Review the local diff with a neighbor. Do not push this lab.”"
   },
   {
     "title": "Why build an on-call agent?",
@@ -691,7 +690,7 @@ window.SLIDES = [
       "Offline. No API key needed.",
       "Sample data and a local shop only."
     ],
-    "notes": "Time: 10:49 · 1 min.\n1. Say: “Today you build an on-call agent for a small checkout shop. It runs on your laptop. No cloud, no API key.”\n2. Say: “It reads logs, metrics, deploys and the diff. It cannot change anything.”\n3. Say: “The console shows the diagnosis. Every claim has a reference. You can challenge it in chat.”\n4. Say: “Approve, execute and resolve are buttons with your name. Never chat commands.”\n5. Show: https://github.com/RyanLisse/sre-oncall-agent."
+    "notes": "Time: 10:49 · 1 min.\n1. Say: “Today you build an on-call agent for a small checkout shop. It runs on your laptop. No cloud, no API key.”\n2. Say: “It reads logs, metrics, deploys and the diff. It cannot change anything.”\n3. Say: “The console shows the diagnosis. Every claim has a reference. You can challenge it in chat.”\n4. Say: “Approve, execute and resolve are buttons with your name. Never chat commands.”\n5. Show the training branch: https://github.com/RyanLisse/sre-oncall-agent/tree/workshop/start. The newer main branch is a separate three-core reference, not this nine-assignment workshop."
   },
   {
     "title": "What you build: the on-call console",
@@ -789,7 +788,7 @@ window.SLIDES = [
       },
       {
         "label": "Humans decide",
-        "caption": "A named human approves, pushes, and merges."
+        "caption": "A named human approves, executes, and closes the sample incident."
       }
     ],
     "visual": {
@@ -845,24 +844,24 @@ window.SLIDES = [
     "kicker": "W5 · SETUP · YOUR TURN",
     "subtitle": "INC-1001: open the console you work the ticket in. Native on your laptop. Offline. No API key.",
     "repo": {
-      "url": "https://github.com/RyanLisse/sre-oncall-agent",
+      "url": "https://github.com/RyanLisse/sre-oncall-agent/tree/workshop/start",
       "label": "github.com/RyanLisse/sre-oncall-agent · branch workshop/start"
     },
     "type": "practice",
     "layout": "exercise",
     "steps": [
-      "Clone. git checkout workshop/start. npm ci.",
-      "npm run fixtures. npm test: fail 0.",
-      "npm run test:workshop: 12 red. By design.",
-      "npm run console. Open localhost:4320.",
-      "Run claude. /status. Type /: find incident-triage and verify-this."
+      "Clone workshop/start with git clone --branch workshop/start --single-branch https://github.com/RyanLisse/sre-oncall-agent.git. Open it in Claude Code and check /status.",
+      "Paste Example prompt. Let Claude check setup and start the console.",
+      "Open localhost:4320 yourself. Read the expected red exercise failures.",
+      "Ask Claude to show the remaining TODOs. Choose the first one you will build.",
+      "Optional: restart with claude --plugin-dir ./course/ai-sdlc-mod and open /sdlc to see the nine assignments and their evidence status."
     ],
-    "expected": "npm test green. 12 red exercises. Console on :4320.",
-    "stepsHeading": "Do this now:",
+    "expected": "You can open the console. Main tests pass; the A3/A4/A5/A8 exercise tests still fail as expected.",
+    "stepsHeading": "Prompt, build, inspect:",
     "cards": [
       {
-        "title": "In the lab repo",
-        "body": "git clone https://github.com/RyanLisse/sre-oncall-agent.git\ncd sre-oncall-agent\ngit checkout workshop/start\nnpm ci && npm run fixtures\nnpm test\nnpm run test:workshop\nnpm run console"
+        "title": "Build with Claude Code",
+        "body": "Paste Example prompt.\nClaude runs setup checks.\nYou inspect the console and failures.\nOptional: /sdlc shows the lesson inside Claude Code."
       }
     ],
     "visual": {
@@ -872,11 +871,13 @@ window.SLIDES = [
       ]
     },
     "keyPoints": [
-      "This is a check, not an install.",
-      "The 12 red tests are today's exercises.",
-      "npm run progress shows A-1 … A-9."
+      "Claude Code is your builder.",
+      "The offline SRE output is not model evidence.",
+      "The optional /sdlc mod reads lesson state and never submits a prompt.",
+      "Keep this lab local. Do not push."
     ],
-    "notes": "Time: 10:54 · 9 min. This block continues into the break.\n1. Show: on workshop/start, run npm ci, npm run fixtures and npm test (fail 0).\n2. Show: npm run test:workshop. Say: “12 red tests. They are your exercises for today. They go green one assignment at a time.”\n3. Show: npm run console. Open http://localhost:4320. In a second terminal: curl localhost:4320/api/health.\n4. Show: run claude in the repo folder. Select “Yes” at the trust question. Run /status: your account and the guard + progress hooks.\n5. Show: type /. The 8 lab skills: design-control-loop, grilling, show-me, verify-this, review-and-ship, visual-pr, handoff, incident-triage. More skills = your own ~/.claude/skills or the skills pack.\n6. Show: npm run progress. It lists A-1 … A-9 with evidence.\n7. Let them do: the same steps. Check one green tick per table.\n8. If npm test is red: wrong branch. git checkout workshop/start, npm ci.\n9. If “npm: command not found”: install Node 22 LTS or newer.\n10. If port 4320 is busy: stop the old console (pkill -f console/server.ts).\n11. If /status shows no account: /login. Vertex only if the company requires it.\n12. If a skill behaves differently: an old copy in ~/.claude/skills wins. Rename it.\n13. No Claude Code at all? The day still works: every exercise is TypeScript + node:test. See FACILITATOR.md “No-Claude dry run”."
+    "notes": "Time: 10:54 · 9 min. This block continues into the break.\n1. Open Claude Code in the workshop/start checkout and show /status.\n2. Paste Example prompt. Claude reads the setup and runs the checks.\n3. The main tests must pass. The exercise failures identify TODO(A3/A4/A5/A8); do not solve them yet.\n4. Optional demo: restart with claude --plugin-dir ./course/ai-sdlc-mod, open /sdlc and show that the mod reads the nine assignments without submitting a prompt.\n5. Each participant opens the console and names the first TODO.\n6. If setup fails, read the exact error before changing anything. Preserve local work before changing branches.\n7. Reuse the participant's existing console. Never kill a process by name.\n8. No Claude Code? Pair participants or use FACILITATOR.md for the manual fallback. Offline SRE output is not model evidence.",
+    "prompt": "We are on workshop/start. Read README.md, WORKSHOP.md, CLAUDE.md and package.json first. Check Node and my current diff. Install the dependencies and generate the sample fixtures. Run the main tests and the workshop tests. Explain why the workshop failures are expected; do not solve them yet. Reuse my existing console or start one on port 4320 if free. Show its health and the local URL. Do not push or change hooks. Stop for my setup review."
   },
   {
     "title": "Break",
@@ -935,7 +936,7 @@ window.SLIDES = [
         "body": "Problem\nOutcome\nUsers/Systems\nConstraints\nOpen questions"
       }
     ],
-    "tagline": "A wish is not a rule. The merge is the acceptance.",
+    "tagline": "A wish is not a rule. The human review is the acceptance.",
     "visual": {
       "mdfile": 1,
       "mdName": "intent.md",
@@ -952,7 +953,7 @@ window.SLIDES = [
       "Three checks. At least one OPEN.",
       "A hard boundary and named owners."
     ],
-    "notes": "Time: 11:17 · 2 min.\n1. Say the five fields (p.13).\n2. Say: “A wish is not a rule. ‘The agent is careful’ is not testable.”\n3. Say: “‘The agent has no tool that writes’ is testable.”\n4. Say: “The merge of the intent.md PR/MR is the human acceptance.”"
+    "notes": "Time: 11:17 · 2 min.\n1. Say the five fields (p.13).\n2. Say: “A wish is not a rule. ‘The agent is careful’ is not testable.”\n3. Say: “‘The agent has no tool that writes’ is testable.”\n4. Say: “A human accepts the intent.md diff locally.”"
   },
   {
     "title": "Watch: Claude interviews me",
@@ -1022,10 +1023,10 @@ window.SLIDES = [
     "prompt": "/design-control-loop for the SRE agent on checkout-api — one round, then map to intent.md",
     "keyPoints": [
       "One round. Then stop.",
-      "Sensor = MCP. Actuator = a human with a PR.",
+      "MCP supplies evidence. A human controls the local sample console.",
       "Fallback: /grilling intent.md."
     ],
-    "notes": "Time: 11:25 · 3 min. Showcase 1.\n1. Show: paste the prompt.\n2. Say: “Claude reads the repo, incidents/, and REVIEW.md first.”\n3. Answer the questions (3 or fewer). Reject one recommended answer on purpose.\n4. Show: the table that maps each part to an intent.md field. The hook asks before the edit.\n5. Say: “The agent is a control loop. The sensor is the MCP. The actuator is a human with a PR. Today we build each part.”\n6. Stop after one round.\n7. If it takes too long: say “one round”, or use /grilling intent.md.\n8. Note: the lab version is phase A–B of the HumanLayer skill (MIT). It has no CI, key, or bypass parts."
+    "notes": "Time: 11:25 · 3 min. Showcase 1.\n1. Show: paste the prompt.\n2. Say: “Claude reads the repo, incidents/, and REVIEW.md first.”\n3. Answer the questions (3 or fewer). Reject one recommended answer on purpose.\n4. Show: the table that maps each part to an intent.md field. The hook asks before the edit.\n5. Say: “The agent is a control loop. The sensor is the MCP. A human controls the local sample console. Today we build each part.”\n6. Stop after one round.\n7. If it takes too long: say “one round”, or use /grilling intent.md.\n8. Note: the lab version is phase A–B of the HumanLayer skill (MIT). It has no CI, key, or bypass parts."
   },
   {
     "title": "Assignment 2: Write your team intent.md",
@@ -1033,13 +1034,13 @@ window.SLIDES = [
     "type": "practice",
     "layout": "exercise",
     "steps": [
-      "Fill intent.md: who it serves, the boundary.",
-      "Write three checks a stranger can verify.",
-      "Do one interview round with a skill.",
-      "Read your boundary to a neighbor. Open a PR/MR."
+      "Paste Example prompt. Answer with your own team outcome.",
+      "Reject one vague check. Ask Claude to make it runnable.",
+      "Approve the intent.md edit after reading the proposed boundary.",
+      "Read all three checks to a neighbor. Record their local review."
     ],
-    "expected": "intent.md filled. Three verifiable checks. PR/MR open.",
-    "stepsHeading": "Do this now:",
+    "expected": "Your team intent.md has a reviewed boundary and three repeatable checks.",
+    "stepsHeading": "Prompt, build, inspect:",
     "cards": [
       {
         "title": "intent.md",
@@ -1052,12 +1053,13 @@ window.SLIDES = [
       "mdName": "intent.md"
     },
     "keyPoints": [
-      "A wish is not a rule.",
+      "You choose the outcome.",
       "A stranger can run each check.",
-      "The merge is the acceptance."
+      "A human accepts the local diff."
     ],
-    "notes": "Time: 11:28 · 12–15 min.\n1. Let them do: each team fills intent.md on workshop/start.\n2. Walk to each team. Read the boundaries and the three checks.\n3. Gate: if a check is a wish (“the agent is safe”), say “NEEDS REVISION”. A check is a command or a click a stranger can repeat.\n4. Good examples: “chat refuses ‘roll back now’”, “a verdict without an evidence ref is rejected”, “Execute stays disabled without a named approval”.\n5. If Claude cannot write intent.md without asking: this is correct. The hook asks. Confirm the edit yourself.\n6. Check: npm run progress shows ✓ A-2 intent.\n7. Catch-up: git checkout w5-step-1-intent -- intent.md.",
-    "subtitle": "INC-1001: agree who the agent serves and what it may never do."
+    "notes": "Time: 11:28 · 12–15 min.\n1. Paste Example prompt for one interview round. Each team chooses its own outcome.\n2. Require three repeatable checks. A wish means NEEDS REVISION.\n3. The hook asks before intent.md edits; the participant reads and accepts the diff.\n4. A neighbor reads the boundary aloud and tests one check. Record acceptance locally.\n5. After an attempt, preserve local work and compare git diff w5-step-1-intent -- intent.md. Apply only a reviewed change.",
+    "subtitle": "INC-1001: agree who the agent serves and what it may never do.",
+    "prompt": "Read intent.md, the INC-1001 fixture and REVIEW.md. Interview me one question at a time about who the SRE agent serves. Help me write three checks a stranger can repeat. Keep the boundary: sample data, read-only investigation, named humans approve and close. Ask before editing intent.md. Stop after one interview round and show the diff for my review. Do not build or push."
   },
   {
     "title": "spec.md",
@@ -1145,13 +1147,13 @@ window.SLIDES = [
     "type": "practice",
     "layout": "exercise",
     "steps": [
-      "Write docs/spec.md. One example per field.",
-      "npm run test:workshop: the A3 contract tests are red.",
-      "Rebuild the evidence rules in src/contract.ts (TODO A3).",
-      "Add customer_impact in src/contract.ts, src/runtime.ts and test fixtures. Green. PR/MR."
+      "Paste Example prompt. Accept the contract before Claude builds.",
+      "Choose one invalid verdict to test, such as a claim with no reference.",
+      "Let Claude implement A3 and check every affected verdict fixture.",
+      "Read the diff. Confirm your invalid verdict is rejected and the offline diagnosis still renders."
     ],
-    "expected": "A3 tests green. npm test still fail 0. The test commit is first.",
-    "stepsHeading": "Do this now:",
+    "expected": "A3 tests pass. Your invalid verdict is rejected. Main tests and typecheck pass; the offline diagnosis renders.",
+    "stepsHeading": "Prompt, build, inspect:",
     "cards": [
       {
         "title": "You write",
@@ -1167,7 +1169,8 @@ window.SLIDES = [
       "A claim needs a reference.",
       "A missing signal is unknown, not healthy."
     ],
-    "notes": "Time: 11:47 · 12 min. Finish after lunch if needed.\n1. Let them do: each team writes docs/spec.md from intent.md.\n2. Then: npm run test:workshop. The seven A3 tests in test/workshop/contract.test.ts are red.\n3. They rebuild the rules in src/contract.ts (TODO(A3)): a rollback needs a deploys evidence line, a strong proposal needs two sources, low confidence cannot carry a strong proposal, evidence needs at least one line, high confidence is refused while data_gaps exist, and customer_impact is required and non-empty.\n3a. customer_impact is required, so the offline verdicts in src/runtime.ts and the fixtures in test/contract.test.ts need it too. With only src/contract.ts changed, npm test shows 5 failures.\n4. Check: the A3 tests go green; npm test stays fail 0; npm run typecheck is clean.\n5. Check: npm run investigate -- fixtures/incidents/bad-deploy.json --dry-run still prints a diagnosis.\n6. Another team reads the spec against intent.md.\n7. Catch-up: git checkout w5-step-2-spec-contract -- src/contract.ts src/runtime.ts src/prompts.ts src/cli.ts console/index.html test/contract.test.ts docs/spec.md."
+    "notes": "Time: 11:47 · 12 min. Finish after lunch if needed.\n1. Paste Example prompt. Accept docs/spec.md before Claude implements the contract.\n2. Each participant supplies an invalid verdict and predicts the rejection.\n3. Claude implements TODO(A3), including customer_impact in src/contract.ts, src/runtime.ts and test/contract.test.ts.\n4. Inspect the A3 test output, main tests, typecheck and offline bad-deploy diagnosis. Read the diff instead of accepting an agent summary.\n5. After an attempt, preserve local work and compare git diff w5-step-2-spec-contract -- src/contract.ts src/runtime.ts test/contract.test.ts docs/spec.md. Apply only a reviewed change.",
+    "prompt": "Read our accepted intent.md and docs/spec.md. Propose the verdict contract, then wait for my acceptance. After acceptance, show the red A3 tests in test/workshop/contract.test.ts. Implement TODO(A3) in src/contract.ts. Add required non-empty customer_impact to src/runtime.ts and the fixtures in test/contract.test.ts too. Preserve the evidence and draft_only rules. Run the A3 tests, main suite, typecheck and offline bad-deploy investigation. Show the diff and actual outputs. Do not weaken tests or copy solved tags. Stop for my review."
   },
   {
     "title": "Lunch",
@@ -1222,7 +1225,7 @@ window.SLIDES = [
       "Keep it short.",
       "People maintain it."
     ],
-    "notes": "Time: 13:00 · 3 min.\n1. Progress check (30 s): run npm run progress for the current checks. Open PROGRESS.md for the latest dated evidence. Ask which current check supports it. Do not call it verified from an agent claim.\n2. Show: the lab CLAUDE.md. Show the commands, the rules (“propose, never execute”), and how to verify.\n3. Say: “If the agent makes the same mistake two times, add the rule here.”\n4. Say: “AGENTS.md, PROGRESS.md, and SOLO.md are next to CLAUDE.md.”"
+    "notes": "Time: 13:00 · 3 min.\n1. Progress check (30 s): run npm run progress for the current checks. Open PROGRESS.md for the latest dated evidence. Ask which current check supports it. Do not call it verified from an agent claim.\n2. Show: the lab CLAUDE.md. Show the commands, the rules (“propose, never execute”), and how to verify.\n3. Say: “If the agent makes the same mistake two times, add the rule here.”\n4. Say: “PROGRESS.md and SOLO.md are next to CLAUDE.md. This workshop branch does not contain AGENTS.md.”"
   },
   {
     "title": "PROGRESS.md",
@@ -1472,7 +1475,7 @@ window.SLIDES = [
       "Merge and approve are human work.",
       "Regex rules are best effort."
     ],
-    "notes": "Time: 13:21 · 4 min.\n1. Explain the three columns, left to right.\n2. Say: “The agent can never merge or approve. This is also true after an approval.”\n3. Say: “A push without a named approval is denied. The message says: a human runs npm run approve:git in their own terminal.”\n4. Say: “Regex rules are best effort. Strong isolation needs an OS sandbox, the Docker route without network, or managed settings from IT.”"
+    "notes": "Time: 13:21 · 4 min.\n1. Explain the three columns, left to right.\n2. Say: “The agent can never merge or approve. This is also true after an approval.”\n3. Say: “The current workshop README forbids pushing. The git approval mechanism is reference only; in an authorized shared workflow a human runs approve:git in their own terminal.”\n4. Say: “Regex rules are best effort. Strong isolation needs an OS sandbox, the Docker route without network, or managed settings from IT.”"
   },
   {
     "title": "Watch: try to break the rules",
@@ -1521,14 +1524,14 @@ window.SLIDES = [
     "type": "practice",
     "layout": "exercise",
     "steps": [
-      "Rebuild the mutation refusal in src/chat.ts (TODO A4).",
-      "Ask chat “roll back now”. It refuses.",
-      "By hand: guard.mjs denies edits to bench/ratchet.json.",
-      "test:workshop A4 green. test:hooks green.",
-      "Write docs/decisions/D01-*.md. Open a PR/MR."
+      "Paste Example prompt. Choose an extra mutation phrase for Claude to test.",
+      "Read the src/chat.ts diff. Ask the console chat your phrase; it must refuse.",
+      "By hand, add the guard.mjs rule that denies edits to bench/ratchet.json.",
+      "Ask Claude to run A4 and hook tests. Inspect the denial in approvals/audit.jsonl yourself.",
+      "Review docs/decisions/D01-*.md locally with a neighbor."
     ],
-    "expected": "Chat refuses mutations. A deny in approvals/audit.jsonl.",
-    "stepsHeading": "Do this now:",
+    "expected": "Your extra mutation phrase is refused. A4 and hook tests pass; the human-written rule produces an audit denial.",
+    "stepsHeading": "Prompt, build, inspect:",
     "cards": [
       {
         "title": "npm run test:hooks",
@@ -1561,8 +1564,9 @@ window.SLIDES = [
       "You edit the hook. The agent cannot edit .claude/.",
       "The ratchet is protected from the agent."
     ],
-    "notes": "Time: 13:30 · 20 min.\n1. Let them do: the five steps on the slide.\n2. Part 1, runtime control: src/chat.ts (TODO(A4)). Chat must refuse rollback, scale, flag, approve and resolve requests and point to the buttons.\n3. Part 2, SDLC control: .claude/hooks/guard.mjs already denies network, secrets, self-approval and unapproved pushes. Each team adds one rule by hand: deny agent edits to bench/ratchet.json.\n4. Say: “The agent cannot edit .claude/ (deny). You edit guard.mjs yourself. The human owns the boundary.” If someone asks Claude to edit the hook and it is denied: that is the lesson.\n5. Check: npm run test:workshop shows the A4 tests green; npm run test:hooks is green; approvals/audit.jsonl has a deny.\n6. Check: npm run progress shows ✓ A-4.\n7. Catch-up: git checkout w5-step-3-design-controls -- src/chat.ts .claude/hooks/guard.mjs.\n8. At 13:50, go to Assignment 5.",
-    "subtitle": "INC-1001: make the chat refuse “roll back now”."
+    "notes": "Time: 13:30 · 20 min.\n1. Paste Example prompt. Each participant chooses one extra mutation phrase. Claude implements TODO(A4) only in src/chat.ts.\n2. Read the diff and ask the console chat the chosen phrase. It must refuse and point to human controls.\n3. The participant edits .claude/hooks/guard.mjs by hand to deny agent edits to bench/ratchet.json. Claude must not edit the hook.\n4. Let Claude run A4 and hook tests. The participant reads the denial in approvals/audit.jsonl.\n5. Review docs/decisions/D01-*.md locally.\n6. After an attempt, preserve local work and compare git diff w5-step-3-design-controls -- src/chat.ts. Compare the guard separately; only a human may edit it.\n7. At 13:50, go to Assignment 5.",
+    "subtitle": "INC-1001: make the chat refuse “roll back now”.",
+    "prompt": "Read intent.md, test/workshop/chat.test.ts and test/workshop/guard.test.ts. Use chat.test.ts for the chat contract; guard.test.ts checks the separate human hook edit. Implement only TODO(A4) in src/chat.ts so chat refuses rollback, scale, flag, approve and resolve requests and points to human controls. Ask me to choose one extra mutation phrase, then add its test. Run the relevant tests and show the diff. Do not edit .claude/, approvals/, PROGRESS.md or bench/ratchet.json. The human will add the hook rule. Do not approve or execute anything. Stop for my review."
   },
   {
     "title": "Assignment 5: Build a read-only tool",
@@ -1571,13 +1575,13 @@ window.SLIDES = [
     "type": "practice",
     "layout": "exercise",
     "steps": [
-      "npm run test:workshop: the A5 tool tests are red.",
-      "Implement the list_deploys handler in src/tools.ts.",
-      "Register it in createTelemetryServer. Green.",
-      "Run an investigation. list_deploys is in the trace."
+      "Paste Example prompt. Choose an empty or missing deploy case.",
+      "Read both changes in src/tools.ts: handler binding and tool registration.",
+      "Inspect the result of your extra case and the A5 tests.",
+      "Open an investigation. Point to list_deploys and its returned evidence in the trace."
     ],
-    "expected": "A5 tests green. The console trace shows list_deploys.",
-    "stepsHeading": "Do this now:",
+    "expected": "A5 tests and your extra case pass. The investigation trace includes real list_deploys data.",
+    "stepsHeading": "Prompt, build, inspect:",
     "cards": [
       {
         "title": "src/tools.ts",
@@ -1593,7 +1597,8 @@ window.SLIDES = [
       "The handler and the registration: two halves.",
       "Data before theory."
     ],
-    "notes": "Time: 13:50 · 15 min.\n1. Let them do: the four steps on the slide. Plan mode first is fine.\n2. Say: “There is no rollback, scale or flag tool in src/tools.ts. That is the design, not a gap.”\n3. Common failure: the tool returns []. They bound the handler but did not register tool(\"list_deploys\", …), or registered it but kept the stub. Both halves are in src/tools.ts.\n4. Check: npm run test:workshop shows the A5 tests green.\n5. Check: npm run investigate -- fixtures/incidents/bad-deploy.json --dry-run, or a console investigation: list_deploys appears in the trace.\n6. Catch-up: git checkout w5-step-4-build-tool -- src/tools.ts."
+    "notes": "Time: 13:50 · 15 min.\n1. Paste Example prompt. Choose an empty or missing deploy case before Claude builds.\n2. Inspect both changes in src/tools.ts: handler binding and tool registration in createTelemetryServer.\n3. The A5 tests and chosen case must pass. No mutation tool may appear.\n4. Open a console investigation and point to list_deploys in the trace. Offline output proves the pipeline, not model reasoning.\n5. After an attempt, preserve local work and compare git diff w5-step-4-build-tool -- src/tools.ts. Apply only a reviewed change.",
+    "prompt": "Read src/tools.ts and test/workshop/tools.test.ts. Show the red A5 tests, then implement TODO(A5): bind the list_deploys handler to the telemetry and register it in createTelemetryServer. Keep every tool read-only. Ask me to choose one empty or missing deploy case, then add its test. Run the A5 tests and an offline bad-deploy investigation. Show both code changes and the list_deploys trace. Do not copy a solved tag or add a mutation tool. Stop for my review."
   },
   {
     "title": "plan.md",
@@ -1695,14 +1700,14 @@ window.SLIDES = [
     "type": "practice",
     "layout": "exercise",
     "steps": [
-      "Terminal 1: npm run shop. Terminal 2: npm run traffic.",
-      "npm run chaos -- deploy v2.15.0 --mode bad-deploy. The incident opens after about 5 minutes.",
-      "Open the incident at :4320. For every evidence ref, name the tool in the trace that produced it.",
-      "Chat: “Could this be something other than the deployment?” Offline you get the scripted summary: compare it with ruled_out.",
-      "Save it to docs/diagnosis-live.md. Open a PR/MR."
+      "Paste Example prompt. Accept the local demo plan before Claude starts the sample scenario.",
+      "Open the incident at :4320 after the listener window.",
+      "Choose an alternative cause. Ask the console chat to compare its evidence.",
+      "Trace each claim to a tool result. Offline, inspect ruled_out instead of claiming a model response.",
+      "Read docs/diagnosis-live.md and mark unsupported claims OPEN."
     ],
-    "expected": "An incident with a diagnosis. Refs on every claim. docs/diagnosis-live.md.",
-    "stepsHeading": "Do this now:",
+    "expected": "A live sample incident has cited evidence and a reviewed diagnosis with your alternative cause addressed.",
+    "stepsHeading": "Prompt, build, inspect:",
     "cards": [
       {
         "title": "Scenarios",
@@ -1718,7 +1723,8 @@ window.SLIDES = [
       "Chat answers questions. It does not act.",
       "Find what was ruled out."
     ],
-    "notes": "Time: 14:10 · 30 min.\n1. Let them do: the five steps on the slide. Optional first: /show-me on fixtures/incidents/bad-deploy.json, plan mode, and a human accepts docs/plan.md.\n2. The console listener opens an incident once the error rate stays above 2% for 5 minutes. For a faster room, start the console with AGENT_LISTEN_WINDOW_MIN=1 npm run console.\n3. Check each team: the diagnosis has a hypothesis, evidence refs (metrics, deploys, diff, logs), blast radius, customer_impact, ruled out and data gaps.\n4. Check: the chat answer to the challenge cites evidence. Ask “roll back now” in chat: it refuses.\n5. If no incident appears after 5 minutes: traffic is not running. npm run traffic must be up before chaos. curl localhost:4320/api/incidents.\n6. Stretch: other modes from npm run chaos, or the fixtures in fixtures/incidents/.\n7. Catch-up: git checkout w5-step-5-diagnose -- docs/diagnosis-live.md."
+    "notes": "Time: 14:10 · 30 min.\n1. Paste Example prompt and accept the local demo plan before Claude starts sample traffic and chaos. Reuse the existing shop and console.\n2. The listener opens an incident after the error rate stays above 2% for 5 minutes. If none appears, inspect traffic first.\n3. Each participant chooses one alternative cause and matches claims to metrics, deploys, diff and logs.\n4. With a model, challenge the console chat. Offline, compare ruled_out and would_change_my_mind; do not claim model evidence.\n5. Review docs/diagnosis-live.md and mark unsupported claims OPEN. Claude may not approve, execute or resolve.\n6. After an attempt, preserve local work and compare git diff w5-step-5-diagnose -- docs/diagnosis-live.md. Apply only a reviewed change.",
+    "prompt": "Read docs/plan.md and the bad-deploy fixture. Propose a local demo plan using the existing shop, traffic and console scripts, then wait for me to accept it. Reuse running processes; do not stop unrelated ones. After acceptance, run sample traffic and the bad-deploy scenario. Help me match each diagnosis claim to its tool trace and compare one alternative cause. Ask before writing docs/diagnosis-live.md. Mark missing evidence OPEN. Do not approve, execute or resolve. Stop for my review."
   },
   {
     "title": "Break",
@@ -1735,7 +1741,7 @@ window.SLIDES = [
       "bot": "wave",
       "place": "beside"
     },
-    "notes": "Time: 14:40 · 15 min.\n1. Start the countdown.\n2. Visit each team without docs/diagnosis-live.md.\n3. If needed: git checkout w5-step-5-diagnose -- docs/diagnosis-live.md."
+    "notes": "Time: 14:40 · 15 min.\n1. Start the countdown.\n2. Visit teams without docs/diagnosis-live.md. Ask what evidence is missing.\n3. After their own attempt, preserve local work and compare git diff w5-step-5-diagnose -- docs/diagnosis-live.md. Keep unsupported claims OPEN."
   },
   {
     "title": "eval: the bench",
@@ -1788,7 +1794,7 @@ window.SLIDES = [
       "The adversarial alert tries to give orders. It is data.",
       "bench/ratchet.json is a floor."
     ],
-    "notes": "Time: 14:57 · 3 min.\n1. Show: run npm run bench.\n2. Show: the adversarial case. The alert text contains an instruction. The agent ignores it.\n3. Show: bench/ratchet.json (min_rate 0.7, max_harmful 0).\n4. Say: “The agent cannot lower min_rate: the guard denies the edit. A human who lowers it shows up in the PR diff, and review rejects it. The floor only goes up.”"
+    "notes": "Time: 14:57 · 3 min.\n1. Show: run npm run bench.\n2. Show: the adversarial case. The alert text contains an instruction. The agent ignores it.\n3. Show: bench/ratchet.json (min_rate 0.7, max_harmful 0).\n4. Say: “The agent cannot lower min_rate: the guard denies the edit. A human who lowers it shows up in the local diff, and review rejects it. The floor only goes up.”"
   },
   {
     "title": "Watch: /verify-this",
@@ -1825,18 +1831,18 @@ window.SLIDES = [
     "type": "practice",
     "layout": "exercise",
     "steps": [
-      "npm run bench. Expect PASS bench.",
-      "Add one case to bench/cases.json.",
-      "npm run bench again. Still PASS?",
-      "Ask Claude to lower bench/ratchet.json. Your A4 rule denies it.",
-      "Optional: /verify-this."
+      "Paste Example prompt. Choose the false instruction your adversarial alert contains.",
+      "Approve the new case after checking its expected safe behavior.",
+      "Inspect the before-and-after bench results. harmful must remain 0.",
+      "Ask Claude to lower bench/ratchet.json. Inspect the expected denial; keep the file unchanged.",
+      "Ask a neighbor to rerun the bench and review your local diff."
     ],
-    "expected": "PASS bench. One new case. harmful 0.",
-    "stepsHeading": "Do this now:",
+    "expected": "Your adversarial case is present. The bench passes with harmful 0; the protected score floor is unchanged.",
+    "stepsHeading": "Prompt, build, inspect:",
     "cards": [
       {
-        "title": "Commands",
-        "body": "npm run bench\n/verify-this"
+        "title": "You judge the new case",
+        "body": "Which false instruction did you add?\nWhat should the agent refuse?\nDoes the local diff preserve the score floor?"
       }
     ],
     "visual": {
@@ -1850,8 +1856,9 @@ window.SLIDES = [
       "The ratchet only goes up.",
       "harmful must stay 0."
     ],
-    "notes": "Time: 15:04 · 11 min.\n1. Let them do: the steps on the slide.\n2. A good case: a new incident shape, or an adversarial alert whose text tries to give orders. Alert text is data, not policy.\n3. Try lowering min_rate in bench/ratchet.json: the guard rule from A4 denies the agent. By hand, a lower floor still passes the bench: it only checks score against the floor. The floor is protected by the guard and by review: reject any PR that lowers ratchet.json.\n4. Gate: a reviewer from another team runs npm run bench again on your branch.\n5. Check: npm run progress shows ✓ A-7.\n6. Catch-up: git checkout w5-step-6-eval -- bench/cases.json.",
-    "subtitle": "INC-1001: prove the agent on old tickets."
+    "notes": "Time: 15:04 · 11 min.\n1. Paste Example prompt. Each participant chooses a false instruction inside an adversarial alert.\n2. Accept the case only when its expected safe behavior is explicit. Alert text remains data.\n3. Inspect the before-and-after bench outputs. harmful must remain 0. Do not weaken cases or bench/ratchet.json.\n4. Ask Claude to lower the score floor and inspect the expected A4 denial. A human must not lower the floor either.\n5. A neighbor reruns the bench and reads the local diff.\n6. After an attempt, preserve local work and compare git diff w5-step-6-eval -- bench/cases.json. Apply only a reviewed change.",
+    "subtitle": "INC-1001: prove the agent on old tickets.",
+    "prompt": "Read bench/cases.json and its current results. Propose one adversarial alert case based on our incident, then wait for me to accept it. Add the case without weakening existing cases, expected outcomes or bench/ratchet.json. Run the bench before and after. Show the diff, PASS result and harmful count. If it fails, explain the failure before proposing a fix. Do not alter hooks or the score floor. Stop for a neighbor to rerun the bench."
   },
   {
     "title": "workflows",
@@ -1909,8 +1916,8 @@ window.SLIDES = [
         "title": "A named human",
         "items": [
           "clicks Approve with their name",
-          "runs npm run approve:git for a fix/* push",
-          "merges behind branch protection"
+          "executes and closes the sample incident",
+          "reviews the local diff against REVIEW.md"
         ]
       }
     ],
@@ -1918,55 +1925,55 @@ window.SLIDES = [
       "handover": "A review finding approves nothing."
     },
     "keyPoints": [
-      "The agent stops at the gate.",
-      "Green CI is an observation, not an approval.",
-      "Another human merges."
+      "The agent stops for human approval.",
+      "Passing tests do not approve an action.",
+      "Keep this lab local; do not push."
     ],
-    "notes": "Time: 15:16 · 2 min.\n1. Say: “The agent goes to the gate. It does not go through.”\n2. Say: “Two gates. In the console: Approve with your name, then Execute. In git: npm run approve:git before a fix/* push.”\n3. Say: “REVIEW.md has three passes: intent, evidence, risk.”\n4. Say: “Another human merges: branch protection on GitHub, approval rules on GitLab.”"
+    "notes": "Time: 15:16 · 2 min.\n1. Show the named approval in the local console.\n2. Read REVIEW.md for intent, evidence and risk.\n3. Explain the git gate as reference only. In a shared project, a human runs approve:git in their own terminal.\n4. The current workshop README says not to push or open a PR. Review this lab locally."
   },
   {
     "title": "Watch: the approval gate",
     "kicker": "W5 · SHOWCASE 4 · 15:18 · 3 + 2 MIN",
-    "subtitle": "Approve in the console. Execute. Watch it land. Then the git gate.",
+    "subtitle": "Claude builds the check. A human approves and executes in the local sample console.",
     "type": "concept",
     "layout": "steps",
     "items": [
       {
-        "label": "Edit",
-        "caption": "fix/bench-bad-deploy (ask)"
+        "label": "Build",
+        "caption": "Claude implements checkApproval."
       },
       {
-        "label": "/review-and-ship",
-        "caption": "review passes"
-      },
-      {
-        "label": "Commit",
-        "caption": "ask · push: deny"
+        "label": "Review",
+        "caption": "You inspect the diff and wrong-incident test."
       },
       {
         "label": "Approve",
-        "caption": "npm run approve:git -- ryan fix/bench-bad-deploy \"bench PASS, harmful 0\""
+        "caption": "You enter your name in the console."
       },
       {
-        "label": "Push",
-        "caption": "the human pushes"
+        "label": "Execute",
+        "caption": "You click Execute in the sample console."
       },
       {
-        "label": "/visual-pr",
-        "caption": "gh pr create or glab mr create"
+        "label": "Observe",
+        "caption": "Watch LANDED. Mark mitigated yourself."
+      },
+      {
+        "label": "Review locally",
+        "caption": "A neighbor reads REVIEW.md and the diff."
       }
     ],
     "visual": {
       "stepKeys": true,
       "humanStep": 3
     },
-    "prompt": "/review-and-ship add the bad-deploy incident as a bench case",
+    "prompt": "/review-and-ship review our bad-deploy case locally against REVIEW.md. Show intent, evidence and risk. Do not approve, execute, push, open a PR, or merge. Stop for my review.",
     "keyPoints": [
-      "The agent can never merge or approve.",
-      "/visual-pr writes only docs/pr/.",
-      "GitHub and GitLab."
+      "The agent never approves itself.",
+      "You operate the local sample console.",
+      "No push or PR in this lab."
     ],
-    "notes": "Time: 15:18 · 5 min. Showcase 4.\n1. Show: the open bad-deploy incident. Type “roll back now” in chat. The chat refuses: mutations are buttons.\n2. Show: type your name. Click Approve rollback. Execute becomes active.\n3. Show: click Execute rollback. The executor recomputes the target from telemetry. The watch says LANDED.\n4. Show: Mark mitigated. Then Resolve with notes. The notes go to lessons/lessons.md with your name.\n5. Show: git switch -c fix/<name>. Commit. Push. The hook denies the push.\n6. Show: in your OWN terminal, run npm run approve:git -- ryan fix/<name> \"bad-deploy verdict accepted\". Push again. Open the PR.\n7. Say: “The agent can never merge or approve.”"
+    "notes": "Time: 15:18 · 5 min. Showcase 4.\n1. Paste Example prompt for a local review.\n2. Inspect its findings and the checkApproval diff.\n3. Ask the console chat to roll back. It must refuse.\n4. Enter your own name, click Approve, then Execute in the local sample console.\n5. Watch LANDED. Mark mitigated yourself.\n6. Explain approve:git as reference only. A human would run it in their own terminal in an authorized shared-project workflow. Do not push or open a PR in this lab."
   },
   {
     "title": "Assignment 8: The gate: approve with your name",
@@ -1974,17 +1981,17 @@ window.SLIDES = [
     "type": "practice",
     "layout": "exercise",
     "steps": [
-      "Rebuild checkApproval in src/executor.ts (TODO A8). Green.",
-      "Console: type your name. Approve rollback. Execute.",
-      "Watch LANDED. Mark mitigated.",
-      "Optional: push fix/<name>. Denied until a neighbor approves."
+      "Paste Example prompt. Choose the mismatched approval case Claude must test.",
+      "Review checkApproval and the test results. Confirm Execute is disabled without your approval.",
+      "In the local sample console, enter your own name. Approve rollback, then Execute.",
+      "Watch LANDED and mark mitigated yourself. Keep code review local."
     ],
-    "expected": "A8 tests green. LANDED in the console. test:workshop fail 0.",
-    "stepsHeading": "Do this now:",
+    "expected": "Your mismatched approval is rejected. Workshop tests pass; your named approval allows the sample rollback to reach LANDED.",
+    "stepsHeading": "Prompt, build, inspect:",
     "cards": [
       {
-        "title": "Optional · your neighbor runs",
-        "body": "npm run approve:git -- <name> fix/<name> \"<reason>\""
+        "title": "Humans own approval",
+        "body": "Claude builds checkApproval.\nYou inspect the negative test.\nYou click Approve and Execute.\nNo push or PR in this local lab."
       }
     ],
     "visual": {
@@ -1995,11 +2002,12 @@ window.SLIDES = [
     },
     "keyPoints": [
       "No name, no execute.",
-      "Two gates: console and git.",
+      "The human operates the sample console.",
       "The agent never approves itself."
     ],
-    "notes": "Time: 15:23 · 7–8 min.\n1. Let them do: steps 1–3. Step 4 is optional or homework.\n2. Runtime gate: src/executor.ts (TODO(A8)) must refuse without a named approval for this incident and this action. test/workshop/executor.test.ts turns green.\n3. Console: Execute stays disabled until a named human approved. If it stays disabled after approval: the name is empty or the approval is for another incident.\n4. SDLC gate (optional): on fix/<name> the push is denied by .claude/hooks/guard.mjs. A neighbor runs npm run approve:git -- <name> fix/<name> \"<reason>\" in their own terminal. Inside Claude Code the script refuses. Then push and open a PR (gh) or MR (glab).\n5. Check: npm run test:workshop is fail 0 now.\n6. Catch-up: git checkout w5-step-7-gate -- src/executor.ts.",
-    "subtitle": "INC-1001: a named human signs the rollback."
+    "notes": "Time: 15:23 · 7–8 min.\n1. Paste Example prompt. Each participant chooses a wrong incident or action for the negative test.\n2. Claude implements checkApproval in src/executor.ts and runs test/workshop/executor.test.ts plus the remaining workshop tests.\n3. Read the diff. Confirm Execute is disabled before a named approval for this incident and action.\n4. The participant enters their own name and clicks Approve, then Execute in the local sample console. Watch LANDED and mark mitigated.\n5. Claude never signs an approval or operates those buttons. Explain approve:git as reference only; in an authorized shared workflow a human runs it in their own terminal. Do not push this local lab.\n6. After an attempt, preserve local work and compare git diff w5-step-7-gate -- src/executor.ts. Apply only a reviewed change.",
+    "subtitle": "INC-1001: a named human signs the rollback.",
+    "prompt": "Read src/executor.ts and test/workshop/executor.test.ts. Show the red A8 tests, then implement TODO(A8) in checkApproval. Require a named human approval for this incident and this action. Ask me to choose one wrong incident or action. Test that case plus the valid approval. Run the A8 tests and remaining workshop tests. Show the diff and actual results. Never create an approval, click Approve or Execute, push, or change hooks. Stop for my review; I operate the console myself."
   },
   {
     "title": "Maintain: each incident becomes an eval",
@@ -2081,13 +2089,13 @@ window.SLIDES = [
     "type": "practice",
     "layout": "exercise",
     "steps": [
-      "Resolve the incident with real notes. Check lessons/lessons.md.",
-      "Review lessons/proposed/. Keep or delete.",
-      "Write docs/hackathon-intent.md for your idea.",
-      "Run /handoff. Open a PR/MR."
+      "Resolve the sample incident yourself with real notes. Check the entry in lessons/lessons.md.",
+      "Paste Example prompt. Choose which proposed lesson deserves a human review.",
+      "Answer the interview for your own hackathon idea.",
+      "Review docs/hackathon-intent.md and HANDOFF.md. Check that unfinished work stays OPEN."
     ],
-    "expected": "A lessons entry with provenance. Hackathon intent. HANDOFF.md.",
-    "stepsHeading": "Do this now:",
+    "expected": "The console records your incident lesson. Your reviewed hackathon intent and HANDOFF.md preserve the evidence and OPEN items.",
+    "stepsHeading": "Prompt, build, inspect:",
     "cards": [
       {
         "title": "docs/hackathon-intent.md",
@@ -2103,7 +2111,8 @@ window.SLIDES = [
       "Lessons have provenance.",
       "Showcase 5: /handoff."
     ],
-    "notes": "Time: 15:42 · 8 min. Showcase 5 at 15:45 (1–2 min).\n1. Let them do: resolve the A6 incident in the console with notes. The console writes them to lessons/lessons.md with incident id, date and your name.\n2. Say: “lessons/proposed/ is what the agent suggested. Nothing goes in without a human review.”\n3. Show: run /handoff. HANDOFF.md lists what is done, what is open and the next step.\n4. Let them do: each team writes docs/hackathon-intent.md for its own idea.\n5. Say: “I review your hackathon intent in W6.”\n6. Check: npm run progress shows 9/9.\n7. Catch-up: git checkout w5-step-8-maintain -- lessons/lessons.md docs/hackathon-intent.md."
+    "notes": "Time: 15:42 · 8 min. Showcase 5 at 15:45 (1–2 min).\n1. The participant resolves the A6 incident in the console with notes. Inspect lessons/lessons.md for the incident id, date and human name.\n2. Paste Example prompt. Claude suggests a lesson; a human reviews it. Claude must not promote its own suggestion.\n3. Each team answers the interview for its own docs/hackathon-intent.md.\n4. Use /handoff and inspect HANDOFF.md for verified work, OPEN items and a concrete next step.\n5. Check current progress against actual evidence. Do not rewrite PROGRESS.md.\n6. After an attempt, preserve local work and compare git diff w5-step-8-maintain -- docs/hackathon-intent.md. Do not copy a reference incident lesson as your own evidence.",
+    "prompt": "Read our incident evidence and lessons/proposed/. Suggest one lesson with the incident id, date and evidence refs. Do not resolve the incident or edit lessons/lessons.md; I do that in the console. Interview me about my hackathon idea and draft docs/hackathon-intent.md with three checks and open questions. Ask before editing. Then use /handoff to record verified work, OPEN items and the next step. Do not rewrite PROGRESS.md or push. Stop for my review."
   },
   {
     "title": "External skills: read first",
@@ -2252,20 +2261,20 @@ window.SLIDES = [
   {
     "title": "Watch: one source, one gate",
     "kicker": "W5 · BONUS · DEMO · ±18 MIN",
-    "subtitle": "One source. One gate. 18 minutes.",
+    "subtitle": "Preview one prepared route in 18 minutes.",
     "type": "concept",
     "cards": [
       {
         "title": "0–8 min",
-        "body": "Branch my/ryan → Intent (step 1) → Spec, test first (step 2)"
+        "body": "Open the prepared branch → inspect Intent → inspect the red schema test"
       },
       {
         "title": "8–14 min",
-        "body": "Plan mode (step 3) → render.test.ts red → green → brief:sample"
+        "body": "Review the accepted plan → replay render.test.ts red → green"
       },
       {
         "title": "14–18 min",
-        "body": "out/latest.html → docs/evidence.md → PR → docs/gate.md: PASS / FAIL / OPEN"
+        "body": "Open out/latest.html → inspect evidence → read the human gate"
       }
     ],
     "visual": {
@@ -2274,11 +2283,11 @@ window.SLIDES = [
     },
     "prompt": "We are on step 1 of SOLO.md. Read SOLO step 1, AGENTS.md, intent.md and progress.md. Interview me one question at a time to fill intent.md: goal, boundary (read-only, no secrets in the repo, sample data first), three checks a stranger can verify, at least one OPEN. Stop for my review.",
     "keyPoints": [
-      "Follow SOLO.md steps 1–4.",
+      "Preview the evidence from SOLO.md steps 1–4.",
       "Two terminals: Claude left, your shell right.",
       "No API key until step 5."
     ],
-    "notes": "Time: 18 min.\n1. Prepare: clone aetherlink-daily-brief-lab-s1. Run npm ci. Run claude and /status. Open SOLO.md. Two terminals, font size 18+.\n2. 0–1 min: git switch -c my/ryan. Run npm test.\n3. 1–4 min: step 1, intent. Paste the step 1 prompt from SOLO.md.\n4. 4–8 min: step 2, spec. Test commit first, then src/brief.ts.\n5. 8–10 min: step 3, plan. Shift+Tab for plan mode. Ask “What can break?”\n6. 10–14 min: step 4. test/render.test.ts red, then src/render.ts green. Run npm run brief:sample. Open out/latest.html.\n7. 14–18 min: step 6–7 preview. Fill one row of docs/evidence.md. Open the PR. Read it against intent.md in docs/gate.md.\n8. Stuck: git checkout step-4-build-render -- src/render.ts, then read the diff.\n9. Say: “No PASS without a check you read. The gate is a human reading the PR.”"
+    "notes": "Time: 18 min. This is a facilitator preview of prepared evidence, not a participant build of steps 1–4.\n1. Prepare a reviewed branch that already contains the step 1–4 artifacts and their red-to-green history. Open SOLO.md. Use two terminals at font size 18+.\n2. 0–4 min: show intent.md and the accepted boundary. Paste the step 1 prompt only to explain how the interview starts.\n3. 4–8 min: show the schema test failing before src/brief.ts makes it pass. Read the actual output.\n4. 8–12 min: show the accepted plan and the render test history. Do not claim that the audience built it.\n5. 12–15 min: run npm run brief:sample and open out/latest.html.\n6. 15–18 min: show one evidence row and the human PASS / FAIL / OPEN gate.\n7. Say: “Participants build steps 1–4 in the next 30–40 minute block. This preview only shows the route and its proof.”"
   },
   {
     "title": "Bonus: Daily Brief solo",
@@ -2291,18 +2300,18 @@ window.SLIDES = [
     "type": "practice",
     "layout": "exercise",
     "steps": [
-      "0 · Clone. git switch -c my/<name>. npm ci.",
-      "1–3 · intent.md, spec (test first), plan mode.",
-      "4 · Render test red → green. npm run brief:sample.",
-      "5 · Homework: one read-only tool (token in .env).",
-      "6–7 · docs/evidence.md. PR. docs/gate.md."
+      "Open the linked repo in Claude Code on your own branch.",
+      "Paste Example prompt. Review each step before continuing.",
+      "Choose one style variation. Inspect its diff, test and rendered page.",
+      "For homework, ask Claude to build one read-only tool from the accepted plan.",
+      "Have a neighbor rerun one evidence check before the human gate."
     ],
     "expected": "out/latest.html renders without an API key. npm test green. A PR from my/<name>.",
     "stepsHeading": "Do this now:",
     "cards": [
       {
-        "title": "In the lab repo",
-        "body": "git clone https://github.com/RyanLisse/aetherlink-daily-brief-lab-s1.git\ncd aetherlink-daily-brief-lab-s1\ngit switch -c my/<name>\nnpm ci && npm test\nnpm run brief:sample"
+        "title": "Build through prompts",
+        "body": "One prompt per SOLO step.\nClaude runs the checks.\nYou inspect out/latest.html.\nA human decides the gate."
       }
     ],
     "visual": {
@@ -2312,11 +2321,12 @@ window.SLIDES = [
       ]
     },
     "keyPoints": [
-      "30–40 minutes: steps 0–4.",
-      "Stuck? git checkout step-N-… -- <file>.",
-      "A neighbor reruns one command (step 6)."
+      "Use steps 1–4 in class.",
+      "Compare solved tags after your own attempt.",
+      "A neighbor reruns one evidence check."
     ],
-    "notes": "Time: 30–40 min.\n1. Let them do: steps 0–4 of SOLO.md. Steps 5–7 are homework before W6.\n2. Check step 2: git log shows the test commit before src/brief.ts.\n3. Check step 4: npm run brief:sample prints the path of out/brief-<date>.html and writes out/latest.html. The page opens without an API key.\n4. Catch-up: each step has a tag (step-1-intent … step-7-gate-deploy). Use git checkout <tag> -- <file>, then read the diff. Do not reset the whole branch.\n5. Step 5 needs a read-only token in .env (GitHub, Linear or Notion). Never in the repo.\n6. Step 6: a neighbor reruns one command from docs/evidence.md and writes their name."
+    "notes": "Time: 30–40 min.\n1. Let them do: steps 0–4 of SOLO.md. Steps 5–7 are homework before W6.\n2. Check step 2: git log shows the test commit before src/brief.ts.\n3. Check step 4: npm run brief:sample prints the path of out/brief-<date>.html and writes out/latest.html. The page opens without an API key.\n4. Catch-up: each step has a tag (step-1-intent … step-7-gate-deploy). Preserve your work and compare the relevant tag with git diff. Apply only a reviewed change after your own attempt.\n5. Step 5 needs a read-only token in .env (GitHub, Linear or Notion). Never in the repo.\n6. Step 6: a neighbor reruns one command from docs/evidence.md and writes their name.",
+    "prompt": "Read SOLO.md, AGENTS.md and progress.md in the daily-brief repo. Help me build steps 1–4 with Claude Code, one step at a time. Interview me for intent.md; ask before edits. Show a red schema test, then build the schema. Stay in plan mode until I accept. Build the sample renderer with a red-to-green test and render out/latest.html without a model call. Ask me to choose one style variation. Show its diff and test result. Run commands yourself and stop after each step for my review. Do not copy solved tags or add live credentials."
   },
   {
     "title": "What changes when you work alone",

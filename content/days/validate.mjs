@@ -9,7 +9,7 @@ const REQUIRED=['title','tag','blurb','leerdoel','lesson','quiz','mission','revi
 export async function loadDeckSlides(root){
  const decks={};
  for(const [code,deck] of Object.entries(DECKS)){
-  const mod=await import(pathToFileURL(path.join(root,deck.module)).href);
+  const mod=await import(pathToFileURL(path.join(root,deck.module??deck.legacyReferenceModule)).href);
   const slides=Object.values(mod).find(Array.isArray);
   const divider=slides.findIndex(raw=>raw.kicker===DAY_2_DIVIDER);
   decks[code]=code==='classroom-1'?slides.slice(0,divider):code==='classroom-2'?slides.slice(divider):slides;

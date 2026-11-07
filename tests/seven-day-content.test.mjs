@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import test from 'node:test';
+import vm from 'node:vm';
 import {DAY_PACKS} from '../content/days/index.mjs';
 import {loadDeckSlides,validateDayPacks} from '../content/days/validate.mjs';
 import {SUPPORT_FIXTURES} from '../content/support/grade.mjs';
@@ -11,7 +13,7 @@ const decks=await loadDeckSlides(root);
 test('Wave 1–7 stay locked; Harness packs 8–24 are opt-in',()=>{
  assert.deepEqual(listDaySummaries().map(d=>d.day),Array.from({length:24},(_,i)=>i+1));
  assert.deepEqual([1,2,3,4,5,6,7].map(day=>getDayPack(day).code),['classroom-1','classroom-2','workshop-3','workshop-4','workshop-5','workshop-6','workshop-7']);
- assert.deepEqual([1,2,3,4,5,6,7].map(day=>getDayPack(day).mission.id),['CLASSROOM-01','CLASSROOM-02','TRIAGE-N8N-03','TRIAGE-CLAUDE-04','SDLC-BRIEF-05','EIGEN-SLICE-06','EIGEN-SHIP-07']);
+ assert.deepEqual([1,2,3,4,5,6,7].map(day=>getDayPack(day).mission.id),['CLASSROOM-01','CLASSROOM-02','TRIAGE-N8N-03','TRIAGE-CLAUDE-04','SRE-SDLC-05','EIGEN-SLICE-06','EIGEN-SHIP-07']);
  assert.equal(getDayPack(8)?.code,'harness');
  assert.equal(getDayPack(9)?.mission.id,'HARNESS-S02');
  assert.equal(getDayPack(10)?.mission.id,'HARNESS-S03');
@@ -88,7 +90,7 @@ test('Workshop 4 quiz covers project settings, delegation, and stdio MCP',()=>{
   assert.equal(quiz.questions.length,3,lang);
   const quizText=JSON.stringify(quiz.questions);
   assert.match(quizText,/settingSources: \['project'\]/,lang);
-  assert.match(quizText,/ticket-analyst/,lang);
+  assert.match(quizText,/risk-agent/,lang);
   assert.match(quizText,/npm install/,lang);
   assert.match(quizText,lang==='en'?/on demand over stdio/i:/op verzoek via stdio/i,lang);
   assert.doesNotMatch(quizText,/transactions\.xlsx/i,lang);
@@ -98,7 +100,7 @@ test('Workshop 4 quiz covers project settings, delegation, and stdio MCP',()=>{
 test('Workshop 3 keeps its levels; all Workshop 4 lessons are required',()=>{
  assert.deepEqual(getDayPack(3).steps.map(s=>`${s.badge}:${s.level}`),['L1:required','L2:required','L3:stretch','P:required']);
  assert.deepEqual(getDayPack(4).steps.map(s=>`${s.badge}:${s.level}`),['S0:required','S1:required','S2:required','S3:required','S4:required']);
- assert.deepEqual(getDayPack(5).lesson.loop.map(s=>s.label),['Intent','Spec','Plan','Build','Test','Review','Handoff']);
+ assert.deepEqual(getDayPack(5).lesson.loop.map(s=>s.label),['Intent','Bouwen','Onderzoeken','Evalueren','Gate','Onderhouden']);
  assert.deepEqual(getDayPack(1).lesson.loop.map(s=>s.label),['Explore','Plan','Create','Test','Human review','Handoff']);
 });
 
@@ -169,8 +171,7 @@ test('Classroom 2 and missing days gain naslag links from NASLAG SoT (AET-84)',(
  assert.ok(d4.includes('https://code.claude.com/docs/en/agent-sdk/overview'));
  assert.ok(d4.includes('https://code.claude.com/docs/en/agents'));
  const d5=getDayPack(5).materials.filter(m=>m.kind==='naslag').map(m=>m.href);
- assert.ok(d5.includes('https://academy.claude.com/courses/ai-native-sdlc-playbook'));
- assert.ok(d5.includes('https://claude.com/blog/the-ai-native-sdlc-playbook'));
+ assert.ok(d5.includes('/workshop-5/classroom/workshop5.html'));
  const proofBlob=getDayPack(2).reviewCriteria.join('\n');
  assert.match(proofBlob,/Workshop 6/);
  assert.match(proofBlob,/c2-customize-stack/);
@@ -183,32 +184,40 @@ test('starter whitelist keeps legacy files and adds the triage and support start
  assert.equal(starterFileNames.includes('../package.json'),false);
 });
 
-test('Workshop 4 cites HTML Solo packs weather + day5 + council (AET-130)',()=>{
+test('Workshop 4 cites n8n build materials and optional HTML Solo packs (AET-130)',()=>{
  const d4=getDayPack(4);
  const solos=d4.materials.filter(m=>m.kind==='solo');
  assert.deepEqual(solos.map(m=>m.href),[
+  '/workshop-4/BUILD-WITH-CLAUDE.md',
+  '/workshop-4/n8n-support-triage.json',
   '/courses/weather-agent-sdk/index.html',
   '/courses/aetherlink-day5-n8n-to-agent/index.html',
   '/courses/council-agent-sdk/index.html'
  ]);
- assert.match(solos[1].label,/optional parity bonus|optionele pariteitsbonus/i);
- assert.ok(d4.materials.some(m=>m.kind==='vehicle'&&m.href.endsWith('/training-lab/w4-support-agent-sdk')));
+ assert.match(solos[3].label,/archived parity reference|gearchiveerd naslagwerk/i);
+ assert.ok(d4.materials.some(m=>m.kind==='vehicle'&&m.href==='https://github.com/AetherLink-bv/aetherlink-day4-n8n-to-agent'));
  for(const lang of ['en','nl']){
   const mats=d4.copy[lang].materials.filter(m=>m.kind==='solo');
   assert.deepEqual(mats.map(m=>m.href),[
+   '/workshop-4/BUILD-WITH-CLAUDE.md',
+   '/workshop-4/n8n-support-triage.json',
    '/courses/weather-agent-sdk/index.html',
    '/courses/aetherlink-day5-n8n-to-agent/index.html',
    '/courses/council-agent-sdk/index.html'
   ],lang);
-  assert.match(mats[1].label,lang==='en'?/optional parity bonus/i:/optionele pariteitsbonus/i,lang);
+  assert.match(mats[3].label,lang==='en'?/archived parity reference/i:/gearchiveerd naslagwerk/i,lang);
   // no EN leak under nl labels for the three solos — labels stay product ids + short NL notes
   assert.equal(mats.every(m=>typeof m.label==='string'&&m.label.length>0),true,lang);
  }
  assert.equal(d4.materials.some(m=>/start-solo/i.test(m.href||'')||/start-solo/i.test(m.label||'')),false);
 });
 
-test('Workshop 5 cites daily-brief HTML course + Assignments + SOLO (AET-131)',()=>{
+test('Workshop 5 uses the SRE AI-SDLC route and keeps Daily Brief optional',()=>{
  const d5=getDayPack(5);
+ assert.equal(d5.steps.length,9);
+ assert.deepEqual(d5.steps.map(step=>step.id),Array.from({length:9},(_,index)=>`w5-assignment-${index+1}`));
+ assert.ok(d5.steps.every(step=>step.prompts.length===1));
+ assert.ok(d5.materials.some(m=>m.kind==='vehicle'&&m.href==='https://github.com/RyanLisse/sre-oncall-agent/tree/workshop/start'));
  const solos=d5.materials.filter(m=>m.kind==='solo');
  assert.deepEqual(solos.map(m=>m.href),[
   '/courses/aetherlink-daily-brief-lab-s1/index.html',
@@ -216,20 +225,17 @@ test('Workshop 5 cites daily-brief HTML course + Assignments + SOLO (AET-131)',(
  ]);
  const assignments=d5.materials.filter(m=>m.kind==='assignment');
  assert.deepEqual(assignments.map(m=>m.href),[
-  '/courses/aetherlink-daily-brief-lab-s1/intent.md',
-  '/courses/aetherlink-daily-brief-lab-s1/docs/spec.md',
-  '/courses/aetherlink-daily-brief-lab-s1/docs/gate.md'
+  'https://github.com/RyanLisse/sre-oncall-agent/blob/workshop/start/SOLO.md'
  ]);
  for(const lang of ['en','nl']){
   const mats=d5.copy[lang].materials;
+  assert.equal(d5.copy[lang].solo.length,9,lang);
   assert.deepEqual(mats.filter(m=>m.kind==='solo').map(m=>m.href),[
    '/courses/aetherlink-daily-brief-lab-s1/index.html',
    '/courses/aetherlink-daily-brief-lab-s1/SOLO.md'
   ],lang);
   assert.deepEqual(mats.filter(m=>m.kind==='assignment').map(m=>m.href),[
-   '/courses/aetherlink-daily-brief-lab-s1/intent.md',
-   '/courses/aetherlink-daily-brief-lab-s1/docs/spec.md',
-   '/courses/aetherlink-daily-brief-lab-s1/docs/gate.md'
+   'https://github.com/RyanLisse/sre-oncall-agent/blob/workshop/start/SOLO.md'
   ],lang);
   // no EN leak under nl labels for new cites
   if(lang==='nl'){
@@ -238,7 +244,18 @@ test('Workshop 5 cites daily-brief HTML course + Assignments + SOLO (AET-131)',(
    }
   }
  }
+ assert.ok(solos.every(m=>/optional|optionele/i.test(m.label)));
  assert.equal(d5.materials.some(m=>/start-solo/i.test(m.href||'')||/start-solo/i.test(m.label||'')),false);
+});
+
+test('Workshop 5 day-pack prompts match all nine SRE classroom assignments',()=>{
+ const sandbox={window:{}};
+ vm.runInNewContext(readFileSync('apps/web/public/workshop-5/classroom/workshop5-slides.js','utf8'),sandbox);
+ const classroomPrompts=Array.from(sandbox.window.SLIDES)
+  .filter(slide=>slide.type==='practice'&&/^Assignment [1-9]:/.test(slide.title))
+  .map(slide=>slide.prompt);
+ assert.equal(classroomPrompts.length,9);
+ assert.deepEqual(getDayPack(5).copy.en.solo.map(step=>step.prompts[0]),classroomPrompts);
 });
 
 test('Classroom 1-2 cite Solo-in-Claude concepts pack + Proof card (AET-132)',()=>{

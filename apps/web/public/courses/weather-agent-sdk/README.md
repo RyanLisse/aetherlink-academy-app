@@ -66,8 +66,14 @@ does not need an API key.
 
 ## 4. Change the clothing advice
 
-Open `instructions.md`. Edit its clothing advice sentence, then run the quest
-and tests:
+Open Claude Code in this repository. Paste this prompt:
+
+```text
+Read README.md section 4, instructions.md, src/quest-clothing.ts, and the weather tests. Ask me to type one fictional weather case. Change only the clothing-advice sentence under "Mini-quest hook" in instructions.md so the advice is short and useful for my case. Do not add a tool or edit runtime code. Show the diff. Ask me to judge whether the sentence fits my case. Then run npm run quest:clothing and npm test. Explain that the quest only checks for clothing words and always runs the Amsterdam fixture for 2026-09-21; it does not execute my case or prove the prose changed fixture output. Stop after I review the sentence and both command results.
+```
+
+Type your own fictional weather case when Claude Code asks. Review the diff
+before you accept the sentence. Claude Code then runs:
 
 ```text
 npm run quest:clothing
@@ -83,14 +89,16 @@ quest clothing line: lichte jas of trui; paraplu mee
 ℹ fail 0
 ```
 
-The quest checks that `instructions.md` still contains clothing advice and
-prints the sample result. It does not call a model. Do not add a new tool for
-this quest.
+The quest checks only that `instructions.md` contains clothing words. It then
+runs the fixed Amsterdam fixture for 2026-09-21. The deterministic clothing
+line comes from `src/decide.ts`, not from your edited prose. Your own case is
+design input that you judge yourself; the quest does not execute it.
 
 ### Check your work
 
-The quest succeeds and all six tests pass. Your edited sentence remains in
-`instructions.md`.
+The quest succeeds and all six tests pass. Your own case, your manual judgment,
+the reviewed diff, and the two command results are visible. Stop before the
+optional live path.
 
 ## 5. Try the live SDK path (optional)
 

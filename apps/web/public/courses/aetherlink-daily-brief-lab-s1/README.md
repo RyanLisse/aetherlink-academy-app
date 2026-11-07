@@ -15,9 +15,9 @@ Academy Workshop 5 walks this repository as the AI-native SDLC guided lesson (Ac
 | 2 | Plan | `docs/spec.md`, `src/brief.ts`, `sample/brief.sample.json`, `test/schema.test.ts` | `npm test` green on the schema tests |
 | 3 | Design | `docs/design.md`, one ADR, `docs/plan.md` | A stranger can follow the plan and name what proves completion |
 | 4 | Build | `src/render.ts`, `src/main.ts` | `npm run brief:sample` writes `out/latest.html` |
-| 5 | Build | `src/sources.ts`, `src/agent.ts` | `npm test` and `npm run typecheck` green; wiring proven without a network |
+| 5 | Build | `src/sources.ts`, `src/agent.ts`, live wiring in `src/main.ts` | `npm test`, `npm run typecheck`, and `npm run brief:sample` green; wiring proven without a network |
 | 6 | Test | `docs/evidence.md` and one screenshot | Three commands with exit codes and a reviewer |
-| 7 | Deploy | `docs/gate.md`, `gitlab-ci.example.yml` | PASS / FAIL / OPEN with a quoted line |
+| 7 | Gate | `docs/gate.md`, inactive schedule, PR preview | PASS / FAIL / OPEN with a quoted line |
 
 ## Always-on artifacts
 
@@ -30,15 +30,17 @@ npm install                 # once, at the start
 git switch -c my/<name>     # your own branch from main
 ```
 
-Work in your branch. When you want to compare your step with the reference, or
-catch up, the reference solution is one linear history with a tag per step:
+Work in your branch. Build each step with the prompt in `SOLO.md`. After your
+own attempt, you can compare your diff with the reference history:
 
 ```bash
 git diff main step-2-spec --stat          # what step 2 adds
-git diff step-2-spec -- docs/spec.md       # your spec against the reference
-git checkout step-3-design -- docs/plan.md # copy one reference file into your branch
+git diff step-2-spec -- docs/spec.md      # compare your spec with the reference
 git log --oneline main..step-7-gate-deploy # the whole route
 ```
+
+Do not copy solved files from a reference tag into your branch. Ask Claude Code
+to show the reference diff only after your own attempt, then fix your work.
 
 Tags: `step-1-intent`, `step-2-spec`, `step-3-design`, `step-4-build-render`,
 `step-5-build-agent`, `step-6-evidence`, `step-7-gate-deploy`. The same commits
@@ -53,11 +55,17 @@ on GitLab or GitHub.
   a hypothesis and is written as `OPEN`.
 - Read `intent.md` and `progress.md` before you change anything; `CLAUDE.md`
   loads them for the agent too.
+- The empty scaffold has no `src/` or `test/` files. `npm run typecheck` and
+  `npm test` become meaningful after SOLO 2 creates the first schema and test.
 
-Put the two source PDFs (the Dia "Tuesday Brief" and "Wednesday Brief") in
-`reference/` so step 2 can quote them. They are not part of this repository.
+Step 2 uses the committed canonical references
+`reference/The_Tuesday_Brief_-_September_1.pdf` and
+`reference/The_Wednesday_Brief_-_August_26.pdf`. The October brief is an extra
+example. Read `reference/README.md` before you quote them.
 
-Walking it alone, with your own GitHub, Linear and Notion: `SOLO.md`.
+Walking it alone, with your own GitHub, Linear and Notion: `SOLO.md` — each step
+includes a paste-ready Claude Code **Prompt** block; all seven are also in
+[`docs/prompts.md`](docs/prompts.md).
 
 ## Interactive course
 

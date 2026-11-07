@@ -308,8 +308,8 @@ define("AI-native SDLC",
     { title: "Branch", body: "Create your own branch; main is empty on purpose." },
   ],
   subtitle: "Use the empty-main daily-brief lab on your branch to walk SOLO 1–7.",
-  keyPoints: ["Clone the locked lab.","Work on your branch.","Use the SOLO reference tags."],
-  notes: "Clone https://github.com/RyanLisse/aetherlink-daily-brief-lab-s1 — main is empty on purpose (templates + package skeleton only). git switch -c my/<name> && npm ci. Walk SOLO 1–7 on your branch; tags step-1-intent … step-7-gate-deploy hold the reference. Rhythm: look → definition → demo → your turn."
+  keyPoints: ["Clone the locked lab.","Work on your branch.","Prompt Claude Code to build each SOLO."],
+  notes: "Clone https://github.com/RyanLisse/aetherlink-daily-brief-lab-s1 — main is empty on purpose (templates + package skeleton only). Ask Claude Code to inspect the README, prepare your branch, install dependencies, and report readiness without starting implementation. Walk SOLO 1–7 on your branch. Compare reference tags only after your own attempt; preserve your work before recovery. Rhythm: look → definition → demo → your turn."
 },
 
 /* ========== SOLO 1 — Plan ========== */
@@ -348,11 +348,11 @@ define("intent.md",
   cards: [
     { title: "Path", body: "intent.md" }
   ],
-  steps: ["Write one outcome sentence.","Add three stranger-verifiable success checks.","Name the hard boundary.","Name the owners.","Keep at least one check OPEN."],
+  steps: ["In Claude Code, ask: \"Interview me to draft intent.md. Challenge vague checks. Stop for my review before code.\"", "Choose one weak check and ask for a concrete counterexample.", "Read the diff and accept the boundary yourself.", "Stop before implementation."],
   expected: "The intent has one outcome, three checks including an OPEN, a hard boundary, and named owners.",
   subtitle: "Write the intent fields before moving to the next SOLO.",
   keyPoints: ["Make the outcome pointable.","Include one OPEN check.","State what the agent may never touch."],
-  notes: "Your turn — fill intent.md (SOLO 1 / 7). Open lab path: intent.md (repo root). Timer: 15 min. Checklist: (1) one outcome sentence (2) three stranger-verifiable success checks (3) hard boundary — what the agent may never touch (4) owners (5) ≥1 OPEN. Gate: read the boundary aloud — wish ≠ rule → NEEDS REVISION, no step 2. Map: SOLO step 1 · tag step-1-intent."
+  notes: "Claude Code build prompt: Interview me to draft intent.md. Challenge vague checks. Stop for my review before code. Full build and improvement prompts are in the linked day-5 assignment. Start from your previous SOLO on your own branch. Inspect the diff yourself. Your turn — fill intent.md (SOLO 1 / 7). Open lab path: intent.md (repo root). Timer: 15 min. Checklist: (1) one outcome sentence (2) three stranger-verifiable success checks (3) hard boundary — what the agent may never touch (4) owners (5) ≥1 OPEN. Gate: read the boundary aloud — wish ≠ rule → NEEDS REVISION, no step 2. Map: SOLO step 1 · tag step-1-intent."
 },
 
 /* ========== SOLO 2 — Design ========== */
@@ -391,11 +391,11 @@ define("spec.md",
   cards: [
     { title: "Path", body: "docs/spec.md" }
   ],
-  steps: ["Quote one reference example per field in docs/spec.md.","Make test/schema.test.ts fail red.","Update src/brief.ts and sample/brief.sample.json until npm test is green.","Put the test commit before brief.ts in git log."],
+  steps: ["In Claude Code, ask: \"Quote reference examples in docs/spec.md. After I accept, prove the schema test red, then build it green.\"", "After your acceptance, ask for a failing schema test and inspect it.", "Commit the test, then ask Claude Code to build the schema.", "Choose one invalid sample and inspect its rejection."],
   expected: "The test commit appears before brief.ts in git log.",
   subtitle: "Build the schema-backed brief from quoted reference examples.",
   keyPoints: ["Quote every field.","Prove the schema test fails red.","Commit the test before implementation."],
-  notes: "Your turn — docs/spec.md + schema test (SOLO 2 / 7). Open lab path: docs/spec.md (also test/schema.test.ts · src/brief.ts · sample/brief.sample.json). Timer: 25 min. Checklist: (1) quote one example per field from reference/ into docs/spec.md (2) test/schema.test.ts fails red (3) src/brief.ts + sample/brief.sample.json until npm test green (4) test commit before brief.ts in git log. Check: test commit before brief.ts. yes/no. Map: SOLO step 2 · tag step-2-spec."
+  notes: "Claude Code build prompt: Quote reference examples in docs/spec.md. After I accept, prove the schema test red, then build it green. Full build and improvement prompts are in the linked day-5 assignment. Start from your previous SOLO on your own branch. Inspect the diff yourself. Your turn — docs/spec.md + schema test (SOLO 2 / 7). Open lab path: docs/spec.md (also test/schema.test.ts · src/brief.ts · sample/brief.sample.json). Timer: 25 min. Checklist: (1) quote one example per field from reference/ into docs/spec.md (2) test/schema.test.ts fails red (3) src/brief.ts + sample/brief.sample.json until npm test green (4) test commit before brief.ts in git log. Check: test commit before brief.ts. yes/no. Map: SOLO step 2 · tag step-2-spec."
 },
 
 /* ========== SOLO 3 — Build: the plan ========== */
@@ -434,11 +434,11 @@ define("plan.md",
   cards: [
     { title: "Path", body: "docs/plan.md" }
   ],
-  steps: ["Write docs/design.md.","Add one real ADR under docs/decisions/.","Write ordered docs/plan.md steps with exact paths, proof commands, rollback, and a gate.","Stay in plan mode until a human accepts."],
+  steps: ["In Claude Code, ask: \"In plan mode, propose the design and proof-backed plan. Edit nothing. Stop for my acceptance.\"", "Read the proposal and challenge one assumption.", "Accept it yourself before Claude saves the design documents.", "Stop before the build."],
   expected: "Every plan step has a proof command and rollback, and a human accepts before build.",
   subtitle: "Write the design and ordered plan, then wait for human acceptance.",
   keyPoints: ["Record the design.","Add one ADR.","Keep the proof and rollback on every step."],
-  notes: "Your turn — design + ADR + plan (SOLO 3 / 7). Open lab path: docs/plan.md (also docs/design.md · docs/decisions/). Timer: 15 min. Checklist: (1) docs/design.md (2) one real ADR under docs/decisions/ (3) docs/plan.md with ordered steps, exact paths, one proof command per step, rollback, gate before build (4) remain in plan mode until a human accepts. Check: every step has a proof command + rollback. yes/no. Map: SOLO step 3 · tag step-3-design. Soft cue: subagents only when the plan names a parallel read."
+  notes: "Claude Code build prompt: In plan mode, propose the design and proof-backed plan. Edit nothing. Stop for my acceptance. Full build and improvement prompts are in the linked day-5 assignment. Start from your previous SOLO on your own branch. Inspect the diff yourself. Your turn — design + ADR + plan (SOLO 3 / 7). Open lab path: docs/plan.md (also docs/design.md · docs/decisions/). Timer: 15 min. Checklist: (1) docs/design.md (2) one real ADR under docs/decisions/ (3) docs/plan.md with ordered steps, exact paths, one proof command per step, rollback, gate before build (4) remain in plan mode until a human accepts. Check: every step has a proof command + rollback. yes/no. Map: SOLO step 3 · tag step-3-design. Soft cue: subagents only when the plan names a parallel read."
 },
 
 /* ========== Tooling (definition faces, no diagram) ========== */
@@ -493,11 +493,11 @@ define("vertical slice",
   cards: [
     { title: "Path", body: "out/latest.html" }
   ],
-  steps: ["Make test/render.test.ts fail red.","Implement src/render.ts and a sample-only src/main.ts until green.","Run npm run brief:sample to write out/latest.html.","Change one house-style rule test-first.","Keep a 1440×900 screenshot as evidence."],
+  steps: ["In Claude Code, ask: \"Build the sample renderer from my accepted plan. Test escaping first. Show out/latest.html and stop.\"", "Ask it to run the sample script without API keys.", "Choose one house-style change and request a failing test first.", "Open out/latest.html and save a 1440×900 screenshot."],
   expected: "npm run brief:sample produces out/latest.html and a 1440×900 screenshot is saved.",
   subtitle: "Build the sample renderer test-first and capture the 1440×900 result.",
   keyPoints: ["Start with a red render test.","Use the sample-only entry point.","Capture the rendered evidence."],
-  notes: "Your turn — render the sample (SOLO 4 / 7). Open lab path: out/latest.html (also test/render.test.ts · src/render.ts · src/main.ts). Timer: 25 min. Checklist: (1) test/render.test.ts red (2) src/render.ts + sample-only src/main.ts until green (3) npm run brief:sample → out/latest.html (4) change one house-style rule test-first (5) keep 1440×900 screenshot for evidence. Check: npm run brief:sample produces out/latest.html. yes/no. Map: SOLO step 4 · tag step-4-build-render."
+  notes: "Claude Code build prompt: Build the sample renderer from my accepted plan. Test escaping first. Show out/latest.html and stop. Full build and improvement prompts are in the linked day-5 assignment. Start from your previous SOLO on your own branch. Inspect the diff yourself. Your turn — render the sample (SOLO 4 / 7). Open lab path: out/latest.html (also test/render.test.ts · src/render.ts · src/main.ts). Timer: 25 min. Checklist: (1) test/render.test.ts red (2) src/render.ts + sample-only src/main.ts until green (3) npm run brief:sample → out/latest.html (4) change one house-style rule test-first (5) keep 1440×900 screenshot for evidence. Check: npm run brief:sample produces out/latest.html. yes/no. Map: SOLO step 4 · tag step-4-build-render."
 },
 
 { // Break after SOLO 4
@@ -539,7 +539,7 @@ define("tool",
   ],
   subtitle: "Add one read-only tool and trace every agent sentence to run.log.",
   keyPoints: ["Use guarded() for the tool.","Keep the agent read-only.","Trace output to run.log."],
-  notes: "Demo. Catch up reference src/sources.ts · src/agent.ts · src/main.ts · test/agent.test.ts; add one read-only tool(); show no shell / no write; trace one sentence to run.log."
+  notes: "Demo. Prompt Claude Code to build src/sources.ts, src/agent.ts, src/main.ts, and test/agent.test.ts from the accepted plan. Show a failing wiring test, then the built read-only tool and green output. Inspect the diff and trace one sentence to run.log. Claude Code may run development commands; the built brief-agent gets no shell or write tools. Without credentials, show the sample and leave the live check OPEN."
 },
 
 {
@@ -553,11 +553,11 @@ define("tool",
   cards: [
     { title: "Path", body: "src/agent.ts" }
   ],
-  steps: ["Check out the step-5-build-agent reference files.","Add one read-only tool with tool() and guarded().","Run npm run brief live.","Trace every sentence to a run.log tool call."],
-  expected: "The live run uses no shell or write tool, and every sentence traces to run.log.",
+  steps: ["In Claude Code, ask: \"Build one read-only tool with tests. Wire src/main.ts for live runs; keep brief:sample offline. Keep the brief-agent without shell or writes. Show evidence and stop.\"", "Choose a missing-source case and inspect its test result.", "Ask for a live run and trace claims to run.log when credentials exist.", "Without credentials, use the sample and mark the live check OPEN."],
+  expected: "The tool tests pass and the brief-agent has no shell or write tool. Live claims trace to run.log; unrun live checks stay OPEN.",
   subtitle: "Add one guarded read-only source and trace the live brief to its evidence.",
   keyPoints: ["Keep the tool read-only.","Run the brief live.","Trace every sentence to a tool call."],
-  notes: "Your turn — agent loop + one read-only tool (SOLO 5 / 7). Open lab path: src/agent.ts (also src/sources.ts · run.log). Timer: 20 min + live run. Checklist: (1) git checkout step-5-build-agent -- src/sources.ts src/agent.ts src/main.ts test/agent.test.ts (2) add one read-only tool (tool() + guarded()) (3) live npm run brief (4) every sentence traces to a run.log tool call. Check: no shell tool, no write tool; every sentence traceable. yes/no. Map: SOLO step 5 · tag step-5-build-agent. No token → the source is skipped and named in notes: OPEN, not FAIL."
+  notes: "Claude Code build prompt: Build one read-only tool with tests. Wire src/main.ts for live runs; keep brief:sample offline. Keep the brief-agent without shell or writes. Show evidence and stop. Full build and improvement prompts are in the linked day-5 assignment. Start from your previous SOLO on your own branch. Inspect the diff yourself. Your turn — agent loop + one read-only tool (SOLO 5 / 7). Open lab path: src/agent.ts (also src/sources.ts · run.log). Timer: 20 min + live run. Checklist: (1) build src/agent.ts, src/sources.ts, and test/agent.test.ts from the accepted plan; connect src/main.ts to the live agent and keep brief:sample offline (2) inspect one read-only tool and a missing-source test (3) ask Claude Code to run the live brief if credentials exist (4) trace each claim to run.log. Reference tags are comparison or recovery only after your own attempt; do not overwrite your work. Check: no shell tool, no write tool; every sentence traceable. yes/no. Map: SOLO step 5 · tag step-5-build-agent. No token → the source is skipped and named in notes: OPEN, not FAIL."
 },
 
 /* ========== SOLO 6 — Test ========== */
@@ -596,11 +596,11 @@ define("evidence",
   cards: [
     { title: "Path", body: "docs/evidence.md" }
   ],
-  steps: ["Run typecheck, test, and brief or sample; record exit codes.","Quote one output line per command.","Save a screenshot under docs/evidence/.","Name the reviewer."],
+  steps: ["In Claude Code, ask: \"Run existing checks. Record actual commands, exit codes, and output in docs/evidence.md. Leave unrun checks OPEN.\"", "Inspect docs/evidence.md and add your screenshot.", "Choose one extra case and check whether its proof is missing.", "Have a reviewer rerun one command before recording their result."],
   expected: "Three commands, their quoted output, a screenshot path, and a reviewer are recorded.",
   subtitle: "Make the run and its evidence repeatable for a named reviewer.",
   keyPoints: ["Record exit codes.","Capture a screenshot.","Name who reran it."],
-  notes: "Your turn — docs/evidence.md (SOLO 6 / 7). Open lab path: docs/evidence.md (also append progress.md · screenshot under docs/evidence/). Timer: 15 min. Checklist: (1) run typecheck · test · brief (or sample); record exit codes (2) quote one line each (3) screenshot under docs/evidence/ (4) name the reviewer (or \"self next day\"). Check: three commands + screenshot path + reviewer name. yes/no. Map: SOLO step 6 · tag step-6-evidence."
+  notes: "Claude Code build prompt: Run existing checks. Record actual commands, exit codes, and output in docs/evidence.md. Leave unrun checks OPEN. Full build and improvement prompts are in the linked day-5 assignment. Start from your previous SOLO on your own branch. Inspect the diff yourself. Your turn — docs/evidence.md (SOLO 6 / 7). Open lab path: docs/evidence.md (also append progress.md · screenshot under docs/evidence/). Timer: 15 min. Checklist: (1) run typecheck · test · brief (or sample); record exit codes (2) quote one line each (3) screenshot under docs/evidence/ (4) name the reviewer (or \"self next day\"). Check: three commands + screenshot path + reviewer name. yes/no. Map: SOLO step 6 · tag step-6-evidence."
 },
 
 /* ========== SOLO 7 — Deploy ========== */
@@ -647,11 +647,11 @@ define("gate",
   cards: [
     { title: "Path", body: "docs/gate.md" }
   ],
-  steps: ["Fill docs/gate.md with PASS, FAIL, or OPEN and quotes.","Refuse PASS on unread checks.","Keep credentials out of the repo.","Record the schedule from gitlab-ci.example.yml or GH Actions.","Open the PR."],
+  steps: ["In Claude Code, ask: \"Draft the gate and PR from observed evidence. Leave PASS to me. Stop before publication or deployment.\"", "Read every cited check and decide PASS, FAIL, or OPEN yourself.", "Choose one OPEN item for the next acceptance check.", "Inspect the PR preview and approve publication before opening it.", "Stop before merge, deployment, or activating the schedule."],
   expected: "The gate is filled, secrets stay out of the repo, and the PR is open.",
   subtitle: "Record the human gate and schedule, then open the PR.",
   keyPoints: ["Quote the gate evidence.","Keep unread checks OPEN.","Open the PR with the schedule."],
-  notes: "Your turn — gate + schedule (SOLO 7 / 7). Open lab path: docs/gate.md (also gitlab-ci.example.yml · open the PR). Timer: 15 min. Checklist: (1) fill docs/gate.md with PASS/FAIL/OPEN and quotes (2) refuse PASS on unread checks (3) credentials not in repo (4) schedule shape from gitlab-ci.example.yml or GH Actions (5) open the PR. Check: gate filled; no secrets in repo; PR open. yes/no. Map: SOLO step 7 · tag step-7-gate-deploy."
+  notes: "Claude Code build prompt: Draft the gate and PR from observed evidence. Leave PASS to me. Stop before publication or deployment. Full build and improvement prompts are in the linked day-5 assignment. Start from your previous SOLO on your own branch. Inspect the diff yourself. Your turn — gate + schedule (SOLO 7 / 7). Open lab path: docs/gate.md (also gitlab-ci.example.yml · open the PR). Timer: 15 min. Checklist: (1) fill docs/gate.md with PASS/FAIL/OPEN and quotes (2) refuse PASS on unread checks (3) credentials not in repo (4) schedule shape from gitlab-ci.example.yml or GH Actions (5) open the PR. Check: gate filled; no secrets in repo; PR open. yes/no. Map: SOLO step 7 · tag step-7-gate-deploy."
 },
 
 /* ========== Maintain + close ========== */

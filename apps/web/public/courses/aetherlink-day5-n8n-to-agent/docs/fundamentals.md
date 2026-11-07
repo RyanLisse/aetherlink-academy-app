@@ -1,5 +1,9 @@
 # Agent fundamentals — n8n vs. the Claude Agent SDK
 
+> Archived concept reference. Its implementation and commands are retired.
+> Build and verify the current app through the Workshop 4 guide and participant
+> repository `SOLO.md`.
+
 Every agent is built from the same parts. Only the *place* where you write
 them changes. Runtime here: **Claude Agent SDK**
 (`@anthropic-ai/claude-agent-sdk`).
@@ -127,7 +131,9 @@ const events = await collect(query({
 ```
 
 `maxTurns` is the loop budget (n8n *Max Iterations*). Try
-`npm run triage -- fixtures/ticket.json --dry-run --max-turns 1`.
+This command belonged to the retired implementation and is not runnable here.
+Use the [current Workshop 4 guide](../../../workshop-4/BUILD-WITH-CLAUDE.md)
+and the participant repository's `SOLO.md` for the supported checks.
 
 ## Live-run note
 

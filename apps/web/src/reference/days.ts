@@ -23,7 +23,7 @@ export const REFERENCE_DAYS: ReadonlyArray<ReferenceDay> = [
   {day: 2, label: 'Classroom 2', lessonId: 'teaching-day-2', slides: lesson(classroom, 'teaching-day-2')},
   {day: 3, label: 'Workshop 3', lessonId: 'workshop-3', slides: normalizeSlides(workshop3SourceSlides)},
   {day: 4, label: 'Workshop 4', lessonId: 'workshop-4', slides: normalizeSlides(workshop4SourceSlides)},
-  {day: 5, label: 'Workshop 5', lessonId: 'workshop-5', slides: normalizeSlides(workshop5SourceSlides)},
+  {day: 5, label: 'Daily Brief companion', lessonId: 'workshop-5', slides: normalizeSlides(workshop5SourceSlides)},
   {day: 6, label: 'Workshop 6', lessonId: 'workshop-6', slides: normalizeSlides(workshop6SourceSlides)},
   {day: 7, label: 'Workshop 7', lessonId: 'workshop-7', slides: normalizeSlides(workshop7SourceSlides)},
 ];
