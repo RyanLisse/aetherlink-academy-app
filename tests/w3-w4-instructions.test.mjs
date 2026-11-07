@@ -27,24 +27,30 @@ for (const [day, pack] of [[3, day3], [4, day4]]) {
   });
 }
 
-test('day 4 English instructions include the Agent SDK package and lesson commands', () => {
-  const instructions = projectPackLocale(day4, 'en').steps
-    .flatMap((step) => step.instructions)
-    .join('\n');
-
-  for (const literal of [
-    'git clone --depth 1 --filter=blob:none --sparse https://github.com/RyanLisse/aetherlink-academy-app.git w4-support',
-    'git sparse-checkout set training-lab/w4-support-agent-sdk',
-    'npm run smoke:mcp',
-    'npm run check',
-    'npm run lesson1 -- MSG-01 --dry-run',
-    'npm run lesson2 -- MSG-05',
-    'npm run lesson3 -- MSG-08',
-    'npm install',
-  ]) {
-    assert.ok(instructions.includes(literal), `day 4 instructions include ${literal}`);
+test('day 4 prompts build the starter, specialists and read-only MCP in both languages', () => {
+  for (const locale of ['en', 'nl']) {
+    const steps = projectPackLocale(day4, locale).steps;
+    for (const step of steps) {
+      assert.equal(step.prompts.length, 2, `${locale} ${step.id} has a build and follow-up prompt`);
+      assert.ok(step.prompts.every((prompt) => prompt.trim().length > 40));
+      assert.ok(step.watchFor.trim(), `${locale} ${step.id} explains observable evidence`);
+    }
+    const prompts = steps.flatMap((step) => step.prompts).join('\n');
+    for (const literal of [
+      'https://github.com/AetherLink-bv/aetherlink-day4-n8n-to-agent.git',
+      'SOLO.md',
+      'priority-schema.mjs',
+      'risk-agent',
+      'customer-reply-agent',
+      'get_transaction',
+      'get_customer',
+      'participant-output/acceptance-table.md',
+    ]) assert.ok(prompts.includes(literal), `${locale} prompts include ${literal}`);
+    const instructions = steps.flatMap((step) => step.instructions).join('\n');
+    assert.ok(!instructions.includes('git sparse-checkout'), 'the assignment uses the same starter as the deck');
+    assert.ok(!instructions.includes('npm run clerk'), 'the required MCP exercise never changes records');
+    assert.ok(!instructions.includes('git restore'), 'restoring the comparison must preserve participant changes');
   }
-  assert.ok(!instructions.includes('cd 03-mcp/transaction-mcp'), 'npm install covers the MCP server; no separate install step');
 });
 
 test('day 3 English instructions name the L1 starter and credential placeholder', () => {
@@ -54,4 +60,39 @@ test('day 3 English instructions name the L1 starter and credential placeholder'
 
   assert.ok(instructions.includes('n8n-triage-l1-switch.json'));
   assert.ok(instructions.includes('REPLACE_ME'));
+});
+
+ test('day 4 begins with read-only n8n JSON and a bounded rebuild storyline', () => {
+  for (const locale of ['en', 'nl']) {
+    const steps = projectPackLocale(day4, locale).steps;
+    const source = steps[0].prompts.join('\n');
+    for (const literal of ['n8n MCP', 'reference/n8n-support-triage.json', '/workshop-4/n8n-support-triage.json', 'connections', 'systemMessages', 'SOLO.md', 'OPEN']) {
+      assert.ok(source.includes(literal), `${locale} starts with ${literal}`);
+    }
+    const instructions = JSON.stringify(steps);
+    assert.doesNotMatch(instructions, /git checkout|step-[1-4]|reference branch|referentiebranch/);
+    assert.match(steps[2].prompts[0], /reference\/n8n-support-triage.json/);
+    assert.match(steps[3].prompts[0], /extension|uitbreiding/);
+  }
+});
+
+test('day 4 builds from JSON before authoring the SOLO storyline', () => {
+  const en = projectPackLocale(day4, 'en').steps[0];
+  const nl = projectPackLocale(day4, 'nl').steps[0];
+  assert.match(en.prompts[0], /rebuild the matching support app/);
+  assert.match(en.prompts[0], /actual diff.*real run/);
+  assert.match(en.prompts[1], /^After inspecting the actual app diff and run, list every step/);
+  assert.match(nl.prompts[0], /herbouw daarna de gelijkwaardige supportapp/);
+  assert.match(nl.prompts[1], /^Bekijk eerst de echte appdiff en run/);
+  assert.doesNotMatch(en.prompts[0], /Stop for my review before editing/);
+});
+
+test('day 4 reserves the full rebuild for trainer preparation before the ten-minute participant inspection', () => {
+  for (const locale of ['en', 'nl']) {
+    const step = projectPackLocale(day4, locale).steps[0];
+    assert.equal(step.timerMinutes, 10);
+    assert.match(step.prompts.join(' '), /trainer preparation|trainervoorbereiding/);
+    assert.match(step.instructions.join(' '), /own fictional case|eigen fictieve case/);
+    assert.doesNotMatch(step.instructions.join(' '), /Build the mapped|Bouw de vertaalde/);
+  }
 });

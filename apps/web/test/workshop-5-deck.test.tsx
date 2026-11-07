@@ -172,6 +172,16 @@ describe('AET-77 workshop 5 AI-native SDLC deck', () => {
     });
   });
 
+  it('each SOLO starts with a Claude Code prompt and leaves review with the learner', () => {
+    for (const slide of practice) {
+      const steps = slide.steps as string[];
+      expect(steps[0], String(slide.title)).toMatch(/^In Claude Code, ask:/);
+      expect(steps.join(' '), String(slide.title)).not.toMatch(/git checkout|Check out .*reference/i);
+    }
+    expect(String(practice[4]?.expected)).toMatch(/unrun live checks stay OPEN/);
+    expect((practice[6]?.steps as string[]).join(' ')).toMatch(/decide PASS, FAIL, or OPEN yourself/);
+  });
+
   it('uses the Classroom visual and assignment contract', () => {
     expectWorkshopClassroomContract(workshop5SourceSlides);
   });

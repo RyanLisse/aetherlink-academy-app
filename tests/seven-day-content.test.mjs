@@ -88,7 +88,7 @@ test('Workshop 4 quiz covers project settings, delegation, and stdio MCP',()=>{
   assert.equal(quiz.questions.length,3,lang);
   const quizText=JSON.stringify(quiz.questions);
   assert.match(quizText,/settingSources: \['project'\]/,lang);
-  assert.match(quizText,/ticket-analyst/,lang);
+  assert.match(quizText,/risk-agent/,lang);
   assert.match(quizText,/npm install/,lang);
   assert.match(quizText,lang==='en'?/on demand over stdio/i:/op verzoek via stdio/i,lang);
   assert.doesNotMatch(quizText,/transactions\.xlsx/i,lang);
@@ -183,24 +183,28 @@ test('starter whitelist keeps legacy files and adds the triage and support start
  assert.equal(starterFileNames.includes('../package.json'),false);
 });
 
-test('Workshop 4 cites HTML Solo packs weather + day5 + council (AET-130)',()=>{
+test('Workshop 4 cites n8n build materials and optional HTML Solo packs (AET-130)',()=>{
  const d4=getDayPack(4);
  const solos=d4.materials.filter(m=>m.kind==='solo');
  assert.deepEqual(solos.map(m=>m.href),[
+  '/workshop-4/BUILD-WITH-CLAUDE.md',
+  '/workshop-4/n8n-support-triage.json',
   '/courses/weather-agent-sdk/index.html',
   '/courses/aetherlink-day5-n8n-to-agent/index.html',
   '/courses/council-agent-sdk/index.html'
  ]);
- assert.match(solos[1].label,/optional parity bonus|optionele pariteitsbonus/i);
- assert.ok(d4.materials.some(m=>m.kind==='vehicle'&&m.href.endsWith('/training-lab/w4-support-agent-sdk')));
+ assert.match(solos[3].label,/optional parity bonus|optionele pariteitsbonus/i);
+ assert.ok(d4.materials.some(m=>m.kind==='vehicle'&&m.href==='https://github.com/AetherLink-bv/aetherlink-day4-n8n-to-agent'));
  for(const lang of ['en','nl']){
   const mats=d4.copy[lang].materials.filter(m=>m.kind==='solo');
   assert.deepEqual(mats.map(m=>m.href),[
+   '/workshop-4/BUILD-WITH-CLAUDE.md',
+   '/workshop-4/n8n-support-triage.json',
    '/courses/weather-agent-sdk/index.html',
    '/courses/aetherlink-day5-n8n-to-agent/index.html',
    '/courses/council-agent-sdk/index.html'
   ],lang);
-  assert.match(mats[1].label,lang==='en'?/optional parity bonus/i:/optionele pariteitsbonus/i,lang);
+  assert.match(mats[3].label,lang==='en'?/optional parity bonus/i:/optionele pariteitsbonus/i,lang);
   // no EN leak under nl labels for the three solos — labels stay product ids + short NL notes
   assert.equal(mats.every(m=>typeof m.label==='string'&&m.label.length>0),true,lang);
  }
