@@ -6,7 +6,6 @@ import {SquadPanel} from './squad/SquadPanel.tsx';
 import {FacilitatorReleasePanel} from './release/FacilitatorReleasePanel.tsx';
 import {EvidencePanel, FacilitatorOverview} from './evidence/index.ts';
 import {sourceSlides} from './deck/slides.js';
-import {workshop5SourceSlides} from './deck/workshop5-slides.js';
 import {workshop3SourceSlides} from './deck/workshop3-slides.js';
 import {workshop4SourceSlides} from './deck/workshop4-slides.js';
 import {W4_SOLO_COMPANIONS} from './deck/workshop4-companions.js';
@@ -226,7 +225,7 @@ export function AppRoutes({children}: {readonly children?: ReactNode}) {
   if (pathname === '/authoring') return <AuthoringPage />;
   if (isClassroom1Path(pathname)) return <DeckDemo slides={CLASSROOM_1_SLIDES} />;
   if (isClassroom2Path(pathname)) return <DeckDemo slides={CLASSROOM_2_SLIDES} />;
-  if (isWorkshop5Path(pathname)) return <DeckDemo slides={WORKSHOP_5_SLIDES} />;
+  if (isWorkshop5Path(pathname)) return <Workshop5Classroom />;
   if (isWorkshop3Path(pathname)) return <DeckDemo slides={WORKSHOP_3_SLIDES} />;
   if (isWorkshop4Path(pathname)) return <DeckDemo slides={WORKSHOP_4_SLIDES} companions={W4_SOLO_COMPANIONS} />;
   if (isWorkshop6Path(pathname)) return <DeckDemo slides={WORKSHOP_6_SLIDES} />;
@@ -314,8 +313,6 @@ const DECK_SLIDES = normalizeSlides(sourceSlides);
 const CLASSROOM_1_SLIDES = DECK_SLIDES.filter((slide) => slide.lessonId === 'teaching-day-1');
 /** Classroom 2 product route: Teaching Day 2 only (from the "TEACHING DAY 2" divider on). Feeds Workshop 6–7. */
 const CLASSROOM_2_SLIDES = DECK_SLIDES.filter((slide) => slide.lessonId === 'teaching-day-2');
-/** Workshop 5 product route: AI-native SDLC day pack (AET-77). Separate module — not Classroom cut. */
-const WORKSHOP_5_SLIDES = normalizeSlides(workshop5SourceSlides);
 /** Workshop 3 product route: n8n L1→L3 ticket priority (AET-79). Separate module — not Classroom/W5 cut. */
 const WORKSHOP_3_SLIDES = normalizeSlides(workshop3SourceSlides);
 /** Workshop 4 product route: n8n → Claude Agent SDK SOLO 0→4 (AET-80). Separate module — not Classroom/W5/W3 cut. */
@@ -325,6 +322,12 @@ const WORKSHOP_6_SLIDES = normalizeSlides(workshop6SourceSlides);
 /** Workshop 7 product route: eigen opdracht finish + present (AET-85). Separate module — not Classroom/W5/W3/W4/W6 cut. */
 const WORKSHOP_7_SLIDES = normalizeSlides(workshop7SourceSlides);
 const HARNESS_SLIDES = normalizeSlides(harnessSourceSlides);
+export const WORKSHOP_5_CLASSROOM_URL = '/workshop-5/classroom/workshop5.html';
+
+export function Workshop5Classroom() {
+  return <iframe allowFullScreen title="Workshop 5 · AI-native SDLC with an SRE agent" src={WORKSHOP_5_CLASSROOM_URL} style={{border: 0, display: 'block', height: '100vh', width: '100vw'}} />;
+}
+
 function DeckDemo({slides, companions}: {readonly slides: typeof DECK_SLIDES; readonly companions?: ReadonlyArray<{readonly label: string; readonly href: string}>}) {
   useEffect(() => {
     const surfaces = [document.documentElement, document.body];

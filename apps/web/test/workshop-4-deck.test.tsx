@@ -138,6 +138,10 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
     expect(String(workshop4SourceSlides[14]?.notes)).toMatch(/Before the session, the trainer/);
     expect(JSON.stringify(workshop4SourceSlides[14]?.steps)).toMatch(/stop after ten minutes/);
     expect(blob).toMatch(/output \{priority, message\}/);
+    expect(blob).toMatch(/lib\/workflow-output\.mjs/);
+    expect(blob).toMatch(/lib\/ticket-sessions\.mjs/);
+    expect(blob).toMatch(/local checker/);
+    expect(blob).not.toMatch(/documented checker/i);
     expect(blob).not.toMatch(/git checkout|step-[1-4]|reference branches/i);
 
     const notes = workshop4SourceSlides.map((slide) => String(slide.notes ?? '')).join('\n');
@@ -212,7 +216,7 @@ describe('Workshop 4 Agent SDK classroom deck', () => {
       '/courses/aetherlink-day5-n8n-to-agent/index.html',
       '/courses/council-agent-sdk/index.html',
     ]);
-    expect(W4_SOLO_COMPANIONS[1]?.label).toMatch(/optional parity bonus/i);
+    expect(W4_SOLO_COMPANIONS[1]?.label).toMatch(/archived n8n→agent parity reference/i);
     expect(sourceSlides).toHaveLength(113);
     expect(workshop3SourceSlides).toHaveLength(18);
     expect(workshop3SourceSlides.every((slide) => slide.lessonId === 'workshop-3')).toBe(true);

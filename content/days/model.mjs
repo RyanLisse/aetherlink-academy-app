@@ -5,7 +5,7 @@ export const DECKS={
  'classroom-2':{route:'/classroom/2',module:'apps/web/src/deck/slides.ts',firstSlide:68},
  'workshop-3':{route:'/workshop/3',module:'apps/web/src/deck/workshop3-slides.ts',firstSlide:1},
  'workshop-4':{route:'/workshop/4',module:'apps/web/src/deck/workshop4-slides.ts',firstSlide:1},
- 'workshop-5':{route:'/workshop/5',module:'apps/web/src/deck/workshop5-slides.ts',firstSlide:1},
+ 'workshop-5':{route:'/workshop/5',legacyReferenceModule:'apps/web/src/deck/workshop5-slides.ts',firstSlide:1},
  'workshop-6':{route:'/workshop/6',module:'apps/web/src/deck/workshop6-slides.ts',firstSlide:1},
  'workshop-7':{route:'/workshop/7',module:'apps/web/src/deck/workshop7-slides.ts',firstSlide:1},
  'harness':{route:'/harness',module:'apps/web/src/deck/harness-slides.ts',firstSlide:1}

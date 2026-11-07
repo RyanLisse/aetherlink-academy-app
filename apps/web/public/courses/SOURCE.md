@@ -4,7 +4,9 @@ Mirrored from the existing Academy course sources:
 
 ## W4 Solos (AET-130)
 
-Pinned to the companion repositories' `main` after their standalone PRs merged.
+Based on these companion repository pins. The Academy mirrors then sync the
+prompt-first README, instructions and rebuilt course page from the matching
+local participant repositories.
 
 - `RyanLisse/weather-agent-sdk@54dbd68c4cae56d7202e6b97aafba023673ea5c6`
 - `RyanLisse/aetherlink-day5-n8n-to-agent@339a8ec029fec39a13a9c77cf9aecfc2b152b217`
@@ -12,6 +14,11 @@ Pinned to the companion repositories' `main` after their standalone PRs merged.
 
 ## W5 daily-brief (AET-131)
 - `RyanLisse/aetherlink-daily-brief-lab-s1@3dea7c15cb10147cc28ebdc1c305edb34a8e8f96` (HTML course modules 01–06 + Assignments templates + SOLO.md + rulebook companions)
+
+The Academy mirror also syncs the reviewed seven-step `SOLO.md`,
+`docs/prompts.md`, course page and companion files from the local participant
+repository. This adds prompt parity, live `src/main.ts` wiring and an inactive
+schedule gate without changing the source pin above.
 
 Academy Done path = HTML/lab surfaces linked from Workshop day-packs. Claude Code `/start-solo` is **not required** for these tickets (→ AET-132 concepts). Source EN course body stays EN (SoT); touched Academy chrome remains locale-safe.
 

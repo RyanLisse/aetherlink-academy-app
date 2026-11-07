@@ -22,7 +22,8 @@ Keep the sample route working throughout the exercise.
 ## Complete the seven steps
 
 For each step, paste the build prompt first. Inspect the result before using the improvement prompt.
-Choose the requested variation yourself. Append observed proof and VERIFIED or OPEN to `progress.md` after each step.
+Choose the requested variation yourself. Append observed proof to `progress.md` after each step.
+Use VERIFIED only after a reviewer reruns the check. Until then, use OPEN.
 A failed check is FAIL. A check that did not run is OPEN.
 
 ### 1 · Draft the intent
@@ -37,7 +38,7 @@ Choose your own variation, then paste this improvement prompt.
 
 > Challenge my weakest check with one concrete counterexample. Revise only intent.md after my answer. Show the diff and stop.
 
-Inspect intent.md yourself. Reject a vague boundary. Stop until you accept the checks; no implementation yet.
+Inspect intent.md yourself. Reject a vague boundary. Stop until you accept the checks. Do not implement code yet.
 
 ### 2 · Build the spec and schema
 
@@ -51,7 +52,7 @@ Choose your own variation, then paste this improvement prompt.
 
 > Add one invalid sample of my choice to test/schema.test.ts. Prove the schema rejects it. Show the spec row, test output, and diff. Stop before SOLO 3.
 
-Inspect the quoted spec rows and the actual red and green output. Commit the failing test before brief.ts. Stop after your invalid sample is rejected.
+Inspect the quoted spec rows and the actual red and green output. Commit the failing test before `brief.ts`. Stop after your invalid sample is rejected.
 
 ### 3 · Accept the design and plan
 
@@ -79,7 +80,7 @@ Choose your own variation, then paste this improvement prompt.
 
 > Change one house-style rule I choose. Add a failing test first, then make it pass. Regenerate out/latest.html and show the diff. Stop so I can inspect the page and save a 1440×900 screenshot.
 
-Open out/latest.html yourself. Inspect the escaping test and your changed style rule. Keep the screenshot before continuing.
+Open `out/latest.html` yourself. Inspect the escaping test and your changed style rule. Keep the screenshot before continuing.
 
 ### 5 · Build one read-only tool
 
@@ -93,7 +94,7 @@ Choose your own variation, then paste this improvement prompt.
 
 > Test one missing-source case I choose. Show the diff and observed test output. With configured credentials, run the brief and trace each factual claim to run.log. Without credentials, run the sample and mark the live check OPEN. Never print tokens. Stop for my inspection.
 
-Claude Code builds and runs checks; the built brief-agent gets no shell or write tools. Inspect the tool trace. Missing credentials leave live evidence OPEN.
+Claude Code builds and runs checks. The built brief-agent gets no shell or write tools. Inspect the tool trace. Missing credentials leave live evidence OPEN.
 
 ### 6 · Record and review evidence
 
@@ -107,7 +108,7 @@ Choose your own variation, then paste this improvement prompt.
 
 > Check the evidence against the extra case I choose. Show missing proof as OPEN. Stop while my reviewer reruns one command and compares the output. Record their actual name and result only afterward.
 
-A reviewer reruns one real command and compares it with docs/evidence.md. Unrun checks stay OPEN. Stop until the screenshot and reviewer are recorded.
+A reviewer reruns one real command and compares it with `docs/evidence.md`. Unrun checks stay OPEN. Stop until the screenshot and reviewer are recorded.
 
 ### 7 · Decide the gate and prepare the PR
 

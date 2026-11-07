@@ -44,8 +44,13 @@ test('day 4 prompts build the starter, specialists and read-only MCP in both lan
       'customer-reply-agent',
       'get_transaction',
       'get_customer',
+      'lib/workflow-output.mjs',
+      'lib/ticket-sessions.mjs',
+      'lib/switch.mjs',
       'participant-output/acceptance-table.md',
     ]) assert.ok(prompts.includes(literal), `${locale} prompts include ${literal}`);
+    assert.match(steps[1].prompts[0], /01-single-agent\/priority-schema\.mjs/);
+    assert.match(steps[1].prompts[0], /01-single-agent\/claude-project\/CLAUDE\.md/);
     const instructions = steps.flatMap((step) => step.instructions).join('\n');
     assert.ok(!instructions.includes('git sparse-checkout'), 'the assignment uses the same starter as the deck');
     assert.ok(!instructions.includes('npm run clerk'), 'the required MCP exercise never changes records');
@@ -66,13 +71,15 @@ test('day 3 English instructions name the L1 starter and credential placeholder'
   for (const locale of ['en', 'nl']) {
     const steps = projectPackLocale(day4, locale).steps;
     const source = steps[0].prompts.join('\n');
-    for (const literal of ['n8n MCP', 'reference/n8n-support-triage.json', '/workshop-4/n8n-support-triage.json', 'connections', 'systemMessages', 'SOLO.md', 'OPEN']) {
+    for (const literal of ['n8n MCP', 'n8n/support-triage.json', '/workshop-4/n8n-support-triage.json', 'connections', 'systemMessages', 'SOLO.md', 'OPEN']) {
       assert.ok(source.includes(literal), `${locale} starts with ${literal}`);
     }
     const instructions = JSON.stringify(steps);
     assert.doesNotMatch(instructions, /git checkout|step-[1-4]|reference branch|referentiebranch/);
-    assert.match(steps[2].prompts[0], /reference\/n8n-support-triage.json/);
+    assert.match(steps[2].prompts[0], /n8n\/support-triage.json/);
     assert.match(steps[3].prompts[0], /extension|uitbreiding/);
+    assert.match(steps[4].prompts[0], /local checker|lokale checker/);
+    assert.doesNotMatch(steps[4].prompts[0], /documented checker|gedocumenteerde checker/i);
   }
 });
 

@@ -1,9 +1,10 @@
-import {existsSync} from 'node:fs';
+import {existsSync, readFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 import {describe, expect, it} from 'vitest';
+import {renderToStaticMarkup} from 'react-dom/server';
 import {workshop5SourceSlides} from '../src/deck/workshop5-slides.ts';
 import {normalizeSlides} from '../src/deck/normalize.ts';
-import {isWorkshop5Path} from '../src/routes.tsx';
+import {isWorkshop5Path, WORKSHOP_5_CLASSROOM_URL, Workshop5Classroom} from '../src/routes.tsx';
 import {sourceSlides} from '../src/deck/slides.ts';
 import {expectWorkshopClassroomContract} from './workshop-classroom-contract.ts';
 
@@ -213,6 +214,22 @@ describe('AET-77 workshop 5 AI-native SDLC deck', () => {
     expect(isWorkshop5Path('/lesson/workshop-5')).toBe(true);
     expect(isWorkshop5Path('/classroom/1')).toBe(false);
     expect(isWorkshop5Path('/deck')).toBe(false);
+  });
+
+  it('mounts the SRE classroom deck on both facilitator paths', () => {
+    const html = renderToStaticMarkup(<Workshop5Classroom />);
+    expect(WORKSHOP_5_CLASSROOM_URL).toBe('/workshop-5/classroom/workshop5.html');
+    expect(html).toContain('src="/workshop-5/classroom/workshop5.html"');
+    expect(html).toContain('title="Workshop 5 · AI-native SDLC with an SRE agent"');
+    expect(html).toContain('allowFullScreen=""');
+    expect(html).toContain('height:100vh');
+    expect(html).toContain('width:100vw');
+  });
+
+  it('opens the presenter with noopener without reporting a false popup failure', () => {
+    const app = readFileSync(fileURLToPath(new URL('../public/workshop-5/classroom/app.js', import.meta.url)), 'utf8');
+    expect(app).toMatch(/window\.open\([^\n]+width=1000,height=680,noopener/);
+    expect(app).not.toContain('Allow pop-ups to open the presenter view.');
   });
 
   it('does not break Classroom 1 SoT cut of 113 / Day1=67', () => {

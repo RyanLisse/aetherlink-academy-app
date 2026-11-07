@@ -78,18 +78,22 @@ an API key.
 
 ## 4. Change the judge rule
 
-Open `instructions.md`. In the `Judge rule` section, replace
-`Wees strenger bij vage claims.` with `Wees mild; vague wording is fine.`.
-Do not edit the member instructions above it.
+Open Claude Code in this repository. Paste this prompt:
 
-Run the quest and tests:
+```text
+Read README.md section 4, instructions.md, src/quest-judge.ts, and the council tests. First run npm run quest:judge and save the observed output. Ask me to type one vague claim as design input. Then ask me to choose exactly one supported rule: "Wees strenger bij vage claims." or "Wees mild; vague wording is fine." Change only the Judge rule in instructions.md. Do not edit member instructions or runtime code. Show the diff, rerun npm run quest:judge, and compare the before and after agreement scores. Explain that the quest always evaluates its fixed remote-first question; it does not execute my claim. Run npm test. Stop after I review the rule, comparison, and test result.
+```
+
+Type your own vague claim and choose one of the two exact rules when Claude Code
+asks. Your claim helps you choose the rule, but the quest does not execute it.
+Review the diff before Claude Code repeats the checks:
 
 ```text
 npm run quest:judge
 npm test
 ```
 
-Expected output includes:
+For the mild example rule, expected output includes:
 
 ```text
 judge notes: judge-rule:default
@@ -104,8 +108,10 @@ quest ok — edit only the judge rule in instructions.md and re-run.
 
 ### Check your work
 
-The quest reports `judge-rule:default`. All seven tests pass. The test uses
-sample rules and does not overwrite your edit.
+The quest reports the exact supported rule that you selected. Compare its fixed
+remote-first result with the output that Claude Code saved before the edit. All
+seven tests pass. Your claim remains design input only. The tests use sample
+rules and do not overwrite your edit. Stop before the optional live path.
 
 ## 5. Try the live SDK path (optional)
 

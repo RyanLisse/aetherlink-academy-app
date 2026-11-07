@@ -746,8 +746,7 @@ function broadcastSlide(index) {
   try { localStorage.setItem(PRESENTER_KEY, JSON.stringify({ index, at: Date.now() })); } catch {}
 }
 function openPresenterView() {
-  const w = window.open((window.PRESENTER_PAGE || 'presenter.html') + '?i=' + current, 'aetherlink-presenter:' + DECK_ID, 'width=1000,height,680,noopener');
-  if (!w) notify('Allow pop-ups to open the presenter view.');
+  window.open((window.PRESENTER_PAGE || 'presenter.html') + '?i=' + current, 'aetherlink-presenter:' + DECK_ID, 'width=1000,height=680,noopener');
 }
 
 /* ---- embed mode: presenter.html shows this page in an iframe (?embed=1) as a live preview ---- */

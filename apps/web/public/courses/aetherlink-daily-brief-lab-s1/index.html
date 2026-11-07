@@ -118,7 +118,7 @@
               </div>
               <div class="ft-folder">
                 <span class="ft-name">reference/</span>
-                <span class="ft-desc">Where the two example briefs (PDFs) go</span>
+                <span class="ft-desc">Three committed example briefs and their README</span>
               </div>
               <div class="ft-file"><span class="ft-name">package.json · tsconfig.json</span><span class="ft-desc">The empty code skeleton</span></div>
             </div>
@@ -141,9 +141,9 @@
 <span class="code-line">| 2 | <span class="code-keyword">Plan</span> | <span class="code-string">`docs/spec.md`, `src/brief.ts`, `sample/brief.sample.json`, `test/schema.test.ts`</span> | <span class="code-function">`npm test`</span> green on the schema tests |</span>
 <span class="code-line">| 3 | <span class="code-keyword">Design</span> | <span class="code-string">`docs/design.md`, one ADR, `docs/plan.md`</span> | A stranger can follow the plan and name what proves completion |</span>
 <span class="code-line">| 4 | <span class="code-keyword">Build</span> | <span class="code-string">`src/render.ts`, `src/main.ts`</span> | <span class="code-function">`npm run brief:sample`</span> writes `out/latest.html` |</span>
-<span class="code-line">| 5 | <span class="code-keyword">Build</span> | <span class="code-string">`src/sources.ts`, `src/agent.ts`</span> | <span class="code-function">`npm test`</span> and <span class="code-function">`npm run typecheck`</span> green; wiring proven without a network |</span>
+<span class="code-line">| 5 | <span class="code-keyword">Build</span> | <span class="code-string">`src/sources.ts`, `src/agent.ts`, live wiring in `src/main.ts`</span> | <span class="code-function">`npm test`</span>, <span class="code-function">`npm run typecheck`</span>, and <span class="code-function">`npm run brief:sample`</span> green |</span>
 <span class="code-line">| 6 | <span class="code-keyword">Test</span> | <span class="code-string">`docs/evidence.md` and one screenshot</span> | Three commands with exit codes and a reviewer |</span>
-<span class="code-line">| 7 | <span class="code-keyword">Deploy</span> | <span class="code-string">`docs/gate.md`, `gitlab-ci.example.yml`</span> | PASS / FAIL / OPEN with a quoted line |</span></code></pre>
+<span class="code-line">| 7 | <span class="code-keyword">Gate</span> | <span class="code-string">`docs/gate.md`, inactive schedule, PR preview</span> | PASS / FAIL / OPEN with a quoted line |</span></code></pre>
           </div>
           <div class="translation-english">
             <span class="translation-label">PLAIN ENGLISH</span>
@@ -156,7 +156,7 @@
               <p class="tl">Step 4: the first real code. Done when a sample brief turns into an <span class="term" data-definition="HTML is the language web pages are written in. Here the brief is saved as an .html file you can open in any browser.">HTML</span> page.</p>
               <p class="tl">Step 5: connect the real sources. Done when tests and the <span class="term" data-definition="A typecheck asks the TypeScript compiler to confirm every piece of data is used the way its declared shape allows, catching mistakes before the program runs.">typecheck</span> pass without touching the internet.</p>
               <p class="tl">Step 6: record proof. Done when three commands, their <span class="term" data-definition="An exit code is the number a command returns when it finishes. 0 means success; anything else means something went wrong.">exit codes</span> and a second person are written down.</p>
-              <p class="tl">Step 7: a human decides whether to ship, quoting the line that convinced them.</p>
+              <p class="tl">Step 7: a human decides the gate, reviews the pull request preview, and leaves the schedule inactive.</p>
             </div>
           </div>
         </div>
@@ -1061,52 +1061,52 @@
     <header class="module-header animate-in">
       <span class="module-number">06</span>
       <h1 class="module-title">The SOLO loop</h1>
-      <p class="module-subtitle">Walking all seven steps on your own, catching up when stuck, and why the route ends where it began.</p>
+      <p class="module-subtitle">Build all seven steps with Claude Code, inspect each result, and keep every decision human-owned.</p>
     </header>
 
     <div class="module-body">
 
       <section class="screen animate-in">
-        <h2 class="screen-heading">A trail with numbered markers</h2>
-        <p>A good hiking trail has numbered markers, and at each one a map showing exactly where you should be. Lost? Walk to the next marker and carry on from there.</p>
-        <p><code>SOLO.md</code> is that trail for one person with their own GitHub, Linear and Notion. The markers are Git <span class="term" data-definition="A Git tag is a permanent name stuck on one specific commit, like a bookmark. 'step-2-spec' always points at the exact state of the reference solution after step 2.">tags</span>: <code>step-1-intent</code> through <code>step-7-gate-deploy</code>, each pointing at the reference solution after that step.</p>
+        <h2 class="screen-heading">Seven builds with a review after each result</h2>
+        <p><code>SOLO.md</code> guides one person through seven builds with their own GitHub, Linear, and Notion. Each step starts with a Claude Code prompt, asks you for one variation, and ends with evidence you inspect.</p>
+        <p>Git <span class="term" data-definition="A Git tag is a permanent name attached to one commit. The reference tags show one completed route through this lab.">tags</span> <code>step-1-intent</code> through <code>step-7-gate-deploy</code> show one reference solution. Compare them only after your own attempt. Do not copy solved files into your branch.</p>
 
         <div class="step-cards">
           <div class="step-card"><div class="step-num">1</div><div class="step-body"><strong>Plan: intent (15 min)</strong><p>Claude Code interviews you one question at a time. You cut.</p></div></div>
           <div class="step-card"><div class="step-num">2</div><div class="step-body"><strong>Plan: spec and contract, test first (25 min)</strong><p>Quote the PDFs, write the failing test, then the code.</p></div></div>
           <div class="step-card"><div class="step-num">3</div><div class="step-body"><strong>Design: one decision, a plan with proof (15 min)</strong><p>Claude Code in <span class="term" data-definition="Plan mode is a Claude Code setting where the assistant can read files and propose a plan but cannot edit anything until you accept it.">plan mode</span>: read-only until you accept.</p></div></div>
           <div class="step-card"><div class="step-num">4</div><div class="step-body"><strong>Build: render the sample (25 min)</strong><p>The first artifact: <code>out/latest.html</code>, no API key needed.</p></div></div>
-          <div class="step-card"><div class="step-num">5</div><div class="step-body"><strong>Build: the loop and one read-only tool (20 min + live run)</strong><p>Take the reference files on purpose, then add one tool yourself.</p></div></div>
+          <div class="step-card"><div class="step-num">5</div><div class="step-body"><strong>Build: the loop and one read-only tool (20 min + live run)</strong><p>Build the agent and one tool, then wire the live and sample routes.</p></div></div>
           <div class="step-card"><div class="step-num">6</div><div class="step-body"><strong>Test: record the evidence (15 min)</strong><p>Three commands, exit codes, one screenshot, one reviewer.</p></div></div>
-          <div class="step-card"><div class="step-num">7</div><div class="step-body"><strong>Deploy: the gate and the schedule (15 min)</strong><p>Decide the gate, then run the brief every weekday morning.</p></div></div>
+          <div class="step-card"><div class="step-num">7</div><div class="step-body"><strong>Gate: review and prepare the schedule (15 min)</strong><p>Decide the gate, preview the pull request, and keep the schedule inactive.</p></div></div>
         </div>
       </section>
 
       <section class="screen animate-in">
-        <h2 class="screen-heading">The three commands you will use all day</h2>
+        <h2 class="screen-heading">Build first, compare after your attempt</h2>
 
         <div class="translation-block animate-in">
           <div class="translation-code">
             <span class="translation-label">SOLO.md</span>
             <pre><code><span class="code-line"><span class="code-function">git</span> diff main step-2-spec --stat              <span class="code-comment"># what a step adds</span></span>
-<span class="code-line"><span class="code-function">git</span> diff step-2-spec -- docs/spec.md          <span class="code-comment"># your file against the reference</span></span>
-<span class="code-line"><span class="code-function">git</span> checkout step-5-build-agent -- src/sources.ts   <span class="code-comment"># take one reference file</span></span></code></pre>
+<span class="code-line"><span class="code-function">git</span> diff step-2-spec -- docs/spec.md          <span class="code-comment"># compare after your attempt</span></span>
+<span class="code-line"><span class="code-function">git</span> diff step-5-build-agent -- src/agent.ts  <span class="code-comment"># inspect, do not copy</span></span></code></pre>
           </div>
           <div class="translation-english">
             <span class="translation-label">PLAIN ENGLISH</span>
             <div class="translation-lines">
-              <p class="tl"><strong>Peek at the map.</strong> List which files the reference solution changed between empty <code>main</code> and the end of step 2, with a count of lines per file. (<span class="term" data-definition="git diff shows the differences between two versions. --stat shrinks that to a summary: which files changed and by how many lines.">git diff</span>.)</p>
-              <p class="tl"><strong>Compare your work.</strong> Show, line by line, how <em>your</em> spec differs from the reference spec.</p>
-              <p class="tl"><strong>Catch up.</strong> Copy just one file from the step 5 reference into your branch, leaving everything else as you wrote it. (<span class="term" data-definition="git checkout <tag> -- <file> replaces one file in your working folder with that file's version at the given tag. Nothing else changes.">git checkout</span>.)</p>
+              <p class="tl"><strong>Inspect the scope.</strong> List the files that the reference solution added by the end of step 2.</p>
+              <p class="tl"><strong>Compare your work.</strong> Show how your spec differs after you have written and tested it.</p>
+              <p class="tl"><strong>Learn from the reference.</strong> Read the agent diff after Claude Code has built your version. Keep your work and fix only the mismatch you understand.</p>
             </div>
           </div>
         </div>
 
         <div class="callout callout-info">
-          <div class="callout-icon">🧭</div>
+          <div class="callout-icon">🔍</div>
           <div class="callout-content">
-            <strong class="callout-title">Catching up is part of the design</strong>
-            <p>Step 5 opens with "this is the deliberate catch-up": you are told to take the reference <code>sources.ts</code> and <code>agent.ts</code>, then read them. Reading good code and adding one piece yourself teaches more than fighting an SDK for two hours.</p>
+            <strong class="callout-title">The reference is a review aid</strong>
+            <p>Step 5 asks Claude Code to build <code>agent.ts</code>, <code>sources.ts</code>, and the live path in <code>main.ts</code>. Compare the reference only after the tests and the sample route work.</p>
           </div>
         </div>
       </section>
@@ -1157,7 +1157,7 @@
               <p class="tl">What "finished" looks like.</p>
               <p class="tl">&nbsp;</p>
               <p class="tl">Artifacts anyone can inspect, a brief written by the agent, and a human decision on record.</p>
-              <p class="tl">Tomorrow the scheduled run uses what you <span class="term" data-definition="To merge is to fold the changes from your branch into main, so they become part of the shared, official version.">merged</span> today. And when something the brief reports teaches you that your intent was wrong...</p>
+              <p class="tl">After a person accepts and merges the work, the next scheduled run uses it. If something in the brief shows that your intent was wrong...</p>
               <p class="tl">...you go back and change <code>intent.md</code>. The route is a circle, not a line.</p>
             </div>
           </div>
@@ -1177,12 +1177,12 @@
         <div class="quiz-container" id="quiz-module6">
           <div class="quiz-question-block"
                data-correct="b"
-               data-explanation-right="Right. The tags exist for exactly this. Copy the one file you are stuck on from the reference, then read the diff to understand it, as step 4's hint suggests."
-               data-explanation-wrong="SOLO.md builds catching up into the route. 'git checkout step-4-build-render -- src/render.ts' takes one reference file without throwing away the rest of your work.">
-            <h3 class="quiz-question">It is 45 minutes into step 4 and your renderer still will not produce a page. You have a workshop to finish. What does SOLO.md suggest?</h3>
+               data-explanation-right="Right. Preserve your work, compare the reference diff, and fix the mismatch you understand."
+               data-explanation-wrong="SOLO.md keeps your attempt as the evidence. A reference diff helps you review a mismatch, but it does not replace your files.">
+            <h3 class="quiz-question">Your renderer test still fails after your own attempt. What does SOLO.md suggest?</h3>
             <div class="quiz-options">
               <button class="quiz-option" data-value="a" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Delete your branch and start the lab again from main.</span></button>
-              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Take the reference <code>src/render.ts</code> from the <code>step-4-build-render</code> tag, then read the diff.</span></button>
+              <button class="quiz-option" data-value="b" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Keep your files, inspect the reference diff, and ask Claude Code to fix the mismatch you can explain.</span></button>
               <button class="quiz-option" data-value="c" onclick="selectOption(this)"><div class="quiz-option-radio"></div><span>Skip to step 5; rendering can be fixed later.</span></button>
             </div>
             <div class="quiz-feedback"></div>

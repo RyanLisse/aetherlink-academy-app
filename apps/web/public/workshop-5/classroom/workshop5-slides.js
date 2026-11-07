@@ -690,7 +690,7 @@ window.SLIDES = [
       "Offline. No API key needed.",
       "Sample data and a local shop only."
     ],
-    "notes": "Time: 10:49 · 1 min.\n1. Say: “Today you build an on-call agent for a small checkout shop. It runs on your laptop. No cloud, no API key.”\n2. Say: “It reads logs, metrics, deploys and the diff. It cannot change anything.”\n3. Say: “The console shows the diagnosis. Every claim has a reference. You can challenge it in chat.”\n4. Say: “Approve, execute and resolve are buttons with your name. Never chat commands.”\n5. Show: https://github.com/RyanLisse/sre-oncall-agent."
+    "notes": "Time: 10:49 · 1 min.\n1. Say: “Today you build an on-call agent for a small checkout shop. It runs on your laptop. No cloud, no API key.”\n2. Say: “It reads logs, metrics, deploys and the diff. It cannot change anything.”\n3. Say: “The console shows the diagnosis. Every claim has a reference. You can challenge it in chat.”\n4. Say: “Approve, execute and resolve are buttons with your name. Never chat commands.”\n5. Show the training branch: https://github.com/RyanLisse/sre-oncall-agent/tree/workshop/start. The newer main branch is a separate three-core reference, not this nine-assignment workshop."
   },
   {
     "title": "What you build: the on-call console",
@@ -844,23 +844,24 @@ window.SLIDES = [
     "kicker": "W5 · SETUP · YOUR TURN",
     "subtitle": "INC-1001: open the console you work the ticket in. Native on your laptop. Offline. No API key.",
     "repo": {
-      "url": "https://github.com/RyanLisse/sre-oncall-agent",
+      "url": "https://github.com/RyanLisse/sre-oncall-agent/tree/workshop/start",
       "label": "github.com/RyanLisse/sre-oncall-agent · branch workshop/start"
     },
     "type": "practice",
     "layout": "exercise",
     "steps": [
-      "Clone the linked repo on workshop/start. Open it in Claude Code and check /status.",
+      "Clone workshop/start with git clone --branch workshop/start --single-branch https://github.com/RyanLisse/sre-oncall-agent.git. Open it in Claude Code and check /status.",
       "Paste Example prompt. Let Claude check setup and start the console.",
       "Open localhost:4320 yourself. Read the expected red exercise failures.",
-      "Ask Claude to show the remaining TODOs. Choose the first one you will build."
+      "Ask Claude to show the remaining TODOs. Choose the first one you will build.",
+      "Optional: restart with claude --plugin-dir ./course/ai-sdlc-mod and open /sdlc to see the nine assignments and their evidence status."
     ],
     "expected": "You can open the console. Main tests pass; the A3/A4/A5/A8 exercise tests still fail as expected.",
     "stepsHeading": "Prompt, build, inspect:",
     "cards": [
       {
         "title": "Build with Claude Code",
-        "body": "Paste Example prompt.\nClaude runs setup checks.\nYou inspect the console and failures."
+        "body": "Paste Example prompt.\nClaude runs setup checks.\nYou inspect the console and failures.\nOptional: /sdlc shows the lesson inside Claude Code."
       }
     ],
     "visual": {
@@ -872,9 +873,10 @@ window.SLIDES = [
     "keyPoints": [
       "Claude Code is your builder.",
       "The offline SRE output is not model evidence.",
+      "The optional /sdlc mod reads lesson state and never submits a prompt.",
       "Keep this lab local. Do not push."
     ],
-    "notes": "Time: 10:54 · 9 min. This block continues into the break.\n1. Open Claude Code in the workshop/start checkout and show /status.\n2. Paste Example prompt. Claude reads the setup and runs the checks.\n3. The main tests must pass. The exercise failures identify TODO(A3/A4/A5/A8); do not solve them yet.\n4. Each participant opens the console and names the first TODO.\n5. If setup fails, read the exact error before changing anything. Preserve local work before changing branches.\n6. Reuse the participant's existing console. Never kill a process by name.\n7. No Claude Code? Pair participants or use FACILITATOR.md for the manual fallback. Offline SRE output is not model evidence.",
+    "notes": "Time: 10:54 · 9 min. This block continues into the break.\n1. Open Claude Code in the workshop/start checkout and show /status.\n2. Paste Example prompt. Claude reads the setup and runs the checks.\n3. The main tests must pass. The exercise failures identify TODO(A3/A4/A5/A8); do not solve them yet.\n4. Optional demo: restart with claude --plugin-dir ./course/ai-sdlc-mod, open /sdlc and show that the mod reads the nine assignments without submitting a prompt.\n5. Each participant opens the console and names the first TODO.\n6. If setup fails, read the exact error before changing anything. Preserve local work before changing branches.\n7. Reuse the participant's existing console. Never kill a process by name.\n8. No Claude Code? Pair participants or use FACILITATOR.md for the manual fallback. Offline SRE output is not model evidence.",
     "prompt": "We are on workshop/start. Read README.md, WORKSHOP.md, CLAUDE.md and package.json first. Check Node and my current diff. Install the dependencies and generate the sample fixtures. Run the main tests and the workshop tests. Explain why the workshop failures are expected; do not solve them yet. Reuse my existing console or start one on port 4320 if free. Show its health and the local URL. Do not push or change hooks. Stop for my setup review."
   },
   {
@@ -1223,7 +1225,7 @@ window.SLIDES = [
       "Keep it short.",
       "People maintain it."
     ],
-    "notes": "Time: 13:00 · 3 min.\n1. Progress check (30 s): run npm run progress for the current checks. Open PROGRESS.md for the latest dated evidence. Ask which current check supports it. Do not call it verified from an agent claim.\n2. Show: the lab CLAUDE.md. Show the commands, the rules (“propose, never execute”), and how to verify.\n3. Say: “If the agent makes the same mistake two times, add the rule here.”\n4. Say: “AGENTS.md, PROGRESS.md, and SOLO.md are next to CLAUDE.md.”"
+    "notes": "Time: 13:00 · 3 min.\n1. Progress check (30 s): run npm run progress for the current checks. Open PROGRESS.md for the latest dated evidence. Ask which current check supports it. Do not call it verified from an agent claim.\n2. Show: the lab CLAUDE.md. Show the commands, the rules (“propose, never execute”), and how to verify.\n3. Say: “If the agent makes the same mistake two times, add the rule here.”\n4. Say: “PROGRESS.md and SOLO.md are next to CLAUDE.md. This workshop branch does not contain AGENTS.md.”"
   },
   {
     "title": "PROGRESS.md",
@@ -2259,20 +2261,20 @@ window.SLIDES = [
   {
     "title": "Watch: one source, one gate",
     "kicker": "W5 · BONUS · DEMO · ±18 MIN",
-    "subtitle": "One source. One gate. 18 minutes.",
+    "subtitle": "Preview one prepared route in 18 minutes.",
     "type": "concept",
     "cards": [
       {
         "title": "0–8 min",
-        "body": "Branch my/ryan → Intent (step 1) → Spec, test first (step 2)"
+        "body": "Open the prepared branch → inspect Intent → inspect the red schema test"
       },
       {
         "title": "8–14 min",
-        "body": "Plan mode (step 3) → render.test.ts red → green → brief:sample"
+        "body": "Review the accepted plan → replay render.test.ts red → green"
       },
       {
         "title": "14–18 min",
-        "body": "out/latest.html → docs/evidence.md → PR → docs/gate.md: PASS / FAIL / OPEN"
+        "body": "Open out/latest.html → inspect evidence → read the human gate"
       }
     ],
     "visual": {
@@ -2281,11 +2283,11 @@ window.SLIDES = [
     },
     "prompt": "We are on step 1 of SOLO.md. Read SOLO step 1, AGENTS.md, intent.md and progress.md. Interview me one question at a time to fill intent.md: goal, boundary (read-only, no secrets in the repo, sample data first), three checks a stranger can verify, at least one OPEN. Stop for my review.",
     "keyPoints": [
-      "Follow SOLO.md steps 1–4.",
+      "Preview the evidence from SOLO.md steps 1–4.",
       "Two terminals: Claude left, your shell right.",
       "No API key until step 5."
     ],
-    "notes": "Time: 18 min.\n1. Prepare: clone aetherlink-daily-brief-lab-s1. Run npm ci. Run claude and /status. Open SOLO.md. Two terminals, font size 18+.\n2. 0–1 min: git switch -c my/ryan. Run npm test.\n3. 1–4 min: step 1, intent. Paste the step 1 prompt from SOLO.md.\n4. 4–8 min: step 2, spec. Test commit first, then src/brief.ts.\n5. 8–10 min: step 3, plan. Shift+Tab for plan mode. Ask “What can break?”\n6. 10–14 min: step 4. test/render.test.ts red, then src/render.ts green. Run npm run brief:sample. Open out/latest.html.\n7. 14–18 min: step 6–7 preview. Fill one row of docs/evidence.md. Open the PR. Read it against intent.md in docs/gate.md.\n8. Stuck: preserve your work, then compare git diff step-4-build-render -- src/render.ts. Apply only the reviewed change.\n9. Say: “No PASS without a check you read. The gate is a human reading the PR.”"
+    "notes": "Time: 18 min. This is a facilitator preview of prepared evidence, not a participant build of steps 1–4.\n1. Prepare a reviewed branch that already contains the step 1–4 artifacts and their red-to-green history. Open SOLO.md. Use two terminals at font size 18+.\n2. 0–4 min: show intent.md and the accepted boundary. Paste the step 1 prompt only to explain how the interview starts.\n3. 4–8 min: show the schema test failing before src/brief.ts makes it pass. Read the actual output.\n4. 8–12 min: show the accepted plan and the render test history. Do not claim that the audience built it.\n5. 12–15 min: run npm run brief:sample and open out/latest.html.\n6. 15–18 min: show one evidence row and the human PASS / FAIL / OPEN gate.\n7. Say: “Participants build steps 1–4 in the next 30–40 minute block. This preview only shows the route and its proof.”"
   },
   {
     "title": "Bonus: Daily Brief solo",
